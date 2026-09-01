@@ -23,7 +23,14 @@ export default function Page() {
     fetch('/api/site')
       .then((r) => r.json())
       .then((d) => {
-        if (d.theme) useApp.setState({ theme: d.theme });
+        if (d.theme) {
+          useApp.setState({ theme: d.theme });
+          // cache for the pre-paint boot script (layout.tsx) so returning
+          // visitors don't see a palette flash before the DB value arrives
+          try {
+            localStorage.setItem('mehrdad-theme-cache', d.theme);
+          } catch {}
+        }
       })
       .catch(() => {});
   }, []);

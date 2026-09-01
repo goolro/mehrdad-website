@@ -53,6 +53,17 @@ export const viewport: Viewport = {
   themeColor: "#7c3aed",
 };
 
+/**
+ * Pre-paint boot script (Theme Engine D-014 limitation fix: dark-mode
+ * first-paint flash). Runs synchronously before React hydrates and:
+ * 1. applies the persisted Light/Dark mode (.dark class)
+ * 2. applies the persisted language direction (fa → rtl)
+ * 3. applies the last-known site theme (cached by page.tsx; the live
+ *    value still arrives from the DB via /api/site)
+ * Wrapped in try/catch — a storage failure must never blank the site.
+ */
+const bootScript = `(function(){try{var raw=localStorage.getItem('mehrdad-app');if(raw){var s=(JSON.parse(raw)||{}).state||{};if(s.mode==='dark')document.documentElement.classList.add('dark');if(s.lang==='fa'){document.documentElement.lang='fa';document.documentElement.dir='rtl';}}var t=localStorage.getItem('mehrdad-theme-cache');if(t)document.documentElement.dataset.theme=t;}catch(e){}})();`;
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -63,6 +74,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${vazirmatn.variable} antialiased bg-background text-foreground`}
       >
+        <script id="theme-boot" dangerouslySetInnerHTML={{ __html: bootScript }} />
         {children}
         <Toaster />
         <PwaClient />
