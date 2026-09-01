@@ -196,3 +196,23 @@ Stage Summary:
 - ریپوی عمومی githab منبع حقیقت است؛ هیچ رازی در ریپو/تاریخچه نیست
 - پسورد جدید ادمین فقط در .env سندباکس (به مالک در چت اعلام شد)
 - قانون دائمی: بعد از هر تسک → پوش + آپدیت README/CHANGELOG
+
+---
+Task ID: 9
+Agent: Z.ai Code (main)
+Task: Theme Engine — ۵ تم روی دیزاین‌سیستم مشترک + Light/Dark مستقل (تصمیم D-014، درخواست مالک)
+
+Work Log:
+- بازخوانی زیرساخت: توکن‌های CSS var (violet-*/fuchsia-*) زیر [data-theme] + ThemeBackground + THEMES رجیستری + تب Theme ادمین (کاملاً دیتا-درایو)
+- رجیستری جدید src/lib/themes.ts: دقیقاً ۵ تم — default ☼ (بنفش برند، aurora)، autumn 🍂 (برگ)، winter ❄️ (آسمان یخی، برف جدید)، digital ⚡ (نئون فیروزه‌ای/لیمویی، گلیف‌های ۰/۱ در حال بارش جدید)، nowruz 🌱 (زمرد/طلایی، گلبرگ بهاری جدید) + LEGACY_THEME_MAP (ocean→winter، forest→nowruz، sunset→autumn، midnight→digital، digital-قدیم→default)
+- globals.css: ۳ بلوک پالت جدید، حذف ۴ تم بازنشسته، prose-blog توکن‌محور شد (لینک/نقل‌قول/جدول با var/color-mix — بدون اووراید per-theme)، CSS افکت‌های snow/matrix/petals + حذف افکت‌های یتیم
+- ThemeBackground.tsx بازنویسی: رندرر عمومی ذرات برای leaves/snow/matrix/petals + شاخه aurora — رنگ ذرات از توکن‌های خود تم (سازگار با Light/Dark)
+- Light/Dark مستقل: mode در zustand store + persist (کنار lang)، دکمه Sun/Moon در هدر با aria-pressed و لیبل دوزبانه، toggle کلاس dark روی html در page.tsx
+- مهاجرت DB با مارکر idempotent (analysis/migrate_theme_setting.ts): نکته ظریف — «digital» قدیم (بنفش) با «digital» جدید (نئون) تداخل معنایی داشت → digital→default با مارکر theme_engine_v2_migrated؛ API/site حالا default برمی‌گرداند
+- fallbackهای 'digital' در AdminView و store به 'default' تغییر کردند
+- صحت‌سنجی مرورگر: هر ۵ تم از تب ادمین فعال شد (dataset + اسکرین‌شات winter/digital/nowruz + toast) ✓ | مقاله با تم winter + حالت dark ✓ | persist بودن mode بعد از reload ✓ | صفر خطای کنسول ✓ | lint پاک ✓ | تم به default برگشت و خروج ادمین ✓
+
+Stage Summary:
+- قرارداد موتور: تم = پالت + پس‌زمینه فقط؛ افزودن تم جدید = تغییر کانفیگ (بدون دست زدن به کامپوننت‌ها) — docs/THEME_ENGINE.md دستور پخت دارد
+- هیچ تم ذخیره‌شده‌ای نمی‌تواند سایت را بی‌استایل کند (نگاشت دو لایه: DB migration + getTheme runtime)
+- محدودیت مستندشده: فلش اولین پینت dark (فیکس P2: اسکریپت boot در layout)

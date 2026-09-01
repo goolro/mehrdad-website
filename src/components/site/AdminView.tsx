@@ -468,13 +468,13 @@ function WriterTab({ pw, t, lang }: { pw: string; t: T; lang: 'en' | 'fa' }) {
 function ThemeTab({ pw, t, lang }: { pw: string; t: T; lang: 'en' | 'fa' }) {
   const { toast } = useToast();
   const setTheme = useApp((s) => s.setTheme);
-  const [active, setActive] = useState<string>('digital');
+  const [active, setActive] = useState<string>('default');
   const [saving, setSaving] = useState<string>('');
 
   const load = useCallback(() => {
     fetch('/api/site')
       .then((r) => r.json())
-      .then((d) => setActive(d.theme || 'digital'))
+      .then((d) => setActive(d.theme || 'default'))
       .catch(() => {});
   }, []);
 

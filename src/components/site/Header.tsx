@@ -3,10 +3,10 @@
 import { useApp, pick } from './store';
 import { ui } from './i18n';
 import { Button } from '@/components/ui/button';
-import { Lock } from 'lucide-react';
+import { Lock, Moon, Sun } from 'lucide-react';
 
 export function Header() {
-  const { lang, setLang, view, setView, setChatOpen } = useApp();
+  const { lang, setLang, view, setView, setChatOpen, mode, setMode } = useApp();
   const t = ui[lang];
 
   const navItems: { key: 'home' | 'services' | 'projects' | 'blog' | 'about' | 'contact'; label: string }[] = [
@@ -69,6 +69,15 @@ export function Header() {
               فا
             </button>
           </div>
+          <button
+            onClick={() => setMode(mode === 'dark' ? 'light' : 'dark')}
+            className="rounded-lg border border-border p-2 text-muted-foreground transition-colors hover:text-foreground"
+            aria-label={mode === 'dark' ? (lang === 'fa' ? 'حالت روشن' : 'Switch to light mode') : (lang === 'fa' ? 'حالت تاریک' : 'Switch to dark mode')}
+            aria-pressed={mode === 'dark'}
+            title={mode === 'dark' ? (lang === 'fa' ? 'حالت روشن' : 'Light mode') : (lang === 'fa' ? 'حالت تاریک' : 'Dark mode')}
+          >
+            {mode === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+          </button>
           <button
             onClick={() => setView('admin')}
             className={`hidden rounded-lg p-2 transition-colors sm:inline-flex ${

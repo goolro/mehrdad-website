@@ -16,7 +16,7 @@ import { ThemeBackground } from '@/components/site/ThemeBackground';
 import { getTheme } from '@/lib/themes';
 
 export default function Page() {
-  const { view, currentPostSlug, lang, theme } = useApp();
+  const { view, currentPostSlug, lang, theme, mode } = useApp();
 
   // load the globally selected theme (set in the admin panel)
   useEffect(() => {
@@ -32,6 +32,11 @@ export default function Page() {
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
   }, [theme]);
+
+  // apply Light/Dark (independent of theme — Theme Engine D-014)
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', mode === 'dark');
+  }, [mode]);
 
   // set document direction & lang
   useEffect(() => {

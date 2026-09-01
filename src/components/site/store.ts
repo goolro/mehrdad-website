@@ -5,6 +5,7 @@ import { persist } from 'zustand/middleware';
 import type { Lang } from './i18n';
 
 export type View = 'home' | 'services' | 'projects' | 'blog' | 'about' | 'contact' | 'admin';
+export type ColorMode = 'light' | 'dark';
 
 interface AppState {
   lang: Lang;
@@ -12,12 +13,15 @@ interface AppState {
   currentPostSlug: string | null;
   chatOpen: boolean;
   theme: string;
+  /** Light/Dark — independent of the site theme (Theme Engine, D-014) */
+  mode: ColorMode;
   setLang: (l: Lang) => void;
   setView: (v: View) => void;
   openPost: (slug: string) => void;
   closePost: () => void;
   setChatOpen: (o: boolean) => void;
   setTheme: (t: string) => void;
+  setMode: (m: ColorMode) => void;
 }
 
 export const useApp = create<AppState>()(
@@ -27,17 +31,19 @@ export const useApp = create<AppState>()(
       view: 'home',
       currentPostSlug: null,
       chatOpen: false,
-      theme: 'digital',
+      theme: 'default',
+      mode: 'light',
       setLang: (lang) => set({ lang }),
       setView: (view) => set({ view, currentPostSlug: null }),
       openPost: (slug) => set({ currentPostSlug: slug }),
       closePost: () => set({ currentPostSlug: null }),
       setChatOpen: (chatOpen) => set({ chatOpen }),
       setTheme: (theme) => set({ theme }),
+      setMode: (mode) => set({ mode }),
     }),
     {
       name: 'mehrdad-app',
-      partialize: (s) => ({ lang: s.lang }),
+      partialize: (s) => ({ lang: s.lang, mode: s.mode }),
     }
   )
 );

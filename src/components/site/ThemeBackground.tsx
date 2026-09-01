@@ -1,12 +1,45 @@
 'use client';
 
 import { useMemo } from 'react';
-import { getTheme } from '@/lib/themes';
+import { getTheme, type ThemeEffect } from '@/lib/themes';
 
 /**
  * Fixed animated background layer, driven by the active site theme.
  * Pure CSS animations (GPU-friendly), respects prefers-reduced-motion.
+ *
+ * Effects (Theme Engine, docs/THEME_ENGINE.md):
+ * - aurora  → Default: soft drifting gradient blobs + faint grid
+ * - leaves  → Autumn: falling, swaying leaves
+ * - snow    → Winter: drifting snowflakes + soft dots
+ * - matrix  → Digital: falling glyphs over the grid
+ * - petals  → Nowruz: drifting spring petals
+ *
+ * All particle effects share one generic renderer; only `aurora` is
+ * special (fixed blobs). Particle colors always come from the theme's
+ * own CSS tokens, so Light/Dark keeps working for every effect.
  */
+
+interface Particle {
+  key: number;
+  left: number;
+  duration: number;
+  delay: number;
+  size: number;
+  char?: string;
+}
+
+const FALL_CLASS: Record<Exclude<ThemeEffect, 'aurora'>, string> = {
+  leaves: 'tb-leaf',
+  snow: 'tb-snow',
+  matrix: 'tb-matrix',
+  petals: 'tb-petal',
+};
+
+/** snow dots render without a glyph — dedicated class per effect */
+const DOT_CLASS: Partial<Record<Exclude<ThemeEffect, 'aurora'>, string>> = {
+  snow: 'tb-snow-dot',
+};
+
 export function ThemeBackground({ themeId }: { themeId: string }) {
   const theme = getTheme(themeId);
 
@@ -18,9 +51,12 @@ export function ThemeBackground({ themeId }: { themeId: string }) {
       return seed / 233280;
     };
 
+    const make = (n: number, fn: (i: number) => Particle): Particle[] =>
+      Array.from({ length: n }, (_, i) => fn(i));
+
     switch (theme.effect) {
       case 'leaves':
-        return Array.from({ length: 12 }, (_, i) => ({
+        return make(12, (i) => ({
           key: i,
           left: rnd() * 100,
           duration: 9 + rnd() * 9,
@@ -28,40 +64,42 @@ export function ThemeBackground({ themeId }: { themeId: string }) {
           size: 14 + rnd() * 16,
           char: ['🍂', '🍁', '🍃'][Math.floor(rnd() * 3)],
         }));
-      case 'bubbles':
-        return Array.from({ length: 14 }, (_, i) => ({
-          key: i,
-          left: rnd() * 100,
-          duration: 10 + rnd() * 10,
-          delay: -rnd() * 16,
-          size: 6 + rnd() * 20,
-        }));
-      case 'fireflies':
-        return Array.from({ length: 18 }, (_, i) => ({
-          key: i,
-          left: rnd() * 100,
-          top: rnd() * 90,
-          duration: 7 + rnd() * 9,
-          delay: -rnd() * 10,
-          size: 3 + rnd() * 4,
-        }));
-      case 'stars':
-        return {
-          stars: Array.from({ length: 70 }, (_, i) => ({
+      case 'snow':
+        return [
+          ...make(12, (i) => ({
             key: i,
             left: rnd() * 100,
-            top: rnd() * 100,
-            size: 1 + rnd() * 2.2,
-            duration: 2 + rnd() * 4,
-            delay: -rnd() * 5,
+            duration: 13 + rnd() * 11,
+            delay: -rnd() * 20,
+            size: 12 + rnd() * 12,
+            char: ['❄', '❅', '❆'][Math.floor(rnd() * 3)],
           })),
-          shooting: Array.from({ length: 2 }, (_, i) => ({
-            key: i,
-            left: 10 + rnd() * 60,
-            top: rnd() * 40,
-            delay: i * 5.5 - rnd() * 3,
+          ...make(10, (i) => ({
+            key: 100 + i,
+            left: rnd() * 100,
+            duration: 11 + rnd() * 9,
+            delay: -rnd() * 18,
+            size: 2 + rnd() * 3,
           })),
-        };
+        ];
+      case 'matrix':
+        return make(22, (i) => ({
+          key: i,
+          left: rnd() * 100,
+          duration: 7 + rnd() * 8,
+          delay: -rnd() * 12,
+          size: 11 + rnd() * 8,
+          char: ['۰', '۱', '0', '1'][Math.floor(rnd() * 4)],
+        }));
+      case 'petals':
+        return make(10, (i) => ({
+          key: i,
+          left: rnd() * 100,
+          duration: 12 + rnd() * 9,
+          delay: -rnd() * 16,
+          size: 14 + rnd() * 12,
+          char: ['🌸', '🌼', '🌷'][Math.floor(rnd() * 3)],
+        }));
       default:
         return null;
     }
@@ -87,32 +125,18 @@ export function ThemeBackground({ themeId }: { themeId: string }) {
     );
   }
 
-  if (theme.effect === 'glow') {
-    return (
-      <div className="theme-bg" aria-hidden="true">
-        <div
-          className="tb-glow-band"
-          style={{ top: '-14%', left: '5%', width: '55vw', height: '30vw', background: `${theme.swatch[0]}2e` }}
-        />
-        <div
-          className="tb-glow-band"
-          style={{ bottom: '-20%', right: '-8%', width: '48vw', height: '32vw', background: `${theme.swatch[2]}28`, animationDelay: '-6s' }}
-        />
-        <div
-          className="tb-glow-band"
-          style={{ top: '38%', left: '40%', width: '30vw', height: '22vw', background: `${theme.swatch[1]}1f`, animationDelay: '-3s' }}
-        />
-      </div>
-    );
-  }
+  const list = (particles as Particle[]) || [];
+  const effect = theme.effect as Exclude<ThemeEffect, 'aurora'>;
+  const charClass = FALL_CLASS[effect];
+  const dotClass = DOT_CLASS[effect] || charClass;
 
-  if (theme.effect === 'leaves') {
-    return (
-      <div className="theme-bg" aria-hidden="true">
-        {particles?.map?.((p: { key: number; left: number; duration: number; delay: number; size: number; char: string }) => (
+  return (
+    <div className="theme-bg" aria-hidden="true">
+      {list.map((p) =>
+        p.char ? (
           <span
             key={p.key}
-            className="tb-leaf"
+            className={charClass}
             style={{
               left: `${p.left}%`,
               fontSize: p.size,
@@ -122,19 +146,10 @@ export function ThemeBackground({ themeId }: { themeId: string }) {
           >
             {p.char}
           </span>
-        ))}
-      </div>
-    );
-  }
-
-  if (theme.effect === 'bubbles') {
-    return (
-      <div className="theme-bg" aria-hidden="true">
-        <div className="tb-wave" />
-        {particles?.map?.((p: { key: number; left: number; duration: number; delay: number; size: number }) => (
+        ) : (
           <span
             key={p.key}
-            className="tb-bubble"
+            className={dotClass}
             style={{
               left: `${p.left}%`,
               width: p.size,
@@ -143,58 +158,8 @@ export function ThemeBackground({ themeId }: { themeId: string }) {
               animationDelay: `${p.delay}s`,
             }}
           />
-        ))}
-      </div>
-    );
-  }
-
-  if (theme.effect === 'fireflies') {
-    return (
-      <div className="theme-bg" aria-hidden="true">
-        {particles?.map?.((p: { key: number; left: number; top: number; duration: number; delay: number; size: number }) => (
-          <span
-            key={p.key}
-            className="tb-firefly"
-            style={{
-              left: `${p.left}%`,
-              top: `${p.top}%`,
-              width: p.size,
-              height: p.size,
-              animationDuration: `${p.duration}s, 3.4s`,
-              animationDelay: `${p.delay}s, ${p.delay / 2}s`,
-            }}
-          />
-        ))}
-      </div>
-    );
-  }
-
-  // stars
-  const stars = (particles as { stars?: Array<{ key: number; left: number; top: number; size: number; duration: number; delay: number }> })?.stars || [];
-  const shooting = (particles as { shooting?: Array<{ key: number; left: number; top: number; delay: number }> })?.shooting || [];
-  return (
-    <div className="theme-bg" aria-hidden="true">
-      {stars.map((s) => (
-        <span
-          key={s.key}
-          className="tb-star"
-          style={{
-            left: `${s.left}%`,
-            top: `${s.top}%`,
-            width: s.size,
-            height: s.size,
-            animationDuration: `${s.duration}s`,
-            animationDelay: `${s.delay}s`,
-          }}
-        />
-      ))}
-      {shooting.map((s) => (
-        <span
-          key={s.key}
-          className="tb-shooting"
-          style={{ left: `${s.left}%`, top: `${s.top}%`, animationDelay: `${s.delay}s` }}
-        />
-      ))}
+        )
+      )}
     </div>
   );
 }

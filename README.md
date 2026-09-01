@@ -31,8 +31,10 @@ The site is:
   internalized (316 occurrences now route inside the app), media mirrored
   locally (`public/uploads/wp/`, `public/media/`)
 - ✅ **PWA**: manifest, service worker, install prompt, app shortcuts
-- 🔜 **Theme engine**: shared design-token system, 5 themes (Default,
-  Autumn, Winter, Digital, Nowruz) × independent Light/Dark
+- ✅ **Theme engine shipped**: shared design-token system, 5 themes
+  (Default ☼, Autumn 🍂, Winter ❄️, Digital ⚡, Nowruz 🌱) with animated
+  backgrounds × independent persisted Light/Dark toggle
+  ([docs/THEME_ENGINE.md](docs/THEME_ENGINE.md))
 - 🔜 **TWA (Android)**: config prepared (`twa-manifest.json`,
   `MOBILE_APP.md`); signed build awaits the owner's keystore
 - 🌐 **Language**: English default, full Persian (RTL) secondary — every
@@ -139,6 +141,7 @@ self-sufficient and does not hotlink the old WordPress host. See
 | [docs/CHANGELOG.md](docs/CHANGELOG.md) | release history |
 | [docs/DECISIONS.md](docs/DECISIONS.md) | decision log with rationale |
 | [docs/SECURITY.md](docs/SECURITY.md) | secret policy, admin auth model, incident log |
+| [docs/THEME_ENGINE.md](docs/THEME_ENGINE.md) | design-token system, 5 themes, Light/Dark, how to add a theme |
 | [MOBILE_APP.md](MOBILE_APP.md) | PWA (shipped) + TWA/Android packaging plan |
 
 ## Content migration (headline rules)
@@ -171,8 +174,6 @@ redirect. Details: [docs/SEO.md](docs/SEO.md).
 
 See [docs/ROADMAP.md](docs/ROADMAP.md). Highlights:
 
-- theme engine: 5 themes (Default / Autumn / Winter / Digital / Nowruz)
-  on one shared design-token system × independent Light/Dark
 - TWA/Android packaging (config ready; awaits owner keystore)
 - browser-locale language suggestion banner (EN default stays)
 - English translations for remaining Persian-only archive posts

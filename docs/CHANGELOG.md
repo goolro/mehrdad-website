@@ -5,6 +5,17 @@ All notable changes to mehrdad.ir. Format: Keep-a-Changelog-ish, newest first.
 ## [Unreleased]
 
 ### Added
+- **Theme Engine (D-014)**: one shared design-token system powering exactly
+  five themes — Default ☼ (brand violet), Autumn 🍂, Winter ❄️ (icy sky,
+  new snowfall background), Digital ⚡ (neon cyan/lime, new falling-glyph
+  background), Nowruz 🌱 (emerald/gold, new spring-petal background).
+  Themes are palette + background only — a shared CSS-variable layer
+  (`--color-violet-*` / `--color-fuchsia-*`) re-colors every component,
+  including article prose (links/blockquotes/tables now token-driven).
+  New docs: `docs/THEME_ENGINE.md` (incl. add-a-theme recipe).
+- **Light/Dark mode, independent of theme**: persisted user preference
+  (`localStorage` via the app store), header Sun/Moon toggle with
+  `aria-pressed` + localized labels; all five themes work in both modes.
 - **PWA completion**: manifest, service worker (offline shell + API/image
   cache), AI-generated icons (192/512/180 + maskable), in-browser install
   prompt, app shortcuts (Blog / AI Chat / Contact), iOS standalone meta.
@@ -15,6 +26,12 @@ All notable changes to mehrdad.ir. Format: Keep-a-Changelog-ish, newest first.
 - `.env.example` — variable names only, no values.
 
 ### Changed
+- **Theme roster retired → mapped (was: Default, Ocean, Forest, Sunset,
+  Midnight)**: Ocean→Winter, Forest→Nowruz, Sunset→Autumn,
+  Midnight→Digital, old violet "Digital"→Default. Stored DB value
+  migrated once with an idempotent marker
+  (`analysis/migrate_theme_setting.ts`); `getTheme()` also resolves
+  legacy ids at read time so stale values can never render unstyled.
 - **In-content legacy links internalized (Task 7)**: all 316 `mehrdad.ir`
   occurrences inside post bodies (72 posts) now stay inside the app —
   pages → `#contact` / `#about` / `#home`, posts → `#blog/<slug>`,

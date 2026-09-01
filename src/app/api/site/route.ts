@@ -28,7 +28,7 @@ export async function GET(_req: NextRequest) {
         count: c._count.posts,
       })),
       stats: { posts: postCount, services: services.length, projects: projects.length },
-      theme: themeRow?.value || 'digital',
+      theme: themeRow?.value || 'default',
     });
   } catch (e) {
     console.error('site api error:', e);

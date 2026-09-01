@@ -144,10 +144,10 @@
 .prose-blog ul { list-style: disc; }
 .prose-blog ol { list-style: decimal; }
 .prose-blog li { margin: 0.4em 0; }
-.prose-blog a { color: #7c3aed; text-decoration: underline; }
+.prose-blog a { color: var(--color-violet-600, #7c3aed); text-decoration: underline; }
 .prose-blog strong, .prose-blog b { font-weight: 700; }
 .prose-blog blockquote {
-  border-inline-start: 3px solid #8b5cf6;
+  border-inline-start: 3px solid var(--color-violet-400, #8b5cf6);
   padding-inline-start: 1em;
   margin: 1.2em 0;
   color: rgba(var(--foreground-rgb), 0.75);
@@ -156,7 +156,7 @@
 .prose-blog img { max-width: 100%; height: auto; border-radius: 0.75rem; margin: 1.2em auto; }
 .prose-blog table { width: 100%; border-collapse: collapse; margin: 1.2em 0; font-size: 0.95em; }
 .prose-blog th, .prose-blog td { border: 1px solid rgba(128,128,128,0.3); padding: 0.5em 0.75em; text-align: start; }
-.prose-blog th { background: rgba(139,92,246,0.08); font-weight: 700; }
+.prose-blog th { background: color-mix(in srgb, var(--color-violet-500, #8b5cf6) 8%, transparent); font-weight: 700; }
 .prose-blog hr { margin: 2em 0; border-color: rgba(128,128,128,0.25); }
 .prose-blog iframe, .prose-blog video { max-width: 100%; border-radius: 0.75rem; }
 
@@ -174,48 +174,34 @@
   --color-fuchsia-700: #be123c;
 }
 
-/* 🌊 Ocean — teal / cyan */
-:root[data-theme="ocean"] {
-  --color-violet-50: #f0fdfa;  --color-violet-100: #ccfbf1;  --color-violet-200: #99f6e4;
-  --color-violet-300: #5eead4;  --color-violet-400: #2dd4bf;  --color-violet-500: #14b8a6;
-  --color-violet-600: #0d9488;  --color-violet-700: #0f766e;  --color-violet-800: #115e59;
-  --color-violet-900: #134e4a;  --color-violet-950: #042f2e;
-  --color-fuchsia-400: #22d3ee; --color-fuchsia-500: #06b6d4; --color-fuchsia-600: #0891b2;
+/* ❄️ Winter — icy sky / cyan */
+:root[data-theme="winter"] {
+  --color-violet-50: #f0f9ff;  --color-violet-100: #e0f2fe;  --color-violet-200: #bae6fd;
+  --color-violet-300: #7dd3fc;  --color-violet-400: #38bdf8;  --color-violet-500: #0ea5e9;
+  --color-violet-600: #0284c7;  --color-violet-700: #0369a1;  --color-violet-800: #075985;
+  --color-violet-900: #0c4a6e;  --color-violet-950: #082f49;
+  --color-fuchsia-400: #67e8f9; --color-fuchsia-500: #22d3ee; --color-fuchsia-600: #0891b2;
   --color-fuchsia-700: #0e7490;
 }
 
-/* 🌿 Forest — emerald / lime */
-:root[data-theme="forest"] {
+/* ⚡ Digital — neon cyan / lime over the shared grid */
+:root[data-theme="digital"] {
+  --color-violet-50: #ecfeff;  --color-violet-100: #cffafe;  --color-violet-200: #a5f3fc;
+  --color-violet-300: #67e8f9;  --color-violet-400: #22d3ee;  --color-violet-500: #06b6d4;
+  --color-violet-600: #0891b2;  --color-violet-700: #0e7490;  --color-violet-800: #155e75;
+  --color-violet-900: #164e63;  --color-violet-950: #083344;
+  --color-fuchsia-400: #4ade80; --color-fuchsia-500: #22c55e; --color-fuchsia-600: #16a34a;
+  --color-fuchsia-700: #15803d;
+}
+
+/* 🌱 Nowruz — spring emerald / gold (haft-sin) */
+:root[data-theme="nowruz"] {
   --color-violet-50: #ecfdf5;  --color-violet-100: #d1fae5;  --color-violet-200: #a7f3d0;
   --color-violet-300: #6ee7b7;  --color-violet-400: #34d399;  --color-violet-500: #10b981;
   --color-violet-600: #059669;  --color-violet-700: #047857;  --color-violet-800: #065f46;
   --color-violet-900: #064e3b;  --color-violet-950: #022c22;
-  --color-fuchsia-400: #a3e635; --color-fuchsia-500: #84cc16; --color-fuchsia-600: #65a30d;
-  --color-fuchsia-700: #4d7c0f;
-}
-
-/* 🌅 Sunset — rose / pink / orange */
-:root[data-theme="sunset"] {
-  --color-violet-50: #fff1f2;  --color-violet-100: #ffe4e6;  --color-violet-200: #fecdd3;
-  --color-violet-300: #fda4af;  --color-violet-400: #fb7185;  --color-violet-500: #f43f5e;
-  --color-violet-600: #e11d48;  --color-violet-700: #be123c;  --color-violet-800: #9f1239;
-  --color-violet-900: #881337;  --color-violet-950: #4c0519;
-  --color-fuchsia-400: #fb923c; --color-fuchsia-500: #f97316; --color-fuchsia-600: #ea580c;
-  --color-fuchsia-700: #c2410c;
-}
-
-/* 🌙 Midnight Neon — dark canvas + purple/cyan neon */
-:root[data-theme="midnight"] {
-  --background: #0b0b14;  --foreground: #e8e8f2;
-  --card: #14141f;        --card-foreground: #e8e8f2;
-  --popover: #14141f;     --popover-foreground: #e8e8f2;
-  --primary: #a78bfa;     --primary-foreground: #14141f;
-  --secondary: #1a1a29;   --secondary-foreground: #e8e8f2;
-  --muted: #1e1e2d;       --muted-foreground: #9c9cb5;
-  --accent: #1a1a29;      --accent-foreground: #e8e8f2;
-  --border: #2a2a3d;      --input: #2a2a3d;  --ring: #8b5cf6;
-  --color-fuchsia-400: #22d3ee; --color-fuchsia-500: #06b6d4; --color-fuchsia-600: #0891b2;
-  --color-fuchsia-700: #0e7490;
+  --color-fuchsia-400: #fbbf24; --color-fuchsia-500: #f59e0b; --color-fuchsia-600: #d97706;
+  --color-fuchsia-700: #b45309;
 }
 
 /* ═══════════ Animated theme backgrounds ═══════════ */
@@ -267,92 +253,57 @@
   100% { transform: translateY(112vh) translateX(-2vw) rotate(380deg); }
 }
 
-/* — bubbles (ocean): rising bubbles + bottom wave — */
-.tb-bubble {
+/* — snow (winter): drifting snowflakes + soft dots — */
+.tb-snow {
   position: absolute;
-  bottom: -6vh;
-  border-radius: 9999px;
-  background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.65), rgba(255,255,255,0.12));
-  box-shadow: inset 0 0 6px rgba(255,255,255,0.35);
-  animation: tb-rise linear infinite;
+  top: -8vh;
+  color: var(--color-violet-300, #7dd3fc);
+  text-shadow: 0 0 6px color-mix(in srgb, var(--color-violet-300, #7dd3fc) 60%, transparent);
+  opacity: 0.8;
+  animation: tb-snowfall linear infinite;
   will-change: transform;
 }
-@keyframes tb-rise {
-  0%   { transform: translateY(0) translateX(0) scale(0.7); opacity: 0; }
-  12%  { opacity: 0.7; }
-  50%  { transform: translateY(-55vh) translateX(2vw) scale(1); }
-  100% { transform: translateY(-112vh) translateX(-2vw) scale(1.1); opacity: 0; }
-}
-.tb-wave {
+.tb-snow-dot {
   position: absolute;
-  bottom: -12px;
-  left: -50%;
-  width: 200%;
-  height: 110px;
-  background: radial-gradient(ellipse at 50% 0%, color-mix(in srgb, var(--color-violet-400, #14b8a6) 28%, transparent), transparent 70%);
-  animation: tb-wave 9s ease-in-out infinite alternate;
-}
-@keyframes tb-wave {
-  from { transform: translateX(-3%); }
-  to   { transform: translateX(3%); }
-}
-
-/* — fireflies (forest): glowing floating dots — */
-.tb-firefly {
-  position: absolute;
+  top: -4vh;
   border-radius: 9999px;
-  background: var(--color-fuchsia-400, #a3e635);
+  background: var(--color-violet-200, #bae6fd);
   filter: blur(1px);
-  box-shadow: 0 0 12px 4px color-mix(in srgb, var(--color-fuchsia-400, #a3e635) 55%, transparent);
-  animation: tb-float ease-in-out infinite alternate, tb-pulse 3.4s ease-in-out infinite;
-  will-change: transform, opacity;
+  animation: tb-snowfall linear infinite;
+  will-change: transform;
 }
-@keyframes tb-float {
-  from { transform: translate(0, 0); }
-  to   { transform: translate(4vw, -6vh); }
-}
-@keyframes tb-pulse {
-  0%, 100% { opacity: 0.15; }
-  50%      { opacity: 0.9; }
+@keyframes tb-snowfall {
+  0%   { transform: translateY(-8vh) translateX(0) rotate(0deg); }
+  30%  { transform: translateY(30vh) translateX(2.5vw) rotate(14deg); }
+  60%  { transform: translateY(60vh) translateX(-2.5vw) rotate(-10deg); }
+  100% { transform: translateY(114vh) translateX(1.5vw) rotate(6deg); }
 }
 
-/* — glow (sunset): warm breathing aurora — */
-.tb-glow-band {
+/* — matrix (digital): falling glyphs over the shared grid — */
+.tb-matrix {
   position: absolute;
-  filter: blur(110px);
-  opacity: 0.45;
-  border-radius: 9999px;
-  animation: tb-breathe 12s ease-in-out infinite alternate;
+  top: -8vh;
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  color: var(--color-violet-400, #22d3ee);
+  text-shadow: 0 0 10px color-mix(in srgb, var(--color-violet-400, #22d3ee) 55%, transparent);
+  opacity: 0.4;
+  animation: tb-matrixfall linear infinite;
+  will-change: transform;
 }
-@keyframes tb-breathe {
-  from { transform: scale(0.9) translateY(0); opacity: 0.35; }
-  to   { transform: scale(1.12) translateY(-3vh); opacity: 0.6; }
+@keyframes tb-matrixfall {
+  0%   { transform: translateY(-8vh) translateX(0); }
+  50%  { transform: translateY(55vh) translateX(1.2vw); }
+  100% { transform: translateY(114vh) translateX(-1vw); }
 }
 
-/* — stars (midnight): twinkling starfield — */
-.tb-star {
+/* — petals (nowruz): drifting spring petals — */
+.tb-petal {
   position: absolute;
-  border-radius: 9999px;
-  background: #fff;
-  animation: tb-twinkle ease-in-out infinite;
-}
-@keyframes tb-twinkle {
-  0%, 100% { opacity: 0.12; transform: scale(0.8); }
-  50%      { opacity: 0.95; transform: scale(1.15); }
-}
-.tb-shooting {
-  position: absolute;
-  width: 130px;
-  height: 1.5px;
-  background: linear-gradient(90deg, #fff, transparent);
-  opacity: 0;
-  transform: rotate(-35deg);
-  animation: tb-shoot 11s ease-in infinite;
-}
-@keyframes tb-shoot {
-  0%, 92% { opacity: 0; transform: rotate(-35deg) translateX(0); }
-  94%     { opacity: 0.9; }
-  100%    { opacity: 0; transform: rotate(-35deg) translateX(38vw); }
+  top: -8vh;
+  font-size: 20px;
+  opacity: 0.75;
+  animation: tb-fall linear infinite;
+  will-change: transform;
 }
 
 /* respect reduced motion */
@@ -360,6 +311,5 @@
   .theme-bg * { animation: none !important; }
 }
 
-/* midnight: prose links follow theme */
-:root[data-theme="midnight"] .prose-blog a { color: #a78bfa; }
-:root[data-theme="midnight"] .prose-blog blockquote { border-inline-start-color: #8b5cf6; }
+/* prose (article body) colors always follow the active theme's tokens
+   via var(--color-violet-*) / color-mix — no per-theme overrides needed */

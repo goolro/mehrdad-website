@@ -31,13 +31,15 @@ Last updated: 2026-09-01
 ## Next (prioritized)
 
 ### P0 — current sprint (owner-approved 2026-09-01)
-- [ ] Theme engine on shared design tokens: exactly Default / Autumn /
-      Winter / Digital / Nowruz × independent Light/Dark; retire
-      Ocean/Forest/Sunset/Midnight (D-014)
+- [x] Theme engine on shared design tokens: exactly Default / Autumn /
+      Winter / Digital / Nowruz × independent Light/Dark; retired
+      Ocean/Forest/Sunset/Midnight (D-014 — docs/THEME_ENGINE.md)
 - [ ] TWA/Android packaging: assetlinks.json + build guide; signed build
       awaits owner keystore (D-015)
 - [ ] Browser-locale language suggestion banner (EN default preserved)
 - [ ] EN translation loop for Persian-only archive posts
+- [ ] Inline boot script to kill the dark-mode first-paint flash (P2 nicety,
+      see docs/THEME_ENGINE.md limitations)
 
 ### P1 — editorial
 - [ ] Owner review: publish/draft decision for post 7995 (smart-waste
