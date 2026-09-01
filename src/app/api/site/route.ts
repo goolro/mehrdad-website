@@ -5,13 +5,18 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(_req: NextRequest) {
   try {
-    const [services, projects, categories, postCount, themeRow] = await Promise.all([
+    const [services, projects, categories, tags, postCount, themeRow] = await Promise.all([
       db.service.findMany({ orderBy: { order: 'asc' } }),
       db.project.findMany({ orderBy: { order: 'asc' } }),
       db.category.findMany({
         where: { posts: { some: {} } },
         orderBy: { nameEn: 'asc' },
         include: { _count: { select: { posts: true } } },
+      }),
+      db.tag.findMany({
+        where: { posts: { some: { post: { published: true } } } },
+        orderBy: { nameEn: 'asc' },
+        include: { _count: { select: { posts: { where: { post: { published: true } } } } } },
       }),
       db.post.count({ where: { published: true } }),
       db.siteSetting.findUnique({ where: { key: 'theme' } }),
@@ -26,6 +31,13 @@ export async function GET(_req: NextRequest) {
         nameEn: c.nameEn,
         nameFa: c.nameFa,
         count: c._count.posts,
+      })),
+      tags: tags.map((t) => ({
+        id: t.id,
+        slug: t.slug,
+        nameEn: t.nameEn,
+        nameFa: t.nameFa,
+        count: t._count.posts,
       })),
       stats: { posts: postCount, services: services.length, projects: projects.length },
       theme: themeRow?.value || 'default',

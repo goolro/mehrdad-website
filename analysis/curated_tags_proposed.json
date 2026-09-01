@@ -1,0 +1,202 @@
+[
+  {
+    "slug": "smart-city",
+    "nameEn": "Smart City",
+    "nameFa": "شهر هوشمند"
+  },
+  {
+    "slug": "startup",
+    "nameEn": "Startup",
+    "nameFa": "استارتاپ"
+  },
+  {
+    "slug": "investment",
+    "nameEn": "Investment",
+    "nameFa": "سرمایه‌گذاری"
+  },
+  {
+    "slug": "artificial-intelligence",
+    "nameEn": "Artificial Intelligence",
+    "nameFa": "هوش مصنوعی"
+  },
+  {
+    "slug": "technology",
+    "nameEn": "Technology",
+    "nameFa": "فناوری"
+  },
+  {
+    "slug": "business",
+    "nameEn": "Business",
+    "nameFa": "کسب‌وکار"
+  },
+  {
+    "slug": "rail-transport",
+    "nameEn": "Rail Transport",
+    "nameFa": "ترانسپورت ریلی"
+  },
+  {
+    "slug": "marketing",
+    "nameEn": "Marketing",
+    "nameFa": "بازاریابی"
+  },
+  {
+    "slug": "entrepreneurship",
+    "nameEn": "Entrepreneurship",
+    "nameFa": "کارآفرینی"
+  },
+  {
+    "slug": "iran-economy",
+    "nameEn": "Iran Economy",
+    "nameFa": "اقتصاد ایران"
+  },
+  {
+    "slug": "health",
+    "nameEn": "Health",
+    "nameFa": "سلامت"
+  },
+  {
+    "slug": "tourism",
+    "nameEn": "Tourism",
+    "nameFa": "گردشگری"
+  },
+  {
+    "slug": "iot",
+    "nameEn": "IoT",
+    "nameFa": "اینترنت اشیاء"
+  },
+  {
+    "slug": "robotics",
+    "nameEn": "Robotics",
+    "nameFa": "رباتیک"
+  },
+  {
+    "slug": "fintech",
+    "nameEn": "FinTech",
+    "nameFa": "فین‌تک"
+  },
+  {
+    "slug": "mobility",
+    "nameEn": "Mobility",
+    "nameFa": "حمل‌ونقل"
+  },
+  {
+    "slug": "energy-management",
+    "nameEn": "Energy Management",
+    "nameFa": "مدیریت انرژی"
+  },
+  {
+    "slug": "traffic-management",
+    "nameEn": "Traffic Management",
+    "nameFa": "مدیریت ترافیک"
+  },
+  {
+    "slug": "team-building",
+    "nameEn": "Team Building",
+    "nameFa": "تیم‌سازی"
+  },
+  {
+    "slug": "neo-bank",
+    "nameEn": "Neo Bank",
+    "nameFa": "بانک دیجیتال"
+  },
+  {
+    "slug": "autonomous-vehicles",
+    "nameEn": "Autonomous Vehicles",
+    "nameFa": "خودروهای خودران"
+  },
+  {
+    "slug": "smart-home",
+    "nameEn": "Smart Home",
+    "nameFa": "خانه هوشمند"
+  },
+  {
+    "slug": "business-model",
+    "nameEn": "Business Model",
+    "nameFa": "مدل کسب‌وکار"
+  },
+  {
+    "slug": "product-design",
+    "nameEn": "Product Design",
+    "nameFa": "طراحی محصول"
+  },
+  {
+    "slug": "digital-advertising",
+    "nameEn": "Digital Advertising",
+    "nameFa": "تبلیغات دیجیتال"
+  },
+  {
+    "slug": "networking",
+    "nameEn": "Networking",
+    "nameFa": "شبکه‌سازی"
+  },
+  {
+    "slug": "creativity",
+    "nameEn": "Creativity",
+    "nameFa": "خلاقیت"
+  },
+  {
+    "slug": "urban-planning",
+    "nameEn": "Urban Planning",
+    "nameFa": "برنامه‌ریزی شهری"
+  },
+  {
+    "slug": "smart-transportation",
+    "nameEn": "Smart Transportation",
+    "nameFa": "حمل‌ونقل هوشمند"
+  },
+  {
+    "slug": "pitch-deck",
+    "nameEn": "Pitch Deck",
+    "nameFa": "پیشنهاد سرمایه‌گذاری"
+  },
+  {
+    "slug": "digital-transformation",
+    "nameEn": "Digital Transformation",
+    "nameFa": "تحول دیجیتال"
+  },
+  {
+    "slug": "international-relations",
+    "nameEn": "International Relations",
+    "nameFa": "روابط بین‌الملل"
+  },
+  {
+    "slug": "smart-infrastructure",
+    "nameEn": "Smart Infrastructure",
+    "nameFa": "زیرساخت هوشمند"
+  },
+  {
+    "slug": "ai-marketing",
+    "nameEn": "AI Marketing",
+    "nameFa": "بازاریابی هوش مصنوعی"
+  },
+  {
+    "slug": "smart-robot",
+    "nameEn": "Smart Robot",
+    "nameFa": "ربات هوشمند"
+  },
+  {
+    "slug": "urban-mobility",
+    "nameEn": "Urban Mobility",
+    "nameFa": "حمل‌ونقل شهری"
+  },
+  {
+    "slug": "smart-governance",
+    "nameEn": "Smart Governance",
+    "nameFa": "حکمرانی هوشمند"
+  },
+  {
+    "slug": "digital-banking",
+    "nameEn": "Digital Banking",
+    "nameFa": "بانکداری دیجیتال"
+  },
+  {
+    "slug": "sustainable-development",
+    "nameEn": "Sustainable Development",
+    "nameFa": "توسعه پایدار"
+  },
+  {
+    "slug": "ai-tools",
+    "nameEn": "AI Tools",
+    "nameFa": "ابزارهای هوش مصنوعی"
+  }
+]

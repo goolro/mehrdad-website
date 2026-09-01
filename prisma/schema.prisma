@@ -18,6 +18,25 @@ model Category {
   posts   Post[]
 }
 
+/** Curated topic tags (≤50, analysis/curated_tags.json) — Task 15, D-020 */
+model Tag {
+  id     String    @id @default(cuid())
+  slug   String    @unique
+  nameEn String
+  nameFa String
+  posts  PostTag[]
+}
+
+model PostTag {
+  postId String
+  post   Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  tagId  String
+  tag    Tag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([postId, tagId])
+  @@index([tagId])
+}
+
 model Post {
   id           String   @id @default(cuid())
   slug         String   @unique
@@ -35,6 +54,7 @@ model Post {
   featured     Boolean  @default(false)
   source       String   @default("wordpress") // wordpress | ai
   categories   Category[]
+  tags         PostTag[]
   comments     Comment[]
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt

@@ -12,17 +12,20 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Search, FileText, ChevronLeft, ChevronRight, Clock, Info, MessageSquare } from 'lucide-react';
 
 interface CategoryItem { id: string; slug: string; nameEn: string; nameFa: string; count: number }
+interface TagItem { id: string; slug: string; nameEn: string; nameFa: string; count: number }
 interface PostItem {
   slug: string; titleEn: string; titleFa: string; excerptEn: string | null; excerptFa: string | null;
   cover: string | null; date: string; hasEn: boolean; readMinutes: number; commentCount?: number;
-  categories: CategoryItem[];
+  categories: CategoryItem[]; tags?: TagItem[];
 }
 
 export function BlogView() {
   const { lang } = useApp();
   const t = ui[lang];
   const [cats, setCats] = useState<CategoryItem[]>([]);
+  const [tags, setTags] = useState<TagItem[]>([]);
   const [activeCat, setActiveCat] = useState('');
+  const [activeTag, setActiveTag] = useState('');
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -30,13 +33,20 @@ export function BlogView() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('/api/site').then((r) => r.json()).then((d) => setCats(d.categories || [])).catch(() => {});
+    fetch('/api/site')
+      .then((r) => r.json())
+      .then((d) => {
+        setCats(d.categories || []);
+        setTags(d.tags || []);
+      })
+      .catch(() => {});
   }, []);
 
   const load = useCallback(() => {
     setLoading(true);
     const params = new URLSearchParams({ page: String(page), perPage: '12' });
     if (activeCat) params.set('category', activeCat);
+    if (activeTag) params.set('tag', activeTag);
     if (search.trim()) params.set('search', search.trim());
     fetch(`/api/posts?${params}`)
       .then((r) => r.json())
@@ -46,7 +56,7 @@ export function BlogView() {
       })
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, [page, activeCat, search]);
+  }, [page, activeCat, activeTag, search]);
 
   useEffect(() => {
     const timer = setTimeout(load, search ? 350 : 0);
@@ -89,6 +99,35 @@ export function BlogView() {
             </button>
           ))}
         </div>
+
+        {/* curated topic tags — scrollable row, keeps the filter area compact */}
+        {tags.length > 0 && (
+          <div>
+            <div className="mb-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              {t.blog.tagsLabel}
+            </div>
+            <div className="flex max-h-14 flex-wrap gap-1.5 overflow-y-auto pr-1">
+              <button onClick={() => { setActiveTag(''); setPage(1); }}>
+                <Badge
+                  variant={activeTag === '' ? 'default' : 'outline'}
+                  className={`cursor-pointer px-2.5 py-1 text-xs ${activeTag === '' ? 'bg-fuchsia-600 hover:bg-fuchsia-700' : 'hover:border-fuchsia-500/60'}`}
+                >
+                  {t.blog.all}
+                </Badge>
+              </button>
+              {tags.map((tg) => (
+                <button key={tg.id} onClick={() => { setActiveTag(activeTag === tg.slug ? '' : tg.slug); setPage(1); }}>
+                  <Badge
+                    variant={activeTag === tg.slug ? 'default' : 'outline'}
+                    className={`cursor-pointer px-2.5 py-1 text-xs ${activeTag === tg.slug ? 'bg-fuchsia-600 hover:bg-fuchsia-700' : 'text-muted-foreground hover:border-fuchsia-500/60 hover:text-foreground'}`}
+                  >
+                    #{pick(lang, tg.nameEn, tg.nameFa)}
+                  </Badge>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* grid */}
@@ -173,6 +212,18 @@ function BlogCard({ post }: { post: PostItem }) {
           {pick(lang, post.titleEn, post.titleFa)}
         </h3>
         <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">{pick(lang, post.excerptEn, post.excerptFa)}</p>
+        {(post.tags && post.tags.length > 0) && (
+          <div className="mt-3 flex flex-wrap gap-1">
+            {post.tags.slice(0, 3).map((tg) => (
+              <span key={tg.id} className="rounded-md border border-border bg-muted/60 px-1.5 py-0.5 text-[11px] text-muted-foreground">
+                #{pick(lang, tg.nameEn, tg.nameFa)}
+              </span>
+            ))}
+            {post.tags.length > 3 && (
+              <span className="text-[11px] text-muted-foreground">+{post.tags.length - 3}</span>
+            )}
+          </div>
+        )}
         {!!post.commentCount && (
           <div className="mt-3 flex items-center gap-1 text-xs text-muted-foreground">
             <MessageSquare className="h-3.5 w-3.5" />
@@ -191,7 +242,7 @@ interface FullPost {
   excerptEn: string | null; excerptFa: string | null;
   contentEn: string | null; contentFa: string | null;
   cover: string | null; date: string;
-  categories: CategoryItem[];
+  categories: CategoryItem[]; tags: TagItem[];
 }
 
 export function PostDetail({ slug }: { slug: string }) {
@@ -265,6 +316,17 @@ export function PostDetail({ slug }: { slug: string }) {
         ))}
         <span>· {t.blog.published}: {formatDate(lang, post.date)}</span>
       </div>
+
+      {post.tags && post.tags.length > 0 && (
+        <div className="mt-3 flex flex-wrap items-center gap-1.5">
+          <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{t.blog.tagsLabel}:</span>
+          {post.tags.map((tg) => (
+            <span key={tg.id} className="rounded-md border border-fuchsia-500/30 bg-fuchsia-600/5 px-2 py-0.5 text-xs text-fuchsia-700 dark:text-fuchsia-300">
+              #{pick(lang, tg.nameEn, tg.nameFa)}
+            </span>
+          ))}
+        </div>
+      )}
 
       <h1 className="mt-4 text-3xl font-extrabold leading-tight sm:text-4xl">{title}</h1>
 

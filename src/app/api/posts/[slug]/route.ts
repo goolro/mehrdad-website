@@ -12,13 +12,17 @@ export async function GET(_req: NextRequest, ctx: { params: Promise<{ slug: stri
     for (const candidate of slugCandidates(slug)) {
       post = await db.post.findUnique({
         where: { slug: candidate },
-        include: { categories: { select: { id: true, slug: true, nameEn: true, nameFa: true } } },
+        include: {
+          categories: { select: { id: true, slug: true, nameEn: true, nameFa: true } },
+          tags: { select: { tag: { select: { id: true, slug: true, nameEn: true, nameFa: true } } } },
+        },
       });
       if (post) break;
     }
     if (!post || !post.published) {
       return NextResponse.json({ error: 'Post not found' }, { status: 404 });
     }
+    const tags = post.tags.map((pt) => pt.tag);
 
     const catIds = post.categories.map((c) => c.id);
     const commentCount = await db.comment.count({ where: { postId: post.id, approved: true } });
@@ -41,7 +45,11 @@ export async function GET(_req: NextRequest, ctx: { params: Promise<{ slug: stri
       },
     });
 
-    return NextResponse.json({ post, related, commentCount });
+    return NextResponse.json({
+      post: { ...post, tags },
+      related,
+      commentCount,
+    });
   } catch (e) {
     console.error('post detail api error:', e);
     return NextResponse.json({ error: 'Failed to load post' }, { status: 500 });

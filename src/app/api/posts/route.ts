@@ -9,6 +9,7 @@ export async function GET(req: NextRequest) {
     const page = Math.max(1, parseInt(sp.get('page') || '1', 10));
     const perPage = Math.min(48, Math.max(1, parseInt(sp.get('perPage') || '12', 10)));
     const category = sp.get('category') || '';
+    const tag = sp.get('tag') || '';
     const search = (sp.get('search') || '').trim();
     const featured = sp.get('featured') === '1';
 
@@ -16,6 +17,9 @@ export async function GET(req: NextRequest) {
     if (featured) where.featured = true;
     if (category) {
       where.categories = { some: { slug: category } };
+    }
+    if (tag) {
+      where.tags = { some: { tag: { slug: tag } } };
     }
     if (search) {
       where.OR = [
@@ -46,6 +50,7 @@ export async function GET(req: NextRequest) {
           featured: true,
           _count: { select: { comments: { where: { approved: true } } } },
           categories: { select: { id: true, slug: true, nameEn: true, nameFa: true } },
+          tags: { select: { tag: { select: { id: true, slug: true, nameEn: true, nameFa: true } } } },
         },
       }),
     ]);
@@ -59,6 +64,7 @@ export async function GET(req: NextRequest) {
         ...p,
         hasEn: Boolean(p.contentEn),
         commentCount: p._count.comments,
+        tags: p.tags.map((pt) => pt.tag),
         readMinutes: Math.max(
           1,
           Math.ceil(((p.contentEn || p.excerptFa || p.excerptEn || '').length / 4) / 220)
