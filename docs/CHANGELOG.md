@@ -21,7 +21,15 @@ All notable changes to mehrdad.ir. Format: Keep-a-Changelog-ish, newest first.
   prompt, app shortcuts (Blog / AI Chat / Contact), iOS standalone meta.
 - **TWA preparation**: `twa-manifest.json` (package `ir.mehrdad.twa`,
   notifications enabled) + `MOBILE_APP.md` (PWA status + Android/TWA
-  packaging plan). Signed build awaits the owner's keystore.
+  overview) + full runbook `docs/MOBILE_TWA.md` (keystore ownership,
+  Bubblewrap build, Play checklist, troubleshooting).
+- **`scripts/generate-assetlinks.ts`** — validates SHA-256 fingerprints,
+  reads the package id from `twa-manifest.json` (single source of truth)
+  and writes `public/.well-known/assetlinks.json`; no more hand-editing
+  the JSON.
+- **Signing-key guard**: `*.keystore`, `*.jks`, `*.apk`, `*.aab` and
+  Bubblewrap state dirs are gitignored — the Android signing key can
+  never be committed.
 - `docs/SECURITY.md` — secret policy, admin auth model, incident log.
 - `.env.example` — variable names only, no values.
 

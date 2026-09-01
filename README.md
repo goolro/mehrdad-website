@@ -35,8 +35,10 @@ The site is:
   (Default ☼, Autumn 🍂, Winter ❄️, Digital ⚡, Nowruz 🌱) with animated
   backgrounds × independent persisted Light/Dark toggle
   ([docs/THEME_ENGINE.md](docs/THEME_ENGINE.md))
-- 🔜 **TWA (Android)**: config prepared (`twa-manifest.json`,
-  `MOBILE_APP.md`); signed build awaits the owner's keystore
+- 🔜 **TWA (Android)**: everything prepared — Bubblewrap config
+  (`twa-manifest.json`), `scripts/generate-assetlinks.ts`, full runbook
+  ([docs/MOBILE_TWA.md](docs/MOBILE_TWA.md)); signed build + Play listing
+  await the owner's keystore
 - 🌐 **Language**: English default, full Persian (RTL) secondary — every
   UI string translated
 
@@ -142,7 +144,8 @@ self-sufficient and does not hotlink the old WordPress host. See
 | [docs/DECISIONS.md](docs/DECISIONS.md) | decision log with rationale |
 | [docs/SECURITY.md](docs/SECURITY.md) | secret policy, admin auth model, incident log |
 | [docs/THEME_ENGINE.md](docs/THEME_ENGINE.md) | design-token system, 5 themes, Light/Dark, how to add a theme |
-| [MOBILE_APP.md](MOBILE_APP.md) | PWA (shipped) + TWA/Android packaging plan |
+| [MOBILE_APP.md](MOBILE_APP.md) | PWA (shipped) + TWA overview |
+| [docs/MOBILE_TWA.md](docs/MOBILE_TWA.md) | Android TWA runbook: keystore, build, assetlinks, Play checklist |
 
 ## Content migration (headline rules)
 

@@ -34,8 +34,10 @@ Last updated: 2026-09-01
 - [x] Theme engine on shared design tokens: exactly Default / Autumn /
       Winter / Digital / Nowruz × independent Light/Dark; retired
       Ocean/Forest/Sunset/Midnight (D-014 — docs/THEME_ENGINE.md)
-- [ ] TWA/Android packaging: assetlinks.json + build guide; signed build
-      awaits owner keystore (D-015)
+- [x] TWA/Android packaging prepared: assetlinks generator
+      (`scripts/generate-assetlinks.ts`), `*.keystore`/`*.apk` gitignored,
+      full runbook docs/MOBILE_TWA.md — signed build + Play listing await
+      the owner's keystore (D-015)
 - [ ] Browser-locale language suggestion banner (EN default preserved)
 - [ ] EN translation loop for Persian-only archive posts
 - [ ] Inline boot script to kill the dark-mode first-paint flash (P2 nicety,

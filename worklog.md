@@ -216,3 +216,21 @@ Stage Summary:
 - قرارداد موتور: تم = پالت + پس‌زمینه فقط؛ افزودن تم جدید = تغییر کانفیگ (بدون دست زدن به کامپوننت‌ها) — docs/THEME_ENGINE.md دستور پخت دارد
 - هیچ تم ذخیره‌شده‌ای نمی‌تواند سایت را بی‌استایل کند (نگاشت دو لایه: DB migration + getTheme runtime)
 - محدودیت مستندشده: فلش اولین پینت dark (فیکس P2: اسکریپت boot در layout)
+
+---
+Task ID: 10
+Agent: Z.ai Code (main)
+Task: TWA — تکمیل آماده‌سازی اندروید: اسکریپت assetlinks، گارد keystore، رانبوک مالک (تصمیم D-015)
+
+Work Log:
+- ممیزی آمادگی: twa-manifest.json کامل (ir.mehrdad.twa، شورتکات‌ها، نوتیفیکیشن)، assetlinks با placeholder سرو می‌شود (200)، آیکون‌ها و manifest همه 200
+- گاف امنیتی مهم: *.keystore در gitignore نبود — حالا *.keystore/*.jks/*.apk/*.aab و دایرکتوری‌های bubblewrap/git همگی ignore می‌شوند (کلید امضا هرگز کامیت نمی‌شود)
+- scripts/generate-assetlinks.ts ساخته و تست شد: اعتبارسنجی فرمت SHA-256 (ورود بد reject شد)، packageId از twa-manifest خوانده می‌شود (تک‌منبع حقیقت)، خروجی JSON درست؛ placeholder برگردانده شد
+- docs/MOBILE_TWA.md (رانبوک کامل مالک): پیش‌نیازها، دو مسیر ساخت keystore (bubblewrap keygen / keytool)، بیلد APK+AAB، استخراج اثر انگشت، تولید/دیپلوی assetlinks، نکته Play App Signing (دو اثر انگشت)، وریفای adb، چک‌لیست پلی، عیب‌یابی، وضعیت فعلی
+- MOBILE_APP.md بخش TWA به اشاره‌گر کوتاه + لینک MOBILE_TWA.md تبدیل شد (ضد drift مستندات)
+- README (وضعیت TWA + جدول docs)، ROADMAP P0 (تیک خورد، فقط keystore مالک مانده)، CHANGELOG آپدیت شدند
+
+Stage Summary:
+- همه‌چیز به‌جز کلید امضا آماده است — کلید عمداً نزد مالک می‌ماند (امنیت)
+- مسیر مالک فقط ۴ دستور است: keygen → build → generate-assetlinks → push
+- قانون پوش بعد از هر تسک رعایت شد (کامیت جدا برای تم و TWA)

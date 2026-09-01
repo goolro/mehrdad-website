@@ -23,50 +23,19 @@ The site already ships:
 
 ---
 
-## 2. TWA (Trusted Web Activity) — Android APK/AAB ✅ ready to build
+## 2. TWA (Trusted Web Activity) — Android APK/AAB ✅ prepared, awaiting owner keystore
 
 A TWA wraps the PWA in a real Android app **published on Google Play**, running fullscreen **without browser UI**. All updates deploy through the website (no Play Store review for content).
 
-### Prerequisites
-- Java JDK 17 + Android SDK (or use Android Studio)
-- Node.js ≥ 18
-- The site must be live on **https://mehrdad.ir**
+**→ The full build & publish runbook now lives in [docs/MOBILE_TWA.md](docs/MOBILE_TWA.md)** (keystore ownership rules, bubblewrap build, fingerprint extraction, the `scripts/generate-assetlinks.ts` generator, Play checklist, troubleshooting).
 
-### Build steps (5 minutes)
+Short version:
 
-```bash
-# 1. Install Bubblewrap CLI (Google's official TWA builder)
-npm install -g @bubblewrap/cli
-
-# 2. In the project root (where twa-manifest.json lives)
-bubblewrap init --manifest=https://mehrdad.ir/manifest.json
-#    → it can also import our twa-manifest.json directly
-
-# 3. Generate the signing key (keep android.keystore SAFE — never commit it)
-bubblewrap keygen
-
-# 4. Build release APK + Play Store AAB
-bubblewrap build
-#    → app-release-signed.apk  +  app-release-bundle.aab
-```
-
-### 5. Publish the Digital Asset Links (required — one time)
-
-Get your signing key's SHA-256 fingerprint:
-
-```bash
-keytool -list -v -keystore ./android.keystore -alias android
-```
-
-Put the fingerprint into **`public/.well-known/assetlinks.json`** (replace
-`REPLACE_WITH_YOUR_APP_SIGNING_CERT_SHA256_FINGERPRINT`) and make sure
-`https://mehrdad.ir/.well-known/assetlinks.json` is reachable.
-Then the app opens fullscreen with **no URL bar** and gets verified
-as the official app of the site.
-
-> Play Store uses "Play App Signing" — after first upload, copy the
-> **App signing key fingerprint** from Play Console → Setup → App signing
-> into assetlinks.json as well (keep both fingerprints in the array).
+1. `bubblewrap keygen` — create **your** signing keystore (never committed; `*.keystore` is gitignored)
+2. `bubblewrap init --manifest=https://mehrdad.ir/manifest.json` + `bubblewrap build` → APK + AAB
+3. `keytool -list -v … | grep SHA256:` → `bun scripts/generate-assetlinks.ts "<fingerprint>"`
+4. commit + deploy → `https://mehrdad.ir/.well-known/assetlinks.json` verifies the app
+5. Play Console upload (internal track first), then add the Play signing fingerprint alongside yours
 
 ---
 

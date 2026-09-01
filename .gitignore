@@ -55,3 +55,11 @@ server.log
 # database artifacts (local snapshots/backups — never publish)
 db/custom.backup-*.db
 *.pid
+
+# Android / TWA signing keys & build artifacts — NEVER commit these
+*.keystore
+*.jks
+*.apk
+*.aab
+.android/
+.bubblewrap/
