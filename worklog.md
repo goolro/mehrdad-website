@@ -234,3 +234,19 @@ Stage Summary:
 - همه‌چیز به‌جز کلید امضا آماده است — کلید عمداً نزد مالک می‌ماند (امنیت)
 - مسیر مالک فقط ۴ دستور است: keygen → build → generate-assetlinks → push
 - قانون پوش بعد از هر تسک رعایت شد (کامیت جدا برای تم و TWA)
+
+---
+Task ID: 8-V (post-outage verification)
+Agent: Z.ai Code (main)
+Task: صحت‌سنجی نهایی بعد از رفع وقفه — تأیید وضعیت Tasks 8/9/10 و پوش ریموت
+
+Work Log:
+- git: تاریخچه = ۳ کامیت تمیز (a3f083a baseline، 28925ed theme engine، 0513733 twa)؛ git ls-remote تأیید کرد ریموت main دقیقاً = لوکال (0513733) — پوش کامل است
+- امنیت: git log --all روی .env/بکاپ‌ها/pid خالی؛ git ls-files بدون فایل حساس؛ git grep بدون نه پسورد قدیمی (mehrdad-admin-2026) و نه پسورد جدید در هیچ فایل tracked
+- lint: پاک
+- مرورگر: ورود ادمین با پسورد جدید ✓ (UI بدون hint پسورد) | تب Theme دقیقاً ۵ تم ✓ | data-theme=winter اعمال ✓ | Dark mode ✓ | برگشت به default ✓ | کنسول صفر خطا ✓ | خروج ادمین ✓ | وبلاگ عمومی با فیلترهای دسته و کارت پست‌ها ✓ (کارت‌ها button هستند نه article)
+- اسکرین‌شات نهایی: analysis/verify_final_winter_dark.png (Dark + Winter + برف + ۵ کارت تم)
+
+Stage Summary:
+- Tasks 8 + 9 + 10 به‌طور کامل تایید شدند؛ ریپوی گیت‌هاب منبع حقیقت و هم‌سان لوکال است
+- وابستگی‌های مالک باقی‌مانده: ۱) rotate کردن توکن گیت‌هاب (در چت لو رفته)، ۲) keystore اندروید + SHA-256 برای assetlinks (مسیر ۴ دستوری در docs/MOBILE_TWA.md)
