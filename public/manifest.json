@@ -1,0 +1,55 @@
+{
+  "name": "Mehrdad ☼ Designer & Researcher",
+  "short_name": "Mehrdad",
+  "description": "Product design, AI solutions, startup consulting and insights — with a built-in AI assistant. طراحی محصول، هوش مصنوعی، مشاوره استارتاپ",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0a0a0f",
+  "theme_color": "#7c3aed",
+  "lang": "en",
+  "dir": "auto",
+  "categories": ["business", "news", "productivity"],
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Blog & Insights",
+      "short_name": "Blog",
+      "url": "/#blog",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "AI Assistant",
+      "short_name": "AI Chat",
+      "url": "/?chat=open",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Contact",
+      "short_name": "Contact",
+      "url": "/#contact",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}

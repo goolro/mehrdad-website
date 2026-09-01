@@ -1,0 +1,71 @@
+# ROADMAP — mehrdad.ir
+
+Last updated: 2026-09-01
+
+## Done
+
+- [x] Phase 0 — full audit (docs/AUDIT.md)
+- [x] Phase 1 — foundation: content model, design tokens, RTL shell, routes
+- [x] Phase 2 — content migration (82 posts, 17 comments, 138 media) with
+      date-reconstruction evidence chain + MIGRATION_REPORT + REDIRECTS
+- [x] Phase 3 — core site: Home, Work(+detail), Writing(+detail), Lab,
+      About, Contact + moderated comments
+- [x] Phase 4 — SEO: metadata, JSON-LD (Person/WebSite/Article), sitemap,
+      robots, RSS, legacy 301 layer
+- [x] Phase 5 — QA: browser-verified golden paths (desktop+mobile), sticky
+      footer, forms, comment moderation, redirects, no console errors
+- [x] Post-migration fixes: category-filter 500 (Prisma `some:` filter),
+      percent-encoded Persian category slugs decoded, Persian-slug article
+      404s (slug-candidates layer)
+- [x] Evidence-based re-dating of all 83 posts (Wayback CDX probes +
+      upload-path/comment/Jalali/LLM signals; 2019–2025 distribution)
+- [x] In-content legacy links internalized — 316 occurrences now route
+      inside the app; media mirrored locally (PDFs + MP4s)
+- [x] PWA complete: manifest, service worker, icons, install prompt,
+      shortcuts, iOS meta
+- [x] Admin panel: env-only auth (fail closed), content CRUD, comment
+      moderation, contact leads, theme setting, AI content tools
+- [x] GitHub baseline: public repo synced with one clean squashed commit;
+      secrets removed from tracking (docs/SECURITY.md incident log)
+
+## Next (prioritized)
+
+### P0 — current sprint (owner-approved 2026-09-01)
+- [ ] Theme engine on shared design tokens: exactly Default / Autumn /
+      Winter / Digital / Nowruz × independent Light/Dark; retire
+      Ocean/Forest/Sunset/Midnight (D-014)
+- [ ] TWA/Android packaging: assetlinks.json + build guide; signed build
+      awaits owner keystore (D-015)
+- [ ] Browser-locale language suggestion banner (EN default preserved)
+- [ ] EN translation loop for Persian-only archive posts
+
+### P1 — editorial
+- [ ] Owner review: publish/draft decision for post 7995 (smart-waste
+      startup financials, currently `draft`)
+- [ ] Curated tags (≤ 50) replacing the retired 4,872-tag dump
+- [ ] Alt-text completion for mirrored images (legacy coverage ~52%)
+- [ ] Import decision: 10 legacy web-stories as micro-notes (`kind=note`)
+- [ ] Featured images for top articles (currently first-body-image fallback)
+
+### P2 — content ops
+- [x] Wayback Machine cross-check of pre-2021 dates (completed in the
+      re-dating pass — 43 posts archived-anchored)
+- [ ] Writing → LinkedIn repurposing templates (per-article metadata ready)
+- [ ] RIVORA / Hokm / Shelem game project entry (needs owner input: status,
+      screenshots, repo links — audit §41/open items)
+
+### P3 — product
+- [ ] Newsletter (only when there is real demand)
+- [x] English version — shipped as the default language (D-013)
+- [ ] Breadcrumb JSON-LD + article OG images
+
+### P4 — future (do NOT build until real use case exists)
+- [ ] User accounts / saved state
+- [ ] Investment/partner pages (only with real traction)
+
+## Open decisions for the owner
+
+1. Password-protected post 7995 → publish or keep draft?
+2. Web-stories → import as notes or drop?
+3. Game project data (RIVORA/Hokm/Shelem) for a Work entry?
+4. LinkedIn profile URL for About/Contact cross-linking?

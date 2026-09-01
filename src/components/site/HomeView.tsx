@@ -1,0 +1,227 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useApp, pick } from './store';
+import { ui } from './i18n';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { ArrowRight, Sparkles, ChevronLeft, ChevronRight, Rocket, BrainCircuit, Code2, PenTool, Briefcase, Megaphone, Store, Lightbulb, FolderKanban, FileText } from 'lucide-react';
+
+const ICONS: Record<string, typeof Rocket> = {
+  Rocket, BrainCircuit, Code2, PenTool, Briefcase, Megaphone, Store, Lightbulb, Sparkles,
+};
+
+interface ServiceItem {
+  id: string; slug: string; titleEn: string; titleFa: string; descEn: string; descFa: string; icon: string;
+}
+interface ProjectItem {
+  id: string; slug: string; titleEn: string; titleFa: string; summaryEn: string; summaryFa: string; cover: string | null;
+}
+interface CategoryItem { id: string; slug: string; nameEn: string; nameFa: string; count: number }
+interface PostItem {
+  slug: string; titleEn: string; titleFa: string; excerptEn: string; excerptFa: string;
+  cover: string | null; date: string; categories: CategoryItem[];
+}
+
+export function HomeView() {
+  const { lang, setView, openPost, setChatOpen } = useApp();
+  const t = ui[lang];
+  const [data, setData] = useState<{
+    services: ServiceItem[];
+    projects: ProjectItem[];
+    stats: { posts: number; services: number; projects: number };
+  } | null>(null);
+  const [posts, setPosts] = useState<PostItem[]>([]);
+
+  useEffect(() => {
+    fetch('/api/site').then((r) => r.json()).then(setData).catch(() => {});
+    fetch('/api/posts?perPage=6').then((r) => r.json()).then((d) => setPosts(d.posts || [])).catch(() => {});
+  }, []);
+
+  const stats = data?.stats || { posts: 83, services: 8, projects: 5 };
+
+  return (
+    <div className="flex flex-col">
+      {/* ── Hero ── */}
+      <section className="relative overflow-hidden">
+        <div className="pointer-events-none absolute inset-0 -z-10">
+          <div className="absolute -top-24 start-1/4 h-96 w-96 rounded-full bg-violet-600/20 blur-3xl" />
+          <div className="absolute top-32 end-0 h-80 w-80 rounded-full bg-fuchsia-600/10 blur-3xl" />
+        </div>
+        <div className="mx-auto flex max-w-7xl flex-col items-center px-4 py-20 text-center sm:px-6 md:py-28">
+          <Badge variant="outline" className="mb-5 border-violet-500/40 bg-violet-600/10 px-4 py-1.5 text-sm text-violet-600 dark:text-violet-400">
+            ☼ {t.hero.badge}
+          </Badge>
+          <h1 className="max-w-4xl text-4xl font-extrabold leading-tight tracking-tight sm:text-5xl md:text-6xl">
+            {t.hero.title1}{' '}
+            <span className="bg-gradient-to-r from-violet-600 to-fuchsia-500 bg-clip-text text-transparent">
+              {t.hero.title2}
+            </span>
+          </h1>
+          <p className="mt-6 max-w-2xl text-lg text-muted-foreground">{t.hero.sub}</p>
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+            <Button
+              size="lg"
+              onClick={() => setView('services')}
+              className="bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white hover:from-violet-700 hover:to-fuchsia-700"
+            >
+              {t.hero.cta1}
+              <ArrowRight className="ms-2 h-4 w-4 rtl:rotate-180" />
+            </Button>
+            <Button size="lg" variant="outline" onClick={() => setChatOpen(true)}>
+              <Sparkles className="me-2 h-4 w-4" />
+              {t.hero.cta2}
+            </Button>
+          </div>
+
+          {/* stats */}
+          <div className="mt-14 grid w-full max-w-3xl grid-cols-2 gap-4 sm:grid-cols-4">
+            {[
+              { value: `${stats.posts}+`, label: t.stats.articles },
+              { value: String(stats.services), label: t.stats.services },
+              { value: String(stats.projects), label: t.stats.projects },
+              { value: '2', label: t.stats.languages },
+            ].map((s) => (
+              <div key={s.label} className="rounded-2xl border border-border bg-card/60 p-4 backdrop-blur">
+                <div className="text-3xl font-extrabold text-violet-600 dark:text-violet-400">{s.value}</div>
+                <div className="mt-1 text-xs text-muted-foreground">{s.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Services ── */}
+      <section className="mx-auto w-full max-w-7xl px-4 py-14 sm:px-6">
+        <SectionHeader title={t.sections.servicesTitle} sub={t.sections.servicesSub} />
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {(data?.services || []).slice(0, 8).map((s) => {
+            const Icon = ICONS[s.icon] || Sparkles;
+            return (
+              <button
+                key={s.id}
+                onClick={() => setView('services')}
+                className="group rounded-2xl border border-border bg-card p-5 text-start transition-all hover:-translate-y-1 hover:border-violet-500/50 hover:shadow-lg hover:shadow-violet-600/10"
+              >
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-violet-600/10 text-violet-600 dark:text-violet-400">
+                  <Icon className="h-5 w-5" />
+                </div>
+                <h3 className="mt-4 font-bold">{pick(lang, s.titleEn, s.titleFa)}</h3>
+                <p className="mt-2 line-clamp-3 text-sm text-muted-foreground">{pick(lang, s.descEn, s.descFa)}</p>
+              </button>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* ── Projects ── */}
+      <section className="border-y border-border/40 bg-muted/30">
+        <div className="mx-auto w-full max-w-7xl px-4 py-14 sm:px-6">
+          <SectionHeader title={t.sections.projectsTitle} sub={t.sections.projectsSub} />
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {(data?.projects || []).map((p) => (
+              <button
+                key={p.id}
+                onClick={() => setView('projects')}
+                className="group flex flex-col rounded-2xl border border-border bg-card p-5 text-start transition-all hover:-translate-y-1 hover:border-violet-500/50 hover:shadow-lg hover:shadow-violet-600/10"
+              >
+                <div className="flex items-center gap-2 text-xs font-semibold text-violet-600 dark:text-violet-400">
+                  <FolderKanban className="h-4 w-4" />
+                  {t.projects.seeking}
+                </div>
+                <h3 className="mt-3 font-bold leading-snug">{pick(lang, p.titleEn, p.titleFa)}</h3>
+                <p className="mt-2 line-clamp-3 text-sm text-muted-foreground">{pick(lang, p.summaryEn, p.summaryFa)}</p>
+                <span className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-violet-600 dark:text-violet-400">
+                  {t.sections.readMore}
+                  <ChevronRight className="h-4 w-4 rtl:rotate-180" />
+                </span>
+              </button>
+            ))}
+            <button
+              onClick={() => setView('contact')}
+              className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-violet-500/40 bg-violet-600/5 p-5 text-center transition-colors hover:bg-violet-600/10"
+            >
+              <div className="text-2xl">🤝</div>
+              <h3 className="mt-2 font-bold text-violet-600 dark:text-violet-400">{t.projects.interested}</h3>
+              <p className="mt-1 text-sm text-muted-foreground">{t.contact.sub}</p>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Featured posts ── */}
+      <section className="mx-auto w-full max-w-7xl px-4 py-14 sm:px-6">
+        <SectionHeader title={t.sections.featuredTitle} sub={t.sections.featuredSub} action={{
+          label: t.sections.viewAll,
+          onClick: () => setView('blog'),
+        }} />
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {posts.map((p) => (
+            <button
+              key={p.slug}
+              onClick={() => openPost(p.slug)}
+              className="group overflow-hidden rounded-2xl border border-border bg-card text-start transition-all hover:-translate-y-1 hover:shadow-lg"
+            >
+              <div className="aspect-video w-full overflow-hidden bg-muted">
+                {p.cover ? (
+                   
+                  <img src={p.cover} alt="" className="h-full w-full object-cover transition-transform group-hover:scale-105" loading="lazy" />
+                ) : (
+                  <div className="flex h-full items-center justify-center">
+                    <FileText className="h-10 w-10 text-muted-foreground/40" />
+                  </div>
+                )}
+              </div>
+              <div className="p-4">
+                <div className="text-xs text-muted-foreground">
+                  {new Date(p.date).toLocaleDateString(lang === 'fa' ? 'fa-IR' : 'en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
+                  {p.categories[0] && <> · {pick(lang, p.categories[0].nameEn, p.categories[0].nameFa)}</>}
+                </div>
+                <h3 className="mt-2 line-clamp-2 font-bold leading-snug">{pick(lang, p.titleEn, p.titleFa)}</h3>
+                <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">{pick(lang, p.excerptEn, p.excerptFa)}</p>
+              </div>
+            </button>
+          ))}
+        </div>
+      </section>
+
+      {/* ── AI CTA ── */}
+      <section className="mx-auto w-full max-w-7xl px-4 pb-20 sm:px-6">
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-violet-700 via-violet-600 to-fuchsia-600 px-6 py-14 text-center text-white sm:px-12">
+          <div className="pointer-events-none absolute -end-16 -top-16 h-64 w-64 rounded-full bg-white/10 blur-2xl" />
+          <Sparkles className="mx-auto h-10 w-10" />
+          <h2 className="mt-4 text-3xl font-extrabold sm:text-4xl">{t.sections.aiCtaTitle}</h2>
+          <p className="mx-auto mt-3 max-w-xl text-white/85">{t.sections.aiCtaSub}</p>
+          <Button
+            size="lg"
+            variant="secondary"
+            className="mt-7 bg-white text-violet-700 hover:bg-white/90"
+            onClick={() => setChatOpen(true)}
+          >
+            {t.sections.aiCtaBtn} ✦
+          </Button>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function SectionHeader({ title, sub, action }: { title: string; sub: string; action?: { label: string; onClick: () => void } }) {
+  return (
+    <div className="mb-8 flex items-end justify-between gap-4">
+      <div>
+        <h2 className="text-2xl font-extrabold sm:text-3xl">{title}</h2>
+        <p className="mt-1 text-sm text-muted-foreground sm:text-base">{sub}</p>
+      </div>
+      {action && (
+        <Button variant="ghost" size="sm" onClick={action.onClick} className="whitespace-nowrap text-violet-600 dark:text-violet-400">
+          {action.label}
+          <ChevronRight className="ms-1 h-4 w-4 rtl:rotate-180" />
+        </Button>
+      )}
+    </div>
+  );
+}
+
+export { SectionHeader };
+export { ChevronLeft };

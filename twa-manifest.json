@@ -1,0 +1,69 @@
+{
+  "packageId": "ir.mehrdad.twa",
+  "host": "mehrdad.ir",
+  "name": "Mehrdad ☼ Designer & Researcher",
+  "launcherName": "Mehrdad",
+  "display": "standalone",
+  "themeColor": "#7c3aed",
+  "themeColorDark": "#7c3aed",
+  "navigationColor": "#0a0a0f",
+  "navigationColorDark": "#0a0a0f",
+  "navigationDividerColor": "#0a0a0f",
+  "navigationDividerColorDark": "#0a0a0f",
+  "backgroundColor": "#0a0a0f",
+  "enableNotifications": true,
+  "startUrl": "/",
+  "iconUrl": "https://mehrdad.ir/icons/icon-512.png",
+  "maskableIconUrl": "https://mehrdad.ir/icons/icon-maskable-512.png",
+  "splashScreenFadeOutDuration": 300,
+  "signingKey": {
+    "path": "./android.keystore",
+    "alias": "android"
+  },
+  "appVersionName": "1.0.0",
+  "appVersionCode": 1,
+  "shortcuts": [
+    {
+      "name": "Blog & Insights",
+      "short_name": "Blog",
+      "url": "/#blog",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "AI Assistant",
+      "short_name": "AI Chat",
+      "url": "/?chat=open",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Contact",
+      "short_name": "Contact",
+      "url": "/#contact",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ],
+  "fallbackType": "customtabs",
+  "features": {
+    "locationDelegation": {
+      "enabled": true
+    },
+    "playBilling": {
+      "enabled": false
+    }
+  },
+  "alphaDependencies": {
+    "enabled": false
+  },
+  "enableSiteSettingsShortcut": true,
+  "isChromeOSOnly": false,
+  "isMetaQuest": false,
+  "fullScopeUrl": "https://mehrdad.ir/",
+  "minSdkVersion": 21,
+  "orientation": "portrait",
+  "fingerprints": {
+    "sha256Fingerprint": "REPLACE_WITH_YOUR_APP_SIGNING_CERT_SHA256_FINGERPRINT"
+  },
+  "additionalTrustedOrigins": [],
+  "retainedBundles": [],
+  "appVersion": "1.0.0"
+}
