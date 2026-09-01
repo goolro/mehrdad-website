@@ -27,6 +27,11 @@ Last updated: 2026-09-01
       moderation, contact leads, theme setting, AI content tools
 - [x] GitHub baseline: public repo synced with one clean squashed commit;
       secrets removed from tracking (docs/SECURITY.md incident log)
+- [x] Forward Deployed Engineering — the brand's core service: dedicated
+      bilingual experience page (#fde) with roles/Process/Deliverables/AI
+      loop/comparison/scenario, highlighted Core-Service card in Services,
+      page-context-aware AI assistant (suggested questions + grounded
+      answers), per-language SEO metadata (owner directive 2026-09-01)
 
 ## Next (prioritized)
 

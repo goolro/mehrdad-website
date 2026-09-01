@@ -22,8 +22,9 @@ export function PwaClient() {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    // register service worker
-    if ('serviceWorker' in navigator) {
+    // register service worker — production only. In dev, chunk hashes change on
+    // every rebuild and a cached shell/statics SW causes hydration crashes.
+    if ('serviceWorker' in navigator && process.env.NODE_ENV === 'production') {
       navigator.serviceWorker.register('/sw.js').catch(() => {});
     }
 

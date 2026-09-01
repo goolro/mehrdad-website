@@ -1,5 +1,5 @@
 /* Mehrdad.ir Service Worker — PWA offline shell + smart caching */
-const CACHE_VERSION = 'mehrdad-v1';
+const CACHE_VERSION = 'mehrdad-v2';
 const OFFLINE_CACHE = 'mehrdad-offline-v1';
 
 // Pre-cache the app shell

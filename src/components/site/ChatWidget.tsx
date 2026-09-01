@@ -14,7 +14,7 @@ interface Msg {
 }
 
 export function ChatWidget() {
-  const { lang, chatOpen, setChatOpen } = useApp();
+  const { lang, chatOpen, setChatOpen, view } = useApp();
   const t = ui[lang];
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState('');
@@ -43,7 +43,7 @@ export function ChatWidget() {
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: msg, lang, sessionId: sessionIdRef.current }),
+        body: JSON.stringify({ message: msg, lang, sessionId: sessionIdRef.current, context: view === 'fde' ? 'fde' : undefined }),
       });
       const data = await res.json();
       if (data.sessionId) sessionIdRef.current = data.sessionId;
@@ -54,6 +54,8 @@ export function ChatWidget() {
       setLoading(false);
     }
   }
+
+  const showSuggestions = chatOpen && view === 'fde' && !loading && !messages.some((m) => m.role === 'user');
 
   if (!chatOpen) {
     return (
@@ -129,6 +131,23 @@ export function ChatWidget() {
           )}
         </div>
       </ScrollArea>
+
+      {showSuggestions && (
+        <div className="border-t border-border px-3 pt-2 pb-1" aria-label={lang === 'fa' ? 'پیشنهاد سوال' : 'Suggested questions'}>
+          <div className="flex max-h-24 flex-wrap gap-1.5 overflow-y-auto">
+            {t.fde.suggestions.map((q) => (
+              <button
+                key={q}
+                onClick={() => send(q)}
+                dir="auto"
+                className="rounded-full border border-violet-500/40 bg-violet-600/5 px-2.5 py-1 text-xs text-violet-700 transition-colors hover:bg-violet-600/15 dark:text-violet-300"
+              >
+                {q}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       <form
         onSubmit={(e) => {

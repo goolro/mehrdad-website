@@ -10,6 +10,7 @@ import { ProjectsView } from '@/components/site/ProjectsView';
 import { BlogView, PostDetail } from '@/components/site/BlogView';
 import { AboutView } from '@/components/site/AboutView';
 import { ContactView } from '@/components/site/ContactView';
+import { FdeView } from '@/components/site/FdeView';
 import { AdminView } from '@/components/site/AdminView';
 import { ChatWidget } from '@/components/site/ChatWidget';
 import { LangBanner } from '@/components/site/LangBanner';
@@ -58,8 +59,8 @@ export default function Page() {
       const h = window.location.hash.replace(/^#/, '');
       if (h.startsWith('blog/')) {
         useApp.setState({ view: 'blog', currentPostSlug: h.slice(5) });
-      } else if (['blog', 'contact', 'about', 'services', 'projects', 'home', 'admin'].includes(h)) {
-        useApp.setState({ view: h === 'home' ? 'home' : (h as 'blog' | 'contact' | 'about' | 'services' | 'projects' | 'admin'), currentPostSlug: null });
+      } else if (['blog', 'contact', 'about', 'services', 'projects', 'fde', 'home', 'admin'].includes(h)) {
+        useApp.setState({ view: h === 'home' ? 'home' : (h as 'blog' | 'contact' | 'about' | 'services' | 'projects' | 'fde' | 'admin'), currentPostSlug: null });
       }
     }
     onHash();
@@ -78,6 +79,7 @@ export default function Page() {
         {view === 'blog' && (currentPostSlug ? <PostDetail slug={currentPostSlug} /> : <BlogView />)}
         {view === 'about' && <AboutView />}
         {view === 'contact' && <ContactView />}
+        {view === 'fde' && <FdeView />}
         {view === 'admin' && <AdminView />}
       </main>
       <Footer />

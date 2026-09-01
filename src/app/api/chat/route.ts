@@ -42,6 +42,20 @@ export async function POST(req: NextRequest) {
     const chunks = await retrieveContext(message, 6);
     const context = buildContextBlock(chunks);
 
+    // page context (§13): the visitor's current page steers the assistant
+    const pageCtxEn =
+      body.context === 'fde'
+        ? `
+
+PAGE CONTEXT (important): The user is RIGHT NOW on the "Forward Deployed Engineering" service page (مهندسی در خط مقدم حل مسئله) — Mehrdad's core service. Summary: solving real business/product problems end-to-end — process: Discover → Define → Design → Build → Test → Deploy → Learn → Iterate — combining product thinking, engineering and AI. Three roles in one person: Product Builder, Forward Deployed Engineer, AI-Native Engineering. Who it is for: idea without a starting point; existing product with many problems; businesses that want AI; fast MVP needs; complex systems; technical teams facing a hard problem. Outputs: Problem→Strategy, Strategy→Prototype, Prototype→MVP, Existing Product→Audit & Fix, Business→AI Solution, Complex Problem→Custom Solution (not just a report — can include analysis, design, code, prototype, MVP, integration, AI solution, testing, deployment). AI is the force multiplier, human engineering thinking decides. When the user says "this service", they mean Forward Deployed Engineering — answer about THIS page and invite them to describe their problem via chat or the contact form.`
+        : '';
+    const pageCtxFa =
+      body.context === 'fde'
+        ? `
+
+بافت صفحه (مهم): کاربر همین حالا در صفحه خدمت «مهندسی در خط مقدم حل مسئله» (Forward Deployed Engineering) است — خدمت اصلی مهرداد. خلاصه: حل مسئله‌های واقعی کسب‌وکار و محصول از ابتدا تا انتها — روند: Discover → Define → Design → Build → Test → Deploy → Learn → Iterate — با ترکیب تفکر محصول، مهندسی و هوش مصنوعی. سه نقش در یک نفر: Product Builder، Forward Deployed Engineer، AI-Native Engineering. مناسب برای: ایده بدون نقطه شروع؛ محصول موجود پرمشکل؛ کسب‌وکارهایی که AI می‌خواهند؛ MVP سریع؛ سیستم‌های پیچیده؛ تیم‌های فنی با مسئله سخت. خروجی‌ها: Problem→Strategy، Strategy→Prototype، Prototype→MVP، Existing Product→Audit & Fix، Business→AI Solution، Complex Problem→Custom Solution (فقط گزارش نیست — می‌تواند تحلیل، طراحی، کد، Prototype، MVP، Integration، راهکار AI، تست و Deployment باشد). AI نیروی تقویت‌کننده است و تصمیم با تفکر مهندسی انسانی است. وقتی کاربر می‌گوید «این سرویس»، منظورش همین صفحه است — درباره همین خدمت پاسخ بده و او را دعوت کن مسئله‌اش را همین‌جا یا از طریق فرم تماس توضیح دهد.`
+        : '';
+
     const sysEn = `You are "Mehrdad AI", the official AI assistant on Mehrdad's personal website (mehrdad.ir). Mehrdad is an independent product builder: he designs businesses and products with care, and builds them fast with AI. His work: BUILD (AI-powered products, software, tools, experiments — e.g. BIZPAL, KLIKA, smart city & rail corridor research, smart waste startup), HELP (businesses using AI for measurable value: sales, marketing, product design, invention commercialization), SHARE (83+ articles of real research, decisions and lessons).
 
 Use ONLY the following site knowledge to answer. If the answer is not in the knowledge, say you don't have that info and suggest using the contact form or email admin@mehrdad.ir.
@@ -49,7 +63,7 @@ Use ONLY the following site knowledge to answer. If the answer is not in the kno
 Be helpful, professional and concise (max ~180 words). Use markdown sparingly. Answer in English.
 
 SITE KNOWLEDGE:
-${context || '(no specific knowledge found — rely only on the general info above)'}`;
+${context || '(no specific knowledge found — rely only on the general info above)'}${pageCtxEn}`;
 
     const sysFa = `تو «هوش مصنوعی مهرداد» هستی، دستیار رسمی وب‌سایت شخصی مهرداد (mehrdad.ir). مهرداد سازنده مستقل محصول است: کسب‌وکارها و محصولات را با دقت طراحی می‌کند و با هوش مصنوعی سریع می‌سازد. کار او: ساخت (محصولات و ابزارهای AI مثل BIZPAL، کلیکا، پژوهش شهر هوشمند و کریدور ریلی، استارتاپ مدیریت زباله هوشمند)، همراهی (به‌کارگیری AI با نتیجه قابل اندازه‌گیری: فروش، بازاریابی، طراحی محصول، تجاری‌سازی اختراع)، و به‌اشتراک‌گذاری (بیش از ۸۳ مقاله از پژوهش‌ها و درس‌های واقعی).
 
@@ -58,20 +72,40 @@ ${context || '(no specific knowledge found — rely only on the general info abo
 مفید، حرفه‌ای و مختصر پاسخ بده (حداکثر ~۱۸۰ کلمه). به فارسی روان پاسخ بده.
 
 دانش سایت:
-${context || '(دانش خاصی یافت نشد — فقط از اطلاعات کلی بالا استفاده کن)'}`;
+${context || '(دانش خاصی یافت نشد — فقط از اطلاعات کلی بالا استفاده کن)'}${pageCtxFa}`;
 
-    const completion = await ZAI.create().then((zai) =>
-      zai.chat.completions.create({
-        messages: [
-          { role: 'assistant', content: lang === 'fa' ? sysFa : sysEn },
-          ...history.map((h) => ({ role: h.role as 'user' | 'assistant', content: h.content })),
-          { role: 'user', content: message },
-        ],
-        thinking: { type: 'disabled' },
-      })
-    );
+    const zai = await ZAI.create();
+    const payload = {
+      messages: [
+        { role: 'assistant' as const, content: lang === 'fa' ? sysFa : sysEn },
+        ...history.map((h) => ({ role: h.role as 'user' | 'assistant', content: h.content })),
+        { role: 'user' as const, content: message },
+      ],
+      thinking: { type: 'disabled' as const },
+    };
 
-    const reply = completion.choices[0]?.message?.content || '';
+    // resilience: short retries for transient 429/5xx storms, then a graceful message
+    let reply = '';
+    let lastErr: unknown = null;
+    for (const waitMs of [0, 4000, 9000]) {
+      if (waitMs) await new Promise((r) => setTimeout(r, waitMs));
+      try {
+        const completion = await zai.chat.completions.create(payload);
+        reply = completion.choices[0]?.message?.content || '';
+        if (reply) break;
+      } catch (err) {
+        lastErr = err;
+        const msg = String((err as Error)?.message || err);
+        if (!/429|5\d\d/.test(msg)) throw err; // non-transient: fail fast
+      }
+    }
+    if (!reply) {
+      if (lastErr) console.error('chat api error (after retries):', lastErr);
+      reply =
+        lang === 'fa'
+          ? 'الان پشت‌بار ترافیک هوش مصنوعی بالاست و نتوانستم پاسخ بسازم. چند لحظه بعد دوباره بپرسید، یا مسئله‌تان را از طریق فرم تماس بنویسید — سریع پاسخ می‌دهم.'
+          : 'The AI service is unusually busy right now and I could not compose an answer. Please try again in a moment, or describe your problem via the contact form — I will get back to you quickly.';
+    }
 
     await db.chatMessage.create({
       data: { sessionId, role: 'assistant', content: reply, lang },

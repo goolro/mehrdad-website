@@ -4,7 +4,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { Lang } from './i18n';
 
-export type View = 'home' | 'services' | 'projects' | 'blog' | 'about' | 'contact' | 'admin';
+export type View = 'home' | 'services' | 'projects' | 'blog' | 'about' | 'contact' | 'fde' | 'admin';
 export type ColorMode = 'light' | 'dark';
 
 interface AppState {

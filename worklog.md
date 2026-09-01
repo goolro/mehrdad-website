@@ -280,3 +280,29 @@ Stage Summary:
 - باگ دیپ‌لینک مقاله (کارت‌های صفحه اصلی بی‌اثر + URL غیرقابل‌اشتراک) رفع و در CHANGELOG ثبت شد
 - وضعیت ترجمه نهایی: ۸۲/۸۲ پست منتشرشده دوزبانه؛ فقط پیش‌نویس رمزدار زباله هوشمند منتظر تصمیم مالک (P1)
 - باقی‌مانده‌های مالک: rotate توکن گیت‌هاب، keystore اندروید + SHA-256 برای assetlinks، تصمیم انتشار پست 7995
+
+---
+Task ID: 12
+Agent: Z.ai Code (main)
+Task: دستور مالک — پیاده‌سازی سرویس «Forward Deployed Engineering / مهندسی در خط مقدم حل مسئله» به‌عنوان خدمت اصلی برند (§1-§20)
+
+Work Log:
+- قانون §17 رعایت شد: ServicesView/ChatWidget/api-chat/schema/i18n/BRAND_STRATEGY/ROADMAP خوانده شد؛ UI_UX_SPECIFICATION.md در ریپو وجود ندارد (گزارش شد)؛ از کامپوننت‌های موجود (Button/Badge/Dialog/tokens) استفاده شد، هیچ جزء تکراری ساخته نشد؛ عبارت ممنوع «Designer & Researcher» در هیچ متنی نیامده
+- i18n: فضای‌نام کامل fde (هر §3-§13) به EN و FA + کلیدهای services.explore/core — همه متون دقیقاً طبق دستور مالک (برچسب‌های EN روند، توضیحات فارسی)
+- store/page: ویو fde + هش‌روت #fde (دیپ‌لینک‌پذیر، هم‌سو با فیکس Task 11)
+- FdeView.tsx: هیرو بزرگ + پیام اصلی (بلوک نقل‌قول)، «چیست؟»، سه کارت نقش 01/02/03 با چیپ‌های focus، لنگر بصری «Real-World Problem → Working Solution» (فلش RTL-aware)، تایم‌لاین تعاملی ۸ مرحله‌ای (کلیک/هاور/کیبورد، tablist + aria-live)، ۶ کارت «برای چه کسانی»، ۶ کارت خروجی با فلش، بخش ویژه AI (گرادیان، چیپ‌های ۱۰گانه، نوت انسانی، دیاگرام عمودی ۶مرحله‌ای Human/AI)، مقایسه Traditional vs FDE (دو ردیف flow)، سناریوی موردی ۷مرحله‌ای، CTA پایانی — Reveal با IntersectionObserver و motion-reduce:transition-none
+- ServicesView: کارت FDE برجسته (بورد گرادیان، بج ★ خدمت اصلی، تگ‌ها، CTA «مشاهده جزئیات» → #fde) — هماهنگ با گرید ولی متمایز (2 ستون عرض)
+- DB: analysis/add_fde_service.ts (idempotent، upsert با slug) اجرا شد — سرویس اول (order 0)، آیکون Compass
+- AI Context (§13): ChatWidget چیپ‌های ۶ سوال پیشنهادی (فقط در #fde تا اولین پیام کاربر) + ارسال context:'fde'؛ /api/chat بلاک PAGE CONTEXT دوزبانه به system prompt اضافه می‌کند
+- SEO (§16): عنوان و meta-description دوزبانه در FdeView (با re-assert بعد از hydration چون head-manager نکست عنوان را ریست می‌کرد)
+- مقاوم‌سازی چت: retry کوتاه 429/5xx + پیام شایسته دوزبانه به‌جای خطای خام (طوفان 429 حین تست رخ داد)
+- باگ کشف‌شده حین تست: کرش client-side در پروفایل مرورگر پایدار (agent-browser) بعد از ری‌بیلدهای متوالی — ریشه: SW قدیمی PWA با کش شِل در حالت dev (Playwright با context تمیز و state یکسان سالم بود) → فیکس: ثبت SW فقط در production (PwaClient) + CACHE_VERSION v2؛ کوک کهنه HMR هم پاکسازی شد
+- تست §18: EN (هر ۱۰ سکشن ✓، تایم‌لاین با کلیک aria-selected ✓)، FA (RTL + تمام متون فارسی + عنوان SEO فارسی ✓)، Dark/Light ✓، تبلت 768 و موبایل 390 (بدون overflow ✓)، کارت Services → #fde ✓، فوتر انتهای صفحه بلند ✓، کنسول پاک ✓، lint پاک ✓، اسکرین‌شات‌ها (EN روشن، FA دارک دسکتاپ/میانه، موبایل دارک)
+- تست AI Context زنده: زیرساخت LLM در کل بازه تست 429 می‌داد → مسیر کامل API (session/RAG/پیام شایسته) تأیید شد؛ payload شامل context:'fde' بودن چک شد؛ تست پاسخ زنده LLM بعد از سردشدن دوباره اجرا می‌شود
+- مستندات: ROADMAP Done + CHANGELOG [Unreleased] (Added/Fixed) به‌روزرسانی شد
+
+Stage Summary:
+- FDE به‌عنوان امضای حرفه‌ای برند پیاده شد: کارت برجسته در Services → صفحه تجربه اختصاصی #fde با کل روایت «مسئله → طراحی → ساخت با Engineering+AI → تست → Deploy → یادگیری → تکرار»
+- دستیار AI حالا صفحه‌آگاه است (چیپ پیشنهادی + پاسخ grounded روی سرویس)
+- SW فقط production ثبت می‌شود — کلاس باگ dev-crash حذف شد
+- باقی‌مانده برای پاسخ زنده LLM: وابسته به رفع 429 سرویس (خارج از کنترل کد)

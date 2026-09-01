@@ -5,6 +5,34 @@ All notable changes to mehrdad.ir. Format: Keep-a-Changelog-ish, newest first.
 ## [Unreleased]
 
 ### Added
+- **Forward Deployed Engineering service (owner directive)**: the brand's
+  new core service, built as a full experience — not a plain card:
+  - `#fde` dedicated bilingual page (`FdeView.tsx`): hero with the
+    "You don't need to know what to build — you need to know what problem
+    to solve" message, What-is-FDE, three-roles composition
+    (Product Builder / Forward Deployed Engineer / AI-Native Engineering)
+    with the `Real-World Problem → Working Solution` visual anchor,
+    interactive 8-stage process timeline (Discover→…→Iterate, click/hover/
+    keyboard), 6 "who is it for" cards, 6 transformation deliverables,
+    special AI section (`AI is not the replacement. It is the force
+    multiplier.` + Human/AI loop diagram), traditional-vs-FDE comparison
+    flows, a real scenario case flow, and a big closing CTA. Subtle
+    IntersectionObserver reveals (reduced-motion safe), RTL/LTR aware,
+    token-based dark/light.
+  - Highlighted Core-Service card in Services (gradient border, ★ badge,
+    tags `Product/Engineering/AI/Problem Solving`, `Explore this service`
+    CTA → `#fde`); record added to the DB (`analysis/add_fde_service.ts`,
+    idempotent, placed first).
+  - **Page-context-aware AI assistant (§13)**: while on `#fde` the chat
+    widget shows 6 suggested questions (bilingual) and sends
+    `context:'fde'`; `/api/chat` appends a grounded FDE briefing to the
+    system prompt (EN/FA) so "this service" questions answer about the
+    page.
+  - Per-language SEO metadata (§16): title + description switch with the
+    UI language and restore on leave.
+  - Chat resilience: short 429/5xx retry with a graceful bilingual
+    "service busy" reply instead of a raw error (LLM throttling storm
+    observed during testing).
 - **Brand positioning everywhere (Tasks 11, per BRAND_STRATEGY)**: the
   approved slogan — «کسب‌وکار و محصولت رو با دقت طراحی می‌کنم، و با AI
   سریع می‌سازمش» / "I design businesses and products with care, and build
@@ -38,6 +66,10 @@ All notable changes to mehrdad.ir. Format: Keep-a-Changelog-ish, newest first.
   browser tests (`analysis/test_lang_banner.ts`).
 
 ### Fixed
+- **PWA service worker registered in production only** (`PwaClient`);
+  cache version bumped to `mehrdad-v2`. In dev, rebuild-changing chunk
+  hashes + a cached shell SW caused full-load hydration crashes
+  (reproduced via persistent-profile browser; clean contexts were fine).
 - **Navigation hash sync + article deep links**: clicking any post card now
   switches to the article AND writes `#blog/<slug>` to the URL (previously
   the URL stayed stale, so articles could not be shared/bookmarked, and
