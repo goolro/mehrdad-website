@@ -38,6 +38,14 @@ All notable changes to mehrdad.ir. Format: Keep-a-Changelog-ish, newest first.
   browser tests (`analysis/test_lang_banner.ts`).
 
 ### Fixed
+- **Navigation hash sync + article deep links**: clicking any post card now
+  switches to the article AND writes `#blog/<slug>` to the URL (previously
+  the URL stayed stale, so articles could not be shared/bookmarked, and
+  featured-post cards on the homepage did nothing at all — `openPost` never
+  set the view). Nav links, "Back to blog" and "View all" also sync the
+  hash; Persian slugs stay percent-encoded and resolve via slugCandidates.
+  Verified: home → featured article, direct `#blog/<fa-slug>` load,
+  EN/FA (RTL) article render, zero console errors.
 - **Dark-mode / RTL first-paint flash** (Theme Engine known limitation):
   inline synchronous boot script in `layout.tsx` applies the persisted
   `.dark` class, `fa→rtl` direction and the last-known theme cache

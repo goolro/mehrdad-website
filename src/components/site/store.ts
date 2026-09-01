@@ -34,9 +34,21 @@ export const useApp = create<AppState>()(
       theme: 'default',
       mode: 'light',
       setLang: (lang) => set({ lang }),
-      setView: (view) => set({ view, currentPostSlug: null }),
-      openPost: (slug) => set({ currentPostSlug: slug }),
-      closePost: () => set({ currentPostSlug: null }),
+      setView: (view) => {
+        set({ view, currentPostSlug: null });
+        // keep the URL hash in sync so every view is shareable/deep-linkable
+        if (typeof window !== 'undefined') window.location.hash = view;
+      },
+      openPost: (slug) => {
+        set({ view: 'blog', currentPostSlug: slug });
+        // deep-linkable article URL (#blog/<slug>) — also makes card clicks
+        // work from any view (home featured posts, related articles, ...)
+        if (typeof window !== 'undefined') window.location.hash = `blog/${slug}`;
+      },
+      closePost: () => {
+        set({ currentPostSlug: null });
+        if (typeof window !== 'undefined') window.location.hash = 'blog';
+      },
       setChatOpen: (chatOpen) => set({ chatOpen }),
       setTheme: (theme) => set({ theme }),
       setMode: (mode) => set({ mode }),
