@@ -2,12 +2,24 @@
 
 import { useApp, pick } from './store';
 import { ui } from './i18n';
+import type { Lang } from './i18n';
 import { Button } from '@/components/ui/button';
 import { Lock, Moon, Sun } from 'lucide-react';
 
 export function Header() {
   const { lang, setLang, view, setView, setChatOpen, mode, setMode } = useApp();
   const t = ui[lang];
+
+  /**
+   * Explicit language choice — remembered so the browser-locale
+   * suggestion banner (LangBanner.tsx) never appears again.
+   */
+  const chooseLang = (l: Lang) => {
+    try {
+      localStorage.setItem('mehrdad-lang-chosen', '1');
+    } catch {}
+    setLang(l);
+  };
 
   const navItems: { key: 'home' | 'services' | 'projects' | 'blog' | 'about' | 'contact'; label: string }[] = [
     { key: 'home', label: t.nav.home },
@@ -53,7 +65,7 @@ export function Header() {
         <div className="flex items-center gap-2">
           <div className="flex items-center rounded-lg border border-border p-0.5 text-xs font-semibold">
             <button
-              onClick={() => setLang('en')}
+              onClick={() => chooseLang('en')}
               className={`rounded-md px-2 py-1 transition-colors ${
                 lang === 'en' ? 'bg-violet-600 text-white' : 'text-muted-foreground hover:text-foreground'
               }`}
@@ -61,7 +73,7 @@ export function Header() {
               EN
             </button>
             <button
-              onClick={() => setLang('fa')}
+              onClick={() => chooseLang('fa')}
               className={`rounded-md px-2 py-1 transition-colors ${
                 lang === 'fa' ? 'bg-violet-600 text-white' : 'text-muted-foreground hover:text-foreground'
               }`}

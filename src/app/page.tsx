@@ -12,6 +12,7 @@ import { AboutView } from '@/components/site/AboutView';
 import { ContactView } from '@/components/site/ContactView';
 import { AdminView } from '@/components/site/AdminView';
 import { ChatWidget } from '@/components/site/ChatWidget';
+import { LangBanner } from '@/components/site/LangBanner';
 import { ThemeBackground } from '@/components/site/ThemeBackground';
 import { getTheme } from '@/lib/themes';
 
@@ -81,6 +82,7 @@ export default function Page() {
       </main>
       <Footer />
       <ChatWidget />
+      <LangBanner />
     </div>
   );
 }
