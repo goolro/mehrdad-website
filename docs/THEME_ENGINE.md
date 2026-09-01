@@ -99,10 +99,10 @@ unstyled. The admin settings API validates against the new `THEMES` only.
 
 ## Known limitations
 
-- **First-paint flash:** `mode`/`theme` are applied in a client effect,
-  so a hard refresh can flash light-mode for a frame on slow devices. A
-  tiny inline boot script in `layout.tsx` (read localStorage → set class
-  before paint) is the planned fix (ROADMAP, P2).
+- ~~**First-paint flash**~~ **FIXED:** an inline synchronous boot script
+  in `layout.tsx` now applies the persisted `.dark` class, `fa→rtl`
+  direction and the last-known theme cache before first paint (verified
+  across reloads).
 - Themes change the whole site globally (admin decides); a per-visitor
   theme picker is deliberately out of scope (personal site, one brand at
   a time).

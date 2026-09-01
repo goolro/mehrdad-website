@@ -38,15 +38,17 @@ Last updated: 2026-09-01
       (`scripts/generate-assetlinks.ts`), `*.keystore`/`*.apk` gitignored,
       full runbook docs/MOBILE_TWA.md — signed build + Play listing await
       the owner's keystore (D-015)
-- [ ] Browser-locale language suggestion banner (EN default preserved)
-- [ ] EN translation loop for Persian-only archive posts
-- [ ] Inline boot script to kill the dark-mode first-paint flash (P2 nicety,
-      see docs/THEME_ENGINE.md limitations)
+- [x] Browser-locale language suggestion banner (EN default preserved; offer-once, D-019)
+- [x] EN translation loop for Persian-only archive posts (79/80 batch-translated;
+      1 rail-corridor post content-filtered → manual chunk rescue, D-021)
+- [x] Inline boot script kills the dark-mode/RTL first-paint flash (was a P2
+      nicety in docs/THEME_ENGINE.md — now fixed)
 
 ### P1 — editorial
 - [ ] Owner review: publish/draft decision for post 7995 (smart-waste
       startup financials, currently `draft`)
-- [ ] Curated tags (≤ 50) replacing the retired 4,872-tag dump
+- [x] Curated tags (32 ≤ 50) replacing the retired 4,872-tag dump (D-020):
+      fixed bilingual taxonomy, constrained assignment, blog filter UI
 - [ ] Alt-text completion for mirrored images (legacy coverage ~52%)
 - [ ] Import decision: 10 legacy web-stories as micro-notes (`kind=note`)
 - [ ] Featured images for top articles (currently first-body-image fallback)

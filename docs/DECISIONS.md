@@ -144,3 +144,42 @@ documented baseline commit and force-push over the remote main.
 **Rationale:** Publishing history would leak local artifacts (§14); the
 meaningful history starts at this documented baseline and is maintained
 commit-by-commit from here (owner rule: push after every task).
+
+## D-019 — Language suggestion banner: offer once, never auto-switch
+**Date:** 2026-09-01
+**Context:** ROADMAP P0; Persian-locale visitors land on the English
+default with no hint that a full Persian UI exists.
+**Decision:** `LangBanner` offers Persian ONCE to `fa*`-locale browsers as
+a fixed bottom pill; EN default and nothing auto-switches. An explicit
+header language choice (`mehrdad-lang-chosen`) or dismissal
+(`mehrdad-lang-banner`) persists forever. E2E-tested 9/9 with a real
+fa-IR Playwright context.
+**Rationale:** Discoverability without hijacking the approved EN-default
+decision (D-013); persistence prevents nagging.
+
+## D-020 — Curated topic tags: fixed 32-tag bilingual taxonomy, constrained assignment
+**Date:** 2026-09-01
+**Context:** ROADMAP P1 — the 4,872 legacy tags were retired (D-005) and
+the blog had no topic dimension beyond 21 broad categories.
+**Decision:** A fixed taxonomy of 32 curated bilingual tags
+(`analysis/curated_tags.json`, generic/duplicate candidates dropped from
+40 LLM-proposed ones) stored in Tag/PostTag; each post gets 1-4 tags via
+one constrained LLM call per post (only taxonomy slugs accepted).
+UI: filterable `#tag` chips row + tags on cards/articles.
+**Rationale:** Tags must come from real content but stay curated
+(anti-pattern: sentence-tag dumps); a closed set keeps the tag cloud
+clean and SEO-positive; resumable batch with 429-backoff.
+
+## D-021 — Archive translation: batch EN translation with filter-rescue path
+**Date:** 2026-09-01
+**Context:** 80 published posts were Persian-only; ROADMAP P0 required an
+EN translation loop.
+**Decision:** Resumable batch (`analysis/translate_archive.ts`) reusing
+the admin translate pipeline (HTML-aware 7k chunks), with 429
+exponential backoff and per-post progress file. ONE post
+(rail-corridor geopolitics) is blocked by the provider's content filter
+in one chunk → that chunk translated manually with full fidelity
+(pre-seeded state), remaining chunks via API.
+**Rationale:** LLM batch with budget flags survives sandbox process
+limits; manual rescue preserves 100% content fidelity instead of
+silently dropping flagged content.

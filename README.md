@@ -33,8 +33,19 @@ The site is:
 - ✅ **PWA**: manifest, service worker, install prompt, app shortcuts
 - ✅ **Theme engine shipped**: shared design-token system, 5 themes
   (Default ☼, Autumn 🍂, Winter ❄️, Digital ⚡, Nowruz 🌱) with animated
-  backgrounds × independent persisted Light/Dark toggle
+  backgrounds × independent persisted Light/Dark toggle — first-paint
+  flash eliminated by a pre-paint boot script
   ([docs/THEME_ENGINE.md](docs/THEME_ENGINE.md))
+- ✅ **Approved brand positioning everywhere**: the slogan is the homepage
+  H1 (EN+FA), metadata/OG/manifests, footer motto, About identity and the
+  AI persona; BUILD/HELP/SHARE trio + ecosystem chain rendered on the
+  homepage ([docs/BRAND_STRATEGY.md](docs/BRAND_STRATEGY.md))
+- ✅ **Bilingual archive**: 79/80 Persian-only posts machine-translated to
+  English (resumable batch, D-021); the single content-filtered rail
+  post keeps full fidelity via a manual chunk rescue; fa-locale visitors
+  get a one-time Persian suggestion banner (EN default stays, D-019)
+- ✅ **Curated topic tags (D-020)**: fixed 32-tag bilingual taxonomy with
+  constrained per-post assignment — filterable "Topics" row in the blog
 - 🔜 **TWA (Android)**: everything prepared — Bubblewrap config
   (`twa-manifest.json`), `scripts/generate-assetlinks.ts`, full runbook
   ([docs/MOBILE_TWA.md](docs/MOBILE_TWA.md)); signed build + Play listing
@@ -178,6 +189,7 @@ redirect. Details: [docs/SEO.md](docs/SEO.md).
 See [docs/ROADMAP.md](docs/ROADMAP.md). Highlights:
 
 - TWA/Android packaging (config ready; awaits owner keystore)
-- browser-locale language suggestion banner (EN default stays)
-- English translations for remaining Persian-only archive posts
-- curated tags from real content (replacing the legacy tag dump)
+- owner decisions: publish/draft for the empty smart-waste financials
+  post (7995), web-stories import, game project entries
+- alt-text completion for mirrored images (legacy coverage ~52%)
+- Writing → LinkedIn repurposing templates

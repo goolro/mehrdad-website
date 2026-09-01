@@ -5,6 +5,53 @@ All notable changes to mehrdad.ir. Format: Keep-a-Changelog-ish, newest first.
 ## [Unreleased]
 
 ### Added
+- **Brand positioning everywhere (Tasks 11, per BRAND_STRATEGY)**: the
+  approved slogan — «کسب‌وکار و محصولت رو با دقت طراحی می‌کنم، و با AI
+  سریع می‌سازمش» / "I design businesses and products with care, and build
+  them fast with AI." — is now the homepage H1 (both languages), the
+  metadata/OG/manifest titles ("Mehrdad — Product Builder"), the footer
+  motto, the About identity, AND the AI persona (chat system prompts EN/FA
+  + KB seed, rebuilt: 439 chunks). The banned «Designer & Researcher»
+  positioning was removed from all 7 locations.
+- **BUILD / HELP / SHARE trio + ecosystem chain**: new home section
+  rendering the three connected activities and the
+  Research → Design → Build → Learn → Share → Build again loop
+  (RTL-aware, token-colored).
+- **Language suggestion banner (D-019)**: `fa*`-browser visitors get a
+  one-time bilingual offer to view the site in Persian — fixed bottom
+  pill, zero layout shift; explicit choice/dismissal persists forever;
+  EN default untouched. E2E: 9/9 with a real fa-IR Playwright context.
+- **Curated topic tags (D-020)**: fixed 32-tag bilingual taxonomy
+  (`analysis/curated_tags.json`), Tag/PostTag schema, `?tag=` posts
+  filter, tag cloud in `/api/site`, "Topics" chip row in the blog,
+  `#tags` on cards and article pages; constrained per-post assignment
+  pipeline (`analysis/assign_tags.ts`, resumable, 429-backoff).
+- **Archive EN translation loop (D-021)**: resumable batch
+  (`analysis/translate_archive.ts`) — HTML-aware chunking, 429
+  exponential backoff, per-post progress; 79/80 Persian-only posts
+  translated to English and added to the AI knowledge base.
+- **E2E infrastructure**: `playwright-core` devDependency + real-locale
+  browser tests (`analysis/test_lang_banner.ts`).
+
+### Fixed
+- **Dark-mode / RTL first-paint flash** (Theme Engine known limitation):
+  inline synchronous boot script in `layout.tsx` applies the persisted
+  `.dark` class, `fa→rtl` direction and the last-known theme cache
+  before first paint; `page.tsx` caches the DB theme for returning
+  visitors. Verified across reloads, zero console errors.
+- **Post 7995 published with an empty body** (smart-waste financials):
+  reverted to `draft` awaiting the owner's publish decision (ROADMAP P1).
+
+### Changed
+- **Hero copy** replaced with the approved positioning; sub-line now
+  speaks honest status + documented lessons (no generic "AI solutions").
+- **AI persona** (chat EN/FA system prompts + knowledge-base seed)
+  rewritten to the brand model: independent product builder,
+  BUILD/HELP/SHARE, 83+ articles.
+
+## [1.1.0] — 2026-09-01 — Theme engine · PWA · TWA prep · security baseline
+
+### Added
 - **Theme Engine (D-014)**: one shared design-token system powering exactly
   five themes — Default ☼ (brand violet), Autumn 🍂, Winter ❄️ (icy sky,
   new snowfall background), Digital ⚡ (neon cyan/lime, new falling-glyph
