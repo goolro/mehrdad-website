@@ -39,8 +39,10 @@ Last updated: 2026-09-01
       full runbook docs/MOBILE_TWA.md — signed build + Play listing await
       the owner's keystore (D-015)
 - [x] Browser-locale language suggestion banner (EN default preserved; offer-once, D-019)
-- [x] EN translation loop for Persian-only archive posts (79/80 batch-translated;
-      1 rail-corridor post content-filtered → manual chunk rescue, D-021)
+- [x] EN translation loop for Persian-only archive posts — complete: every
+      published post (82) has full EN content; the rail-corridor post that
+      was content-filtered got a manual chunk rescue; the only Persian-only
+      item is the draft smart-waste post (D-021)
 - [x] Inline boot script kills the dark-mode/RTL first-paint flash (was a P2
       nicety in docs/THEME_ENGINE.md — now fixed)
 

@@ -26,10 +26,14 @@ All notable changes to mehrdad.ir. Format: Keep-a-Changelog-ish, newest first.
   filter, tag cloud in `/api/site`, "Topics" chip row in the blog,
   `#tags` on cards and article pages; constrained per-post assignment
   pipeline (`analysis/assign_tags.ts`, resumable, 429-backoff).
-- **Archive EN translation loop (D-021)**: resumable batch
-  (`analysis/translate_archive.ts`) — HTML-aware chunking, 429
-  exponential backoff, per-post progress; 79/80 Persian-only posts
-  translated to English and added to the AI knowledge base.
+- **Archive EN translation loop (D-021) — complete**: resumable batch
+  (`analysis/translate_archive.ts` + `translate_remaining2.ts`) —
+  HTML-aware chunking, 429 exponential backoff, per-post progress; every
+  published post (82) now has full English content in the DB and the AI
+  knowledge base; the content-filtered rail-corridor post was finished
+  with a manual chunk rescue (`repair_rail_translation.ts`); the only
+  Persian-only item is the draft smart-waste post (owner decision
+  pending, ROADMAP P1).
 - **E2E infrastructure**: `playwright-core` devDependency + real-locale
   browser tests (`analysis/test_lang_banner.ts`).
 

@@ -40,10 +40,11 @@ The site is:
   H1 (EN+FA), metadata/OG/manifests, footer motto, About identity and the
   AI persona; BUILD/HELP/SHARE trio + ecosystem chain rendered on the
   homepage ([docs/BRAND_STRATEGY.md](docs/BRAND_STRATEGY.md))
-- ✅ **Bilingual archive**: 79/80 Persian-only posts machine-translated to
-  English (resumable batch, D-021); the single content-filtered rail
-  post keeps full fidelity via a manual chunk rescue; fa-locale visitors
-  get a one-time Persian suggestion banner (EN default stays, D-019)
+- ✅ **Bilingual archive**: all 82 published posts now carry full English
+  content (resumable batch + manual chunk rescue for the content-filtered
+  rail post, D-021); the only Persian-only item is the draft smart-waste
+  post awaiting the owner's publish decision; fa-locale visitors get a
+  one-time Persian suggestion banner (EN default stays, D-019)
 - ✅ **Curated topic tags (D-020)**: fixed 32-tag bilingual taxonomy with
   constrained per-post assignment — filterable "Topics" row in the blog
 - 🔜 **TWA (Android)**: everything prepared — Bubblewrap config
