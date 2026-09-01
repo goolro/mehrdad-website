@@ -20,10 +20,10 @@ const vazirmatn = Vazirmatn({
 });
 
 export const metadata: Metadata = {
-  title: "Mehrdad ☼ Designer & Researcher | طراح و پژوهشگر",
+  title: "Mehrdad — Product Builder | مهرداد — سازنده محصول",
   description:
-    "Software & hardware product design, AI solutions, startup consulting, digital & traditional sales — Mehrdad's official website with AI assistant. طراحی محصول، هوش مصنوعی، مشاوره استارتاپ",
-  keywords: ["Mehrdad", "designer", "researcher", "startups", "AI", "smart city", "investment", "BIZPAL", "KLIKA"],
+    "I design businesses and products with care, and build them fast with AI. Real projects, honest status, lessons from real work. کسب‌وکار و محصولت رو با دقت طراحی می‌کنم، و با AI سریع می‌سازمش.",
+  keywords: ["Mehrdad", "product builder", "product design", "AI products", "startups", "smart city", "BIZPAL", "مهرداد", "سازنده محصول", "هوش مصنوعی"],
   authors: [{ name: "Mehrdad" }],
   manifest: "/manifest.json",
   applicationName: "Mehrdad",
@@ -40,8 +40,8 @@ export const metadata: Metadata = {
     apple: [{ url: "/icons/icon-180.png", sizes: "180x180", type: "image/png" }],
   },
   openGraph: {
-    title: "Mehrdad ☼ Designer & Researcher",
-    description: "Innovative software & hardware product design, AI solutions and startup consulting — with a built-in AI assistant.",
+    title: "Mehrdad — Product Builder",
+    description: "I design businesses and products with care, and build them fast with AI.",
     siteName: "mehrdad.ir",
     type: "website",
   },

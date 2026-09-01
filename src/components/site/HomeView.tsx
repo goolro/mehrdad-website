@@ -5,7 +5,9 @@ import { useApp, pick } from './store';
 import { ui } from './i18n';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowRight, Sparkles, ChevronLeft, ChevronRight, Rocket, BrainCircuit, Code2, PenTool, Briefcase, Megaphone, Store, Lightbulb, FolderKanban, FileText } from 'lucide-react';
+import { ArrowRight, Sparkles, ChevronLeft, ChevronRight, Rocket, BrainCircuit, Code2, PenTool, Briefcase, Megaphone, Store, Lightbulb, FolderKanban, FileText, Hammer, HeartHandshake, Share2, Search, GraduationCap, Repeat } from 'lucide-react';
+
+const CHAIN_ICONS = [Search, PenTool, Hammer, GraduationCap, Share2, Repeat];
 
 const ICONS: Record<string, typeof Rocket> = {
   Rocket, BrainCircuit, Code2, PenTool, Briefcase, Megaphone, Store, Lightbulb, Sparkles,
@@ -87,6 +89,49 @@ export function HomeView() {
                 <div className="mt-1 text-xs text-muted-foreground">{s.label}</div>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Brand trio: Build / Help / Share ── */}
+      <section className="mx-auto w-full max-w-7xl px-4 pb-4 sm:px-6">
+        <SectionHeader title={t.brand.trioTitle} sub={t.brand.trioSub} />
+        <div className="grid gap-4 md:grid-cols-3">
+          {[
+            { icon: Hammer, item: t.brand.build, ring: 'bg-violet-600/10 text-violet-600 dark:text-violet-400' },
+            { icon: HeartHandshake, item: t.brand.help, ring: 'bg-fuchsia-600/10 text-fuchsia-600 dark:text-fuchsia-400' },
+            { icon: Share2, item: t.brand.share, ring: 'bg-violet-600/10 text-violet-600 dark:text-violet-400' },
+          ].map(({ icon: Icon, item, ring }) => (
+            <div key={item.title} className="rounded-2xl border border-border bg-card p-6">
+              <div className={`flex h-11 w-11 items-center justify-center rounded-xl ${ring}`}>
+                <Icon className="h-5 w-5" />
+              </div>
+              <h3 className="mt-4 text-lg font-bold">{item.title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{item.desc}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* Ecosystem chain: Research → Design → Build → Learn → Share → Build again */}
+        <div className="mt-8 rounded-2xl border border-border bg-muted/30 p-5 sm:p-6">
+          <div className="text-center text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            {t.brand.chainLabel}
+          </div>
+          <div className="mt-4 flex flex-wrap items-center justify-center gap-x-1 gap-y-3" dir={lang === 'fa' ? 'rtl' : 'ltr'}>
+            {t.brand.chain.map((step, i) => {
+              const Icon = CHAIN_ICONS[i % CHAIN_ICONS.length];
+              return (
+                <div key={step} className="flex items-center gap-1">
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-violet-500/25 bg-violet-600/5 px-3 py-1.5 text-sm font-medium text-violet-700 dark:text-violet-300">
+                    <Icon className="h-3.5 w-3.5" />
+                    {step}
+                  </span>
+                  {i < t.brand.chain.length - 1 && (
+                    <ChevronRight className="h-4 w-4 text-violet-500/60 rtl:rotate-180" aria-hidden />
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>

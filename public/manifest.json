@@ -1,7 +1,7 @@
 {
-  "name": "Mehrdad ☼ Designer & Researcher",
+  "name": "Mehrdad — Product Builder",
   "short_name": "Mehrdad",
-  "description": "Product design, AI solutions, startup consulting and insights — with a built-in AI assistant. طراحی محصول، هوش مصنوعی، مشاوره استارتاپ",
+  "description": "I design businesses and products with care, and build them fast with AI. کسب‌وکار و محصولت رو با دقت طراحی می‌کنم، و با AI سریع می‌سازمش.",
   "id": "/",
   "start_url": "/",
   "scope": "/",
@@ -11,7 +11,11 @@
   "theme_color": "#7c3aed",
   "lang": "en",
   "dir": "auto",
-  "categories": ["business", "news", "productivity"],
+  "categories": [
+    "business",
+    "news",
+    "productivity"
+  ],
   "icons": [
     {
       "src": "/icons/icon-192.png",
@@ -37,19 +41,34 @@
       "name": "Blog & Insights",
       "short_name": "Blog",
       "url": "/#blog",
-      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+      "icons": [
+        {
+          "src": "/icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
     },
     {
       "name": "AI Assistant",
       "short_name": "AI Chat",
       "url": "/?chat=open",
-      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+      "icons": [
+        {
+          "src": "/icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
     },
     {
       "name": "Contact",
       "short_name": "Contact",
       "url": "/#contact",
-      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+      "icons": [
+        {
+          "src": "/icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
     }
   ]
 }

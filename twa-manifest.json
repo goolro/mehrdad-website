@@ -1,7 +1,7 @@
 {
   "packageId": "ir.mehrdad.twa",
   "host": "mehrdad.ir",
-  "name": "Mehrdad ☼ Designer & Researcher",
+  "name": "Mehrdad — Product Builder",
   "launcherName": "Mehrdad",
   "display": "standalone",
   "themeColor": "#7c3aed",
@@ -27,19 +27,34 @@
       "name": "Blog & Insights",
       "short_name": "Blog",
       "url": "/#blog",
-      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+      "icons": [
+        {
+          "src": "/icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
     },
     {
       "name": "AI Assistant",
       "short_name": "AI Chat",
       "url": "/?chat=open",
-      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+      "icons": [
+        {
+          "src": "/icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
     },
     {
       "name": "Contact",
       "short_name": "Contact",
       "url": "/#contact",
-      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+      "icons": [
+        {
+          "src": "/icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
     }
   ],
   "fallbackType": "customtabs",

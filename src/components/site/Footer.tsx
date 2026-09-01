@@ -18,9 +18,7 @@ export function Footer() {
             </span>
             <div className="text-sm">
               <div className="font-semibold">{lang === 'fa' ? 'مهرداد' : 'Mehrdad'}</div>
-              <div className="text-xs text-muted-foreground">
-                {lang === 'fa' ? 'طراح و پژوهشگر' : 'Designer & Researcher'}
-              </div>
+              <div className="text-xs text-muted-foreground">{t.footer.role}</div>
             </div>
           </div>
 
@@ -40,7 +38,11 @@ export function Footer() {
           </a>
         </div>
 
-        <div className="mt-6 border-t border-border/40 pt-4 text-center text-xs text-muted-foreground">
+        <p className="mx-auto mt-6 max-w-xl border-t border-border/40 pt-4 text-center text-xs italic leading-relaxed text-muted-foreground">
+          «{t.footer.slogan}»
+        </p>
+
+        <div className="mt-4 text-center text-xs text-muted-foreground">
           © {year} mehrdad.ir — {t.footer.rights} · {t.footer.builtWith} ✦
         </div>
       </div>
