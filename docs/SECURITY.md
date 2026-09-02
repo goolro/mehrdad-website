@@ -68,9 +68,22 @@ plaintext.
 | 2026-09-01 | Local working history contained `.env`, DB backup snapshots and `dev.pid` (tracked before ignore rules matured). | Files untracked + gitignored; **entire local history squashed to one clean baseline commit** before the first push of this state, so none of it exists on the public remote. |
 | 2026-09-01 | A GitHub personal access token was shared through an IM channel (not via the repository). | Used only for the git remote URL (stored in untracked `.git/config`). Owner advised to rotate the token after the initial sync. |
 
+## 5. Production hardening (cPanel, 2026-09-02)
+
+- Secrets come only from env vars set in the cPanel Node.js App UI
+  (`ADMIN_PASSWORD` fail-closed) — `.env.example` documents every variable;
+  real values never enter the repo.
+- The AI SDK credential file `.z-ai-config` is gitignored, `chmod 600`,
+  placed in the app root or home dir; without it chat degrades gracefully.
+- `X-Powered-By` removed (`poweredByHeader: false`); admin auth stays a
+  per-request header check (no cookies/sessions to leak).
+- Recommended follow-ups (not yet implemented, low risk): tiny in-memory
+  rate limit on `/api/chat` + `/api/admin/auth` brute-force attempts;
+  timing-safe admin compare.
+
 ## 5. Reporting
 
 This is a personal site; there is no bug bounty. If you find a security
 issue, please report it privately via the contact form on
-[mehrdad.ir](https://mehrdad.ir) (choose "Just connecting" and mark it
+[mmehrdad.ir](https://mehrdad.ir) (choose "Just connecting" and mark it
 security) rather than opening a public issue.

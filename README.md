@@ -22,6 +22,15 @@ The site is:
   migrated historical archive with *original* publication dates restored)
 - the **contact funnel** (one clear path to start a conversation)
 
+## Deployment (cPanel, no SSH)
+
+- Verified production path: build off-host → upload artifact → cPanel
+  Node.js App (Node 20, Passenger) → `node server.js`. Bun not required.
+- Runbook: [docs/CPANEL_DEPLOYMENT.md](docs/CPANEL_DEPLOYMENT.md) ·
+  Overview: [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)
+- Artifact builder: `bash scripts/build-production.sh` (database excluded —
+  production SQLite lives in `data/production.db`, survives every deploy).
+
 ## Current status (2026-09-01)
 
 - ✅ **Core site live in development**: home, work, writing (83 migrated

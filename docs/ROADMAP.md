@@ -1,6 +1,6 @@
 # ROADMAP — mehrdad.ir
 
-Last updated: 2026-09-01
+Last updated: 2026-09-02
 
 ## Done
 
@@ -23,6 +23,10 @@ Last updated: 2026-09-01
       inside the app; media mirrored locally (PDFs + MP4s)
 - [x] PWA complete: manifest, service worker, icons, install prompt,
       shortcuts, iOS meta
+- [x] cPanel deployment readiness (Task 16): npm/lockfile build flow,
+      node-only start, DB-free deploy artifacts, env/SQLite strategy,
+      CPANEL_DEPLOYMENT runbook — E2E production-start test green
+      (pending owner-side cPanel app creation + docroot cutover)
 - [x] Admin panel: env-only auth (fail closed), content CRUD, comment
       moderation, contact leads, theme setting, AI content tools
 - [x] GitHub baseline: public repo synced with one clean squashed commit;

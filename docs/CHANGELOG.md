@@ -5,6 +5,20 @@ All notable changes to mehrdad.ir. Format: Keep-a-Changelog-ish, newest first.
 ## [Unreleased]
 
 ### Added
+- **cPanel deployment readiness (no-SSH artifact flow, Task 16)**: `start`
+  script now runs the standalone server with plain `node` (Bun not needed
+  on the host); `build` runs `prisma generate` first; `engines.node
+  >=20.9.0` declared; `package-lock.json` committed (npm ci reproducible);
+  `scripts/build-production.sh` produces a DB-free deploy tarball
+  (`dist/mehrdad-deploy-<stamp>.tar.gz` + SHA256) with standalone
+  sanity checks; `.env.example` (full cPanel prod reference incl.
+  `HOSTNAME=0.0.0.0` Passenger caveat); Prisma query logging silenced to
+  error/warn in production; `X-Powered-By` header removed. Verified E2E:
+  clean npm install/build, standalone completeness (server.js + static +
+  public + Prisma engine), production start via `node` — homepage,
+  /api/site, /api/posts, PWA files, media, admin auth fail-closed,
+  WP 301 redirect, 404 — all green. Docs: `docs/CPANEL_DEPLOYMENT.md`
+  (full runbook) + `docs/DEPLOYMENT.md` rewritten to match reality.
 - **Descriptive image alt text — COMPLETE 118/118 (accessibility/SEO, D-022)**:
   every junk alt (`Image`/`تصویر`) on in-content images was replaced with
   concise hand-reviewed bilingual descriptions. Final audit: 242/242 img

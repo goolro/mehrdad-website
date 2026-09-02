@@ -384,3 +384,21 @@ Stage Summary:
 - هر دو کار معوق منتشر شد: 080bc5a (Phase-2 alt-text 118/118) + 7f945cd (فیکس i18n کارت FDE) + 4997bd9 (gitignore)
 - commit تصادفی تصویر چت از تاریخچه public حذف شد؛ از این پس /upload/ هرگز commit نمی‌شود
 - توکن به مالک توصیه شد بعد از این مرحله revoke/rotate کند چون در چت plaintext بود
+
+---
+Task ID: 16
+Agent: Z.ai Code (main)
+Task: مأموریت مالک — آماده‌سازی نهایی پروژه برای استقرار روی cPanel (بدون SSH، حفظ SQLite) — Audit → Fix → Build → Prod-start → Docs → Push
+
+Work Log:
+- Audit کامل: next 16 الزام Node>=20.9 (cPanel 20.20.2 ✓) | start با bun بود | db/custom.db در git tracked (محتوای مهاجرت‌شده، عمدی GitHub-First) | DATABASE_URL محلی absolute → روی cPanel با env override می‌شود | next-auth/next-intl نصب اما بلااستفاده (dead deps، در standalone نمی‌آیند) | auth سفارشی fail-closed با x-admin-key | middleware 301 لایه کامل WP (173 مسیر + 83 wpId) | AI SDK از .z-ai-config (gitignored) می‌خواند → مسیر اتصال AI روی هاست واقعی موجود است | writeهای runtime فقط در public/media/generated | SW فقط production
+- اصلاحات مجاز غیرمعماری: package.json — start → `node .next/standalone/server.js` (بدون bun/tee)، build → `prisma generate && next build && cp ...`، engines node>=20.9 | .env.example جامع (DATABASE_URL absolute، ADMIN_PASSWORD، NODE_ENV، HOSTNAME=0.0.0.0 — هشدار Passenger، بخش .z-ai-config) | db.ts — لاگ query فقط dev، در prod error/warn | next.config — poweredByHeader:false
+- Production build (کپی ایزوله /tmp/prodbuild، npm خالص، Node 24): npm install → package-lock.json تولید شد (به repo بازگردانده شد) → npm run build ✓ → standalone کامل: server.js + static + public (media/uploads/icons/manifest/sw/robots) + Prisma engine (.so.node) — 219MB
+- Production start با node خالص (پورت 3100، env مجزا، data/production.db شبیه‌سازی cPanel): homepage 200 | /api/site (Prisma/SQLite) 200 با داده فارسی | /api/posts 200 (82 پست) | manifest/sw/robots 200 | media 200 | admin auth: 401 غلط/200 درست | 301 وردپرس: /iran-ousted-… → /#blog/… ✓ | X-Powered-By حذف ✓ | 404 ✓ | چت AI پاسخ داد (کانفیگ در سطح سیستم sandbox موجود بود؛ روی cPanel همان ساختار فایل) — همه سبز
+- مستندات: docs/CPANEL_DEPLOYMENT.md جدید (۱۲ بخش: prerequisites/config/env/SQLite/start/logs/backup/update/rollback/مهاجرت m.mehrdad.ir/SEO cutover/troubleshooting) | docs/DEPLOYMENT.md بازنویسی (قبلی به proxy.ts و مسیرهای ناموجود ارجاع می‌داد) | README + CHANGELOG + ROADMAP + SECURITY همگام
+- scripts/build-production.sh: artifact DB-free با sanity-check (engine prisma) + SHA256
+
+Stage Summary:
+- نتیجه Audit: پروژه READY برای cPanel (Node 20 + Passenger) بدون SSH؛ SQLite با استراتژی data/production.db (خارج از artifact) هم حفظ داده دارد هم آپدیت امن
+- عدم انجام (نیازمند تصمیم/اجرا مالک): ساخت Node.js App در cPanel، docroot cutover، انتقال WP به m.mehrdad.ir، PostgreSQL (توصیه: فعلاً نه)، rate-limit chat/admin (پیشنهاد ثبت شد)
+- ریسک‌های ثبت‌شده: HOSTNAME hijack در cPanel (mitigated با env)، SPA تک-URL (sitemap/canonical per-article = فاز آینده)، brute-force بدون rate-limit
