@@ -67,3 +67,6 @@ alt_run.log
 
 # chat paste / runtime uploads — never publish
 /upload/
+
+# production deploy artifacts (built by scripts/build-production.sh) — never publish
+/dist/

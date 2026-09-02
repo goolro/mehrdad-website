@@ -402,3 +402,26 @@ Stage Summary:
 - نتیجه Audit: پروژه READY برای cPanel (Node 20 + Passenger) بدون SSH؛ SQLite با استراتژی data/production.db (خارج از artifact) هم حفظ داده دارد هم آپدیت امن
 - عدم انجام (نیازمند تصمیم/اجرا مالک): ساخت Node.js App در cPanel، docroot cutover، انتقال WP به m.mehrdad.ir، PostgreSQL (توصیه: فعلاً نه)، rate-limit chat/admin (پیشنهاد ثبت شد)
 - ریسک‌های ثبت‌شده: HOSTNAME hijack در cPanel (mitigated با env)، SPA تک-URL (sitemap/canonical per-article = فاز آینده)، brute-force بدون rate-limit
+
+---
+Task ID: 17
+Agent: Z.ai Code (main)
+Task: مأموریت مالک — از commit `5ace5fe` با `scripts/build-production.sh` فایل deployment واقعی ساخته شود
+
+Work Log:
+- Pre-flight: HEAD دقیقاً 5ace5fe با working tree تمیز؛ Node 24.19.0 / npm 11.17.0 (≥20.9 ✓)؛ package-lock.json موجود → مسیر npm ci؛ دیسک 4.8G آزاد
+- گیت‌ایگنور چک: `/dist/` نبود → قبل از هر build اضافه شد (درس `/upload/` — آرتیفکت ۱۳۸MB باینری هرگز نباید مسیر commit داشته باشد)
+- Build ایزوله: کلون تمیز از 5ace5fe در /tmp/deploy-build-5ace5fe (+ کپی .env فقط برای build — gitignored) تا dev server زندهٔ پروژه دست‌نخورده بماند
+- نکته اجرا: nohup پس‌زمینه توسط sandbox کشته می‌شد → اجرای foreground با timeout 600s موفق شد
+- Build v1 موفق (138M) اما Audit محتوای tar یک باگ واقعی گرفت: `./.env` داخل آرتیفکت بود — Next standalone فایل‌های .env* ماشین build را داخل .next/standalone کپی می‌کند و tar اسکریپت برخلاف ادعای کامنتش هیچ exclude‌ای نداشت → خطر: استخراج روی cPanel فایل env اپراتور را بازنویسی می‌کرد
+- فیکس ریشه‌ای اسکریپت: exclude `./.env*` و `./.z-ai-config` در tar + گارد سخت post-pack که اگر هر فایل env/db/secret داخل آرتیفکت باشد build را FATAL می‌کند (نه هشدار)
+- Rebuild v2 با اسکریپت فیکس‌شده: `dist/mehrdad-deploy-20260902-201355.tar.gz` (138M) + SHA256SUMS؛ ممیزی ۱۹۸۶ فایل: صفر .env/.db/.z-ai-config؛ server.js + 32 فایل static + public کامل (robots/sw/manifest.json/media) + Prisma engine (libquery_engine-debian-openssl-3.0.x.so.node) — همه سبز
+- E2E آرتیفکت (شبیه‌سازی دقیق cPanel اول): استخراج در دایرکتوری تازه → data/production.db از db/custom.db → env به سبک cPanel UI → node server.js: / 200 | /api/site 200 با داده واقعی فارسی (Prisma/SQLite از آرتیفکت استخراج‌شده) | /api/posts 200 (۱۲ پست، عنوان فارسی) | robots/sw/manifest 200 | admin POST: غلط 401 / درست 200 (fail-closed) | WP 301: /iran-ousted-from-trade-corridors → /#blog/… | X-Powered-By حذف | 404 ✓ | لاگ سرور تمیز
+- تست دفاعی: .env خراب عمداً در app root کاشته شد → env فرایند (cPanel) پیروز ماند، /api/site همچنان 200 → سناریوی «.env جامانده» بی‌خطر است
+- تحویل: آرتیفکت + SHA256SUMS به dist/ پروژه کپی شد (sha256 -c OK در مقصد)؛ dev server: 200 بی‌تأثیر
+- مستندات: CPANEL_DEPLOYMENT.md §2 (آرتیفکت هرگز .env/.z-ai-config ندارد + گارد + برتری env فرایند) و §7 به‌روز؛ CHANGELOG ورودی Task 17
+
+Stage Summary:
+- اولین فایل deployment واقعی و قابل آپلود از commit منتشرشده 5ace5fe تولید و end-to-end اثبات شد: dist/mehrdad-deploy-20260902-201355.tar.gz (138M) + SHA256SUMS
+- یک باگ امنیتی/عملیاتی مهم در همان build اول پیدا و ریشه‌ای بسته شد: نشت .env ماشین build به آرتیفکت — اکنون هم exclude است هم گارد FATAL
+- آرتیفکت DB-free است (طبق طراحی §7) → روی cPanel اولین استقرار: seed دستی data/production.db + env در UI + Restart

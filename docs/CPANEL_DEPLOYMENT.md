@@ -37,7 +37,14 @@ This runs: `npm ci` (lockfile-aware) → `prisma generate` → `next build`
 + `SHA256SUMS`.
 
 The artifact **never contains the database** — production data must never
-be overwritten by a deploy (see §7).
+be overwritten by a deploy (see §7). It also **never contains `.env`,
+`.env.*` or `.z-ai-config`**: Next's standalone step copies build-machine
+env files into `.next/standalone`, so the pack step excludes them and a
+hard guard fails the build if any env/db/secret file slips through
+(extracting over the app root would otherwise clobber server config).
+All production config travels via **cPanel env vars (§3)** — process env
+always wins over any stray file (verified: a planted bad `.env` cannot
+hijack `DATABASE_URL`).
 
 ## 3. cPanel configuration
 
@@ -117,8 +124,8 @@ HOSTNAME=0.0.0.0
 ## 7. Update (new release) & why the DB survives
 
 1. Build a new artifact → upload → extract into `~/mehrdad-app`
-   (overwrite). `data/` and `.z-ai-config` are **not part of the
-   artifact**, so they are untouched.
+   (overwrite). `data/`, `.env` and `.z-ai-config` are **not part of the
+   artifact**, so they are untouched (the build script enforces this).
 2. Restart the application from cPanel.
 3. Run the §5 verification.
 

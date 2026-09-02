@@ -5,6 +5,22 @@ All notable changes to mehrdad.ir. Format: Keep-a-Changelog-ish, newest first.
 ## [Unreleased]
 
 ### Added
+- **Production deployment artifact built & verified from commit `5ace5fe` (Task 17)**:
+  first real cPanel deploy file produced by `scripts/build-production.sh` in an
+  isolated clean checkout — `dist/mehrdad-deploy-20260902-201355.tar.gz` (138 MB,
+  SHA256SUMS shipped alongside). Artifact-audit + fresh-extract E2E: server.js +
+  static + public + Prisma engine present; **zero** `.env`/`.db`/secrets inside;
+  seeded `data/production.db` + cPanel-style env vars → homepage, `/api/site`
+  (real Persian data via Prisma/SQLite), `/api/posts`, `robots.txt`, `sw.js`,
+  `manifest.json`, admin auth POST fail-closed (401/200), WP 301
+  (`/iran-ousted-from-trade-corridors` → `/#blog/…`), no `X-Powered-By`, 404 —
+  all green; a planted bad `.env` could **not** hijack `DATABASE_URL` (process
+  env wins). Script hardening found & fixed during the build: Next standalone
+  copies build-machine `.env*` into the bundle, so the pack step now excludes
+  `.env*`/`.z-ai-config` and a hygiene guard **fails the build** if any
+  env/db/secret file slips into the artifact; `/dist/` gitignored.
+
+### Added
 - **cPanel deployment readiness (no-SSH artifact flow, Task 16)**: `start`
   script now runs the standalone server with plain `node` (Bun not needed
   on the host); `build` runs `prisma generate` first; `engines.node

@@ -33,11 +33,25 @@ if [ -z "$PRISMA_ENGINE" ]; then
   echo "      Fix: copy node_modules/.prisma/client/libquery_engine-*.so.node into the artifact."
 fi
 
-echo "==> [4/5] pack artifact (database and dotfiles excluded)"
+echo "==> [4/5] pack artifact (env files, database and secrets excluded)"
 mkdir -p "$OUT_DIR"
-tar -czf "$OUT_DIR/$ARTIFACT" -C .next/standalone .
+# Next's standalone step copies build-machine .env* files into .next/standalone.
+# They must NEVER ship: on cPanel the artifact is extracted over the app root
+# and would clobber the operator's env. Config travels via cPanel env vars
+# (see docs/CPANEL_DEPLOYMENT.md §3), never inside the artifact.
+tar -czf "$OUT_DIR/$ARTIFACT" \
+  --exclude='./.env' \
+  --exclude='./.env.*' \
+  --exclude='./.z-ai-config' \
+  -C .next/standalone .
 
-echo "==> [5/5] checksums"
+echo "==> [5/5] checksums + artifact hygiene guard"
+# Fail the build (not just warn) if env/secret/db files slipped into the pack.
+if tar -tzf "$OUT_DIR/$ARTIFACT" | grep -E '^\./(\.env|[^/]*\.db|[^/]*\.db-journal|\.z-ai-config)' >/dev/null; then
+  tar -tzf "$OUT_DIR/$ARTIFACT" | grep -E '^\./(\.env|[^/]*\.db|[^/]*\.db-journal|\.z-ai-config)'
+  echo "FATAL: artifact contains .env / database / secret files — deploy would clobber server config"
+  exit 1
+fi
 ( cd "$OUT_DIR" && sha256sum "$ARTIFACT" > SHA256SUMS )
 echo ""
 echo "Artifact : $OUT_DIR/$ARTIFACT ($(du -h "$OUT_DIR/$ARTIFACT" | cut -f1))"
