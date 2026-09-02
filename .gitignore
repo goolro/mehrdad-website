@@ -70,3 +70,6 @@ alt_run.log
 
 # production deploy artifacts (built by scripts/build-production.sh) — never publish
 /dist/
+
+# temp HTTP delivery folder for artifacts — never publish
+/public/download/
