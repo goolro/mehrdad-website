@@ -64,3 +64,6 @@ db/custom.backup-*.db
 .android/
 .bubblewrap/
 alt_run.log
+
+# chat paste / runtime uploads — never publish
+/upload/
