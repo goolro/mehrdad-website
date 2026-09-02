@@ -330,3 +330,25 @@ Stage Summary:
 - pipeline برای ۱۰۲ تصویر باقی‌مانده آماده و resume-safe است: `bun analysis/fix_alts.ts` (تولید با VLM) سپس `bun analysis/fix_alts.ts --apply` — به‌محض رفع 429 خارجی
 - External Blockage ثبت شد: LLM Rate Limit (۵+ ساعت، هر دو کانال) — طبق دستور مالک به‌عنوان بلوکه خارجی، نه باگ
 - تست زنده LLM مربوط به AI Context صفحه FDE (Task 12) نیز همچنان منتظر همان رفع 429 است
+
+---
+Task ID: 14
+Agent: Z.ai Code (main)
+Task: تکمیل Phase 2 Alt-Text — پوشش ۱۰۲ تصویر باقی‌مانده (ادامه D-022) + بازیابی وضعیت canonical از GitHub
+
+Work Log:
+- بازیابی sandbox: این instance به اسنپ‌شات Task-7 برگشته بود (بدون FDE/alt-work/remote) → وضعیت canonical از GitHub (origin/main = e6c3344، شامل فریز 543137c) بازیابی شد: بکاپ کارهای محلی به /tmp، git reset --hard origin-main، افزودن remote و upstream
+- کشف: Task 13 قبلی هر دو باگ گزارشی اسکریپت را فیکس و Phase 1 (۱۶ تصویر) را apply+push کرده بود؛ pipeline canonical (probe-first/backoff+storm breaker/failed-queue/validate/apply) بازخوانی و تأیید شد
+- محیط: sandbox پروسه‌های background را حتی با setsid می‌کشد → اجرای chunk-های foreground resumable؛ طوفان 429 هر دو کانال LLM ادامه داشت (۸+ ساعت؛ ۶ chunk + probeهای CLI — بدون موازی‌سازی طبق قانون مالک)
+- Plan B (الگوی تأییدشده Phase 1): تولید دستی ۱۰۲ alt دوزبانه با vision خود ایجنت در ۱۷ دسته — هر تصویر واقعاً مشاهده شد؛ متن مهم تصاویر منتقل شد؛ برای فونت استیلیزه ناخوانا توصیف عمومی (بدون hallucination)؛ provenance «via: agent-vision» در analysis/alt_manual.json
+- merge-manual: +۱۰۲ entry → کش ۱۱۸/۱۱۸ | validate: VALIDATION PASS (صفر junk/duplicate/language/length) | failed queue خالی شد
+- apply: بکاپ db/custom.backup-20260902074251.db → ۵۲ پست به‌روز، ۱۲۱ EN + ۱۲۱ FA تگ بازنویسی → مارکر alt_text_descriptive_v1 → POST-APPLY AUDIT: tags=242 junk=0 empty=0 descriptive=242 unique=118
+- زیرساخت: بعد از git reset (تعویض inode فایل DB) سرور 500 می‌داد (route جدید `tags` را select می‌کرد + Prisma client قدیمی در حافظه) → prisma generate + pkill + ensure_dev.sh → همه APIها 200
+- Browser Verify (agent-browser): مقاله iran-railway-technology-startup دسکتاپ 1440 EN (altهای توصیفی در DOM شامل alt جدید) ✓ | همان مقاله FA (dir=rtl + altهای فارسی) ✓ | موبایل 390 مقاله و صفحه اصلی (بدون overflow؛ کارت‌ها alt="" تزئینی طبق طراحی) ✓ | کنسول صفر خطا ✓ | اسکرین‌شات‌ها: analysis/verify_alts_*.png
+- مستندات: ROADMAP (P1 alt → [x] DONE 118/118)، CHANGELOG (ورودی COMPLETE)، ALT_PIPELINE.md (وضعیت Phase 2 + مسیر agent-vision)
+
+Stage Summary:
+- هدف مالک محقق شد: هر ۱۱۸ تصویر یکتا alt توصیفی دوزبانه واقعی دارند — هیچ alt عمومی باقی نمانده (242/242 تگ، junk=0)
+- تولید: ۱۶ دستی (Phase 1) + ۱۰۲ agent-vision (Phase 2)؛ VLM API در کل بازه کار 429 بود — طبق قانون هیچ درخواست موازی‌ای برای دور زدن آن زده نشد
+- pipeline و مستندات اجرای مجدد برای پست‌های آینده: docs/ALT_PIPELINE.md
+- تست زنده LLM مربوط به AI Context صفحه FDE (Task 12) همچنان منتظر رفع 429 خارجی است

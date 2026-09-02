@@ -78,5 +78,515 @@
   "en": "Apple Pay banner with an iPhone showing a payment card and Done checkmark",
   "fa": "بنر اپل‌پی؛ آیفون با کارت بانکی و تیک تأیید روی زمینه آبی",
   "via": "agent-vision"
+ },
+ "Rail_Startup_in_tokyo_313108961-300x300.png": {
+  "en": "Blue and white commuter train pulling into a Tokyo railway station platform",
+  "fa": "قطار مسافری آبی و سفید در حال ورود به سکوی ایستگاه راه‌آهن توکیو",
+  "via": "agent-vision"
+ },
+ "Screenshot_۲۰۲۱۱۰۲۸-۱۹۰۵۳۹_Clubhouse-1-e1635455492736-271x300.jpg": {
+  "en": "Clubhouse event page in Persian for a self-awareness session listing speakers including Mehrdad",
+  "fa": "صفحه رویداد کلاه‌هاوس برای جلسه خودآگاهی با فهرست سخنرانان از جمله مهرداد",
+  "via": "agent-vision"
+ },
+ "Screenshot_۲۰۲۱۱۰۲۷-۲۰۰۰۴۱_Clubhouse-e1635359307196-186x300.jpg": {
+  "en": "Grid of listener avatars with mic icons in a Persian Clubhouse room",
+  "fa": "شبکه آواتار شنوندگان با آیکون میکروفون در یک اتاق کلاه‌هاوس",
+  "via": "agent-vision"
+ },
+ "Screenshot_۲۰۲۱۱۰۲۷-۱۹۴۹۴۶_Clubhouse-e1635359383113-270x300.jpg": {
+  "en": "Clubhouse room page in Persian showing a speaker list with 20 raised hands",
+  "fa": "صفحه اتاق کلاه‌هاوس با فهرست سخنرانان و ۲۰ دست بالابرده‌شده",
+  "via": "agent-vision"
+ },
+ "Screenshot_۲۰۲۱۱۰۲۵-۲۳۴۹۰۷_Clubhouse-e1635247821757-247x300.jpg": {
+  "en": "Clubhouse room in Persian with speaker list, 18 speakers and 21 raised hands",
+  "fa": "اتاق کلاه‌هاوس با فهرست سخنرانان، ۱۸ سخنران و ۲۱ دست بالابرده‌شده",
+  "via": "agent-vision"
+ },
+ "Screenshot_۲۰۲۱۱۰۲۵-۲۳۱۰۲۷_Clubhouse-e1635247868829-151x300.jpg": {
+  "en": "Participants grid in a Persian Clubhouse room with leave-room button below",
+  "fa": "شبکه آواتار شرکت‌کنندگان اتاق کلاه‌هاوس با دکمه خروج در پایین",
+  "via": "agent-vision"
+ },
+ "moshtarakin-2-300x300.png": {
+  "en": "Yellow Persian banner reading \"Unique and highly practical\" above orange and purple chevrons",
+  "fa": "بنر زرد با نوشته «منحصربه‌فرد بسیار کاربردی» و فلش‌های نارنجی و بنفش",
+  "via": "agent-vision"
+ },
+ "moshtarakin-bannner-3-300x300.png": {
+  "en": "Purple Persian banner reading \"Fully creative, matching daily needs\" with colored chevrons below",
+  "fa": "بنر بنفش «کامل، خلاقانه، نیاز روز دنیا» با فلش‌های رنگی زیر آن",
+  "via": "agent-vision"
+ },
+ "moshtarakin-bannner-4-300x300.png": {
+  "en": "Red Persian banner reading \"Very fast adoption in markets\" with colored chevrons below",
+  "fa": "بنر قرمز «فراگیری بسیار سریع در مارکت‌ها» با فلش‌های رنگی زیر آن",
+  "via": "agent-vision"
+ },
+ "moshtarakin-bannner-9-300x300.png": {
+  "en": "Green Persian banner promoting multiplied added value, brand value and income",
+  "fa": "بنر سبز با پیام ارزش افزوده چندین‌برابری، ارزش برند و درآمد",
+  "via": "agent-vision"
+ },
+ "moshtarakin-bannner-13-300x300.png": {
+  "en": "Yellow Persian banner headed \"Smart\" with orange and purple chevrons below",
+  "fa": "بنر زرد با سرصفحه «هوشمندانه» و فلش‌های نارنجی و بنفش زیر آن",
+  "via": "agent-vision"
+ },
+ "moshtarakin-bannner-12-300x300.png": {
+  "en": "Purple Persian banner with yellow headline \"Start here\" and a subtitle on domestic capability",
+  "fa": "بنر بنفش با تیتر زرد «شروع از همین‌جا» و زیرنویسی درباره قابلیت داخلی",
+  "via": "agent-vision"
+ },
+ "moshtarakin-bannner-14-300x300.png": {
+  "en": "Pink Persian banner headed \"International registration\" with subtitle on registering designs and inventions",
+  "fa": "بنر صورتی «ثبت بین‌المللی» با زیرنویس قابلیت ثبت طرح و اختراع",
+  "via": "agent-vision"
+ },
+ "moshtarakin-bannner-7-300x300.png": {
+  "en": "Red Persian banner with stylized headline and subtitle reading \"in foreign currency and rials\"",
+  "fa": "بنر قرمز با تیتر استیلیزه و زیرنویس «ارزی و ریالی»",
+  "via": "agent-vision"
+ },
+ "moshtarakin-bannner-6-300x300.png": {
+  "en": "Pink Persian banner reading \"Hundredfold profit in the first year\" with chevrons below",
+  "fa": "بنر صورتی «سود صدها برابری در سال اول» با فلش‌های رنگی زیر آن",
+  "via": "agent-vision"
+ },
+ "booster-sale-banner-22.jpg": {
+  "en": "Illustrated shopping arcade with a shopper carrying bags under the Booster Sale of Amazing startup banner",
+  "fa": "پاساژ نقاشی‌شده با خریدار سبد به دست زیر بنر «استارتاپ بوستر فروش شگفت‌انگیز»",
+  "via": "agent-vision"
+ },
+ "booster-3.jpg": {
+  "en": "Cartoon crowd of shoppers filling a city street under the Booster Sale of Amazing banner",
+  "fa": "خیابان پر از خریداران کارتونی زیر بنر «استارتاپ بوستر فروش شگفت‌انگیز»",
+  "via": "agent-vision"
+ },
+ "booster-sale-s.jpg": {
+  "en": "Illustrated couple with shopping bags in a market street beneath the Booster Sale of Amazing banner",
+  "fa": "زوج نقاشی‌شده با ساک خرید در بازار زیر بنر «استارتاپ بوستر فروش شگفت‌انگیز»",
+  "via": "agent-vision"
+ },
+ "Creating-a-website-i2.jpg": {
+  "en": "Digital artwork of an android face with glowing golden neural lines over a circuit-board backdrop",
+  "fa": "اثر دیجیتال چهره ربات‌گونه با خطوط نورانی طلایی شبکه عصبی روی پس‌زمینه مدار",
+  "via": "agent-vision"
+ },
+ "Investment-in-Artifi1.jpg": {
+  "en": "White-suited android figure under a glowing stock chart line, one eye lit blue",
+  "fa": "فیگور ربات با کت سفید زیر نمودار نوری بورس؛ یک چشم آبی روشن",
+  "via": "agent-vision"
+ },
+ "Artificial-Intellige5-1024x585.jpg": {
+  "en": "Ornate female robot head beside mosque domes and minarets at dusk",
+  "fa": "سر ربات زن‌گونه با نقوش فلزی ظریف در کنار گنبد و مناره مسجد در غروب",
+  "via": "agent-vision"
+ },
+ "Artificial-Intellige4-1024x585.jpg": {
+  "en": "Luxury living room with golden chandelier, Islamic geometric wall art and cream sofas",
+  "fa": "اتاق نشیمن مجلل با لوستر طلایی، تابلوهای هندسی اسلامی و مبل‌های کرم",
+  "via": "agent-vision"
+ },
+ "Artificial-Intellige6-1024x585.jpg": {
+  "en": "White humanoid robot in profile in an ornate Persian hall with glowing lanterns",
+  "fa": "ربات انسان‌نمای سفید در میان سالنی ایرانیِ آراسته با فانوس‌های نورانی",
+  "via": "agent-vision"
+ },
+ "Rail_Startup_36097705.png": {
+  "en": "Painted elevated railway platform with yellow safety line and steel trusses",
+  "fa": "سکوی مرتفع راه‌آهن با خط زرد ایمنی و خرپاهای فولادی به سبک نقاشی",
+  "via": "agent-vision"
+ },
+ "Rail_Startup_in_tokyo_313108961.png": {
+  "en": "Commuter train with blue front arriving at a Tokyo station under overhead wires",
+  "fa": "قطار با پیشانی آبی در حال ورود به ایستگاه توکیو زیر سیم‌های برق",
+  "via": "agent-vision"
+ },
+ "estilovintedois_ai_new_smart_city_3198589558.png": {
+  "en": "Futuristic neon smart-city skyline with twin curved towers over a glowing river",
+  "fa": "آسمان‌خراش‌های نئونی شهر هوشمند آینده با دو برج خمیده بر رودخانه‌ای نورانی",
+  "via": "agent-vision"
+ },
+ "output_car.webp": {
+  "en": "Silver microcar with glowing green wireframe graphics on its side in a city street",
+  "fa": "خودروی کوچک نقره‌ای با گرافیک سیمی سبز درخشان روی بدنه در خیابان شهر",
+  "via": "agent-vision"
+ },
+ "C_X3QIhHRI64AoBUohVDUg.webp": {
+  "en": "Hand reaching toward a glowing holographic sphere containing a miniature smart city",
+  "fa": "دستی در حال رسیدن به گوی هولوگرامی درخشان با نمونه شهر هوشمند",
+  "via": "agent-vision"
+ },
+ "XBJWC5Y0QeWlBVdNrz9GQg.webp": {
+  "en": "Night aerial view of a futuristic city with glowing towers and light trails",
+  "fa": "نمای هوایی شبانه شهر آینده با برج‌های روشن و رد نور خودروها",
+  "via": "agent-vision"
+ },
+ "CKvHSjqxQriA-NbxJ5NJXA.webp": {
+  "en": "Hands wearing a smartwatch against blurred city high-rises",
+  "fa": "دست‌هایی با ساعت هوشمند در برابر برج‌های محو شهر",
+  "via": "agent-vision"
+ },
+ "xALRBQyRSBK-DsB9cSuiuQ.webp": {
+  "en": "Blue wireframe cityscape glowing with network connection lines",
+  "fa": "نمای سیمی آبی شهر با خطوط درخشان شبکه ارتباطی",
+  "via": "agent-vision"
+ },
+ "X-uHsm40.jpg": {
+  "en": "Aerial view of a riverside city with a large white dome arena",
+  "fa": "نمای هوایی شهری کنار رودخانه پهن با سالن گنبدی سفید بزرگ",
+  "via": "agent-vision"
+ },
+ "image0_0.jpg": {
+  "en": "Dusk aerial of a megacity with glowing multilevel highways and light trails",
+  "fa": "نمای هوایی ابرشهر در غروب با بزرگراه‌های چندطبقه روشن و رد نور",
+  "via": "agent-vision"
+ },
+ "image1_0.jpg": {
+  "en": "Sunset aerial of glass towers surrounding sweeping highway interchanges",
+  "fa": "نمای هوایی برج‌های شیشه‌ای و پل‌های بزرگراه درهم در غروب",
+  "via": "agent-vision"
+ },
+ "2023-10-03-22-1024x576.png": {
+  "en": "Pitch-deck slide titled Marketing Mastermind, Online Business 2024, with a 3D megaphone graphic",
+  "fa": "اسلاید ارائه «مارکتینگ مسترمایند، بیزینس آنلاین ۲۰۲۴» با گرافیک سه‌بعدی بلندگو",
+  "via": "agent-vision"
+ },
+ "2023-10-03-27-1024x576.png": {
+  "en": "Project Overview pitch-deck slide describing AI-powered retail systems with icon graphic",
+  "fa": "اسلاید «مرور پروژه» درباره سیستم‌های خرده‌فروشی هوش مصنوعی با گرافیک آیکون",
+  "via": "agent-vision"
+ },
+ "Small-and-beautiful-smart-city-in-the-heart-of-another-citye.png": {
+  "en": "Architectural scale model of a compact smart-city block with glass towers and trees",
+  "fa": "ماکت معماری یک بلوک شهری هوشمند با برج‌های شیشه‌ای و درختان",
+  "via": "agent-vision"
+ },
+ "smart-city-mehrdad-2.png": {
+  "en": "Night city with glowing white network lines linking districts across the water",
+  "fa": "شهر در شب با خطوط شبکه سفید درخشان میان مناطق دو سوی آب",
+  "via": "agent-vision"
+ },
+ "smart-city-mehrdad-1.png": {
+  "en": "Night highway light trails beneath a translucent network mesh overlay",
+  "fa": "رد نور بزرگراه شبانه زیر توری شفاف شبکه ارتباطی",
+  "via": "agent-vision"
+ },
+ "20230717102352_00037.png": {
+  "en": "Tilt-shift night street with blurred city lights and glowing headlights",
+  "fa": "خیابان شبانه با افکت تیلت‌شیفت، نورهای محو و چراغ‌های درخشان",
+  "via": "agent-vision"
+ },
+ "20230717102352_00038.png": {
+  "en": "Top-down tilt-shift view of a night intersection with glowing headlights",
+  "fa": "نمای بالا به پایین چهارراه شبانه با تیلت‌شیفت و چراغ‌های درخشان",
+  "via": "agent-vision"
+ },
+ "20230717102352_00075.png": {
+  "en": "Yellow sports car on a neon-lit street with glowing crosswalk stripes",
+  "fa": "خودروی اسپرت زرد در خیابان نئونی با خطوط عابرپیاده درخشان",
+  "via": "agent-vision"
+ },
+ "Smart-City-and-Artificial-Intelligence3.png": {
+  "en": "Futuristic city montage with glowing yellow roads, a green park and translucent UI panels",
+  "fa": "کلاژ شهر آینده با جاده‌های زرد درخشان، پارک سبز و پنل‌های شفاف رابط کاربری",
+  "via": "agent-vision"
+ },
+ "Untitled2.png": {
+  "en": "Painted dystopian megacity of dense towers in industrial haze",
+  "fa": "ابرشهر نقاشی‌شده با برج‌های انبوه در مه صنعتی",
+  "via": "agent-vision"
+ },
+ "Traffic-management-in-the-smart-city-mehrdad4.png": {
+  "en": "Smart traffic camera with wireframe overlay displaying a traffic dashboard",
+  "fa": "دوربین هوشمند ترافیک با پوشش سیمی و داشبورد نمایش ترافیک",
+  "via": "agent-vision"
+ },
+ "Traffic-management-in-the-smart-city-mehrdad.png": {
+  "en": "Rendered smart-road interchange with glowing traffic island and white cars",
+  "fa": "تقاطع هوشمند سه‌بعدی با جزیره درخشان ترافیک و خودروهای سفید",
+  "via": "agent-vision"
+ },
+ "Smart-City-and-Artificial-Intelligence.png": {
+  "en": "Tilt-shift miniature of a tree-lined elevated roadway between colorful buildings",
+  "fa": "صحنه مینیاتوری جاده مرتفع درخت‌کاری‌شده میان ساختمان‌های رنگی",
+  "via": "agent-vision"
+ },
+ "Smart-City-and-Artificial-Intelligence2.png": {
+  "en": "Night aerial of a glowing blue funnel-shaped tower above a lit city grid",
+  "fa": "نمای هوایی شبانه برج قیفی آبی درخشان بر شبکه خیابان‌های روشن",
+  "via": "agent-vision"
+ },
+ "Modern-Startup-Medical-and-Health-Plan-for-motorless-people.png": {
+  "en": "Concept pictogram of two people with a small API-marked mobility cart under a spotlight",
+  "fa": "پیکتوگرام مفهومی دو نفر با وسیله حرکتی کوچک نشانه‌دار API زیر نورافکن",
+  "via": "agent-vision"
+ },
+ "Mehrdad-Health-Startup-Design.png": {
+  "en": "Round copper-rimmed badge with engraved lettering on a designer desk",
+  "fa": "نشان گرد با لبه مسی و حکاکی حروف روی میز طراح",
+  "via": "agent-vision"
+ },
+ "smart-city.png": {
+  "en": "Futuristic city render with bright green waterways and sweeping curved roads",
+  "fa": "رندر شهر آینده با آب‌راه‌های سبز روشن و جاده‌های خمیده",
+  "via": "agent-vision"
+ },
+ "output_11.png": {
+  "en": "Futuristic curved hall framing holographic city towers in a glowing oval",
+  "fa": "تالار منحنی آینده‌نگر با برج‌های هولوگرامی شهر در قابی بیضی نورانی",
+  "via": "agent-vision"
+ },
+ "mehrdad.ir-pic-game.png": {
+  "en": "Fantasy game map of a glowing crystal structure holding buildings, with game logo",
+  "fa": "نقشه فانتزی بازی با سازه بلوری درخشان شامل ساختمان‌ها و لوگوی بازی",
+  "via": "agent-vision"
+ },
+ "output_164.png": {
+  "en": "Dark dashboard collage with glowing wireframe face outline and colored panels",
+  "fa": "کلاژ داشبورد تیره با خطوط درخشان چهره و پنل‌های رنگی",
+  "via": "agent-vision"
+ },
+ "output_12.png": {
+  "en": "Isometric game world map with green islands and glowing white network beams",
+  "fa": "نقشه ایزومتریک بازی با جزایر سبز و پرتوهای سفید شبکه‌مانند",
+  "via": "agent-vision"
+ },
+ "output_16544.png": {
+  "en": "Metallic robot-face emblem over a collage of banknotes with gold accents",
+  "fa": "نشان فلزی چهره ربات روی کلاژ اسکناس با جزئیات طلایی",
+  "via": "agent-vision"
+ },
+ "output_1.png": {
+  "en": "Close-up of a white robot head with round blue eyes and exposed golden parts",
+  "fa": "نمای نزدیک سر ربات سفید با چشمان گرد آبی و قطعات طلایی بیرون‌زده",
+  "via": "agent-vision"
+ },
+ "output_1.webp": {
+  "en": "Aerial render of a planned district with a geometric central park and white buildings",
+  "fa": "رندر هوایی منطقه شهری با پارک مرکزی هندسی و ساختمان‌های سفید",
+  "via": "agent-vision"
+ },
+ "output_12.webp": {
+  "en": "Aerial render of a coastal city of curved white towers beside green fields",
+  "fa": "رندر هوایی شهر ساحلی با برج‌های خمیده سفید کنار دشت‌های سبز",
+  "via": "agent-vision"
+ },
+ "output_13.webp": {
+  "en": "Night aerial of curved glass towers around a lit highway loop",
+  "fa": "نمای هوایی شبانه برج‌های خمیده شیشه‌ای گرد حلقه بزرگراه روشن",
+  "via": "agent-vision"
+ },
+ "output_1436.webp": {
+  "en": "Compact two-wheeled delivery robot on a cobblestone city street",
+  "fa": "ربات تحویل کوچک دوموتوره در خیابان سنگ‌فرش شهر",
+  "via": "agent-vision"
+ },
+ "output_13465صشثفل.webp": {
+  "en": "Yellow humanoid robot walking through a neon futuristic street canyon",
+  "fa": "ربات انسان‌نمای زرد در حال قدم‌زدن در گذر نئونی شهر آینده",
+  "via": "agent-vision"
+ },
+ "output_1jh.webp": {
+  "en": "Cute white robot with pink accents before a colorful toy-like city collage",
+  "fa": "ربات سفید بامزه با جزئیات صورتی بر زمینه شهری رنگارنگ",
+  "via": "agent-vision"
+ },
+ "output_13ey.webp": {
+  "en": "Night aerial of a coastal skyline centered on a glowing circular stadium",
+  "fa": "نمای هوایی شبانه خط آسمان ساحلی با استادیوم گرد درخشان در مرکز",
+  "via": "agent-vision"
+ },
+ "output_1sdg.webp": {
+  "en": "Cyan glowing cylindrical tower hologram among wireframe skyscrapers",
+  "fa": "هولوگرام برج استوانه‌ای فیروزه‌ای درخشان میان آسمان‌خراش‌های سیمی",
+  "via": "agent-vision"
+ },
+ "Boston-Dynamics-Spot-2.jpg": {
+  "en": "Yellow Boston Dynamics Spot quadruped robot standing on gravel",
+  "fa": "ربات چهارپای زرد اسپات بوستون داینامیکس روی زمین شنی",
+  "via": "agent-vision"
+ },
+ "Pick-ربات-1024x576.jpg": {
+  "en": "Blue Yaskawa robotic arm with suction gripper holding green bottles in a warehouse",
+  "fa": "بازوی رباتیک آبی یاسکاوا با گیرنده مکشی و بطری‌های سبز در انبار",
+  "via": "agent-vision"
+ },
+ "Ava.png": {
+  "en": "Three views of the iRobot Ava telepresence robot with a video-call screen",
+  "fa": "سه نمای ربات حضور از راه دور Ava با صفحه تماس تصویری",
+  "via": "agent-vision"
+ },
+ "atlasربات-robot-_.jpg": {
+  "en": "Boston Dynamics Atlas humanoid robot with labeled white torso",
+  "fa": "ربات انسان‌نمای اطلس بوستون داینامیکس با تن سفید نشان‌دار",
+  "via": "agent-vision"
+ },
+ "1485207_467-1024x683.jpg": {
+  "en": "Passenger reading a magazine in a self-driving car with map icons on the windshield",
+  "fa": "سرنشین در حال مطالعه در خودروی خودران با آیکون‌های نقشه روی شیشه",
+  "via": "agent-vision"
+ },
+ "autonomous-car-3201.jpg": {
+  "en": "Illustration of a red autonomous car sensing traffic and a pedestrian via an AI chip",
+  "fa": "تصویرسازی خودروی خودران قرمز در حال رصد ترافیک و عابر با تراشه هوش مصنوعی",
+  "via": "agent-vision"
+ },
+ "future-of-self-driving-cars-5.jpg": {
+  "en": "Relaxed passenger in a self-driving car with glowing navigation dashboard",
+  "fa": "سرنشین آسوده در خودروی خودران با داشبورد ناوبری درخشان",
+  "via": "agent-vision"
+ },
+ "93fqclygib6b.jpeg": {
+  "en": "Diagram of autonomous-car sensors labeling LiDAR, radar, camera and wireless zones",
+  "fa": "نمودار حسگرهای خودروی خودران با برچسب لیدار، رادار، دوربین و ارتباط بی‌سیم",
+  "via": "agent-vision"
+ },
+ "2020-09-Smart-cars.jpg": {
+  "en": "Passenger typing on a laptop inside a connected car with glowing network graphics",
+  "fa": "سرنشین در حال کار با لپ‌تاپ در خودروی متصل با گرافیک شبکه درخشان",
+  "via": "agent-vision"
+ },
+ "Smart-Cars-1.jpg": {
+  "en": "Car cockpit surrounded by floating connected-car icons linked in a network",
+  "fa": "کابین خودرو با آیکون‌های شناور خودروی متصل و خطوط ارتباطی",
+  "via": "agent-vision"
+ },
+ "080921_The-Importance-Of-Branding-In-Businesses_2-how-to-create-a-great-brand-1024x536-1.jpg": {
+  "en": "Flat illustration of a team launching a BRAND rocket among social-media icons",
+  "fa": "تصویرسازی تیم در پرتاب موشک «برند» میان آیکون‌های شبکه اجتماعی",
+  "via": "agent-vision"
+ },
+ "img-stories-hero-1024x539.png": {
+  "en": "Flat illustration of characters around a rocket and rising pink growth arrow",
+  "fa": "تصویرسازی شخصیت‌ها دور موشک با فلش رشد صعودی صورتی",
+  "via": "agent-vision"
+ },
+ "online-accounting-software-01.jpg": {
+  "en": "Flat top-view desk scene with laptop website, charts and a calculator",
+  "fa": "نمای بالای میز کار با لپ‌تاپ، نمودار و ماشین‌حساب به سبک فلت",
+  "via": "agent-vision"
+ },
+ "unnamed.png": {
+  "en": "Google Pay logo with multicolor interlocking shapes above the wordmark",
+  "fa": "لوگوی گوگل‌پی با اشکال رنگی درهم‌تنیده بالای نام برند",
+  "via": "agent-vision"
+ },
+ "2560px-Amazon_Pay_logo.svg_-1024x197.png": {
+  "en": "Amazon Pay wordmark with orange smile arrow beneath amazon",
+  "fa": "نوشتار لوگوی آمازون‌پی با فلش لبخند نارنجی زیر واژه آمازون",
+  "via": "agent-vision"
+ },
+ "images.jpg": {
+  "en": "Blue PayPal logo letters mounted on an outdoor sign",
+  "fa": "حروف لوگوی آبی پی‌پال نصب‌شده روی تابلوی بیرونی",
+  "via": "agent-vision"
+ },
+ "00NYvisAlon69Zj6S7H5BV3-14.fit_scale.size_1028x578.v1602519260-1024x576.png": {
+  "en": "Samsung Pay logo with blue Pay badge beside the wordmark",
+  "fa": "لوگوی سامسونگ‌پی با نشان آبی Pay در کنار نام برند",
+  "via": "agent-vision"
+ },
+ "visa-mastercard-logos.jpg": {
+  "en": "Visa and Mastercard logos side by side on a light background",
+  "fa": "لوگوهای ویزا و مسترکارت کنار هم روی پس‌زمینه روشن",
+  "via": "agent-vision"
+ },
+ "how-to-improve-your-work-2.jpg": {
+  "en": "Profile of a man with arrows branching from his head symbolizing scattered focus",
+  "fa": "نیم‌رخ مردی با فلش‌های منشعب از سرش نماد حواس‌پرتی",
+  "via": "agent-vision"
+ },
+ "research-header.jpg": {
+  "en": "Infographic of people silhouettes linked to research and idea icons on teal",
+  "fa": "اینفوگرافیک سیلوئت افراد متصل به آیکون‌های پژوهش و ایده روی زمینه فیروزه‌ای",
+  "via": "agent-vision"
+ },
+ "Accounting-software-0-1024x402.jpg": {
+  "en": "Purple flat illustration of a laptop with charts, TAX papers, calculator and coins",
+  "fa": "تصویرسازی بنفش لپ‌تاپ با نمودار، برگه مالیات، ماشین‌حساب و سکه‌ها",
+  "via": "agent-vision"
+ },
+ "accounting-software.jpeg": {
+  "en": "Blue infographic of a cloud server hub with lock and shield linked to devices",
+  "fa": "اینفوگرافیک آبی ابر سرور با قفل و سپر متصل به دستگاه‌ها",
+  "via": "agent-vision"
+ },
+ "183391-1.jpg": {
+  "en": "WALL-E toy robot holding a small sprout on cobblestones",
+  "fa": "عروسک ربات وال-ای با شاخه جوانه در دست روی سنگ‌فرش",
+  "via": "agent-vision"
+ },
+ "star-1-1024x576.jpg": {
+  "en": "Golden banner with Persian heading New Banking System and a Neo Bank ++ ribbon",
+  "fa": "بنر طلایی با تیتر «سیستم مالی بانکی جدید» و روبان «Neo Bank ++»",
+  "via": "agent-vision"
+ },
+ "pdf.jpg": {
+  "en": "Green button graphic reading Download File in Persian with PDF and down arrow",
+  "fa": "دکمه سبز «دانلود فایل PDF» با فلش رو به پایین",
+  "via": "agent-vision"
+ },
+ "4f9ce6d7755cf2c3d0bcc7b3c501374a.jpg": {
+  "en": "Monochrome android with exposed mechanical skeleton and white face plate",
+  "fa": "اندروید تک‌رنگ با اسکلت مکانیکی نمایان و صورت سفید",
+  "via": "agent-vision"
+ },
+ "robat-827x1024.jpg": {
+  "en": "Flat cartoon robot with orange round head and dark wheeled body",
+  "fa": "ربات کارتونی ساده با سر گرد نارنجی و بدنه تیره چرخ‌دار",
+  "via": "agent-vision"
+ },
+ "smart-home.jpg-hamyarit.com-smart-home.jpg.webp": {
+  "en": "Hands holding a tablet with a smart-home control panel in a bright living room",
+  "fa": "دست‌هایی با تبلت پنل کنترل خانه هوشمند در نشیمن روشن",
+  "via": "agent-vision"
+ },
+ "Picture2-1024x652.png": {
+  "en": "Persian flowchart of the invention process from early-phase registration to final contract, inside an arrow",
+  "fa": "فلوچارت فارسی مراحل اختراع از ثبت در فاز اولیه تا ثبت قرارداد نهایی درون فلش",
+  "via": "agent-vision"
+ },
+ "smart-city-.jpg": {
+  "en": "Night skyline with glowing blue smart-city icons above the buildings",
+  "fa": "خط آسمان شبانه با آیکون‌های آبی درخشان شهر هوشمند بر فراز ساختمان‌ها",
+  "via": "agent-vision"
+ },
+ "smart-city.jpg": {
+  "en": "Dusk city with a SMART CITY hub linking icons for EVs, bikes, homes and people",
+  "fa": "شهر در غروب با هاب اسمارت‌سیتی متصل به آیکون‌های خودروی برقی، دوچرخه، خانه و مردم",
+  "via": "agent-vision"
+ },
+ "Commercialization-1024x569.jpg": {
+  "en": "Open book with glowing idea bulb and school doodles like rockets and formulas",
+  "fa": "کتاب باز با لامپ ایده درخشان و نقاشی‌های آموزشی مانند موشک و فرمول‌ها",
+  "via": "agent-vision"
+ },
+ "Coin_of_Mithradates_I_of_Parthia_Seleucia_mint.jpg": {
+  "en": "Silver Parthian coin of Mithridates I showing the bearded king in profile",
+  "fa": "سکه نقره‌ای مهرداد یکم اشکانی با چهره پادشاه ریش‌دار در نمای نیم‌رخ",
+  "via": "agent-vision"
+ },
+ "Conquest_of_Mithridates_I.svg_-1024x531.png": {
+  "en": "Map of Parthian expansion under Mithridates I with dated conquest regions",
+  "fa": "نقشه گسترش اشکانیان در زمان مهرداد یکم با مناطق فتح‌شده تاریخ‌دار",
+  "via": "agent-vision"
+ },
+ "1200px-Xong-e_Ashdar_Parthian_relief-1024x768.jpg": {
+  "en": "Parthian rock relief of a horseman and standing figures carved in stone",
+  "fa": "نگاره سنگی اشکانی سوارکار و ایستادگان حک‌شده در دل سنگ",
+  "via": "agent-vision"
+ },
+ "screen1-1024x640.png": {
+  "en": "Clubhouse web dashboard showing events, a Kanye West Interview room and speaker list",
+  "fa": "داشبورد وب کلاه‌هاوس با رویدادها، اتاق مصاحبه کانیه وست و فهرست سخنرانان",
+  "via": "agent-vision"
+ },
+ "screen2-1024x640.png": {
+  "en": "Clubhouse web dashboard with a club profile, follower counts and member club icons",
+  "fa": "داشبورد وب کلاه‌هاوس با پروفایل کلوپ، شمار دنبال‌کنندگان و آیکون کلوپ‌ها",
+  "via": "agent-vision"
  }
 }
