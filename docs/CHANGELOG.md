@@ -84,6 +84,13 @@ All notable changes to mehrdad.ir. Format: Keep-a-Changelog-ish, newest first.
   browser tests (`analysis/test_lang_banner.ts`).
 
 ### Fixed
+- **FDE Services card showed a raw Persian sentence in the EN view**: the
+  core-service card's secondary line rendered the *other* language's DB
+  title, so English visitors saw «مهندسی در خط مقدم حل مسئله». The card
+  tagline is now a proper bilingual i18n string (`fde.cardTagline`):
+  EN shows the English translation "Engineering on the front line of
+  problem-solving"; FA keeps showing "Forward Deployed Engineering".
+  Verified in browser in both languages; zero console errors.
 - **PWA service worker registered in production only** (`PwaClient`);
   cache version bumped to `mehrdad-v2`. In dev, rebuild-changing chunk
   hashes + a cached shell SW caused full-load hydration crashes

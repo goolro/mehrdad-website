@@ -352,3 +352,19 @@ Stage Summary:
 - تولید: ۱۶ دستی (Phase 1) + ۱۰۲ agent-vision (Phase 2)؛ VLM API در کل بازه کار 429 بود — طبق قانون هیچ درخواست موازی‌ای برای دور زدن آن زده نشد
 - pipeline و مستندات اجرای مجدد برای پست‌های آینده: docs/ALT_PIPELINE.md
 - تست زنده LLM مربوط به AI Context صفحه FDE (Task 12) همچنان منتظر رفع 429 خارجی است
+
+---
+Task ID: 15
+Agent: Z.ai Code (main)
+Task: گزارش مالک — روی صفحه Services در حالت انگلیسی جمله فارسی «مهندسی در خط مقدم حل مسئله» نمایش داده می‌شد؛ ترجمه انگلیسی جایگزین شود
+
+Work Log:
+- Inspect: ریشه‌یابی — خط زیرعنوان کارت FDE در ServicesView.tsx عمداً عنوانِ «زبان دیگر» را نشان می‌داد: `pick(lang, s.titleFa, s.titleEn)` → در حالت EN مقدار titleFa دیتابیس (جمله فارسی) رندر می‌شد
+- Fix: فیلد دوزبانه `fde.cardTagline` به src/components/site/i18n.ts اضافه شد (EN: «Engineering on the front line of problem-solving» — ترجمه واقعی نام فارسی؛ FA: «Forward Deployed Engineering» — رفتار قبلی حفظ شد) و زیرعنوان کارت به `t.fde.cardTagline` تغییر کرد
+- Test: bun run lint — پاک، بدون خطا
+- Browser Verify (agent-browser): EN — کارت FDE اکنون: «Forward Deployed Engineering» + «Engineering on the front line of problem-solving»، صفر جمله فارسی ✓ | FA — «مهندسی در خط مقدم حل مسئله» + «Forward Deployed Engineering» بدون رگرسیون ✓ | کنسول و خطاهای صفحه: صفر ✓ | dev.log: بدون خطا
+- Documentation: docs/CHANGELOG.md [Unreleased]→Fixed + همین worklog
+- Git: commit `545571d` ساخته شد؛ **push ناموفق** — sandbox بازچرخیده و هیچ اعتبارنامه‌ای (token/SSH/credential-helper) ندارد؛ دو commit آماده push: `080bc5a` (Phase-2 alt-text) + `545571d` (این فیکس) — در انتظار توکن مالک
+
+Stage Summary:
+- در هر دو زبان هر دو خط کارت FDE اکنون به زبان درست‌اند؛ الگوی «زیرعنوان = نام رسمی به زبان دیگر» حفظ شد اما منبعش i18n است نه titleFa دیتابیس

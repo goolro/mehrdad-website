@@ -57,7 +57,7 @@ export function ServicesView() {
               </div>
               <h3 className={`mt-4 font-bold ${isFde ? 'text-xl' : 'text-lg'}`}>{pick(lang, s.titleEn, s.titleFa)}</h3>
               {isFde && (
-                <p className="mt-1 text-xs font-medium text-muted-foreground">{pick(lang, s.titleFa, s.titleEn)}</p>
+                <p className="mt-1 text-xs font-medium text-muted-foreground">{t.fde.cardTagline}</p>
               )}
               <p className={`mt-2 text-sm text-muted-foreground ${isFde ? 'line-clamp-2' : 'line-clamp-3'}`}>{pick(lang, s.descEn, s.descFa)}</p>
               {isFde && (
