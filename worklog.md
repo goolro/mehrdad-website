@@ -368,3 +368,19 @@ Work Log:
 
 Stage Summary:
 - در هر دو زبان هر دو خط کارت FDE اکنون به زبان درست‌اند؛ الگوی «زیرعنوان = نام رسمی به زبان دیگر» حفظ شد اما منبعش i18n است نه titleFa دیتابیس
+
+---
+Task ID: 15-b (addendum)
+Agent: Z.ai Code (main)
+Task: دریافت توکن GitHub از مالک → تکمیل pushهای معوق + رفع یک commit تصادفی
+
+Work Log:
+- توکن از مالک دریافت شد (فقط inline و یک‌بارمصرف استفاده شد؛ در هیچ فایل/config/remote ذخیره نشد)
+- push اول: e6c3344..ec9cb42 — اما بررسی نشان داد یک commit تصادفی خودکار (پیام UUID، فایل upload/pasted_image_1788349704898.png — آرتیفکت paste چت) روی سر گروه ساخته و همراهش publish شده بود
+- اصلاح: reset محلی به 7f945cd (فایل تصویر روی دیسک ماند و فقط untracked شد) + افزودن /upload/ به .gitignore (ریشه مشکل — قبلاً پوشیده نبود) + commit 4997bd9 + force-push با lease صریح ec9cb42→4997bd9
+- Verify نهایی: remote/main == local == 4997bd9
+
+Stage Summary:
+- هر دو کار معوق منتشر شد: 080bc5a (Phase-2 alt-text 118/118) + 7f945cd (فیکس i18n کارت FDE) + 4997bd9 (gitignore)
+- commit تصادفی تصویر چت از تاریخچه public حذف شد؛ از این پس /upload/ هرگز commit نمی‌شود
+- توکن به مالک توصیه شد بعد از این مرحله revoke/rotate کند چون در چت plaintext بود
