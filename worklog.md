@@ -306,3 +306,27 @@ Stage Summary:
 - دستیار AI حالا صفحه‌آگاه است (چیپ پیشنهادی + پاسخ grounded روی سرویس)
 - SW فقط production ثبت می‌شود — کلاس باگ dev-crash حذف شد
 - باقی‌مانده برای پاسخ زنده LLM: وابسته به رفع 429 سرویس (خارج از کنترل کد)
+
+---
+Task ID: 13
+Agent: Z.ai Code (main)
+Task: ROADMAP P1 — تکمیل واقعی Alt-Text توصیفی تصاویر محتوایی (D-022) + حفظ وضعیت تأییدشده 543137c
+
+Work Log:
+- پیش از شروع: کامیت UUID پوش‌نشده 5874915 (فقط touch بی‌اثر DB) شناسایی و با reset --hard حذف شد؛ 543137c به‌عنوان مرجع حفظ شد (دستور مالک)
+- ممیزی baseline: ۸۳ پست، ۲۴۲ تگ img (۱۰۰٪ junk «Image/تصویر»)، ۱۱۸ تصویر یکتا، ۱۱۸/۱۱۸ روی دیسک، کش صفر — اجرای قبلی هیچ اثری نداشت
+- بازنویسی کامل analysis/fix_alts.ts: رفع هر دو باگ گزارش‌شده (شاخه no-alt در rewrite که alt را دوبار درج می‌کرد + شمارنده char-by-char بی‌معنا → شمارش واقعی tag) + معماری جدید probe-first (وقتی سرویس down است بودجه retry سوزانده نمی‌شود)، backoff نمایی + jitter + storm circuit-breaker، persistence بعد از هر تصویر، failed queue روی دیسک (alt_failed.json)، --audit/--validate/--merge-manual/--apply، گزارش آماری
+- تست واحد منطق rewrite با اشکال واقعی تگ‌های DB (فارسی خام، percent-encoded، no-alt، escaping HTML، حفظ loading="lazy"): ۱۴/۱۴ پاس (analysis/test_rewrite.ts)
+- کشف زیرساختی ۱: sandbox پروسه‌های پس‌زمینه را بین tool-callها می‌کشد (حتی setsid+nohup) → اجرای foreground با پنجره‌های ~۹ دقیقه‌ای + supervisor به‌عنوان bonus
+- کشف زیرساختی ۲: طوفان 429 هر دو کانال LLM (vision + text) به مدت ۵+ ساعت — probeهای منظم هیچ ریست کمّی (از جمله نیمه‌شب UTC) را نشان ندادند
+- Plan B: تولید دستی ۱۶ alt دوزبانه باvision خود ایجنت برای تصاویر اولویت‌دار (همه تصاویر ۶ پست منتخب صفحه اصلی + نمونه‌های متنوع: عکس شهری/لوگو/اسکرین‌شات اپ/UI پرداخت/پروژه ریلی) با provenance «via: agent-vision» در analysis/alt_manual.json؛ validate: VALIDATION PASS (صفر junk/duplicate/طول غیرمجاز/ناهماهنگی زبان)
+- --apply: بکاپ db/custom.backup-20260902002035.db → ۱۱ پست به‌روز، ۱۸ تگ EN + ۱۸ تگ FA بازنویسی (۳۶ تگ = ۱۶ unique؛ cropped-blog-08.jpg شش‌بار استفاده شده — ریاضی tags≠names×2 توجیه و تأیید شد) → مارکر alt_text_descriptive_v1 → post-audit: junk از ۲۴۲ به ۲۰۶ (۱۰۲ unique باقی = ۱۱۸−۱۶ ✓)
+- کشف زیرساختی ۳: next-server طولانی‌مدت snapshot کهنه SQLite را از نوشته خارج از پروسه سرو می‌کرد (Prisma/SQLite engine cache) — با restart dev server حل شد؛ برای آینده: بعد از نوشته خارجی روی DB، سرور را restart کن
+- UI Regression مرورگری: مقاله trade-corridors دسکتاپ 1440 EN (۶/۶ توصیفی، صفر junk، بدون overflow) ✓ | همان مقاله FA/RTL (alt فارسی در DOM، dir=rtl) ✓ | موبایل ۳۹۰ FA پست mini-smart-city (۱ توصیفی + ۱ باقی‌مانده = دقیقاً وضعیت Phase-1، بدون overflow) ✓ | تبلت ۷۶۸ صفحه اصلی (H1 شعار، کاورها دست‌نخورده، صفر خطای کنسول) ✓ — اسکرین‌شات‌ها در analysis/verify_alts_*.png
+- مستندات: ROADMAP (وضعیت Phase-1 + دستور resume)، CHANGELOG [Unreleased]، به‌روزرسانی همین worklog
+
+Stage Summary:
+- ۱۶/۱۱۸ تصویر یکتا حالا alt توصیفی دوزبانه واقعی دارند (۳۶/۲۴۲ تگ)؛ هیچ apply بدون بکاپ و idempotency انجام نشد
+- pipeline برای ۱۰۲ تصویر باقی‌مانده آماده و resume-safe است: `bun analysis/fix_alts.ts` (تولید با VLM) سپس `bun analysis/fix_alts.ts --apply` — به‌محض رفع 429 خارجی
+- External Blockage ثبت شد: LLM Rate Limit (۵+ ساعت، هر دو کانال) — طبق دستور مالک به‌عنوان بلوکه خارجی، نه باگ
+- تست زنده LLM مربوط به AI Context صفحه FDE (Task 12) نیز همچنان منتظر همان رفع 429 است

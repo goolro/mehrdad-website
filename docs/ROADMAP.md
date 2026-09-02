@@ -56,7 +56,13 @@ Last updated: 2026-09-01
       startup financials, currently `draft`)
 - [x] Curated tags (32 ≤ 50) replacing the retired 4,872-tag dump (D-020):
       fixed bilingual taxonomy, constrained assignment, blog filter UI
-- [ ] Alt-text completion for mirrored images (legacy coverage ~52%)
+- [ ] Alt-text completion for in-content images — PHASE 1 DONE (D-022):
+      16/118 unique images now carry concise descriptive bilingual alt
+      (hand-reviewed, agent-vision) — 36 img tags across 11 posts, junk
+      alt eliminated for them; remaining 102 blocked externally (LLM
+      provider rate-limit storm, 5h+). Resume is one command:
+      `bun analysis/fix_alts.ts` (probe-first, resume-safe VLM pipeline
+      with backoff+jitter, failed queue, validation) then `--apply`
 - [ ] Import decision: 10 legacy web-stories as micro-notes (`kind=note`)
 - [ ] Featured images for top articles (currently first-body-image fallback)
 

@@ -63,3 +63,4 @@ db/custom.backup-*.db
 *.aab
 .android/
 .bubblewrap/
+alt_run.log

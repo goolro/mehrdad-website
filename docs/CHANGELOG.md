@@ -5,6 +5,18 @@ All notable changes to mehrdad.ir. Format: Keep-a-Changelog-ish, newest first.
 ## [Unreleased]
 
 ### Added
+- **Descriptive image alt text — Phase 1 (accessibility/SEO, D-022)**:
+  the junk alt (`Image`/`تصویر`) on 16/118 unique in-content images was
+  replaced with concise hand-reviewed bilingual descriptions (36 img tags
+  across 11 posts, EN+FA, HTML-escaped, idempotent rewrite). The pipeline
+  for the rest is committed: `analysis/fix_alts.ts` — probe-first VLM
+  generation (exponential backoff + jitter + storm circuit-breaker,
+  per-image persistence, failed queue, junk/duplicate/length/language
+  validation) and `--apply` (timestamped DB backup + `--merge-manual` for
+  hand-authored entries + marker `alt_text_descriptive_v1` + post-audit).
+  Rewrite logic covered by 14/14 unit tests (`analysis/test_rewrite.ts`).
+  Remaining 102 images are blocked externally (LLM provider rate-limit
+  storm, 5h+); resume: `bun analysis/fix_alts.ts` then `--apply`.
 - **Forward Deployed Engineering service (owner directive)**: the brand's
   new core service, built as a full experience — not a plain card:
   - `#fde` dedicated bilingual page (`FdeView.tsx`): hero with the
