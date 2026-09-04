@@ -551,3 +551,22 @@ Stage Summary:
 - افشای عمومی داده‌ها بسته شد؛ داده فقط در آرشیو خصوصی مالک است (goolro/mehrdad-website-archive)
 - مالک هر وقت خواست آرشیو را از UI حذف کند (Settings → Danger Zone) یا نگهش دارد به‌عنوان بکاپ
 - یادآوری پایدار: توکن ghp_9omo... در چت لو رفته — پس از پایان پروژه باید حذف شود
+
+---
+Task ID: 22
+Agent: main (Z.ai Code)
+Task: دور دوم سخت‌سازی امنیتی — XSS sanitizer، rate limit، notice حریم خصوصی چت
+
+Work Log:
+- نصب sanitize-html + @types
+- lib/sanitize.ts: allowlist کامل (بدون script/style/iframe/form/event handlers/javascript:، حفظ dir برای RTL، rel امن روی لینک‌ها، loading=lazy تصاویر) + sanitizePlainText
+- sanitize دو-لایه: قبل از ذخیره (admin/posts POST، ai/write، ai/translate) و موقع خواندن (GET /api/posts و /api/posts/[slug])
+- lib/rate-limit.ts: پنجرهٔ ثابت درون-حافظه‌ای با کلید per-IP، sweep حافظه، پاسخ 429 + Retry-After
+- اعمال: login 5/15دقیقه، chat 10/دقیقه، contact 3/10دقیقه، comments 5/10دقیقه
+- ChatWidget: notice مرئی دوزبانه حریم خصوصی + پیام دوستانهٔ 429 (t.chat.tooFast)
+- تست محلی: sanitizer اسکریپت/onerror/javascript: را حذف و RTL را حفظ کرد؛ login بدون ADMIN_PASSWORD => 503؛ تلاش ششم login => 429؛ یازدهمین chat => 429؛ چهارمین contact => 429؛ /api/posts سالم (82 پست)
+- lint پاس؛ commit + push به goolro/mehrdad-website
+
+Stage Summary:
+- همهٔ فیکس‌های «هفتهٔ اول» گزارش کارشناس به‌جز CSP nonce و session cookie انجام شد
+- باقی‌مانده برای دیپلوی بعدی: build آرتیفکت v3 (شامل فیکس‌های 19-22 + فوتر) و فعال‌سازی چت AI با .z-ai-config
