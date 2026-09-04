@@ -43,7 +43,15 @@ export function Footer() {
         </p>
 
         <div className="mt-4 text-center text-xs text-muted-foreground">
-          © {year} mehrdad.ir — {t.footer.rights} · {t.footer.builtWith} ✦
+          © {year}{' '}
+          <a
+            href="/"
+            aria-label="mehrdad.ir — بازگشت به صفحه اصلی"
+            className="font-medium transition-colors hover:text-foreground"
+          >
+            mehrdad.ir
+          </a>{' '}
+          — {t.footer.rights} · {t.footer.builtWith} ✦
         </div>
       </div>
     </footer>

@@ -496,3 +496,18 @@ Stage Summary:
 - ریپوی اصلی: commit schema+build script → push به goolro/mehrdad-website
 - ریپوی دیپلوی: قطعات جدید + SHA256SUMS.repo + deploy.sh v2 → push به goolro/mehrdad-cpanel-deploy
 - عملیات مالک: فقط Update from Remote → Deploy HEAD Commit → تست /api/posts (دیتابیس production دست‌نخورده می‌ماند)
+
+---
+Task ID: 19
+Agent: main (Z.ai Code)
+Task: تغییر سئویی فوتر — لینک کردن «mehrdad.ir» در خط کپی‌رایت به صفحه اصلی
+
+Work Log:
+- جستجو و پیدا کردن فوتر در src/components/site/Footer.tsx (خط کپی‌رایت © year mehrdad.ir)
+- مشاورهٔ سئو به مالک: فقط «mehrdad.ir» لینک شود؛ «Powered by» به mehrdad.ir لینک نشود (انکرتکست نامرتبط + تقسیم ارزش لینک یکسان)
+- ویرایش Footer.tsx: «mehrdad.ir» به <a href="/"> با aria-label و hover تبدیل شد؛ «Powered by AI ✦» متن ساده ماند
+- bun run lint: پاس بدون خطا
+- چک زندهٔ پروداکشن: / → 200 سبز؛ /api/site هنوز timeout (سقف پروسه CloudLinux در حال آزاد شدن)
+
+Stage Summary:
+- تغییر فوتر در کد محلی انجام شد ولی هنوز در آرتیفکت/گیت نیست — باید در دیپلوی بعدی (ترجیحاً همراه فعال‌سازی چت AI در یک دیپلوی واحد) منتشر شود
