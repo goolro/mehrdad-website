@@ -607,3 +607,26 @@ Work Log:
 Stage Summary:
 - همهٔ موارد بحرانی/بالا/هفتهٔاول گزارش کارشناسی بسته شد (جز CSP nonce و session cookie که عمداً بعداً)
 - پروداکشن هنوز روی هاست معلق است — منتظر پاسخ تیکت میزبان‌فا
+
+---
+Task ID: turso-test
+Agent: Z.ai Code (main)
+Task: تست عملی Turso (پلن رایگان) برای طرح B — راستی‌آزمایی اینکه Prisma + Turso برای mehrdad.ir قابل استفاده است
+
+Work Log:
+- اعتبارسنجی API token اکانت goolro → معتبر، پلن starter (رایگان)، org سالم و بلاک نشده
+- ساخت گروه default در لوکیشن aws-ap-south-1 (بمبئی — نزدیک‌ترین به ایران در لیست AWS این اکانت)
+- ساخت دیتابیس «mehrdad» → mehrdad-goolro.aws-ap-south-1.turso.io + تولید DB JWT
+- Smoke test خام HTTP (/v2/pipeline): SELECT 1 ✅ / CREATE TABLE ✅ / INSERT ✅ (query ~37-92ms از sandbox)
+- نکته کشف‌شده: Prisma 6.19 CLI نه provider «libsql» دارد و نه URL «libsql://» را در db push قبول می‌کند
+- مسیر صحیح: `prisma migrate diff --from-empty --to-schema-datamodel --script` → init.sql (15 جدول + 15 ایندکس) → اجرا با @libsql/client executeMultiple ✅
+- تست مسیر پروداکشن: @prisma/adapter-libsql + PrismaClient({adapter}) → upsert/create/find/delete/count روی دیتابیس ریموت ✅ (cuid هم کار می‌کند)
+- پاکسازی آثار تست (DROP _smoke، حذف دو ردیف SiteSetting آزمایشی) → دیتابیس ریموت تمیز با 15 جدول خالی
+- اسکریپت‌های تست در /home/z/turso-mig (test.ts, test-prisma.ts, init.sql) + DB JWT در env همین پوشه
+
+Stage Summary:
+- نتیجه: Turso به‌طور کامل با استک پروژه سازگار است — اسکیما بدون هیچ تغییری پوش شد (provider همان sqlite می‌ماند)
+- طراحی نهایی مهاجرت: schema دست‌نخورده + src/lib/db.ts دوزبانه (اگر TURSO_DATABASE_URL ست بود → adapter libsql، وگرنه فایل لوکال) + نصب @prisma/adapter-libsql
+- داده: مهاجرت کوچک است (خواندن از SQLite لوکال با Prisma و نوشتن به ریموت)؛ دیتابیس ریموت فعلاً خالی آماده است
+- ریسک باقی‌مانده: تحریم/ساسپند اکانت (خارج از کنترل ما)، تأخیر واقعی از ایران (باید بعد از دیپلوی اندازه گرفته شود)
+- امنیت: API token در چت لو رفته — باید بعد از اتمام تست‌ها rotate شود؛ DB JWT فاقد exp است و فقط برای تست است
