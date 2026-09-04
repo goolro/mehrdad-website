@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { sanitizePostHtml } from '@/lib/sanitize';
 
 export const dynamic = 'force-dynamic';
 
@@ -62,6 +63,8 @@ export async function GET(req: NextRequest) {
       totalPages: Math.ceil(total / perPage),
       posts: posts.map((p) => ({
         ...p,
+        // XSS guard on read: legacy WP content may contain unsafe HTML
+        contentEn: sanitizePostHtml(p.contentEn),
         hasEn: Boolean(p.contentEn),
         commentCount: p._count.comments,
         tags: p.tags.map((pt) => pt.tag),

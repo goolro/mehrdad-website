@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { checkAdmin } from '@/lib/admin';
+import { sanitizePostHtml } from '@/lib/sanitize';
 
 export const dynamic = 'force-dynamic';
 
@@ -48,8 +49,9 @@ export async function POST(req: NextRequest) {
         titleFa: b.titleFa || null,
         excerptEn: b.excerptEn || null,
         excerptFa: b.excerptFa || null,
-        contentEn: b.contentEn || null,
-        contentFa: b.contentFa || null,
+        // XSS guard before save: nothing unsanitized ever reaches the DB
+        contentEn: sanitizePostHtml(b.contentEn) || null,
+        contentFa: sanitizePostHtml(b.contentFa) || null,
         cover: b.cover || null,
         published: b.published !== false,
         source: 'ai',

@@ -2,11 +2,16 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import ZAI from 'z-ai-web-dev-sdk';
 import { retrieveContext, buildContextBlock } from '@/lib/rag';
+import { clientIp, rateLimit, tooManyRequests } from '@/lib/rate-limit';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
 
 export async function POST(req: NextRequest) {
+  // AI-cost guard: 10 messages per IP per minute
+  const rl = rateLimit(`chat:${clientIp(req)}`, 10, 60 * 1000);
+  if (!rl.ok) return tooManyRequests(rl.retryAfter);
+
   try {
     const body = await req.json();
     const message = (body.message || '').trim().slice(0, 2000);
