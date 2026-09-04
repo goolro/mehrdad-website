@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { slugCandidates } from '@/lib/slug-lookup';
+import { sanitizePostHtml } from '@/lib/sanitize';
 
 export const dynamic = 'force-dynamic';
 
@@ -46,7 +47,14 @@ export async function GET(_req: NextRequest, ctx: { params: Promise<{ slug: stri
     });
 
     return NextResponse.json({
-      post: { ...post, tags },
+      // XSS guard on read: sanitize both language bodies before they are
+      // rendered with dangerouslySetInnerHTML on the client
+      post: {
+        ...post,
+        contentEn: sanitizePostHtml(post.contentEn),
+        contentFa: sanitizePostHtml(post.contentFa),
+        tags,
+      },
       related,
       commentCount,
     });

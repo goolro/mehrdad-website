@@ -1,9 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { clientIp, rateLimit, tooManyRequests } from '@/lib/rate-limit';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
+  // spam guard: 3 submissions per IP per 10 minutes
+  const rl = rateLimit(`contact:${clientIp(req)}`, 3, 10 * 60 * 1000);
+  if (!rl.ok) return tooManyRequests(rl.retryAfter);
+
   try {
     const body = await req.json();
     const name = (body.name || '').trim().slice(0, 120);

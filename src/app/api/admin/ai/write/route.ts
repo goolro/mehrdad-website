@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import ZAI from 'z-ai-web-dev-sdk';
 import { checkAdmin } from '@/lib/admin';
 import { retrieveContext, buildContextBlock } from '@/lib/rag';
+import { sanitizePostHtml } from '@/lib/sanitize';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 120;
@@ -51,6 +52,9 @@ Respond with ONLY valid JSON (no markdown fences) in this exact shape:
     const e = text.lastIndexOf('}');
     if (s === -1 || e === -1) throw new Error('AI did not return JSON');
     const parsed = JSON.parse(text.slice(s, e + 1));
+    // XSS guard: AI output is rendered as HTML in the admin preview and blog
+    parsed.contentEn = sanitizePostHtml(parsed.contentEn);
+    parsed.contentFa = sanitizePostHtml(parsed.contentFa);
 
     return NextResponse.json({ ok: true, article: parsed });
   } catch (e) {

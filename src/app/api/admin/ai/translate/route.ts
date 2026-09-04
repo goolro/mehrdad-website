@@ -3,6 +3,7 @@ import ZAI from 'z-ai-web-dev-sdk';
 import { db } from '@/lib/db';
 import { checkAdmin } from '@/lib/admin';
 import { addPostToKb } from '@/lib/kb';
+import { sanitizePostHtml } from '@/lib/sanitize';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 300;
@@ -89,7 +90,7 @@ export async function POST(req: NextRequest) {
 
       await db.post.update({
         where: { id: post.id },
-        data: { contentEn, titleEn: titleEn || post.titleFa, excerptEn: excerptEn || null },
+        data: { contentEn: sanitizePostHtml(contentEn), titleEn: titleEn || post.titleFa, excerptEn: excerptEn || null },
       });
       await addPostToKb(post.id);
       return NextResponse.json({ ok: true, translatedTo: 'en' });
@@ -108,7 +109,7 @@ export async function POST(req: NextRequest) {
       const titleFa = (c2.choices[0]?.message?.content || '').trim();
       await db.post.update({
         where: { id: post.id },
-        data: { contentFa, titleFa: titleFa || post.titleEn },
+        data: { contentFa: sanitizePostHtml(contentFa), titleFa: titleFa || post.titleEn },
       });
       await addPostToKb(post.id);
       return NextResponse.json({ ok: true, translatedTo: 'fa' });

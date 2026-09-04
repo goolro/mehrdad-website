@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { slugCandidates } from '@/lib/slug-lookup';
+import { clientIp, rateLimit, tooManyRequests } from '@/lib/rate-limit';
 
 export const dynamic = 'force-dynamic';
 
@@ -44,6 +45,10 @@ export async function GET(_req: NextRequest, ctx: { params: Promise<{ slug: stri
 // POST /api/posts/[slug]/comments — submit a new comment (goes to moderation queue)
 export async function POST(req: NextRequest, ctx: { params: Promise<{ slug: string }> }) {
   try {
+    // spam guard: 5 comments per IP per 10 minutes (moderation still applies)
+    const rl = rateLimit(`comment:${clientIp(req)}`, 5, 10 * 60 * 1000);
+    if (!rl.ok) return tooManyRequests(rl.retryAfter);
+
     const { slug } = await ctx.params;
     const body = await req.json();
     const author = String(body.author || '').trim().slice(0, 80);

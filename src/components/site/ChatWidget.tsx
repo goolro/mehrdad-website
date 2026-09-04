@@ -46,6 +46,10 @@ export function ChatWidget() {
         body: JSON.stringify({ message: msg, lang, sessionId: sessionIdRef.current, context: view === 'fde' ? 'fde' : undefined }),
       });
       const data = await res.json();
+      if (res.status === 429) {
+        setMessages((m) => [...m, { role: 'assistant', content: t.chat.tooFast }]);
+        return;
+      }
       if (data.sessionId) sessionIdRef.current = data.sessionId;
       setMessages((m) => [...m, { role: 'assistant', content: data.reply || t.common.error }]);
     } catch {
@@ -148,6 +152,10 @@ export function ChatWidget() {
           </div>
         </div>
       )}
+
+      <p className="border-t border-border px-3 pt-2 pb-1 text-[10px] leading-relaxed text-muted-foreground" aria-label={lang === 'fa' ? 'نکتهٔ حریم خصوصی' : 'Privacy notice'}>
+        {t.chat.privacy}
+      </p>
 
       <form
         onSubmit={(e) => {
