@@ -589,3 +589,21 @@ Stage Summary:
 - دیپلوی v3 کامل روی goolro/mehrdad-cpanel-deploy آماده است — بعد از رفع محدودیت هاست فقط Update from Remote → Deploy
 - متن تیکت فارسی/انگلیسی برای میزبان‌فا تحویل مالک شد (kill پروسه‌های معلق + افزایش nproc≥100 و PMEM≥1GB)
 - هر دو ریپوی گیت‌هاب حالا تمیز و امن هستند
+
+---
+Task ID: 24
+Agent: main (Z.ai Code)
+Task: پاسخ به پرسش «آیا همهٔ مشکلات برطرف شد؟» + بستن موارد باقی‌مانده
+
+Work Log:
+- راستی‌آزمایی مجدد کل گزارش کارشناسی با کد واقعی و ساخت جدول وضعیت
+- ۴ خطای lint کارشناس حالا ظاهر شدند (npm install نسخهٔ جدید eslint-plugin-react-hooks آورد) → هر ۴ فیکس شد: ChatWidget (disable مستند برای ریست تعمدی زبان)، CommentsSection (الگوی render-adjust)، use-mobile و carousel (disable مستند کد وندور shadcn)
+- ignoreBuildErrors خاموش شد: خطاهای TS فقط در analysis/skills/examples بودند (خارج از بیلد) → tsconfig exclude → typecheck اپ صفر → بیلد پروداکشن با typecheck فعال پاس (۹۲s)
+- باگ runtime واقعی پیدا و فیکس شد: toast بدون useToast در Dashboard (ReferenceError بالقوه)
+- لاگ Prisma: query logging حالا فقط با PRISMA_DEBUG=1 (حریم خصوصی)
+- حریم خصوصی چت: retention خودکار ۳۰ روزه (lazy، بدون cron) + DELETE /api/chat + دکمهٔ Clear حالا سمت سرور هم پاک می‌کند
+- آرتیفکت v3.1 (mehrdad-deploy-20260904-224841) بیلد و به ریپوی دیپلوی push شد
+
+Stage Summary:
+- همهٔ موارد بحرانی/بالا/هفتهٔاول گزارش کارشناسی بسته شد (جز CSP nonce و session cookie که عمداً بعداً)
+- پروداکشن هنوز روی هاست معلق است — منتظر پاسخ تیکت میزبان‌فا
