@@ -570,3 +570,22 @@ Work Log:
 Stage Summary:
 - همهٔ فیکس‌های «هفتهٔ اول» گزارش کارشناس به‌جز CSP nonce و session cookie انجام شد
 - باقی‌مانده برای دیپلوی بعدی: build آرتیفکت v3 (شامل فیکس‌های 19-22 + فوتر) و فعال‌سازی چت AI با .z-ai-config
+
+---
+Task ID: 23
+Agent: main (Z.ai Code)
+Task: آرتیفکت v3 + کشف و بستن افشای دوم (ریپوی دیپلوی) + آماده‌سازی متن تیکت هاست
+
+Work Log:
+- کشف: ریپوی عمومی goolro/mehrdad-cpanel-deploy هم custom.db با دیتای واقعی داشت (۱ تماس، ۴ نشست، ۷ پیام چت)
+- بستن افشا: تغییرنام به mehrdad-cpanel-deploy-archive + private:true → ساخت ریپوی عمومی تازهٔ هم‌نام → push تاریخچهٔ تمیز تک-کامیتی
+- بیلد v3: خطای npm ci (lockfile ناهمگام بعد از bun add) → npm install sync + commit 835d13b → build-production.sh موفق در ۷۷ ثانیه
+- آرتیفکت: mehrdad-deploy-20260904-221803.tar.gz (147MB)، هر دو موتور Prisma، hygiene guard صفر
+- deploy.sh: اسم هاردکد تاربال به mehrdad-deploy.tar.gz خنثی شد؛ SHA256SUMS.repo جدید (per-part + کامنت full-hash)
+- باگ خودم: الگوی *.part.* در gitignore جلوی push قطعات را گرفت → حذف الگو → push دوم موفق → هر ۷ فایل تأیید با API
+- وضعیت پروداکشن: homepage 200 (cache)، auth API 401 سالم، DB-دارها هنوز هنگ (صبر روی هاست)
+
+Stage Summary:
+- دیپلوی v3 کامل روی goolro/mehrdad-cpanel-deploy آماده است — بعد از رفع محدودیت هاست فقط Update from Remote → Deploy
+- متن تیکت فارسی/انگلیسی برای میزبان‌فا تحویل مالک شد (kill پروسه‌های معلق + افزایش nproc≥100 و PMEM≥1GB)
+- هر دو ریپوی گیت‌هاب حالا تمیز و امن هستند
