@@ -43,12 +43,13 @@ tar -czf "$OUT_DIR/$ARTIFACT" \
   --exclude='./.env' \
   --exclude='./.env.*' \
   --exclude='./.z-ai-config' \
+  --exclude='./public/download' \
   -C .next/standalone .
 
 echo "==> [5/5] checksums + artifact hygiene guard"
 # Fail the build (not just warn) if env/secret/db files slipped into the pack.
-if tar -tzf "$OUT_DIR/$ARTIFACT" | grep -E '^\./(\.env|[^/]*\.db|[^/]*\.db-journal|\.z-ai-config)' >/dev/null; then
-  tar -tzf "$OUT_DIR/$ARTIFACT" | grep -E '^\./(\.env|[^/]*\.db|[^/]*\.db-journal|\.z-ai-config)'
+if tar -tzf "$OUT_DIR/$ARTIFACT" | grep -E '^\./(\.env|[^/]*\.db|[^/]*\.db-journal|\.z-ai-config|public/download)' >/dev/null; then
+  tar -tzf "$OUT_DIR/$ARTIFACT" | grep -E '^\./(\.env|[^/]*\.db|[^/]*\.db-journal|\.z-ai-config|public/download)'
   echo "FATAL: artifact contains .env / database / secret files — deploy would clobber server config"
   exit 1
 fi

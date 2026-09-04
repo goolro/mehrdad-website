@@ -476,3 +476,23 @@ Work Log:
 Stage Summary:
 - سه مسیر بدون-SSH حالا آماده است: ①Git Version Control (دو کلیک، برتر) ②File Manager دستی (همیشه کار می‌کند) ③تیکت SSH به هاست (برای آینده)
 - GitHub ذخیرهٔ فایل‌های 69MB را فقط warning داد نه خطا — بدون نیاز به LFS
+
+---
+Task ID: 18
+Agent: Z.ai Code (main)
+Task: عیب‌یابی خطای DB در پروداکشن (Failed to load posts / site data) و رفع ناسازگاری موتور Prisma
+
+Work Log:
+- مالک cron-تشخیصی را اجرا کرد؛ diag.txt قطعی آورد: «Prisma Client was generated for debian-openssl-3.0.x, but the actual deployment required debian-openssl-1.0.x» (هاست cPanel به debian-openssl-1.0.x resolve می‌شود؛ /etc/os-release هم ندارد)
+- رفع: prisma/schema.prisma → binaryTargets = ["native", "debian-openssl-1.0.x"]؛ prisma generate هر دو موتور را ساخت (1.0.x: 21MB + 3.0.x: 17MB)
+- bug خودی: cp -r public آرتیفکت قدیمی 138MB داخل public/download را به standalone آورد → آرتیفکت 296MB شد؛ حذف شد و build-production.sh اکنون --exclude='./public/download' + گارد hygiene گسترش‌یافته دارد
+- rebuild کامل: next build موفق؛ آرتیفکت نهایی mehrdad-deploy-20260904-183256.tar.gz = 157MB، گارد سبز، ENGINE_1.0_OK
+- قطعه‌بندی: split -d -b 90m → artifact.part.00 (90MB) + artifact.part.01 (67MB)؛ SHA256 = bdb678cfbedd3369857b380bbb36b1891ce5ec6fcd09baac724e419d4699af89؛ بازچینی تست شد (OK)
+- deploy.sh نسخه ۲ نوشته شد: cat artifact.part.* (گlob-محور، مستقل از تعداد قطعه) + استمپ جدید + شمارش موتورها در لاگ
+- یافتهٔ دیگر از تست مالک: /admin واقعی #admin است (SPA hash-routing) — 404 آن انتظارشده بود؛ ریدایرکت WP به #blog/… درست کار می‌کرد
+- AI chat نیازمند .z-ai-config روی سرور است (فایل در artifact نیست) — گام بعدی پس از سبز شدن DB
+
+Stage Summary:
+- ریپوی اصلی: commit schema+build script → push به goolro/mehrdad-website
+- ریپوی دیپلوی: قطعات جدید + SHA256SUMS.repo + deploy.sh v2 → push به goolro/mehrdad-cpanel-deploy
+- عملیات مالک: فقط Update from Remote → Deploy HEAD Commit → تست /api/posts (دیتابیس production دست‌نخورده می‌ماند)

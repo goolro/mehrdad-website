@@ -1,5 +1,10 @@
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  // "native"    → build machine (debian-openssl-3.0.x)
+  // "debian-openssl-1.0.x" → cPanel host runtime (diag 2026-09-04: host
+  // resolves to debian-openssl-1.0.x — old OpenSSL). Both engines ship in
+  // the artifact; Prisma picks the right one at runtime.
+  binaryTargets = ["native", "debian-openssl-1.0.x"]
 }
 
 datasource db {
