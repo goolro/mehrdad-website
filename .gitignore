@@ -53,6 +53,7 @@ server.log
 # Skills directory
 /skills/
 # database artifacts (local snapshots/backups — never publish)
+db/*.db
 db/custom.backup-*.db
 *.pid
 
