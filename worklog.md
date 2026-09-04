@@ -443,3 +443,20 @@ Work Log:
 Stage Summary:
 - مقاومت زیرساخت اثبات شد: sandbox ریست شد، ولی چون هر commit فوراً push می‌شد، بازیابی = یک reset --hard به origin/main
 - artifact بازسازی‌شده از همان commit یکسان، بار دیگر همهٔ ممیزی‌ها و E2E را پاس کرد — build تکرارپذیر در عمل
+
+---
+Task ID: 17-c (addendum)
+Agent: Z.ai Code (main)
+Task: مسیر SSH برای دیپلوید مستقیم — تشخیص: SSH روی سرور میزبان‌فا غیرفعال؛ آماده‌سازی دو مسیر جایگزین
+
+Work Log:
+- مالک کلید عمومی sandbox را در cPanel (id_rsa2) Import و Authorize کرد و اطلاعات اتصال را فرستاد (رمز cPanel هم در چت رفت — به مالک تذکر rotate داده شد؛ برای اتصال استفاده نشد)
+- Probe شبکه: خروجی SSH ساندباکس سالم (github.com:22 باز) | سرور در دسترس (2082/2083/2086 باز) | اما پورت 22 روی سرور REFUSED و 8 پورت کاندید دیگر timeout → نتیجه: sshd روی این سرور خاموش است (سیاست هاستینگ، نه کلید)
+- وب‌جست‌وجو: الگوی رایج هاست‌های ایرانی = SSH باید از سمت هاست فعال شود؛ در cPanelهای مدرن اگر SSH فعال باشد ابزار Terminal هم ظاهر می‌شود → تست Terminal = تشخیص قطعی
+- مسیر جایگزین بدون-SSH آماده شد: GitHub Release `deploy-20260904` (tag روی 5d2670c) با سه asset: artifact 138MB (upload در 15s) + SHA256SUMS + custom.db — همه HTTP 201 و لینک‌ها 200 تأیید شد؛ artifact هیچ secret/DB نداشتن را در ساخت هم‌چنان تضمین می‌کند
+- `scripts/cpanel-bootstrap.sh` ساخته شد (یک‌خطی برای Terminal: wget از Release → sha256 -c → extract در ~/mehrdad-app → seed فقط-بار-اول → restart.txt → راهنمای گام‌های UI)؛ bash -n سالم
+- مالک هنوز جواب دو سؤال را نگفته: Terminal در cPanel هست؟ و تیکت فعال‌سازی SSH به میزبان‌فا زده؟
+
+Stage Summary:
+- SSH مسیر مستقیم را بست، اما زیرساخت جایگزین کامل شد: اگر Terminal موجود باشد = یک دستور paste برای مالک؛ اگر نباشد = مسیر File Manager (آپلود 138MB + Extract داخلی خود File Manager) که هیچ SSH‌ای نمی‌خواهد
+- Release عمومی فقط build بدون secret است (repo هم public است) — مالک هر وقت بخواهد می‌تواند حذفش کند
