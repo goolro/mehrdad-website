@@ -511,3 +511,21 @@ Work Log:
 
 Stage Summary:
 - تغییر فوتر در کد محلی انجام شد ولی هنوز در آرتیفکت/گیت نیست — باید در دیپلوی بعدی (ترجیحاً همراه فعال‌سازی چت AI در یک دیپلوی واحد) منتشر شود
+
+---
+Task ID: 20
+Agent: main (Z.ai Code)
+Task: راستی‌آزمایی گزارش امنیتی خارجی + فیکس فوری موارد بحرانی
+
+Work Log:
+- راستی‌آزمایی ادعاها با کد واقعی: DB commit و push شده (۹ کامیت، ریپو PUBLIC) ✅ | login با رمز خالی fail-open بود ✅ | x-admin-key در هر درخواست ✅ | dangerouslySetInnerHTML بدون sanitizer در BlogView/AdminView ✅ | ignoreBuildErrors ✅ | بدون rate-limit ✅ | بدون security headers ✅
+- رد/اصلاح ادعاها: خطاهای lint وجود نداشت (eslint پاس) | Caddyfile XTransformPort فقط سندباکس است و در پروداکشن cPanel نیست | production DB جدا از DB ریپو است (create-once + hygiene guard)
+- فیکس src/lib/admin.ts: fail-closed (رمز خالی => 503) + safeEqual با sha256+timingSafeEqual
+- فیکس /api/admin/auth: همان منطق + parse امن body
+- next.config.ts: هدرهای امنیتی (XFO DENY, nosniff, Referrer-Policy, Permissions-Policy, HSTS 6 ماه)
+- git rm --cached db/custom.db + gitignore: db/*.db — فایل محلی دست‌نخورده ماند
+- commit 44a5aa3 push شد به goolro/mehrdad-website
+
+Stage Summary:
+- موارد بحرانیِ کد فیکس و push شد — ولی پروداکشن تا rebuild آرتیفکت تغییر نمی‌کند (باندل با فعال‌سازی چت AI)
+- باقی‌مانده در نوبت: پاکسازی تاریخچهٔ Git (نیازمند تأیید force-push)، sanitize-html، rate-limit، session cookie، notice حریم خصوصی چت
