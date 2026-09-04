@@ -26,7 +26,9 @@ const nextConfig: NextConfig = {
     ];
   },
   typescript: {
-    ignoreBuildErrors: true,
+    // type errors now FAIL the build — tsconfig excludes the one-off
+    // analysis/skills/examples scripts, so the app code itself is clean
+    ignoreBuildErrors: false,
   },
   reactStrictMode: false,
 };

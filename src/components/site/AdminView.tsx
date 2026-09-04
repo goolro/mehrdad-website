@@ -37,7 +37,7 @@ interface Generated {
 
 export function AdminView() {
   const { lang } = useApp();
-  const t = ui[lang];
+  const t = ui[lang] as T;
   const { toast } = useToast();
   const [authed, setAuthed] = useState(false);
   const [pw, setPw] = useState('');
@@ -124,6 +124,7 @@ type T = typeof ui.en;
 function Dashboard({ pw, t, lang }: { pw: string; t: T; lang: 'en' | 'fa' }) {
   const [stats, setStats] = useState<{ posts: number; translated: number; kbChunks: number; messages: number; unread: number } | null>(null);
   const [rebuilding, setRebuilding] = useState(false);
+  const { toast } = useToast();
 
   const load = useCallback(() => {
     fetch('/api/admin/stats', { headers: { 'x-admin-key': pw } })
