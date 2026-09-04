@@ -84,7 +84,7 @@ export function ServicesView() {
             <>
               <DialogHeader>
                 <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-violet-600/10 text-violet-600 dark:text-violet-400">
-                  {(ICONS[selected.icon] || Sparkles) && (() => {
+                  {(() => {
                     const Icon = ICONS[selected.icon] || Sparkles;
                     return <Icon className="h-6 w-6" />;
                   })()}

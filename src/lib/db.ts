@@ -7,9 +7,10 @@ const globalForPrisma = globalThis as unknown as {
 export const db =
   globalForPrisma.prisma ??
   new PrismaClient({
-    // full query logging is dev-only — in production (cPanel/Passenger) it
-    // would flood stdout logs and add latency on every request
-    log: process.env.NODE_ENV === 'production' ? ['error', 'warn'] : ['query'],
+    // query logging is OPT-IN only (PRISMA_DEBUG=1) — it can leak request
+    // payloads (contact/chat inserts) into stdout/dev logs, so it must never
+    // run by default, even in development. Production logs only error/warn.
+    log: process.env.PRISMA_DEBUG === '1' ? ['query', 'error', 'warn'] : ['error', 'warn'],
   })
 
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = db

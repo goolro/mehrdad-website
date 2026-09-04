@@ -7,7 +7,23 @@ import { clientIp, rateLimit, tooManyRequests } from '@/lib/rate-limit';
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
 
+// privacy retention: chat sessions (and their messages, via cascade) older
+// than this are purged — lazily, on a small fraction of requests, so no cron
+// is needed on the resource-limited host
+const CHAT_RETENTION_DAYS = 30;
+
+function purgeOldChats(): void {
+  if (Math.random() > 0.02) return; // ~2% of requests carry the cleanup
+  const cutoff = new Date(Date.now() - CHAT_RETENTION_DAYS * 24 * 60 * 60 * 1000);
+  db.chatSession
+    .deleteMany({ where: { createdAt: { lt: cutoff } } })
+    .then((r) => { if (r.count > 0) console.log(`chat retention: purged ${r.count} old sessions`); })
+    .catch((e) => console.error('chat retention purge failed:', e));
+}
+
 export async function POST(req: NextRequest) {
+  purgeOldChats();
+
   // AI-cost guard: 10 messages per IP per minute
   const rl = rateLimit(`chat:${clientIp(req)}`, 10, 60 * 1000);
   if (!rl.ok) return tooManyRequests(rl.retryAfter);
@@ -122,5 +138,20 @@ ${context || '(دانش خاصی یافت نشد — فقط از اطلاعات 
   } catch (e) {
     console.error('chat api error:', e);
     return NextResponse.json({ error: 'Chat failed' }, { status: 500 });
+  }
+}
+
+// user-requested deletion of one conversation (privacy: "delete my data")
+export async function DELETE(req: NextRequest) {
+  try {
+    const body = await req.json();
+    const sessionId = typeof body?.sessionId === 'string' ? body.sessionId : '';
+    if (sessionId) {
+      // messages cascade-delete with the session
+      await db.chatSession.delete({ where: { id: sessionId } }).catch(() => {});
+    }
+    return NextResponse.json({ ok: true });
+  } catch {
+    return NextResponse.json({ ok: true });
   }
 }

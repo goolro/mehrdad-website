@@ -5,19 +5,23 @@ import { sanitizePostHtml } from '@/lib/sanitize';
 
 export const dynamic = 'force-dynamic';
 
+// typed finder so the loop below keeps a precise Post type (no `never` narrowing)
+const findPost = async (candidate: string) =>
+  db.post.findUnique({
+    where: { slug: candidate },
+    include: {
+      categories: { select: { id: true, slug: true, nameEn: true, nameFa: true } },
+      tags: { select: { tag: { select: { id: true, slug: true, nameEn: true, nameFa: true } } } },
+    },
+  });
+
 export async function GET(_req: NextRequest, ctx: { params: Promise<{ slug: string }> }) {
   try {
     const { slug } = await ctx.params;
     // اسلاگ‌های فارسی در DB به شکل percent-encoded ذخیره شده‌اند؛ Next آن‌ها را decode می‌کند
-    let post = null;
+    let post: Awaited<ReturnType<typeof findPost>> = null;
     for (const candidate of slugCandidates(slug)) {
-      post = await db.post.findUnique({
-        where: { slug: candidate },
-        include: {
-          categories: { select: { id: true, slug: true, nameEn: true, nameFa: true } },
-          tags: { select: { tag: { select: { id: true, slug: true, nameEn: true, nameFa: true } } } },
-        },
-      });
+      post = await findPost(candidate);
       if (post) break;
     }
     if (!post || !post.published) {

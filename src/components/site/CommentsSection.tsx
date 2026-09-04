@@ -64,10 +64,18 @@ export function CommentsSection({ slug }: { slug: string }) {
       .finally(() => setLoading(false));
   }, [slug]);
 
-  useEffect(() => {
+  // reset UI state when the post (slug) changes — render-time adjustment,
+  // the React-sanctioned alternative to setState inside an effect
+  const [prevSlug, setPrevSlug] = useState(slug);
+  if (prevSlug !== slug) {
+    setPrevSlug(slug);
+    setComments([]);
     setLoading(true);
     setNotice(null);
     setReplyTo(null);
+  }
+
+  useEffect(() => {
     load();
   }, [load]);
 

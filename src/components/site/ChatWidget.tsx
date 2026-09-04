@@ -22,11 +22,12 @@ export function ChatWidget() {
   const sessionIdRef = useRef<string>('');
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // reset conversation when language changes
+  // reset conversation when the UI language switches — deliberate one-shot
+  // reset (new session per language), not an accidental cascading render
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional language-switch reset; no data fetch involved
     setMessages([{ role: 'assistant', content: t.chat.welcome }]);
     sessionIdRef.current = '';
-     
   }, [lang]);
 
   useEffect(() => {
@@ -96,6 +97,14 @@ export function ChatWidget() {
         <div className="flex items-center gap-1">
           <button
             onClick={() => {
+              // server-side deletion too — the conversation should not linger in the DB
+              if (sessionIdRef.current) {
+                fetch('/api/chat', {
+                  method: 'DELETE',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ sessionId: sessionIdRef.current }),
+                }).catch(() => {});
+              }
               sessionIdRef.current = '';
               setMessages([{ role: 'assistant', content: t.chat.welcome }]);
             }}
