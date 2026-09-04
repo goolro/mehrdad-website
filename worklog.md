@@ -425,3 +425,21 @@ Stage Summary:
 - اولین فایل deployment واقعی و قابل آپلود از commit منتشرشده 5ace5fe تولید و end-to-end اثبات شد: dist/mehrdad-deploy-20260902-201355.tar.gz (138M) + SHA256SUMS
 - یک باگ امنیتی/عملیاتی مهم در همان build اول پیدا و ریشه‌ای بسته شد: نشت .env ماشین build به آرتیفکت — اکنون هم exclude است هم گارد FATAL
 - آرتیفکت DB-free است (طبق طراحی §7) → روی cPanel اولین استقرار: seed دستی data/production.db + env در UI + Restart
+
+---
+Task ID: 17-b (addendum)
+Agent: Z.ai Code (main)
+Task: بازیابی پس از reset شدن sandbox + بازسازی artifact deployment
+
+Work Log:
+- بین دو پیام مالک، sandbox بازنشسته شد: repo محلی به de09248 (قبل از Task 16!) برگشته و فایل‌های untracked (dist/، public/download/، بیلدهای /tmp) پاک شده بودند
+- Recovery: git fetch + reset --hard origin/main → local == remote == 5d2670c؛ .env سالم ماند — GitHub-First دقیقاً همان کاری را کرد که برایش ساخته شده: هیچ کاری از دست نرفت
+- Artifact با اسکریپت فیکس‌شده از 5d2670c بازسازی شد (تکرارپذیری اثبات شد): mehrdad-deploy-20260904-163314.tar.gz (138M) | 1986 فایل | صفر env/db/secret | Prisma engine موجود
+- E2E دوباره از استخراج تازه + data/production.db + env به سبک cPanel: / ، /api/site، /api/posts، robots، sw → 200 | admin POST 200 | WP 301 — همه سبز
+- تحویل: dist/ + public/download/ (شامل custom.db برای seed اولین استقرار) — هر دو gitignored، سرو HTTP 200
+- SHA256 جدید: 3c2aa8bb4c177d483dd5365188485ec4766585435aa1de5802f5b2ae2466a0a5 (نسخهٔ قبلی d978639a… اگر مالک دانلود کرده بود معتبر می‌ماند)
+- کلید عمومی ed25519 برای مسیر B (دیپلوید مستقیم از sandbox با paramiko) ساخته شد؛ کلید خصوصی فقط داخل sandbox
+
+Stage Summary:
+- مقاومت زیرساخت اثبات شد: sandbox ریست شد، ولی چون هر commit فوراً push می‌شد، بازیابی = یک reset --hard به origin/main
+- artifact بازسازی‌شده از همان commit یکسان، بار دیگر همهٔ ممیزی‌ها و E2E را پاس کرد — build تکرارپذیر در عمل
