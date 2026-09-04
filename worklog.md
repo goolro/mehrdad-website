@@ -529,3 +529,25 @@ Work Log:
 Stage Summary:
 - موارد بحرانیِ کد فیکس و push شد — ولی پروداکشن تا rebuild آرتیفکت تغییر نمی‌کند (باندل با فعال‌سازی چت AI)
 - باقی‌مانده در نوبت: پاکسازی تاریخچهٔ Git (نیازمند تأیید force-push)، sanitize-html، rate-limit، session cookie، notice حریم خصوصی چت
+
+---
+Task ID: 21
+Agent: main (Z.ai Code)
+Task: پاکسازی تاریخچهٔ گیت — حذف کامل db/custom.db از ریپوی عمومی (با تأیید مالک)
+
+Work Log:
+- اسکن کل تاریخچه: تنها فایل حساس همان db/custom.db بود؛ توکن/.env هرگز کامیت نشده بودند
+- بکاپ کامل: /tmp/mehrdad-website-BACKUP.bundle (107MB, pre-rewrite)
+- git filter-repo --invert-paths --path db/custom.db → ۳۰ کامیت سالم، ۰ اثر از فایل
+- force-push انجام شد ولی گیت‌هاب کامیت‌های یتیم را با SHA مستقیم هنوز سرو می‌کرد (200)
+- حذف ریپو با توکن ممکن نبود (403, اسکوپ delete_repo ندارد) → نقشهٔ B:
+  ۱. PATCH ریپوی قدیمی → تغییرنام به mehrdad-website-archive + private:true (بلک‌اوت فوری دسترسی عمومی)
+  ۲. ساخت ریپوی عمومی تازه با همان نام goolro/mehrdad-website
+  ۳. push تاریخچهٔ پاک (main + tag deploy-20260904)
+- تأیید نهایی: کلون تازه = ۰ اثر DB، ۳۰ کامیت | SHA قدیمی روی ریپوی عمومی = 422 (ناموجود) | کامیت‌های قدیمی فقط در آرشیو خصوصی
+- بهداشت: توکن از .git/config پاک شد؛ upstream مرتب شد
+
+Stage Summary:
+- افشای عمومی داده‌ها بسته شد؛ داده فقط در آرشیو خصوصی مالک است (goolro/mehrdad-website-archive)
+- مالک هر وقت خواست آرشیو را از UI حذف کند (Settings → Danger Zone) یا نگهش دارد به‌عنوان بکاپ
+- یادآوری پایدار: توکن ghp_9omo... در چت لو رفته — پس از پایان پروژه باید حذف شود
