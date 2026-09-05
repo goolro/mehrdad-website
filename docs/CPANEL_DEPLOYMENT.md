@@ -59,11 +59,22 @@ hijack `DATABASE_URL`).
 ### Environment variables (cPanel UI, they persist across restarts)
 
 ```
-DATABASE_URL=file:/home/CPANELUSER/mehrdad-app/data/production.db
+TURSO_DATABASE_URL=libsql://mehrdad-goolro.aws-ap-south-1.turso.io
+TURSO_AUTH_TOKEN=<db-jwt-from-turso>       # rotate periodically
 ADMIN_PASSWORD=<long-random-secret>        # openssl rand -base64 32
 NODE_ENV=production
 HOSTNAME=0.0.0.0
 ```
+
+> **Turso mode is the production database (since artifact v4)**: with
+> `TURSO_DATABASE_URL` set, `src/lib/db.ts` uses the libsql driver adapter
+> (no native query-engine process, no DB file on the host — minimal LVE
+> footprint). Data was migrated from local SQLite via
+> `scripts/migrate-to-turso.ts`.
+>
+> `DATABASE_URL` is no longer required; if `TURSO_*` is missing the app
+> falls back to the local SQLite file mode (development / emergency
+> restore), which needs `DATABASE_URL` as before.
 
 > **`HOSTNAME=0.0.0.0` is important**: the standalone server binds to
 > `process.env.HOSTNAME || '0.0.0.0'`. Some cPanel servers export
@@ -77,8 +88,8 @@ HOSTNAME=0.0.0.0
 1. cPanel File Manager → create `~/mehrdad-app`.
 2. Upload `mehrdad-deploy-<stamp>.tar.gz` → extract into `~/mehrdad-app`
    so that `~/mehrdad-app/server.js` exists.
-3. Create the persistent data dir **once**:
-   `~/mehrdad-app/data/` and seed it (see §7).
+3. Set the §3 environment variables (Turso DB + admin password).
+   No `data/production.db` is needed anymore (DB lives in Turso).
 4. (Optional, for AI chat) create `~/mehrdad-app/.z-ai-config`, `chmod 600`:
    ```json
    { "baseUrl": "https://<llm-endpoint>", "apiKey": "<your-key>" }
@@ -102,24 +113,26 @@ HOSTNAME=0.0.0.0
   - `https://mehrdad.ir/api/site` → JSON with services
   - `https://mehrdad.ir/robots.txt` → 200
 
-## 6. SQLite configuration (production)
+## 6. Database (production) — Turso cloud
 
-- Provider: SQLite via Prisma — **no database server needed**.
-- `DATABASE_URL` must be an **absolute** `file:` path (relative paths are
-  resolved against `schema.prisma` location at generate-time and break
-  between build/runtime — absolute paths avoid all ambiguity).
-- The DB lives at `~/mehrdad-app/data/production.db`:
-  - **outside** any `.next` folder (rebuilds wipe `.next`),
-  - inside the app account (writable by the Passenger user),
-  - **not** web-served (never under `public_html`).
-- Seed on first deploy: upload the current `db/custom.db` from the repo
-  as `data/production.db` (it is the migrated content snapshot).
-- Schema changes later (rare, e.g. new feature): `prisma db push` cannot
-  run without SSH → do it as: download `production.db` → run
-  `DATABASE_URL=file:<downloaded> npx prisma db push` locally → upload
-  back → Restart. Keep the pre-change download as the backup.
-- Single-node assumption is fine for a personal site; Postgres migration
-  is possible later (schema is portable) — **owner decision, not done**.
+- **Primary**: Turso (libsql, SQLite-compatible) at
+  `libsql://mehrdad-goolro.aws-ap-south-1.turso.io` (Mumbai region —
+  closest to Iran among the account's available locations).
+- Free starter plan: 5 GB storage, generous read/write quotas — plenty for
+  a personal site. DB file no longer exists on the host.
+- Config: `TURSO_DATABASE_URL` + `TURSO_AUTH_TOKEN` (cPanel env vars).
+- `src/lib/db.ts` is dual-mode: Turso when `TURSO_DATABASE_URL` is set,
+  otherwise local SQLite via `DATABASE_URL` (development / emergency).
+- Backup: Turso platform backups + local snapshot
+  `backups/custom.db.pre-turso-<stamp>` in the repo machine; the content
+  snapshot also lives in `db/custom.db`.
+- Re-sync content from local → Turso at any time (idempotent, wipes
+  remote rows first):
+  `TURSO_DATABASE_URL=… TURSO_AUTH_TOKEN=… bun run scripts/migrate-to-turso.ts --yes`
+- Schema changes later: edit `prisma/schema.prisma` → `prisma migrate
+  diff --from-empty --to-schema-datamodel prisma/schema.prisma --script`
+  → run the DDL on Turso (turso CLI `db shell` or a small script) →
+  redeploy. No host-side tooling needed.
 
 ## 7. Update (new release) & why the DB survives
 
@@ -134,17 +147,21 @@ packs `.next/standalone` only; `data/` lives next to it, not inside).
 
 ## 8. Backup
 
-- Nightly/weekly cPanel backup or cron-less File Manager copy of:
-  - `~/mehrdad-app/data/production.db` (2.6 MB — tiny)
-  - `~/mehrdad-app/public/media/` + `public/uploads/` (~100 MB, static)
-- `.env`-equivalent values (admin password, AI key) — store in a password
-  manager, never in the repo.
+- Turso platform: automatic platform backups + optional point-in-time on
+  paid tiers; free tier — re-run `scripts/migrate-to-turso.ts` from a
+  local snapshot to rebuild the cloud DB at any time.
+- Local snapshot of record: `backups/custom.db.pre-turso-<stamp>` (and
+  `db/custom.db`), plus `~/mehrdad-app/public/media/` + `public/uploads/`
+  (~100 MB, static) via cPanel backup.
+- `.env`-equivalent values (admin password, Turso token, AI key) — store
+  in a password manager, never in the repo.
 
 ## 9. Rollback
 
 - **App**: keep the previous `mehrdad-deploy-*.tar.gz`; extract it back +
-  Restart (2 minutes, no DB touched).
-- **DB**: restore the last `production.db` backup copy + Restart.
+  Restart (2 minutes, no DB touched — DB is remote Turso).
+- **DB**: DB is in Turso (independent of the host). For content rollback:
+  restore a local snapshot and re-run `scripts/migrate-to-turso.ts --yes`.
 - **Domain/docroot**: keep the old site archived under `m.mehrdad.ir`
   (§10); switching `mehrdad.ir` docroot back to it is a cPanel UI change.
 
@@ -190,9 +207,11 @@ Post-cutover (owner/host side):
 |---|---|---|
 | 503 / app unreachable | `HOSTNAME` env hijacked by host | set `HOSTNAME=0.0.0.0`, Restart |
 | 503 after deploy | wrong startup file path | must be `~/mehrdad-app/server.js` (artifact root) |
-| API 500, `Query engine not found` | artifact built on different OS / engine missing | rebuild with `scripts/build-production.sh` (checks engine) or copy `node_modules/.prisma/client/libquery_engine-linux-*.so.node` into `~/mehrdad-app/node_modules/.prisma/client/` |
+| API 500, `Query engine not found` | only in local-file fallback mode; artifact built on different OS / engine missing | rebuild with `scripts/build-production.sh` (checks engine) or copy `node_modules/.prisma/client/libquery_engine-linux-*.so.node` into `~/mehrdad-app/node_modules/.prisma/client/` |
+| API 500 on boot, `Cannot find module '@prisma/adapter-libsql'` or libsql native binding error | artifact missing the external libsql packages | rebuild with current `next.config.ts` (`serverExternalPackages`) — v4+ already fixed |
+| API 500, `TURSO_DATABASE_URL is set but TURSO_AUTH_TOKEN is missing` | partial Turso env | set both vars in cPanel env UI, Restart |
 | API 500, `Configuration file not found` (chat only) | `.z-ai-config` missing | create per §4.4 (site still works) |
 | Admin always 401 | `ADMIN_PASSWORD` env unset/mismatch | set in cPanel env vars, Restart |
 | Old URL gives 404 instead of 301 | URL missing from map | add to `src/lib/wp-redirects.json`, redeploy |
 | Styles/images broken | static not copied into standalone | rebuild via the script (it verifies) |
-| DB changes lost after deploy | DB was placed inside artifact path | move DB to `data/production.db`, update `DATABASE_URL` |
+| DB writes lost / DB empty | `TURSO_*` env vars missing → fell back to nonexistent local file | set `TURSO_DATABASE_URL` + `TURSO_AUTH_TOKEN`, Restart |
