@@ -656,3 +656,26 @@ Stage Summary:
 - معماری جدید پروداکشن: اپ (Next standalone/Passenger) روی میزبان‌فا + DB روی Turso Mumbai رایگان — سبک‌ترین حالت ممکن برای LVE (بدون موتور Prisma، بدون فایل DB روی هاست)
 - دیتابیس ابری پر و آماده؛ آرتیفکت v4 ممیزی‌شده و E2E-پس؛ مانده: push به ریپوی دیپلوی با توکن تازه + دیپلوی کاربر + ست env در cPanel + تست از ایران
 - یادآوری امنیتی: API token اکانت تورسو در چت لو رفته → بعد از ست شدن env در cPanel باید rotate شود
+
+---
+Task ID: hardening-25
+Agent: Z.ai Code (main)
+Task: رفع باقی‌ماندهٔ مشکلات مهم اعلام‌شده — کوکی سشن ادمین، CSP، .env.example و بستن شکاف‌های امنیتی نرم
+
+Work Log:
+- شناسایی موارد باز از جلسات قبل: (۱) سشن ادمین (پسورد خام در هدر x-admin-key روی هر درخواست)، (۲) CSP ناموجود، (۳) .env.example ارجاع‌شده ولی ناموجود، (۴) rotate توکن API تورسو (مسدود — توکن فقط در شل جلسهٔ قبل بود و از سندباکس پاک شده؛ برای کاربر ثبت شد)
+- src/lib/admin-session.ts: توکن سشن بی‌حالت HMAC-SHA256 («expiry.signature»، کلید مشتق از ADMIN_PASSWORD) — بدون جدول DB (سازگار با Turso بدون مهاجرت اسکیما)؛ تغییر پسورد = باطل‌شدن فوری همهٔ سشن‌ها
+- src/lib/admin.ts: checkAdmin حالا کوکی سشن را verify می‌کند + گارد CSRF (رد ۴۰۳ برای mutation با Origin متفاوت؛ احترام به x-forwarded-host پشت پروکسی cPanel)
+- api/admin/auth: POST=لاگین (ست کوچ HttpOnly/SameSite=Strict/Secure در پروداکشن/12h)؛ GET=بازیابی سشن؛ DELETE=خروج
+- AdminView: حذف کامل هدر پسورد از ~۲۰ fetch؛ پسورد بعد از لاگین از حافظه پاک؛ سشن بعد از reload برمی‌گردد؛ دکمهٔ Logout واقعاً سمت سرور هم پاک می‌کند
+- next.config.ts: CSP سخت (default-src 'self'، اسکریپت/استایل/فریم/فرم خارجی بلاک، object-src none، frame-ancestors none) — unsafe-inline برای اسکریپت لازم است چون صفحات prerendered بدون nonce هستند (nonce کل سایت را dynamic می‌کرد و هاست ضعیف نمی‌کشد)؛ unsafe-eval فقط dev (باگ کشف‌شده در تست: React dev به eval نیاز دارد)
+- .env.example ساخته شد (با git add -f چون الگوی .env* در gitignore است؛ گارد بهداشتی آرتیفکت هم آن را exclude می‌کند — سازگار)
+- تست curl یازده‌مرحله‌ای: پسورد غلط 401 / لاگین 200 + فلگ‌های کوچی / بازیابی 200 / بدون کوچی 401 / با کوچی 200 / Origin جعلی 403 / همسان 200 / خروج کوچی را منقضی می‌کند / توکن جعلی 401 / هدر CSP حاضر
+- E2E مرورگر (agent-browser): لاگین → داشبورد با دادهٔ واقعی (۸۳ پست، ۴۷۴ chunk، پیام‌ها) → reload سشن می‌ماند → تب Posts ۸۳ ردیف → Logout → فرم لاگین → چت عمومی با CSP پاسخ AI داد؛ موبایل/دسکتاپ بدون overflow-X؛ صفر CSP violation پس از فیکس dev-eval
+- داکیومنت: SECURITY.md §2 (مدل سشن) و §5 (هاردنینگ+هدرها) بازنویسی، CPANEL_DEPLOYMENT.md (الزام NODE_ENV=production برای کوچی Secure + ۲ سطر troubleshooting جدید)، CHANGELOG
+- تایپ‌چک و لینت سبز؛ commit ff57761 (۹ فایل، +298/−94)
+
+Stage Summary:
+- هر دو قلم عمداً باقی‌ماندهٔ گزارش کارشناس (CSP nonce/CSP و session cookie) بسته شد — با طراحی بی‌حالت که به هیچ تغییر اسکیمای DB نیاز ندارد و مسیر Turso را مسدود نمی‌کند
+- رفتار ادمین بهتر شد: سشن ۱۲ ساعته با بازیابی خودکار، خروج واقعی، CSRF-gارد، و پسورد دیگر روی هر درخواست سفر نمی‌کند
+- برای دیپلوی v5 بعدی: build آرتیفکت جدید لازم است (فقط وقتی کاربر خواست دیپلوی کند)؛ به‌جز این، مانده: rotate توکن API تورسو (نیاز به لاگین کاربر در app.turso.tech — پسورد DB اپ جدا و سالم است)، push payload دیپلوی با توکن گیت‌هاب تازه، و تست نهایی از ایران بعد از دیپلوی
