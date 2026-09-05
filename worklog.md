@@ -811,3 +811,20 @@ Stage Summary:
 - گیت: کامیت fixes + docs پوش شد به origin/main
 - ADMIN_PASSWORD جدید برای دیپلوی Vercel تولید و فقط در چت به مالک گزارش شد (روی داشبورد Vercel قابل تغییر)
 - باقی برای مالک: اتصال DNS دامنه mehrdad.ir به Vercel (cname.vercel-dns.com) در صورت تمایل + revoke سه توکن IM پس از پایان کار
+
+---
+Task ID: deploy-mirror-3
+Agent: Z.ai Code (main)
+Task: توضیح وضعیت — سایت روی Vercel بدون دامنه اختصاصی (تصمیم مالک)
+
+Work Log:
+- مالک دو پیام داد: اول «ساب دامنه برای vercel بساز»، بعد شفاف‌سازی: «vercel کاری به دامنه mehrdad.ir نداره — بصورت انلاین می خواهیم روی vercel هم داشته باشیم» → مسیر ساب‌دامنه vercel.mehrdad.ir لغو شد؛ هیچ رکورد DNS و هیچ دامنه‌ای به پروژه Vercel اضافه نشد
+- بررسی DNS (صرفاً اطلاعی): mehrdad.ir و www هر دو → 88.135.68.30 (هاست ایران)؛ vercel.mehrdad.ir رکورد نداشت — دست‌نخورده ماند
+- Health check مجدد روی https://mehrdad-website.vercel.app : / و /blog و /api/posts همه HTTP 200
+- تلاش برای vercel git connect (دیپلوی خودکار از گیت‌هاب) → خطا 400: نیازمند Login Connection بین اکانت GitHub و Vercel مالک (فقط از داشبورد، با توکن ممکن نیست) → روش فعلی همان deploy دستی CLI باقی ماند
+- docs/DEPLOYMENT.md: بخش «Custom domain: NONE (owner decision)» + شرط auto-deploy ثبت شد
+
+Stage Summary:
+- نسخه آنلاین Vercel = https://mehrdad-website.vercel.app بدون هیچ وابستگی به دامنه mehrdad.ir؛ SITE_ORIGIN/sitemap/feed همه با همین URL سازگارند
+- mehrdad.ir کاملاً دست‌نخورده روی هاست ایران باقی ماند
+- گام اختیاری آینده برای مالک: اتصال GitHub↔Vercel از داشبورد برای دیپلوی خودکار، و revoke سه توکن IM
