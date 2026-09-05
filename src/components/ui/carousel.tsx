@@ -96,6 +96,7 @@ function Carousel({
   React.useEffect(() => {
     if (!api) return
      
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- vendor shadcn/ui code: onSelect sets canScroll* on init, deliberately one-shot (documented)
     onSelect(api)
     api.on("reInit", onSelect)
     api.on("select", onSelect)

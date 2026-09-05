@@ -12,6 +12,7 @@ export function useIsMobile() {
     }
     mql.addEventListener("change", onChange)
      
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- vendor shadcn/ui code: one-shot initial media-query sync (documented)
     setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
     return () => mql.removeEventListener("change", onChange)
   }, [])
