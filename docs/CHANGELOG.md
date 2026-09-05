@@ -4,6 +4,32 @@ All notable changes to mehrdad.ir. Format: Keep-a-Changelog-ish, newest first.
 
 ## [Unreleased]
 
+### Security (2026-09-05 hardening round)
+- **Admin session cookies replace the per-request `x-admin-key` password
+  header**: `POST /api/admin/auth` now issues a stateless HMAC-signed
+  session cookie (`mehrdad_admin`, `HttpOnly`, `SameSite=Strict`,
+  `Secure` in production, 12h TTL). The raw password is typed once at
+  login and cleared from client memory; changing `ADMIN_PASSWORD`
+  instantly invalidates all sessions. No DB table needed (Turso-safe).
+  `GET /api/admin/auth` = session restore, `DELETE` = logout.
+- **CSRF defense-in-depth**: `checkAdmin` rejects state-changing requests
+  with a cross-origin `Origin` header (403), honoring `x-forwarded-host`
+  behind the cPanel proxy.
+- **Content-Security-Policy added** (`default-src 'self'`, external
+  script/style/frame/form origins blocked, `object-src 'none'`,
+  `frame-ancestors 'none'`, `base-uri 'self'`, HSTS-compliant
+  `upgrade-insecure-requests`); `unsafe-eval` only in dev for React.
+- `.env.example` added (was referenced by docs/code but missing).
+- Docs: `SECURITY.md` §2/§5 rewritten for the new model;
+  `CPANEL_DEPLOYMENT.md` notes `NODE_ENV=production` requirement for the
+  Secure cookie + new troubleshooting rows.
+- Verified: 11-step curl suite (wrong pw 401, login 200 + cookie flags,
+  restore 200, no-cookie 401, cookie 200, forged cross-origin 403,
+  same-origin 200, logout clears, forged token 401, CSP header) and full
+  browser E2E (login → dashboard 83 posts real data → session survives
+  reload → logout → 401; chat widget AI reply; mobile/desktop no
+  overflow, CSP violations 0).
+
 ### Added
 - **Production deployment artifact built & verified from commit `5ace5fe` (Task 17)**:
   first real cPanel deploy file produced by `scripts/build-production.sh` in an

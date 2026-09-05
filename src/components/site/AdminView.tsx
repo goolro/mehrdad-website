@@ -43,7 +43,13 @@ export function AdminView() {
   const [pw, setPw] = useState('');
   const [loginErr, setLoginErr] = useState(false);
 
-  const key = () => pw;
+  // session restore: the HttpOnly session cookie survives page reloads, so
+  // the admin doesn't have to re-type the password on every visit
+  useEffect(() => {
+    fetch('/api/admin/auth')
+      .then((r) => { if (r.ok) setAuthed(true); })
+      .catch(() => {});
+  }, []);
 
   async function login(e: React.FormEvent) {
     e.preventDefault();
@@ -53,11 +59,19 @@ export function AdminView() {
       body: JSON.stringify({ password: pw }),
     });
     if (res.ok) {
+      // clear the password from memory — the server cookie authenticates now
+      setPw('');
       setAuthed(true);
       setLoginErr(false);
     } else {
       setLoginErr(true);
     }
+  }
+
+  async function logout() {
+    // expire the session server-side too
+    await fetch('/api/admin/auth', { method: 'DELETE' }).catch(() => {});
+    setAuthed(false);
   }
 
   if (!authed) {
@@ -91,7 +105,7 @@ export function AdminView() {
     <div className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-extrabold">{t.admin.title}</h1>
-        <Button variant="outline" size="sm" onClick={() => { setAuthed(false); setPw(''); }}>
+        <Button variant="outline" size="sm" onClick={logout}>
           <LogOut className="me-1 h-4 w-4" /> {t.admin.logout}
         </Button>
       </div>
@@ -106,12 +120,12 @@ export function AdminView() {
           <TabsTrigger value="theme" className="gap-1.5"><Palette className="h-4 w-4" />{t.admin.tabs.theme}</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="dashboard"><Dashboard pw={key()} t={t} lang={lang} /></TabsContent>
-        <TabsContent value="posts"><PostsTab pw={key()} t={t} /></TabsContent>
-        <TabsContent value="writer"><WriterTab pw={key()} t={t} lang={lang} /></TabsContent>
-        <TabsContent value="messages"><MessagesTab pw={key()} t={t} /></TabsContent>
-        <TabsContent value="comments"><CommentsTab pw={key()} t={t} /></TabsContent>
-        <TabsContent value="theme"><ThemeTab pw={key()} t={t} lang={lang} /></TabsContent>
+        <TabsContent value="dashboard"><Dashboard t={t} lang={lang} /></TabsContent>
+        <TabsContent value="posts"><PostsTab t={t} /></TabsContent>
+        <TabsContent value="writer"><WriterTab t={t} lang={lang} /></TabsContent>
+        <TabsContent value="messages"><MessagesTab t={t} /></TabsContent>
+        <TabsContent value="comments"><CommentsTab t={t} /></TabsContent>
+        <TabsContent value="theme"><ThemeTab t={t} lang={lang} /></TabsContent>
       </Tabs>
     </div>
   );
@@ -121,23 +135,23 @@ type T = typeof ui.en;
 
 // ─────────── Dashboard ───────────
 
-function Dashboard({ pw, t, lang }: { pw: string; t: T; lang: 'en' | 'fa' }) {
+function Dashboard({ t, lang }: { t: T; lang: 'en' | 'fa' }) {
   const [stats, setStats] = useState<{ posts: number; translated: number; kbChunks: number; messages: number; unread: number } | null>(null);
   const [rebuilding, setRebuilding] = useState(false);
   const { toast } = useToast();
 
   const load = useCallback(() => {
-    fetch('/api/admin/stats', { headers: { 'x-admin-key': pw } })
+    fetch('/api/admin/stats')
       .then((r) => r.json())
       .then(setStats)
       .catch(() => {});
-  }, [pw]);
+  }, []);
 
   useEffect(load, [load]);
 
   async function rebuild() {
     setRebuilding(true);
-    const res = await fetch('/api/admin/kb', { method: 'POST', headers: { 'x-admin-key': pw } });
+    const res = await fetch('/api/admin/kb', { method: 'POST' });
     const d = await res.json();
     setRebuilding(false);
     if (d.ok) toast({ title: `KB rebuilt: ${d.chunks} chunks` });
@@ -171,7 +185,7 @@ function Dashboard({ pw, t, lang }: { pw: string; t: T; lang: 'en' | 'fa' }) {
 
 // ─────────── Posts ───────────
 
-function PostsTab({ pw, t }: { pw: string; t: T }) {
+function PostsTab({ t }: { t: T }) {
   const { toast } = useToast();
   const [posts, setPosts] = useState<AdminPost[]>([]);
   const [translating, setTranslating] = useState<string>('');
@@ -179,11 +193,11 @@ function PostsTab({ pw, t }: { pw: string; t: T }) {
   const [q, setQ] = useState('');
 
   const load = useCallback(() => {
-    fetch('/api/admin/posts', { headers: { 'x-admin-key': pw } })
+    fetch('/api/admin/posts')
       .then((r) => r.json())
       .then((d) => setPosts(d.posts || []))
       .catch(() => {});
-  }, [pw]);
+  }, []);
 
   useEffect(load, [load]);
 
@@ -191,7 +205,7 @@ function PostsTab({ pw, t }: { pw: string; t: T }) {
     setTranslating(id);
     const res = await fetch('/api/admin/ai/translate', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-admin-key': pw },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ postId: id }),
     });
     const d = await res.json();
@@ -203,10 +217,7 @@ function PostsTab({ pw, t }: { pw: string; t: T }) {
 
   async function remove(id: string) {
     if (!confirm('Delete this post permanently?')) return;
-    const res = await fetch(`/api/admin/posts/${id}`, {
-      method: 'DELETE',
-      headers: { 'x-admin-key': pw },
-    });
+    const res = await fetch(`/api/admin/posts/${id}`, { method: 'DELETE' });
     if (res.ok) {
       toast({ title: 'Deleted' });
       load();
@@ -284,7 +295,7 @@ function PostsTab({ pw, t }: { pw: string; t: T }) {
 
 // ─────────── AI Writer ───────────
 
-function WriterTab({ pw, t, lang }: { pw: string; t: T; lang: 'en' | 'fa' }) {
+function WriterTab({ t, lang }: { t: T; lang: 'en' | 'fa' }) {
   const { toast } = useToast();
   const [topic, setTopic] = useState('');
   const [keywords, setKeywords] = useState('');
@@ -308,7 +319,7 @@ function WriterTab({ pw, t, lang }: { pw: string; t: T; lang: 'en' | 'fa' }) {
     try {
       const res = await fetch('/api/admin/ai/write', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-admin-key': pw },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ topic, keywords }),
       });
       const d = await res.json();
@@ -325,7 +336,7 @@ function WriterTab({ pw, t, lang }: { pw: string; t: T; lang: 'en' | 'fa' }) {
     setGenImage(true);
     fetch('/api/admin/ai/image', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-admin-key': pw },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ prompt: topic }),
     })
       .then((r) => r.json())
@@ -342,7 +353,7 @@ function WriterTab({ pw, t, lang }: { pw: string; t: T; lang: 'en' | 'fa' }) {
     setPublishing(true);
     const res = await fetch('/api/admin/posts', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-admin-key': pw },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         titleEn: article.titleEn,
         titleFa: article.titleFa,
@@ -466,7 +477,7 @@ function WriterTab({ pw, t, lang }: { pw: string; t: T; lang: 'en' | 'fa' }) {
 
 // ─────────── Theme Picker ───────────
 
-function ThemeTab({ pw, t, lang }: { pw: string; t: T; lang: 'en' | 'fa' }) {
+function ThemeTab({ t, lang }: { t: T; lang: 'en' | 'fa' }) {
   const { toast } = useToast();
   const setTheme = useApp((s) => s.setTheme);
   const [active, setActive] = useState<string>('default');
@@ -486,7 +497,7 @@ function ThemeTab({ pw, t, lang }: { pw: string; t: T; lang: 'en' | 'fa' }) {
     const th = THEMES.find((x) => x.id === id);
     const res = await fetch('/api/admin/settings', {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json', 'x-admin-key': pw },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ theme: id }),
     });
     setSaving('');
@@ -543,26 +554,26 @@ function ThemeTab({ pw, t, lang }: { pw: string; t: T; lang: 'en' | 'fa' }) {
 
 // ─────────── Comments Moderation ───────────
 
-function CommentsTab({ pw, t }: { pw: string; t: T }) {
+function CommentsTab({ t }: { t: T }) {
   const { toast } = useToast();
   const [comments, setComments] = useState<AdminComment[]>([]);
   const [filter, setFilter] = useState<'pending' | 'all'>('pending');
   const [loading, setLoading] = useState(true);
 
   const load = useCallback(() => {
-    fetch(`/api/admin/comments?status=${filter}`, { headers: { 'x-admin-key': pw } })
+    fetch(`/api/admin/comments?status=${filter}`)
       .then((r) => r.json())
       .then((d) => setComments(d.comments || []))
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, [pw, filter]);
+  }, [filter]);
 
   useEffect(load, [load]);
 
   async function setApproved(id: string, approved: boolean) {
     await fetch('/api/admin/comments', {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json', 'x-admin-key': pw },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id, approved }),
     });
     toast({ title: approved ? '✓ Approved' : 'Unapproved' });
@@ -573,7 +584,7 @@ function CommentsTab({ pw, t }: { pw: string; t: T }) {
     if (!confirm('Delete this comment permanently?')) return;
     await fetch('/api/admin/comments', {
       method: 'DELETE',
-      headers: { 'Content-Type': 'application/json', 'x-admin-key': pw },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id }),
     });
     toast({ title: 'Deleted' });
@@ -636,15 +647,15 @@ function CommentsTab({ pw, t }: { pw: string; t: T }) {
 
 // ─────────── Messages ───────────
 
-function MessagesTab({ pw, t }: { pw: string; t: T }) {
+function MessagesTab({ t }: { t: T }) {
   const [messages, setMessages] = useState<Msg[]>([]);
 
   const load = useCallback(() => {
-    fetch('/api/admin/messages', { headers: { 'x-admin-key': pw } })
+    fetch('/api/admin/messages')
       .then((r) => r.json())
       .then((d) => setMessages(d.messages || []))
       .catch(() => {});
-  }, [pw]);
+  }, []);
 
   useEffect(load, [load]);
 
@@ -652,7 +663,7 @@ function MessagesTab({ pw, t }: { pw: string; t: T }) {
     if (m.read) return;
     await fetch('/api/admin/messages', {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json', 'x-admin-key': pw },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id: m.id, read: true }),
     });
     load();
