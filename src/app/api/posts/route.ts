@@ -7,8 +7,10 @@ export const dynamic = 'force-dynamic';
 export async function GET(req: NextRequest) {
   try {
     const sp = req.nextUrl.searchParams;
-    const page = Math.max(1, parseInt(sp.get('page') || '1', 10));
-    const perPage = Math.min(48, Math.max(1, parseInt(sp.get('perPage') || '12', 10)));
+    // `|| 1` fallback: a non-numeric page/perPage must degrade to the default,
+    // never reach Prisma as NaN (NaN take/skip throws → 500)
+    const page = Math.max(1, Number.parseInt(sp.get('page') || '1', 10) || 1);
+    const perPage = Math.min(48, Math.max(1, Number.parseInt(sp.get('perPage') || '12', 10) || 12));
     const category = sp.get('category') || '';
     const tag = sp.get('tag') || '';
     const search = (sp.get('search') || '').trim();

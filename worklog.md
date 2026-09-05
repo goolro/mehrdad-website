@@ -702,3 +702,27 @@ Stage Summary:
 - وضعیت امنیتی: ۵۵ چک نفوذ سبز؛ ۴ ضعف واقعی بسته شد (یکی Medium: bypass rate limit با XFF)
 - هارنس تست نفوذ دائمی شد — بعد از هر تغییر auth/API باید اجرا شود
 - مانده برای کاربر: پوش ۳ کامیت با توکن تازه (یا اجرای دستور push خودش)، بیلد آرتیفکت v5 و دیپلوی
+
+---
+Task ID: pentest-round2-27
+Agent: Z.ai Code (main)
+Task: راند دوم تست نفوذ عمیق‌تر (به درخواست کاربر) + مستندسازی + push به گیت‌هاب (توکن از کاربر دریافت شد)
+
+Work Log:
+- طراحی بردارهای جدید فراتر از راند ۱: fuzzing ۱۳ شکلی توکن سشن، shadowing کوکی تکراری، استقلال سشن‌ها، verb tampering و ترفندهای مسیر در همهٔ routeهای ادمین (شامل endpoints هزینه‌دار AI)، ماتریس جعل Origin (پسوند/مسیر/userinfo/null/ترکیب XFH)، parser abuse (form-encoded/multipart/prototype-pollution/JSON تودرتو/چند-کلیدی)، تزریق operator/عددی در query پست‌ها، سیل XFF-rotating روی هر ۴ endpoint نوشتن عمومی، XSS ذخیره‌شوندهٔ encode شده (unicode/SVG/javascript:/data:)، مسیرهای افشای اطلاعات، و مسموم‌سازی Host header
+- ۵ یافتهٔ جدید (۴ از بازبینی کد + ۱ زنده حین تست):
+  ۱) Medium: originAllowed به X-Forwarded-Host کنترل‌شده توسط کلاینت اعتماد می‌کرد → ترکیب Origin+XFH گارد CSRF را رد می‌کرد → حالا فقط Host لنگر است؛ SITE_ORIGIN اختیاری = allow-list سخت
+  ۲) Low-Medium: route لاگین اصلاً چک Origin نداشت (login-CSRF) → originAllowed روی POST /api/admin/auth هم اعمال شد
+  ۳) Low-Medium: ریدایرکت‌های 301 از req.nextUrl.origin ساخته می‌شدند → Host جعلی ریدایرکت off-site می‌داد → لنگر به SITE_ORIGIN
+  ۴) Low: /api/posts?page=abc → NaN به Prisma skip/take → 500 → فالبک `|| default`
+  ۵) Low (زنده حین رگرسیون کشف شد): دو لاگین در یک ثانیه توکن بایت‌به-بایت یکسان می‌ساختند → logout یکی، همهٔ سشن‌های همان ثانیه را می‌کشت → توکن حالا <expiry>.<nonce 96bit>.<sig>
+- علاوه بر یافته‌ها: DELETE /api/chat هم rate limit گرفت (10/min)
+- scripts/pentest-round2.sh: هارنس ۸۲ چک جدید با پاکسازی خودکار رکوردهای تست
+- اجرا با seed یک پست موقت در DB خالی لوکال (تا مسیرهای XSS نوشتن واقعاً اجرا شوند) و حذفش بعد از تست — نتیجه نهایی: راند ۲ = ۸۲/۸۲، رگرسیون راند ۱ = ۵۲/۵۲ (مجموع ۱۳۴/۱۳۴)
+- اسناد: docs/PENTEST_2026-09-05-round2.md (روش‌شناسی، جدول یافته‌ها/فیکس‌ها، نتایج کامل)، SECURITY.md §5، CHANGELOG، CPANEL_DEPLOYMENT.md (SITE_ORIGIN به چک‌لیست env اضافه شد)، .env.example (SITE_ORIGIN مستند شد)
+- tsc تمیز، lint 0 error؛ آمادهٔ commit و push به github.com/goolro/mehrdad-website با توکن کاربر
+
+Stage Summary:
+- وضعیت امنیتی: ۱۳۴ چک نفوذ (دو راند) همگی سبز؛ ۹ ضعف تجمعی بسته شده (راند ۱: ۴، راند ۲: ۵)
+- اکشن جدید برای کاربر در cPanel: اضافه‌کردن SITE_ORIGIN=https://mehrdad.ir به env vars (allow-list CSRF سخت + ریدایرکت‌های ضد-مسمومیت)
+- یادآوری امنیتی به کاربر: ADMIN_PASSWORD و توکن گیت‌هاب در چت دیده شده‌اند — بعد از push باید rotate شوند

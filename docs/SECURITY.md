@@ -112,6 +112,19 @@ plaintext.
   or API change. Hardening from the round: XFF last-entry IP selection
   (anti rate-limit bypass), logout token revocation, `no-store` on admin
   APIs, 413 body-size guards on public POSTs.
+- **Penetration testing round 2 (2026-09-05)**: a deep-dive suite lives in
+  `scripts/pentest-round2.sh` (82 checks: token fuzzing, cookie shadowing,
+  session isolation, verb tampering, Origin-spoof matrix, parser abuse,
+  query/operator injection, XFF-rotation floods, encoded stored XSS,
+  info-exposure paths, Host-header poisoning) with the report in
+  `docs/PENTEST_2026-09-05-round2.md`. Hardening from the round: strict
+  Origin anchoring (client `X-Forwarded-Host` can no longer vouch for an
+  Origin), Origin check also on login, 301 redirects anchored to
+  `SITE_ORIGIN` (Host-poisoning-proof), NaN-safe pagination, unique
+  nonces in session tokens (same-second logins no longer collide), and a
+  rate limit on `DELETE /api/chat`. **Set `SITE_ORIGIN=https://mehrdad.ir`
+  in cPanel env vars** — it activates the hard allow-list for CSRF and
+  anchors all SEO redirects.
 
 ## 6. Reporting
 

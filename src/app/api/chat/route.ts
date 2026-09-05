@@ -146,6 +146,10 @@ ${context || '(دانش خاصی یافت نشد — فقط از اطلاعات 
 
 // user-requested deletion of one conversation (privacy: "delete my data")
 export async function DELETE(req: NextRequest) {
+  // abuse guard: the delete handler is public, so cap how often an IP may
+  // hammer it (random-ID deletes are harmless but should not cost DB work)
+  const rl = rateLimit(`chatdel:${clientIp(req)}`, 10, 60 * 1000);
+  if (!rl.ok) return tooManyRequests(rl.retryAfter);
   try {
     const body = await req.json();
     const sessionId = typeof body?.sessionId === 'string' ? body.sessionId : '';
