@@ -12,10 +12,11 @@ jobs:
     env:
       # dummy values — the build never queries the database (all pages are
       # dynamically rendered for the per-request CSP nonce), and no AI
-      # service is called at build time
+      # service is called at build time. NOTE: NODE_ENV must NOT be set here —
+      # it makes `npm ci` skip devDependencies (eslint/tsc missing) and
+      # `next build` already implies production.
       DATABASE_URL: "file:./ci.db"
       ADMIN_PASSWORD: "ci-dummy-password"
-      NODE_ENV: "production"
     steps:
       - uses: actions/checkout@v4
 
@@ -25,7 +26,7 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --include=dev
 
       - name: Lint
         run: npm run lint
