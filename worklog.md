@@ -916,3 +916,18 @@ Work Log:
 Stage Summary:
 - ریپوی دیپلوی آمادهٔ Update from Remote → Deploy است؛ production بعد از دیپلوی: real routes + AI-SEO + round-3 + هیروی خدمات
 - تنها اقدام مالک: cPanel → Git → mehrdad-deploy → Update from Remote → Deploy HEAD Commit → تست سایت
+
+---
+Task ID: cpanel-git-form-1
+Agent: main (Z.ai Code)
+Task: راهنمای دقیق پرکردن فرم «Create Repository» در cPanel Git™ Version Control (پاسخ به مالک)
+
+Work Log:
+- راستی‌آزمایی زنده: git ls-remote روی goolro/mehrdad-cpanel-deploy بدون هیچ توکنی پاس شد → HEAD = main @ b448869 (همان آرتیفکت 2026-09-05 از main@bd947c7) — کلون HTTPS عمومی از داخل cPanel ممکن است
+- محتوای .cpanel.yml (post-deploy hook → deploy.sh) و deploy.sh v3 از raw.githubusercontent خوانده شد: بازچینی artifact.part.* → sha256 -c → استخراج در ~/mehrdad-app → سیاست create-once برای data/production.db → tmp/restart.txt
+- README ریپوی دیپلوی: مقادیر رسمی فرم (Clone URL، نام mehrdad-deploy، مسیر پیش‌فرض ~/repositories) و جدول Node.js App تأیید شد
+- کشف: یوزرنیم اکانت فعلی /home/mehrdad3 است ولی مثال README اکانت قبلی /home/motorpum بود → احتمال هاست/اکانت تازه؛ دو هشدار مشروط ثبت شد: (۱) غیبت custom.db در ریپوی عمومی (عمداً در پاکسازی افشا حذف شده) یعنی seed در هاست خالی fail می‌شود → یا انتقال دستی production.db از هاست قبلی با File Manager یا پچ deploy.sh (نیازمند توکن)؛ (۲) ساخت مجدد .z-ai-config
+- تأیید src/lib/db.ts: فقط دو حالت Turso/SQLite-File دارد — پشتیبانی MySQL/MariaDB در کد وجود ندارد؛ جواب «ماریادی‌بی» هاست عملاً بی‌اثر است
+
+Stage Summary:
+- پاسخ مالک با جدول مقادیر دقیق فرم + زنجیرهٔ بعد از Create (Update from Remote → Deploy HEAD Commit → Node.js App Restart) + تفسیر دو محدودیت هاست (SSH و ماریادی‌بی هر دو بی‌اثر) + دو نکتهٔ مشروط هاست-تازه تحویل شد
