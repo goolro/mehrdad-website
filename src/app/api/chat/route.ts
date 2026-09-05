@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import ZAI from 'z-ai-web-dev-sdk';
 import { retrieveContext, buildContextBlock } from '@/lib/rag';
-import { clientIp, bodyTooLarge, payloadTooLarge, rateLimit, tooManyRequests } from '@/lib/rate-limit';
+import { clientIp, readJsonBody, jsonBodyError, rateLimit, tooManyRequests } from '@/lib/rate-limit';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -27,15 +27,25 @@ export async function POST(req: NextRequest) {
   // AI-cost guard: 10 messages per IP per minute
   const rl = rateLimit(`chat:${clientIp(req)}`, 10, 60 * 1000);
   if (!rl.ok) return tooManyRequests(rl.retryAfter);
+  // Global ceilings (round-3 finding M4): this endpoint spends money on a
+  // paid AI provider, so it also gets a site-wide per-minute and per-day
+  // budget that no amount of IP rotation can lift.
+  const rlGlobal = rateLimit('chat:__global__', 120, 60 * 1000);
+  if (!rlGlobal.ok) return tooManyRequests(rlGlobal.retryAfter);
+  const rlDaily = rateLimit('chat:__daily__', 2000, 24 * 60 * 60 * 1000);
+  if (!rlDaily.ok) return tooManyRequests(rlDaily.retryAfter);
 
-  // memory guard on the shared host: real messages are ≤ 2000 chars
-  if (bodyTooLarge(req)) return payloadTooLarge();
+  // memory guard on the shared host: real messages are ≤ 2000 chars.
+  // readJsonBody counts bytes while streaming, so a chunked body (no
+  // Content-Length) cannot slip past the cap — round-3 finding M3.
+  const parsed = await readJsonBody(req);
+  if (!parsed.ok) return jsonBodyError(parsed.error);
 
   try {
-    const body = await req.json();
-    const message = (body.message || '').trim().slice(0, 2000);
+    const body = parsed.data || {};
+    const message = String(body.message ?? '').trim().slice(0, 2000);
     const lang: 'en' | 'fa' = body.lang === 'fa' ? 'fa' : 'en';
-    let sessionId = (body.sessionId || '').trim();
+    let sessionId = String(body.sessionId ?? '').trim();
 
     if (!message) {
       return NextResponse.json({ error: 'Message required' }, { status: 400 });
@@ -151,7 +161,9 @@ export async function DELETE(req: NextRequest) {
   const rl = rateLimit(`chatdel:${clientIp(req)}`, 10, 60 * 1000);
   if (!rl.ok) return tooManyRequests(rl.retryAfter);
   try {
-    const body = await req.json();
+    const parsed = await readJsonBody(req, 4);
+    if (!parsed.ok) return jsonBodyError(parsed.error);
+    const body = parsed.data;
     const sessionId = typeof body?.sessionId === 'string' ? body.sessionId : '';
     if (sessionId) {
       // messages cascade-delete with the session

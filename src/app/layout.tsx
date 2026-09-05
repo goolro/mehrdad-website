@@ -89,7 +89,7 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // nonce generated per request in src/middleware.ts (undefined when the
+  // nonce generated per request in src/proxy.ts (undefined when the
   // middleware did not run — e.g. some static contexts / older flows)
   const h = await headers();
   const nonce = h.get("x-nonce") || undefined;

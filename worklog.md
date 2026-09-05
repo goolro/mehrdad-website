@@ -550,7 +550,7 @@ Work Log:
 Stage Summary:
 - افشای عمومی داده‌ها بسته شد؛ داده فقط در آرشیو خصوصی مالک است (goolro/mehrdad-website-archive)
 - مالک هر وقت خواست آرشیو را از UI حذف کند (Settings → Danger Zone) یا نگهش دارد به‌عنوان بکاپ
-- یادآوری پایدار: توکن ghp_9omo... در چت لو رفته — پس از پایان پروژه باید حذف شود
+- یادآوری پایدار: توکن GitHub PAT در چت لو رفته (مقدار در این سند حذف شد) — پس از پایان پروژه باید حذف شود
 
 ---
 Task ID: 22
@@ -879,4 +879,4 @@ Work Log:
 
 Stage Summary:
 - https://mehrdad-website.vercel.app/services حالا هیروی اسلوگان برند را دارد (FA/EN)
-- هر ۳ توکن مالک باید revoke شوند (ghp_9omo…، vcp_1f3s…، sbp_fcd7…)
+- هر ۳ توکن مالک باید revoke شوند (GitHub PAT، Vercel، Supabase — مقادیر از اسناد عمومی حذف شد)

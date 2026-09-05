@@ -31,6 +31,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true, url: `/media/generated/${name}` });
   } catch (e) {
     console.error('ai image error:', e);
-    return NextResponse.json({ error: e instanceof Error ? e.message : 'Image generation failed' }, { status: 500 });
+    // the raw provider/stack message stays in the server log (round-3 L2)
+    return NextResponse.json({ error: 'Image generation failed' }, { status: 500 });
   }
 }

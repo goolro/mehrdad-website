@@ -82,13 +82,21 @@ plaintext.
 
 ## 4. Incident log
 
+> **2026-09-05 (round-3 review):** this table used to print the *prefixes* of the
+> leaked tokens. They are removed here — a public document should not identify
+> which live credentials were exposed. Removal does **not** remediate anything:
+> the prefixes remain in Git history and the full values were shared over an IM
+> channel, so all three credentials must be treated as compromised and
+> **rotated** (GitHub PAT, Vercel token, Supabase token). Rotation is the only
+> fix; see `docs/SECURITY_REVIEW_2026-09-05-round3.md` §1 (H1).
+
 | Date | Event | Remediation |
 |---|---|---|
 | 2026-09-01 | Discovered during the pre-push audit: the admin password was hardcoded as a fallback in `src/lib/admin.ts` **and displayed as a hint** in the admin login UI (`AdminView.tsx`). Had it been pushed, the password would have been public. Caught **before** any push of these files (the public remote predates the admin panel). | Fallback removed (env-only, fail closed); UI hint removed; password rotated to a generated secret stored only in `.env`; `.env.example` added. |
 | 2026-09-01 | Local working history contained `.env`, DB backup snapshots and `dev.pid` (tracked before ignore rules matured). | Files untracked + gitignored; **entire local history squashed to one clean baseline commit** before the first push of this state, so none of it exists on the public remote. |
 | 2026-09-01 | A GitHub personal access token was shared through an IM channel (not via the repository). | Used only for the git remote URL (stored in untracked `.git/config`). Owner advised to rotate the token after the initial sync. |
-| 2026-09-05 | Same IM token was reused for pushes and **remains valid** — the owner explicitly decided not to rotate it for now. Mitigations enabled repo-side: secret scanning + push protection + Dependabot alerts/security updates (via API), so any future leak of a similar secret gets flagged; the token grants repo access only. | Owner reminder kept open: revoke/renew `ghp_9omo…` in GitHub → Settings → Developer settings whenever convenient; it is the single remaining known credential exposed outside the repo. |
-| 2026-09-05 | **Vercel and Supabase tokens shared through the same IM channel** (`vcp_1f3s…`, `sbp_fcd7…` — the Supabase one project-scoped). Used transiently for: git pushes (token-in-URL, never saved to `.git/config`), Vercel CLI deploy, and Supabase schema/data setup + app role creation via the Management API. No token value ever entered a committed file; the Supabase **DB password stays owner-held** (never sent through the channel). | Rotation reminder now covers all three tokens — revoke in GitHub → Developer settings, Vercel → Account settings → Tokens, and Supabase → Account → Access tokens once the mirror is stable. |
+| 2026-09-05 | Same IM token was reused for pushes and **remains valid** — the owner explicitly decided not to rotate it for now. Mitigations enabled repo-side: secret scanning + push protection + Dependabot alerts/security updates (via API), so any future leak of a similar secret gets flagged; the token grants repo access only. | Owner reminder kept open: revoke/renew the GitHub PAT *(value withheld)* in GitHub → Settings → Developer settings whenever convenient; it is the single remaining known credential exposed outside the repo. |
+| 2026-09-05 | **Vercel and Supabase tokens shared through the same IM channel** (the Vercel token and the Supabase token *(values withheld)* — the Supabase one project-scoped). Used transiently for: git pushes (token-in-URL, never saved to `.git/config`), Vercel CLI deploy, and Supabase schema/data setup + app role creation via the Management API. No token value ever entered a committed file; the Supabase **DB password stays owner-held** (never sent through the channel). | Rotation reminder now covers all three tokens — revoke in GitHub → Developer settings, Vercel → Account settings → Tokens, and Supabase → Account → Access tokens once the mirror is stable. |
 
 ## 5. Production hardening (cPanel)
 
@@ -145,6 +153,41 @@ plaintext.
   rate limit on `DELETE /api/chat`. **Set `SITE_ORIGIN=https://mehrdad.ir`
   in cPanel env vars** — it activates the hard allow-list for CSRF and
   anchors all SEO redirects.
+
+- **Round-3 review hardening (2026-09-05, `SECURITY_REVIEW_2026-09-05-round3.md`)**:
+  - `PATCH /api/admin/posts/[id]` now sanitizes `contentEn`/`contentFa` exactly
+    like `POST`, and `GET /api/admin/posts` sanitizes on read — the admin panel's
+    `dangerouslySetInnerHTML` sink no longer relies on the CSP alone (M1).
+  - `originAllowed()`: with `SITE_ORIGIN` configured, the configured origin is the
+    **only** accepted anchor (comma-separated list supported). The old
+    `|| originHost === host` disjunct let a matching spoofed Host+Origin pair
+    through (M2).
+  - `readJsonBody()` enforces the body cap **while streaming**, so
+    `Transfer-Encoding: chunked` (no `Content-Length`) can no longer bypass it.
+    Status contract unchanged: 413 oversized, 400 unparsable — login still
+    answers unparsable JSON with 401 (M3).
+  - `clientIp()` no longer falls back to the client-controlled `X-Real-IP`;
+    requests without `X-Forwarded-For` share one `unknown` bucket (stricter,
+    never looser). Login gained a global 60/15 min ceiling, and `/api/chat` a
+    global 120/min + 2000/day budget on top of the per-IP limit (M4).
+  - Logout revocation only records tokens that would otherwise verify, and the
+    set is capped FIFO at 5000 — an unauthenticated `DELETE /api/admin/auth`
+    can no longer grow process memory (L1).
+  - `retrieveContext()` reads the KB corpus through a 5-minute in-process cache
+    (invalidated by every KB write) instead of the whole table per chat
+    message (L3).
+  - The sanitizer drops non-raster `data:` URIs on `<img>`
+    (`data:image/svg+xml` included) (L5); `Cross-Origin-Resource-Policy:
+    same-site` and `Cross-Origin-Opener-Policy: same-origin` are sent on every
+    response (L6); the AI admin routes no longer echo `e.message` (L2); the
+    deploy script verifies the server host key (L7).
+  - `scripts/security-checks.mts` is the executable form of the round-3 review
+    (88 checks over CSP, redirects, CSRF, session tokens, rate limiting, body
+    limits, the sanitizer and the admin post handlers) — run it after any auth,
+    API or sanitizer change:
+    `node --expose-gc --experimental-strip-types scripts/security-checks.mts`.
+    CI runs it on Node 22 (the Node 20 build job cannot: type stripping needs
+    ≥22.6).
 
 ## 6. Reporting
 

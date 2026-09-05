@@ -1,4 +1,5 @@
 import { db } from '@/lib/db';
+import { invalidateKbCache } from './rag';
 
 function stripHtml(html: string): string {
   return html
@@ -32,6 +33,7 @@ export async function addPostToKb(postId: string) {
   const post = await db.post.findUnique({ where: { id: postId } });
   if (!post) return;
   await db.kbChunk.deleteMany({ where: { refType: 'post', refId: postId } });
+  invalidateKbCache(); // the delete above already changed the corpus
   const body = post.contentEn || post.contentFa || '';
   const title = post.titleEn || post.titleFa || '';
   if (!body) return;
@@ -48,6 +50,7 @@ export async function addPostToKb(postId: string) {
       },
     });
   }
+  invalidateKbCache();
 }
 
 export async function rebuildKb() {
@@ -104,5 +107,6 @@ export async function rebuildKb() {
     },
   });
 
+  invalidateKbCache();
   return db.kbChunk.count();
 }

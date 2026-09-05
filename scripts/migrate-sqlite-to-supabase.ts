@@ -175,4 +175,5 @@ async function migrate() {
 }
 
 const isVerifyOnly = process.argv.includes('--verify-only')
-isVerifyOnly ? await verifyOnly() : await migrate()
+if (isVerifyOnly) await verifyOnly()
+else await migrate()
