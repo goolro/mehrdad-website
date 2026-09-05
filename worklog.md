@@ -630,3 +630,29 @@ Stage Summary:
 - داده: مهاجرت کوچک است (خواندن از SQLite لوکال با Prisma و نوشتن به ریموت)؛ دیتابیس ریموت فعلاً خالی آماده است
 - ریسک باقی‌مانده: تحریم/ساسپند اکانت (خارج از کنترل ما)، تأخیر واقعی از ایران (باید بعد از دیپلوی اندازه گرفته شود)
 - امنیت: API token در چت لو رفته — باید بعد از اتمام تست‌ها rotate شود؛ DB JWT فاقد exp است و فقط برای تست است
+
+---
+Task ID: turso-migration
+Agent: Z.ai Code (main)
+Task: مهاجرت دیتابیس پروژه به Turso (طرح صفر-هزینه: اپ روی میزبان‌فا + DB ابری رایگان) + آرتیفکت v4
+
+Work Log:
+- توافق مالک: DB روی Turso رایگان، هاست همان میزبان‌فا cPanel، دامنه همان mehrdad.ir
+- نصب @prisma/adapter-libsql — نسخهٔ 7.x خودکار نصب شد → فوراً pin به 6.19.3 (هم‌نسخهٔ client)؛ کشف: client قبلاً 6.19.2 بود و با CLI 6.19.3 قاطی → پین دقیق prisma/client به 6.19.3 + regenerate
+- src/lib/db.ts دوزبانه: TURSO_DATABASE_URL ست → PrismaLibSQL adapter؛ وگرنه SQLite لوکال (dev/prerender) — fail-fast اگر توکن نصفه باشد؛ تایپ‌چک و لینت سبز
+- بکاپ: backups/custom.db.pre-turso-20260904-235329 (2.7MB) + backups/ به .gitignore
+- scripts/migrate-to-turso.ts (idempotent، گارد --yes، حفظ cuid، verify شمارش دوجهته):
+  - دو باگ حین توسعه: (۱) include+select روی m-n ضمنی → خواندن raw جدول _CategoryToPost (A/B)؛ (۲) PostTag صریح بدون id → tags:{create:[{tagId}]} نه connect
+  - نتیجه: 5 setting / 21 category / 32 tag / 83 post / 17 comment / 9 service / 5 project / 1 contact / 4 session / 7 message / 473 kbChunk ✅ تطابق کامل
+- E2E لوکال با env تورسو: / 200، /api/site 200 با دادهٔ واقعی، /api/posts 200 (۱۲ پست، عنوان فارسی درست)
+- نکتهٔ سندباکس: پروسهٔ پس‌زمینه بین فراخوانی‌ها کشته می‌شود → تست‌ها در یک فراخوانی واحد (setsid + poll + curl + pkill)
+- build v4 اول: آرتیفکت بدون @prisma/adapter-libsql و @libsql/* (NFT باندل کرده بود) → next.config.ts serverExternalPackages → rebuild: adapter(5)+client/core/hrana/isomorphic+native x64-gnu&musl(2)+هر دو موتور(2) ✅
+- E2E آرتیفکت v4 (استخراج تمیز + node server.js با env تورسو): / 200 (10ms) | /api/site 200 دادهٔ واقعی (1.8s از سندباکس تا بمبئی) | /api/posts 200 (۱۲ پست، 1.2s) | admin رمز غلط 401 | robots 200 | 404 ✓
+- docs/CPANEL_DEPLOYMENT.md: §3 env تورسو، §4 بدون production.db، §6 بازنویسی Turso، §8/§9 بکاپ/rollback، §12 سه سطر troubleshooting جدید
+- payload ریپوی دیپلوی آماده: dist/repo-payload/ → artifact.part.00/01 + SHA256SUMS.repo (full: 514245666f070883…) — پوش منتظر توکن تازهٔ گیت‌هاب (push credential در سندباکس موجود نیست)
+- commit 8فایلی (db.ts, next.config.ts, migrate script, docs, lockfiles)
+
+Stage Summary:
+- معماری جدید پروداکشن: اپ (Next standalone/Passenger) روی میزبان‌فا + DB روی Turso Mumbai رایگان — سبک‌ترین حالت ممکن برای LVE (بدون موتور Prisma، بدون فایل DB روی هاست)
+- دیتابیس ابری پر و آماده؛ آرتیفکت v4 ممیزی‌شده و E2E-پس؛ مانده: push به ریپوی دیپلوی با توکن تازه + دیپلوی کاربر + ست env در cPanel + تست از ایران
+- یادآوری امنیتی: API token اکانت تورسو در چت لو رفته → بعد از ست شدن env در cPanel باید rotate شود
