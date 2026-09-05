@@ -789,3 +789,25 @@ Work Log:
 Stage Summary:
 - گیت‌هاب همگام (main=17239ff)؛ Supabase حاوی کل محتوا با اسکیمای Postgres؛ vercel.json (build با schema.postgres) آماده؛ تنها گام باقی‌مانده: DATABASE_URL (پسورد postgres از مالک) → vercel deploy --prod → تأیید
 - سه توکن IM (GitHub/Vercel/Supabase) در لاگ رخداد برای rotate ثبت شد
+
+---
+Task ID: deploy-mirror-2
+Agent: Z.ai Code (main)
+Task: تکمیل استقرار Vercel + Supabase با پسورد دیتابیس دریافتی از مالک (ادامه deploy-mirror-1)
+
+Work Log:
+- پسورد نقش postgres (پیام IM مالک: رشته jT29… + کلمه database) روی Supavisor transaction pooler تست شد → اتصال موفق به PostgreSQL 17.6، هر ۱۵ جدول سالم (Post=83, Category=21, Tag=32, Comment=17) — دقیقاً مطابق خروجی مهاجرت deploy-mirror-1
+- Vercel: env vars production تنظیم شد — DATABASE_URL (پولر تراکنش، نقش postgres، pgbouncer=true)، ADMIN_PASSWORD (مقدار جدید تولیدی openssl rand -hex 16، جایگزین مقدار قبلی نامشخص)، SITE_ORIGIN=https://mehrdad-website.vercel.app؛ NEXT_TELEMETRY_DISABLED از قبل بود
+- دیپلوی ۱ شکست: Unknown binary target rhel-openssl-3.2 در Prisma 6.19.3 → اصلاح به rhel-openssl-3.0.x در schema.postgres.prisma (ایمیج بیلد Vercel = OpenSSL 3.0)
+- دیپلوی ۲ شکست: TS2307 bun:sqlite در scripts/migrate-sqlite-to-supabase.ts → scripts به exclude tsconfig اضافه شد
+- دیپلوی ۳ شکست: ENOENT .next/next-server.js.nft.json (تداخل شناخته‌شده output:standalone با بیلدر Vercel) → next.config.ts: output شرطی process.env.VERCEL ? undefined : "standalone" (cPanel دست‌نخورده)
+- دیپلوی ۴ موفق (بیلد 44s، همه مسیرها dynamic) → Alias: https://mehrdad-website.vercel.app
+- تأیید end-to-end با curl: / (200، title دو‌زبانه)، /api/site (سرویس‌ها از Postgres)، /api/posts (total=82)، /blog/[slug] (200، عنوان کامل)، /blog، /work، /work/bizpal، /services، /contact، sitemap.xml (۸۲ پست+۵ پروژه)، feed.xml، هدرهای امنیتی (HSTS/X-Frame-Options) همه سالم
+- 404 آزمایشی اولیه /work/<blog-slug> درست بود — پست‌ها زیر /blog/ هستند نه /work/
+- docs/DEPLOYMENT.md: بخش Vercel → «DEPLOYED ✅» + سه فیکس بیلد ثبت شد
+
+Stage Summary:
+- سایت روی Vercel زنده و کاملاً تأییدشده است: https://mehrdad-website.vercel.app با دیتابیس Supabase Postgres (Tokyo) از طریق پولر تراکنش
+- گیت: کامیت fixes + docs پوش شد به origin/main
+- ADMIN_PASSWORD جدید برای دیپلوی Vercel تولید و فقط در چت به مالک گزارش شد (روی داشبورد Vercel قابل تغییر)
+- باقی برای مالک: اتصال DNS دامنه mehrdad.ir به Vercel (cname.vercel-dns.com) در صورت تمایل + revoke سه توکن IM پس از پایان کار
