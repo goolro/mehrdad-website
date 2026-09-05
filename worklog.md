@@ -828,3 +828,23 @@ Stage Summary:
 - نسخه آنلاین Vercel = https://mehrdad-website.vercel.app بدون هیچ وابستگی به دامنه mehrdad.ir؛ SITE_ORIGIN/sitemap/feed همه با همین URL سازگارند
 - mehrdad.ir کاملاً دست‌نخورده روی هاست ایران باقی ماند
 - گام اختیاری آینده برای مالک: اتصال GitHub↔Vercel از داشبورد برای دیپلوی خودکار، و revoke سه توکن IM
+
+---
+Task ID: ai-seo-1
+Agent: Z.ai Code (main)
+Task: پاسخ به «چطور سایت را در هوش مصنوعی‌ها نمایش دهیم — SEO در کد رعایت شده؟» + پیاده‌سازی لایهٔ AI-SEO
+
+Work Log:
+- ممیزی: متادیتا/canonical/sitemap/feed/SSR موجود ✅؛ JSON-LD صفر ❌؛ llms.txt ندارد ❌؛ robots.txt استاتیک با sitemap هاردکد به mehrdad.ir (اشتباه برای آینهٔ Vercel) ❌؛ Twitter Card ندارد ❌
+- robots.ts داینامیک: ۱۴ خزندهٔ AI به‌صورت صریح Allow + sitemap تابع SITE_ORIGIN؛ public/robots.txt حذف (تداخل مسیر)
+- /llms.txt داینامیک از دیتابیس (۵ بخش، ۱۰۲ لینک: ۷ صفحه + ۸ سرویس + ۵ پروژه + ۸۲ پست)؛ fallback استاتیک
+- JsonLd.tsx server component با nonce همان x-nonce middleware → از CSP سخت‌گیرانه عبور می‌کند؛ < هم escape می‌شود
+- JSON-LD: صفحهٔ اصلی WebSite+Person (knowsAbout دوزبانه)، پست‌ها BlogPosting+BreadcrumbList (headline/alternativeHeadline دوزبانه، datePublished/Modified، keywords از تگ‌ها)، پروژه‌ها CreativeWork
+- layout: twitter summary card + og:image پیش‌فرض + robots max-image-preview/max-snippet
+- نکتهٔ sandbox: vercel binary و .vercel/project.json پس از بازنشانی پاک/برگشته بود → bunx vercel؛ یک دیپلوی اشتباه به پروژهٔ my-project رفت (بدون DATABASE_URL، پروژهٔ غیرفعال template — rollback target نبود؛ بی‌ضرر) → relink به mehrdad-website و دیپلوی درست
+- تأیید زنده: robots.txt (۱۵ UA + sitemap درست)، llms.txt (200، 51KB، text/plain)، JSON-LD خانه و پست (BlogPosting+Breadcrumb، nonce OK)
+
+Stage Summary:
+- لایهٔ کامل AI-SEO روی https://mehrdad-website.vercel.app زنده است؛ کامیت 11e25fa (+ docs) پوش شده
+- محتوا فعلاً فقط از vercel.app ایندکس‌پذیر است چون mehrdad.ir هنوز placeholder سرو می‌کند
+- اقدامات off-page باقی برای مالک: Google Search Console، Bing Webmaster (منبع ChatGPT Search)، بک‌لینک/دایرکتوری

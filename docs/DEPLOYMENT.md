@@ -150,3 +150,26 @@ vercel deploy --prod
 
 Attaching the real domain later: add `mehrdad.ir` in the Vercel project →
 point DNS (`cname.vercel-dns.com`) at the registrar → update `SITE_ORIGIN`.
+
+### AI-SEO layer (2026-09-05)
+
+Implemented so search engines AND generative engines (ChatGPT, Claude,
+Perplexity, Google AI) can discover, understand and cite the site:
+
+- `src/app/robots.ts` (dynamic) — explicitly allows the major AI crawlers
+  (GPTBot, OAI-SearchBot, ChatGPT-User, ClaudeBot, anthropic-ai,
+  PerplexityBot, Google-Extended, Applebot(+Extended), meta-externalagent,
+  Amazonbot, CCBot); sitemap URL follows `SITE_ORIGIN`. Static
+  `public/robots.txt` removed (route conflict + stale sitemap host).
+- `/llms.txt` (dynamic route, text/plain) — LLM-discovery manifest built
+  from the live DB: pages, services, projects, ALL published posts with
+  excerpts + citation hints. Graceful static fallback if DB is down.
+- JSON-LD via `src/components/site/JsonLd.tsx` (nonce-aware → passes the
+  strict CSP): WebSite+Person `@graph` on home, BlogPosting+BreadcrumbList
+  on posts, CreativeWork on projects.
+- Layout metadata: twitter summary card, default og:image, robots
+  `max-image-preview:large` / `max-snippet:-1`.
+
+Already in place before this layer: per-page metadata + canonicals,
+dynamic sitemap + RSS feed, full SSR (no JS required to read content),
+PWA manifest.
