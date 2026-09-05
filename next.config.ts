@@ -57,6 +57,11 @@ const nextConfig: NextConfig = {
         source: "/:path*",
         headers: securityHeaders,
       },
+      {
+        // admin responses are private — never let any cache store them
+        source: "/api/admin/:path*",
+        headers: [{ key: "Cache-Control", value: "no-store" }],
+      },
     ];
   },
   typescript: {

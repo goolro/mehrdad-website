@@ -104,6 +104,14 @@ plaintext.
 - Admin session cookie is `Secure` only when `NODE_ENV=production` —
   keep the cPanel app in **Production** mode (§3 of the deployment doc)
   or the cookie loses the `Secure` flag.
+- **Penetration testing (since 2026-09-05)**: an automated black-box
+  suite lives in `scripts/pentest-local.sh` (55 checks: auth/session
+  forgery, CSRF, rate-limit/DoS bodies, SQLi, stored XSS, headers,
+  client-bundle secret scan, open redirect) with the report and residual-
+  risk register in `docs/PENTEST_2026-09-05.md` — run it after every auth
+  or API change. Hardening from the round: XFF last-entry IP selection
+  (anti rate-limit bypass), logout token revocation, `no-store` on admin
+  APIs, 413 body-size guards on public POSTs.
 
 ## 6. Reporting
 

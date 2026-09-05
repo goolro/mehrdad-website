@@ -20,6 +20,23 @@ export const ADMIN_COOKIE = 'mehrdad_admin';
 /** 12 hours — the admin must re-login twice a day at most. */
 export const ADMIN_SESSION_TTL_SECONDS = 12 * 60 * 60;
 
+/**
+ * Logout revocation (defense-in-depth): the token is stateless, so a stolen
+ * copy would technically stay valid until expiry even after the user logs
+ * out. Every logout therefore revokes the token's expiry payload here, and
+ * verification rejects revoked tokens. The set clears on process restart —
+ * an accepted residual risk for a single-instance personal site.
+ */
+const revokedExps = new Set<string>();
+
+export function revokeAdminSessionToken(token: string | undefined | null): void {
+  if (!token) return;
+  const dot = token.lastIndexOf('.');
+  if (dot <= 0) return;
+  const exp = Number(token.slice(0, dot));
+  if (Number.isInteger(exp)) revokedExps.add(String(exp));
+}
+
 function hmacKey(): string {
   const secret = process.env.ADMIN_PASSWORD ?? '';
   return createHash('sha256').update(`mehrdad-admin-session:${secret}`).digest('hex');
@@ -45,6 +62,7 @@ export function verifyAdminSessionToken(token: string | undefined | null): boole
   const sig = token.slice(dot + 1);
   const exp = Number(payload);
   if (!Number.isInteger(exp) || exp * 1000 < Date.now()) return false;
+  if (revokedExps.has(payload)) return false; // logged out
   const expected = sign(payload);
   if (sig.length !== expected.length) return false;
   return timingSafeEqual(Buffer.from(sig), Buffer.from(expected));
