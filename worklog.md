@@ -931,3 +931,21 @@ Work Log:
 
 Stage Summary:
 - پاسخ مالک با جدول مقادیر دقیق فرم + زنجیرهٔ بعد از Create (Update from Remote → Deploy HEAD Commit → Node.js App Restart) + تفسیر دو محدودیت هاست (SSH و ماریادی‌بی هر دو بی‌اثر) + دو نکتهٔ مشروط هاست-تازه تحویل شد
+
+---
+Task ID: cpanel-newhost-diag-1
+Agent: main (Z.ai Code)
+Task: تشخیص زندهٔ وضعیت mehrdad.ir بعد از خرید هاست جدید (گزارش مالک: «بعضی صفحات خالی، احتمالاً زمان می‌برد»)
+
+Work Log:
+- پراب زندهٔ https://mehrdad.ir: TLS = self-signed با CN=mizbanfa.net (منقضی، notAfter 2025-10-12) → سرور مقصد سرور جدید میزبان‌فاست؛ AutoSSL هنوز اجرا نشده
+- پاسخ / : HTTP 200 ولی content-length=163 + last-modified ثابت + accept-ranges → فایل استاتیک پیش‌فرضِ اکانت (Apache)، نه Passenger/Node — اپ اصلاً به دامنه وصل نیست
+- /api/site و /api/posts → HTML placeholder (نه JSON) → تأیید قطعی که Next.js روی هاست جدید سرو نمی‌شود
+- DNS: mehrdad.ir و www هر دو → A یکتا 88.135.68.30 (سرور جدید)؛ http:// هم 200 بدون ریدایرکت
+- نتیجه: «صفحات خالی» نه زمان‌بر است نه دیپلوی ناقص — یا placeholder پیش‌فرض است یا کش/Service-Worker قدیمی مرورگر مالک از هاست قبل (سایت PWA است)
+- تصمیم معماری: DB از Turso ابری برمی‌گردد (مستقل از هاست) — فقط ۶ env var در Node.js App جدید لازم است؛ انتقال فایل DB منتفی
+- برای Deploy سبز روی هاست خالی: پچ deploy.sh لازم است (شاخهٔ elif custom.db / NOTE شفاف) چون custom.db از ریپوی عمومی حذف شده — متن paste-ready به مالک داده شد (وب-ادیتور گیت‌هاب)
+
+Stage Summary:
+- چک‌لیست کامل راه‌اندازی هاست جدید تحویل شد: پچ deploy.sh → Git clone/Deploy → Setup Node.js App (Node≥20.9 + ۶ env) → Restart/تست → AutoSSL → پاک‌کردن SW مرورگر
+- یافتهٔ کلیدی برای مالک: «زمان نمی‌برد»؛ بدون Setup Node.js App + env تورسو سایت بالا نمی‌آید؛ SSL فعلاً منقضی/placeholder است
