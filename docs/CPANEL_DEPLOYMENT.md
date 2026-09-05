@@ -62,7 +62,9 @@ hijack `DATABASE_URL`).
 TURSO_DATABASE_URL=libsql://mehrdad-goolro.aws-ap-south-1.turso.io
 TURSO_AUTH_TOKEN=<db-jwt-from-turso>       # rotate periodically
 ADMIN_PASSWORD=<long-random-secret>        # openssl rand -base64 32
-NODE_ENV=production
+NODE_ENV=production                        # REQUIRED: the admin session
+                                           # cookie is only Secure in
+                                           # production mode
 HOSTNAME=0.0.0.0
 ```
 
@@ -211,7 +213,8 @@ Post-cutover (owner/host side):
 | API 500 on boot, `Cannot find module '@prisma/adapter-libsql'` or libsql native binding error | artifact missing the external libsql packages | rebuild with current `next.config.ts` (`serverExternalPackages`) — v4+ already fixed |
 | API 500, `TURSO_DATABASE_URL is set but TURSO_AUTH_TOKEN is missing` | partial Turso env | set both vars in cPanel env UI, Restart |
 | API 500, `Configuration file not found` (chat only) | `.z-ai-config` missing | create per §4.4 (site still works) |
-| Admin always 401 | `ADMIN_PASSWORD` env unset/mismatch | set in cPanel env vars, Restart |
+| Admin always 401 | session expired (12h) or `ADMIN_PASSWORD` env unset/mismatch | re-login; if it persists, set `ADMIN_PASSWORD` in cPanel env vars, Restart (changing it also invalidates all sessions — by design) |
+| Admin login works but "insecure cookie" warnings | `NODE_ENV` is not `production` → session cookie without `Secure` flag | set Application mode `Production` / env `NODE_ENV=production`, Restart |
 | Old URL gives 404 instead of 301 | URL missing from map | add to `src/lib/wp-redirects.json`, redeploy |
 | Styles/images broken | static not copied into standalone | rebuild via the script (it verifies) |
 | DB writes lost / DB empty | `TURSO_*` env vars missing → fell back to nonexistent local file | set `TURSO_DATABASE_URL` + `TURSO_AUTH_TOKEN`, Restart |
