@@ -58,11 +58,26 @@ old-site migration to `m.mehrdad.ir`, troubleshooting).
 - `middleware` convention: Next 16 calls it proxy internally; the code
   lives in `src/middleware.ts` (build output shows "Proxy (Middleware)").
 
-## Vercel mirror + Supabase Postgres (2026-09-05)
+## Vercel mirror + Supabase Postgres (2026-09-05) — DEPLOYED ✅
 
 A second, fully-managed deployment target alongside cPanel. Both targets
 serve the same content; cPanel stays primary unless the owner decides
-otherwise.
+otherwise. **Production URL: https://mehrdad-website.vercel.app
+(first prod deploy 2026-09-05; homepage, /blog/[slug], /work/[slug],
+/api/site, /api/posts, sitemap, feed all verified against Supabase data
+— 82 published posts, 21 categories, 32 tags, 17 comments).**
+
+### Three build fixes found during the first Vercel deploy
+
+1. `prisma/schema.postgres.prisma`: `rhel-openssl-3.2` binary target is
+   unknown to Prisma 6.19.3 (Vercel build image = OpenSSL 3.0) →
+   `binaryTargets = ["native", "rhel-openssl-3.0.x"]`.
+2. `tsconfig.json`: `scripts/` added to `exclude` — the migration scripts
+   import `bun:sqlite`, which the Vercel TypeScript check cannot resolve.
+3. `next.config.ts`: `output` is now
+   `process.env.VERCEL ? undefined : "standalone"` — Vercel's builder
+   fails with `ENOENT .next/next-server.js.nft.json` when standalone
+   output is enabled (standalone stays for the cPanel artifact flow).
 
 ### Topology
 
@@ -76,8 +91,8 @@ otherwise.
   model change (copy the model block; header differs).
 - **App DB role**: `mehrdad_app` (least-privilege, created via the
   Management API). Note: the Supavisor **shared pooler accepts the
-  `postgres` role only** on the free plan — `mehrdad_app` is usable for
-  direct/paid-pooler connections.
+  `postgres` role only** on the free plan — the runtime `DATABASE_URL`
+  therefore uses the `postgres` role via the transaction pooler.
 
 ### Data pipeline (no direct PG connection needed)
 
