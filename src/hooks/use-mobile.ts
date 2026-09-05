@@ -11,7 +11,7 @@ export function useIsMobile() {
       setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
     }
     mql.addEventListener("change", onChange)
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- vendored shadcn/ui hook: sync init avoids a hydration mismatch flash; safe because it runs once on mount
+     
     setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
     return () => mql.removeEventListener("change", onChange)
   }, [])

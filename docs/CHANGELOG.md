@@ -4,6 +4,47 @@ All notable changes to mehrdad.ir. Format: Keep-a-Changelog-ish, newest first.
 
 ## [Unreleased]
 
+### Architecture & SEO (2026-09-05 real-routes migration)
+- **Hash routing retired — every view is now a real, indexable URL**:
+  `/` (home), `/services`, `/fde` (+ `/lab` alias), `/work`,
+  `/work/[slug]`, `/blog`, `/blog/[slug]`, `/about`, `/contact`,
+  `/admin`. Detail pages are server-rendered: `curl /blog/<slug>`
+  returns the full article HTML with no JS execution (verified).
+- Legacy deep-links keep working: middleware 301 targets now point at
+  real paths (`/#blog/<slug>` → `/blog/<slug>`, `/portfolio/*` → `/work`,
+  `/author/*` → `/about`, …) and the client upgrades old `#view` hashes
+  to their new URLs on arrival.
+- Server data layer extracted to `src/lib/queries.ts` — API routes and
+  pages share one implementation, so first-paint HTML can never drift
+  from the API.
+- Home/blog/projects/services render their content server-side (no more
+  client-fetch empty shells for crawlers); per-page Metadata API
+  (title/description/canonical/OG) on every route.
+- **`sitemap.xml` now exists for real** (dynamic, DB-driven: static
+  routes + 8 posts + 5 projects in dev), `robots.txt` references it, and
+  the README-promised `/feed.xml` RSS route shipped.
+- **Strict CSP with per-request nonce** (`src/proxy.ts`, Next 16's
+  middleware convention): `script-src 'nonce-…' 'strict-dynamic'` —
+  `'unsafe-inline'` for scripts is gone in production (verified against a
+  production build: zero console violations, hydration + navigation
+  work). `style-src 'unsafe-inline'` stays documented (React inline
+  style attributes).
+- **Optional TOTP 2FA on the admin panel** (`ADMIN_TOTP_SECRET` env):
+  password + 6-digit code; unset keeps single-factor behavior
+  (`bun scripts/generate-totp-secret.ts` to opt in).
+- GitHub hygiene: `package.json` renamed to `mehrdad-website`,
+  `z-ai-web-dev-sdk` pinned exactly (0.0.18), dead deps `next-auth` and
+  `next-intl` removed, both lockfiles synced; CI workflow
+  (`.github/workflows/ci.yml`: npm ci → lint → typecheck → build with
+  dummy env) and Dependabot config added; secret scanning, push
+  protection and Dependabot alerts/security-updates enabled via API.
+- Brand/positioning polish (review P0): removed the vanity stat block,
+  replaced the hardcoded "Seeking partners & investors" home badge with
+  each project's real status, rewrote the projects subtitle, dropped the
+  internal codename from meta keywords, updated the AI writer persona
+  ("product builder"), and softened the under-construction CTA copy.
+
+
 ### Security (2026-09-05 penetration-test round 2)
 - **Deep-dive pentest harness committed**: `scripts/pentest-round2.sh` —
   82 new black-box checks beyond round 1 (13-shape token fuzzing, cookie

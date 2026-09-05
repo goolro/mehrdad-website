@@ -62,6 +62,7 @@ hijack `DATABASE_URL`).
 TURSO_DATABASE_URL=libsql://mehrdad-goolro.aws-ap-south-1.turso.io
 TURSO_AUTH_TOKEN=<db-jwt-from-turso>       # rotate periodically
 ADMIN_PASSWORD=<long-random-secret>        # openssl rand -base64 32
+ADMIN_TOTP_SECRET=<base32-secret>          # OPTIONAL 2FA — bun scripts/generate-totp-secret.ts
 SITE_ORIGIN=https://mehrdad.ir             # RECOMMENDED: hard CSRF allow-list
                                            # + Host-poisoning-proof 301
                                            # redirects (pentest round 2)

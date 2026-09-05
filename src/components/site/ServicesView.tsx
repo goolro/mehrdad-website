@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useApp, pick } from './store';
 import { ui } from './i18n';
 import { Button } from '@/components/ui/button';
@@ -17,15 +17,12 @@ interface ServiceItem {
   id: string; slug: string; titleEn: string; titleFa: string; descEn: string; descFa: string; icon: string;
 }
 
-export function ServicesView() {
+/** server-fetched data (real-routes SEO migration) */
+export function ServicesView({ initialServices }: { initialServices: ServiceItem[] }) {
   const { lang, setView } = useApp();
   const t = ui[lang];
-  const [services, setServices] = useState<ServiceItem[]>([]);
+  const services = initialServices;
   const [selected, setSelected] = useState<ServiceItem | null>(null);
-
-  useEffect(() => {
-    fetch('/api/site').then((r) => r.json()).then((d) => setServices(d.services || [])).catch(() => {});
-  }, []);
 
   return (
     <div className="mx-auto w-full max-w-7xl px-4 py-12 sm:px-6">

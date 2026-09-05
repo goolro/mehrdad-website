@@ -5,7 +5,6 @@ import { useApp, pick } from './store';
 import { ui } from './i18n';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { FolderKanban, ChevronRight, HardHat, Users, Rocket, Clock } from 'lucide-react';
 
 interface ProjectItem {
@@ -71,15 +70,14 @@ export function ProgressBar({ value, barCls }: { value: number; barCls: string }
   );
 }
 
-export function ProjectsView() {
-  const { lang, setView } = useApp();
+export function ProjectsView({ initialProjects }: { initialProjects: ProjectItem[] }) {
+  const { lang, setView, openProject } = useApp();
   const t = ui[lang];
-  const [projects, setProjects] = useState<ProjectItem[]>([]);
-  const [selected, setSelected] = useState<ProjectItem | null>(null);
+  const projects = initialProjects;
   const [animate, setAnimate] = useState(false);
 
+  // progress bars fill shortly after paint (keeps the SSR HTML static)
   useEffect(() => {
-    fetch('/api/site').then((r) => r.json()).then((d) => setProjects(d.projects || [])).catch(() => {});
     const tm = setTimeout(() => setAnimate(true), 150);
     return () => clearTimeout(tm);
   }, []);
@@ -103,7 +101,7 @@ export function ProjectsView() {
           return (
             <button
               key={p.id}
-              onClick={() => setSelected(p)}
+              onClick={() => openProject(p.slug)}
               className="group overflow-hidden rounded-2xl border border-border bg-card text-start transition-all hover:-translate-y-1 hover:border-violet-500/50 hover:shadow-lg hover:shadow-violet-600/10"
             >
               <div className="flex items-start gap-4 p-6">
@@ -141,53 +139,6 @@ export function ProjectsView() {
         })}
       </div>
 
-      <Dialog open={!!selected} onOpenChange={(o) => !o && setSelected(null)}>
-        <DialogContent className="max-w-lg" dir={lang === 'fa' ? 'rtl' : 'ltr'}>
-          {selected && (
-            <>
-              <DialogHeader>
-                <StatusBadge status={selected.status} statusEn={selected.statusEn} statusFa={selected.statusFa} lang={lang} />
-                <DialogTitle className="flex items-center gap-2 text-xl leading-snug">
-                  <FolderKanban className="h-5 w-5 shrink-0 text-violet-500" />
-                  {pick(lang, selected.titleEn, selected.titleFa)}
-                </DialogTitle>
-                <DialogDescription className="text-base leading-relaxed">
-                  {pick(lang, selected.summaryEn, selected.summaryFa)}
-                </DialogDescription>
-              </DialogHeader>
-
-              {selected.status === 'under-construction' && (
-                <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-4">
-                  <div className="mb-2 flex items-center justify-between text-sm font-medium">
-                    <span className="inline-flex items-center gap-1.5">
-                      <HardHat className="h-4 w-4 text-amber-500" />
-                      {t.projects.progress}
-                    </span>
-                    <span className="font-extrabold text-amber-600 dark:text-amber-400">{selected.progress}%</span>
-                  </div>
-                  <ProgressBar value={animate ? selected.progress : 0} barCls={STATUS_STYLE['under-construction'].barCls} />
-                  <p className="mt-2 text-xs text-muted-foreground">
-                    {lang === 'fa'
-                      ? 'این پروژه در حال ساخت است — برای همکاری یا سرمایه‌گذاری زودهنگام تماس بگیرید.'
-                      : 'This project is being built — get in touch to join early as a partner or investor.'}
-                  </p>
-                </div>
-              )}
-
-              <Button
-                onClick={() => {
-                  setSelected(null);
-                  setView('contact');
-                }}
-                className="w-full bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white hover:from-violet-700 hover:to-fuchsia-700"
-              >
-                {t.projects.interested}
-                <ChevronRight className="ms-2 h-4 w-4 rtl:rotate-180" />
-              </Button>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

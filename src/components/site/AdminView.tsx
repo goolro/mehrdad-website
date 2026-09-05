@@ -41,13 +41,22 @@ export function AdminView() {
   const { toast } = useToast();
   const [authed, setAuthed] = useState(false);
   const [pw, setPw] = useState('');
+  const [totp, setTotp] = useState('');
+  const [needTotp, setNeedTotp] = useState(false);
   const [loginErr, setLoginErr] = useState(false);
 
   // session restore: the HttpOnly session cookie survives page reloads, so
-  // the admin doesn't have to re-type the password on every visit
+  // the admin doesn't have to re-type the password on every visit; the
+  // response also advertises whether the TOTP second factor is configured
   useEffect(() => {
     fetch('/api/admin/auth')
-      .then((r) => { if (r.ok) setAuthed(true); })
+      .then(async (r) => {
+        if (r.ok) setAuthed(true);
+        try {
+          const d = await r.json();
+          if (d?.totpRequired) setNeedTotp(true);
+        } catch {}
+      })
       .catch(() => {});
   }, []);
 
@@ -56,13 +65,22 @@ export function AdminView() {
     const res = await fetch('/api/admin/auth', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ password: pw }),
+      body: JSON.stringify(needTotp ? { password: pw, totp } : { password: pw }),
     });
     if (res.ok) {
-      // clear the password from memory — the server cookie authenticates now
+      // clear the password/code from memory — the server cookie authenticates now
       setPw('');
+      setTotp('');
       setAuthed(true);
       setLoginErr(false);
+    } else if (res.status === 401) {
+      const d = await res.json().catch(() => null);
+      if (d?.error === 'totp_required') {
+        setNeedTotp(true);
+        setLoginErr(false);
+      } else {
+        setLoginErr(true);
+      }
     } else {
       setLoginErr(true);
     }
@@ -89,7 +107,20 @@ export function AdminView() {
             onChange={(e) => setPw(e.target.value)}
             dir="ltr"
           />
+          {needTotp && (
+            <Input
+              type="text"
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              maxLength={6}
+              placeholder={t.admin.totp}
+              value={totp}
+              onChange={(e) => setTotp(e.target.value.replace(/\D/g, ''))}
+              dir="ltr"
+            />
+          )}
           {loginErr && <p className="text-sm text-red-500">{t.admin.wrongPw}</p>}
+          {needTotp && !loginErr && <p className="text-xs text-muted-foreground">{t.admin.totpRequired}</p>}
           <Button type="submit" className="w-full bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white">
             {t.admin.login}
           </Button>

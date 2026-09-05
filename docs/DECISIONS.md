@@ -183,3 +183,65 @@ in one chunk → that chunk translated manually with full fidelity
 **Rationale:** LLM batch with budget flags survives sandbox process
 limits; manual rescue preserves 100% content fidelity instead of
 silently dropping flagged content.
+
+## D-022 — Real routes replace hash routing (SPA retired)
+**Date:** 2026-09-05
+**Context:** External review P1: hash-only URLs (`/#blog/<slug>`) are not
+indexable; a crawler-visible site needs real paths with server-rendered
+content. README already promised `/work`, `/lab`, `/blog/<slug>`.
+**Decision:** Every view lives at a real App Router route — `/`,
+`/services`, `/fde` (+ `/lab` 308 alias), `/work`, `/work/[slug]`,
+`/blog`, `/blog/[slug]`, `/about`, `/contact`, `/admin`. Detail pages and
+listings fetch through a shared server layer (`src/lib/queries.ts`) and
+hand data to the (still client-hydrated) view components as props, so
+the initial HTML carries the full content. The zustand store navigates
+via the App Router (bridge registered by `SiteChrome`); legacy `#view`
+hashes are upgraded client-side on arrival, and the middleware 301 map
+now targets real paths.
+**Rationale:** SEO acceptance (`curl /blog/<slug>` returns the article)
+plus zero regression for old bookmarks; one data layer prevents the
+HTML-first rewrite from drifting from the API contract the admin panel
+and comments depend on.
+
+## D-023 — Per-request nonce CSP (dynamic rendering everywhere)
+**Date:** 2026-09-05
+**Context:** Review P2: `unsafe-inline` in `script-src` was the largest
+remaining CSP gap. Nonce-based CSP requires per-request HTML, i.e. no
+static prerender.
+**Decision:** `src/proxy.ts` (Next 16 middleware convention) issues
+`script-src 'nonce-…' 'strict-dynamic'` per request and passes the nonce
+via `x-nonce`; `layout.tsx` propagates it to the boot script. All routes
+are dynamically rendered (`next build` output: ƒ Dynamic — verified with
+a production build + browser run: zero violations). `style-src
+'unsafe-inline'` stays (React inline style attributes; CSS cannot execute
+script in modern browsers) and dev keeps `'unsafe-eval'` (React dev).
+**Rationale:** Removes the biggest CSP exception outright; the host's
+weakness argument from the earlier decision no longer outweighs the
+hardening, because Turso moved the DB off-host and page renders are
+cheap (single-digit ms measured locally, one remote query).
+
+## D-024 — Dual lockfiles kept on purpose (bun + npm)
+**Date:** 2026-09-05
+**Context:** Review P1 asked for exactly one lockfile. Reality: sandbox
+development uses `bun install`, while the reproducible production
+artifact build (`scripts/build-production.sh`, and now CI) uses
+`npm ci`.
+**Decision:** Keep both `bun.lock` (dev) and `package-lock.json`
+(production build / CI / Dependabot), keep them in sync on every
+dependency change (`bun add … && npm install --package-lock-only`), and
+document the rule in README + `.github/dependabot.yml`.
+**Rationale:** Deleting either breaks a verified production path;
+sync-both is cheap and auditable.
+
+## D-025 — Optional TOTP as admin second factor
+**Date:** 2026-09-05
+**Context:** Review P2 offered IP allow-listing (impractical: dynamic
+residential IP on cPanel, no proxy layer we control) or TOTP 2FA.
+**Decision:** `ADMIN_TOTP_SECRET` (base32) enables a mandatory
+password+TOTP step on `POST /api/admin/auth` (`otpauth` lib, ±1 period
+window). Unset ⇒ behavior unchanged, so the owner opts in by adding one
+env var (generator: `scripts/generate-totp-secret.ts`). The 6-digit code
+space is protected by the existing login rate limit (5 / 15 min / IP).
+**Rationale:** Real second factor without a schema change, without
+forcing setup before the cPanel deploy, and fail-closed on malformed
+secrets.

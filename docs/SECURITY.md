@@ -40,10 +40,12 @@ plaintext.
   variable is unset, the value is `''` and every comparison fails →
   **fail closed** (503 on every admin operation).
 - On success the server issues a **stateless HMAC-signed session cookie**
-  (`mehrdad_admin`): `expiry.<HMAC-SHA256(expiry)>`, key derived from
-  `ADMIN_PASSWORD`. There is **no session table** — verification is a
-  constant-time HMAC recompute, and changing `ADMIN_PASSWORD` instantly
-  invalidates every issued session.
+  (`mehrdad_admin`): `<expiry>.<nonce 96-bit>.<HMAC-SHA256>`, key derived
+  from `ADMIN_PASSWORD` (nonce added 2026-09-05 so same-second logins
+  cannot collide on one token). There is **no session table** —
+  verification is a constant-time HMAC recompute, and changing
+  `ADMIN_PASSWORD` instantly invalidates every issued session; logout
+  revokes the exact token (in-memory revocation set).
 - Cookie flags: `HttpOnly` (JS never sees the token), `SameSite=Strict`
   (no cross-site sends → CSRF-resistant), `Secure` in production,
   `Max-Age=12h`.
@@ -57,7 +59,13 @@ plaintext.
   never logged, never shipped in the client bundle.
 - Session restore: `GET /api/admin/auth` tells the client whether the
   cookie is still valid; logout is `DELETE /api/admin/auth`
-  (expires the cookie).
+  (expires the cookie **and** revokes the token).
+- **Optional TOTP second factor (2026-09-05, D-025)**: when
+  `ADMIN_TOTP_SECRET` (base32) is set, login requires a valid 6-digit
+  code (`otpauth` lib, ±1 period drift window) in addition to the
+  password; malformed secrets fail closed. Unset ⇒ single-factor
+  behavior. Generate with `bun scripts/generate-totp-secret.ts`. The
+  10^6 code space is covered by the login rate limit (5 / 15 min / IP).
 
 ## 3. User data policy
 
@@ -79,6 +87,7 @@ plaintext.
 | 2026-09-01 | Discovered during the pre-push audit: the admin password was hardcoded as a fallback in `src/lib/admin.ts` **and displayed as a hint** in the admin login UI (`AdminView.tsx`). Had it been pushed, the password would have been public. Caught **before** any push of these files (the public remote predates the admin panel). | Fallback removed (env-only, fail closed); UI hint removed; password rotated to a generated secret stored only in `.env`; `.env.example` added. |
 | 2026-09-01 | Local working history contained `.env`, DB backup snapshots and `dev.pid` (tracked before ignore rules matured). | Files untracked + gitignored; **entire local history squashed to one clean baseline commit** before the first push of this state, so none of it exists on the public remote. |
 | 2026-09-01 | A GitHub personal access token was shared through an IM channel (not via the repository). | Used only for the git remote URL (stored in untracked `.git/config`). Owner advised to rotate the token after the initial sync. |
+| 2026-09-05 | Same IM token was reused for pushes and **remains valid** — the owner explicitly decided not to rotate it for now. Mitigations enabled repo-side: secret scanning + push protection + Dependabot alerts/security updates (via API), so any future leak of a similar secret gets flagged; the token grants repo access only. | Owner reminder kept open: revoke/renew `ghp_9omo…` in GitHub → Settings → Developer settings whenever convenient; it is the single remaining known credential exposed outside the repo. |
 
 ## 5. Production hardening (cPanel)
 
@@ -92,12 +101,22 @@ plaintext.
   chat 10/min, contact 3/10min, comments 5/10min — with `Retry-After`.
 - Admin compare is timing-safe (SHA-256 + `timingSafeEqual`); admin
   sessions are HMAC-signed HttpOnly cookies (see §2).
-- Security headers on every response (since 2026-09-05): strict
-  `Content-Security-Policy` (default-src 'self'; external origins blocked
-  for scripts/styles/frames/forms; `unsafe-inline` scripts remain because
-  prerendered pages cannot carry per-request nonces on this host),
-  `X-Frame-Options: DENY`, `nosniff`, strict `Referrer-Policy`,
-  `Permissions-Policy` (camera/mic/geo/payment off), HSTS 6 months.
+- Security headers: `X-Frame-Options: DENY`, `nosniff`, strict
+  `Referrer-Policy`, `Permissions-Policy` (camera/mic/geo/payment off),
+  HSTS 6 months.
+- **Strict CSP with per-request nonce (2026-09-05, D-023)**:
+  `src/proxy.ts` issues `script-src 'self' 'nonce-…' 'strict-dynamic'`
+  per request — **no `'unsafe-inline'` for scripts in production**. All
+  routes are dynamically rendered so every HTML response carries a fresh
+  nonce (Next.js propagates it to its scripts; `layout.tsx` passes it to
+  the pre-paint boot script). Verified against a production build in a
+  real browser: zero violations. Remaining documented exceptions:
+  `style-src 'unsafe-inline'` (React inline *style attributes* — CSS
+  cannot execute script in modern browsers) and `'unsafe-eval'` in dev
+  only (React development mode).
+- CSP covers document routes only; API JSON responses intentionally
+  carry no CSP (browsers do not execute JSON) — the harness checks CSP
+  on `/` and `/blog` since 2026-09-05.
 - XSS: all HTML content is sanitized two-layer with an allowlist
   (`src/lib/sanitize.ts`) — on write (admin posts / AI write / translate)
   and on read (public posts API).

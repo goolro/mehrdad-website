@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db';
-import { sanitizePostHtml } from '@/lib/sanitize';
+import { listPosts } from '@/lib/queries';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
   try {
     const sp = req.nextUrl.searchParams;
-    // `|| 1` fallback: a non-numeric page/perPage must degrade to the default,
+    // `|| fallback`: a non-numeric page/perPage must degrade to the default,
     // never reach Prisma as NaN (NaN take/skip throws → 500)
     const page = Math.max(1, Number.parseInt(sp.get('page') || '1', 10) || 1);
     const perPage = Math.min(48, Math.max(1, Number.parseInt(sp.get('perPage') || '12', 10) || 12));
@@ -16,66 +15,8 @@ export async function GET(req: NextRequest) {
     const search = (sp.get('search') || '').trim();
     const featured = sp.get('featured') === '1';
 
-    const where: Record<string, unknown> = { published: true };
-    if (featured) where.featured = true;
-    if (category) {
-      where.categories = { some: { slug: category } };
-    }
-    if (tag) {
-      where.tags = { some: { tag: { slug: tag } } };
-    }
-    if (search) {
-      where.OR = [
-        { titleEn: { contains: search } },
-        { titleFa: { contains: search } },
-        { excerptEn: { contains: search } },
-        { excerptFa: { contains: search } },
-      ];
-    }
-
-    const [total, posts] = await Promise.all([
-      db.post.count({ where }),
-      db.post.findMany({
-        where,
-        orderBy: { date: 'desc' },
-        skip: (page - 1) * perPage,
-        take: perPage,
-        select: {
-          id: true,
-          slug: true,
-          titleEn: true,
-          titleFa: true,
-          excerptEn: true,
-          excerptFa: true,
-          cover: true,
-          date: true,
-          contentEn: true,
-          featured: true,
-          _count: { select: { comments: { where: { approved: true } } } },
-          categories: { select: { id: true, slug: true, nameEn: true, nameFa: true } },
-          tags: { select: { tag: { select: { id: true, slug: true, nameEn: true, nameFa: true } } } },
-        },
-      }),
-    ]);
-
-    return NextResponse.json({
-      total,
-      page,
-      perPage,
-      totalPages: Math.ceil(total / perPage),
-      posts: posts.map((p) => ({
-        ...p,
-        // XSS guard on read: legacy WP content may contain unsafe HTML
-        contentEn: sanitizePostHtml(p.contentEn),
-        hasEn: Boolean(p.contentEn),
-        commentCount: p._count.comments,
-        tags: p.tags.map((pt) => pt.tag),
-        readMinutes: Math.max(
-          1,
-          Math.ceil(((p.contentEn || p.excerptFa || p.excerptEn || '').length / 4) / 220)
-        ),
-      })),
-    });
+    const result = await listPosts({ page, perPage, category, tag, search, featured });
+    return NextResponse.json(result);
   } catch (e) {
     console.error('posts api error:', e);
     return NextResponse.json({ error: 'Failed to load posts' }, { status: 500 });

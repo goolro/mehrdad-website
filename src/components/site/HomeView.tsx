@@ -1,11 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { useApp, pick } from './store';
 import { ui } from './i18n';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ArrowRight, Sparkles, ChevronLeft, ChevronRight, Rocket, BrainCircuit, Code2, PenTool, Briefcase, Megaphone, Store, Lightbulb, FolderKanban, FileText, Hammer, HeartHandshake, Share2, Search, GraduationCap, Repeat } from 'lucide-react';
+import { StatusBadge } from './ProjectsView';
 
 const CHAIN_ICONS = [Search, PenTool, Hammer, GraduationCap, Share2, Repeat];
 
@@ -18,29 +18,32 @@ interface ServiceItem {
 }
 interface ProjectItem {
   id: string; slug: string; titleEn: string; titleFa: string; summaryEn: string; summaryFa: string; cover: string | null;
+  status: string; progress: number; statusEn: string; statusFa: string;
 }
-interface CategoryItem { id: string; slug: string; nameEn: string; nameFa: string; count: number }
+interface CategoryItem { id: string; slug: string; nameEn: string; nameFa: string }
 interface PostItem {
-  slug: string; titleEn: string; titleFa: string; excerptEn: string; excerptFa: string;
-  cover: string | null; date: string; categories: CategoryItem[];
+  slug: string; titleEn: string | null; titleFa: string | null; excerptEn: string | null; excerptFa: string | null;
+  cover: string | null; date: string | Date; categories: CategoryItem[];
 }
 
-export function HomeView() {
-  const { lang, setView, openPost, setChatOpen } = useApp();
+export interface HomeInitialData {
+  services: ServiceItem[];
+  projects: ProjectItem[];
+  posts: PostItem[];
+}
+
+/**
+ * Server-fed home page: `initial` arrives from the server component
+ * (src/app/page.tsx) so the hero, services, projects and featured
+ * articles are present in the FIRST HTML response — no client fetch,
+ * no empty shell for crawlers (real-routes SEO migration).
+ */
+export function HomeView({ initial }: { initial: HomeInitialData }) {
+  const { lang, setView, openPost, openProject, setChatOpen } = useApp();
   const t = ui[lang];
-  const [data, setData] = useState<{
-    services: ServiceItem[];
-    projects: ProjectItem[];
-    stats: { posts: number; services: number; projects: number };
-  } | null>(null);
-  const [posts, setPosts] = useState<PostItem[]>([]);
 
-  useEffect(() => {
-    fetch('/api/site').then((r) => r.json()).then(setData).catch(() => {});
-    fetch('/api/posts?perPage=6').then((r) => r.json()).then((d) => setPosts(d.posts || [])).catch(() => {});
-  }, []);
-
-  const stats = data?.stats || { posts: 83, services: 8, projects: 5 };
+  const data = { services: initial.services, projects: initial.projects };
+  const posts = initial.posts;
 
   return (
     <div className="flex flex-col">
@@ -74,21 +77,6 @@ export function HomeView() {
               <Sparkles className="me-2 h-4 w-4" />
               {t.hero.cta2}
             </Button>
-          </div>
-
-          {/* stats */}
-          <div className="mt-14 grid w-full max-w-3xl grid-cols-2 gap-4 sm:grid-cols-4">
-            {[
-              { value: `${stats.posts}+`, label: t.stats.articles },
-              { value: String(stats.services), label: t.stats.services },
-              { value: String(stats.projects), label: t.stats.projects },
-              { value: '2', label: t.stats.languages },
-            ].map((s) => (
-              <div key={s.label} className="rounded-2xl border border-border bg-card/60 p-4 backdrop-blur">
-                <div className="text-3xl font-extrabold text-violet-600 dark:text-violet-400">{s.value}</div>
-                <div className="mt-1 text-xs text-muted-foreground">{s.label}</div>
-              </div>
-            ))}
           </div>
         </div>
       </section>
@@ -137,15 +125,15 @@ export function HomeView() {
       </section>
 
       {/* ── Services ── */}
-      <section className="mx-auto w-full max-w-7xl px-4 py-14 sm:px-6">
+      <section id="services" className="mx-auto w-full max-w-7xl scroll-mt-24 px-4 py-14 sm:px-6">
         <SectionHeader title={t.sections.servicesTitle} sub={t.sections.servicesSub} />
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {(data?.services || []).slice(0, 8).map((s) => {
+          {(data.services || []).slice(0, 8).map((s) => {
             const Icon = ICONS[s.icon] || Sparkles;
             return (
               <button
                 key={s.id}
-                onClick={() => setView('services')}
+                onClick={() => setView(s.slug === 'forward-deployed-engineering' ? 'fde' : 'services')}
                 className="group rounded-2xl border border-border bg-card p-5 text-start transition-all hover:-translate-y-1 hover:border-violet-500/50 hover:shadow-lg hover:shadow-violet-600/10"
               >
                 <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-violet-600/10 text-violet-600 dark:text-violet-400">
@@ -160,19 +148,19 @@ export function HomeView() {
       </section>
 
       {/* ── Projects ── */}
-      <section className="border-y border-border/40 bg-muted/30">
+      <section id="projects" className="scroll-mt-24 border-y border-border/40 bg-muted/30">
         <div className="mx-auto w-full max-w-7xl px-4 py-14 sm:px-6">
           <SectionHeader title={t.sections.projectsTitle} sub={t.sections.projectsSub} />
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {(data?.projects || []).map((p) => (
+            {(data.projects || []).map((p) => (
               <button
                 key={p.id}
-                onClick={() => setView('projects')}
+                onClick={() => openProject(p.slug)}
                 className="group flex flex-col rounded-2xl border border-border bg-card p-5 text-start transition-all hover:-translate-y-1 hover:border-violet-500/50 hover:shadow-lg hover:shadow-violet-600/10"
               >
                 <div className="flex items-center gap-2 text-xs font-semibold text-violet-600 dark:text-violet-400">
                   <FolderKanban className="h-4 w-4" />
-                  {t.projects.seeking}
+                  <StatusBadge status={p.status} statusEn={p.statusEn} statusFa={p.statusFa} lang={lang} />
                 </div>
                 <h3 className="mt-3 font-bold leading-snug">{pick(lang, p.titleEn, p.titleFa)}</h3>
                 <p className="mt-2 line-clamp-3 text-sm text-muted-foreground">{pick(lang, p.summaryEn, p.summaryFa)}</p>
@@ -195,7 +183,7 @@ export function HomeView() {
       </section>
 
       {/* ── Featured posts ── */}
-      <section className="mx-auto w-full max-w-7xl px-4 py-14 sm:px-6">
+      <section id="blog" className="mx-auto w-full max-w-7xl scroll-mt-24 px-4 py-14 sm:px-6">
         <SectionHeader title={t.sections.featuredTitle} sub={t.sections.featuredSub} action={{
           label: t.sections.viewAll,
           onClick: () => setView('blog'),
@@ -209,7 +197,6 @@ export function HomeView() {
             >
               <div className="aspect-video w-full overflow-hidden bg-muted">
                 {p.cover ? (
-                   
                   <img src={p.cover} alt="" className="h-full w-full object-cover transition-transform group-hover:scale-105" loading="lazy" />
                 ) : (
                   <div className="flex h-full items-center justify-center">
@@ -268,5 +255,4 @@ function SectionHeader({ title, sub, action }: { title: string; sub: string; act
   );
 }
 
-export { SectionHeader };
 export { ChevronLeft };
