@@ -899,3 +899,20 @@ Work Log:
 Stage Summary:
 - محلی و ریموت هر دو = 463376e؛ live = 463376e
 - تنها اقدام بازِ مالک: rotate هر ۳ توکن + SITE_ORIGIN در env پروژه Vercel باید https://mehrdad-website.vercel.app بماند (تغییر به mehrdad.ir مثل پیشنهاد گزارش، CSRF میرور را می‌شکند) + SITE_ORIGIN و creds در cPanel
+
+---
+Task ID: cpanel-artifact-v3-1
+Agent: main (Z.ai Code)
+Task: پاسخ به پیام هاست (ماریادی‌بی + بدون SSH) و به‌روزرسانی آرتیفکت cPanel با همهٔ کارهای جدید
+
+Work Log:
+- تحلیل پیام هاست: هیچ‌کدام از دو محدودیت به ما مربوط نیست — اپ روی cPanel از SQLite روی دیسک (data/production.db) استفاده می‌کند نه ماریادی‌بی؛ دیپلوی هم از طریق Git™ Version Control خود cPanel است (HTTPS، بدون SSH)
+- بیلد آرتیفکت تازه از main@bd947c7 با scripts/build-production.sh → mehrdad-deploy-20260905-222550.tar.gz (155MB، گارد hygiene پاس، هر دو موتور Prisma)
+- قطعه‌بندی به دو قطعه (90MB + 64MB) + SHA256SUMS.repo (هش کامل + per-part)
+- push به goolro/mehrdad-cpanel-deploy (b448869): قطعات جدید + یادداشت نسخه در deploy.sh/README — قدیمی‌های v3.1 جایگزین شدند
+- تست یکپارچگی: بازچینی محلی قطعات → هش برابر آرتیفکت اصلی (e69df979…) → checksum هاست پاس خواهد شد
+- نکته: دیتابیس production روی هاست با این دیپلوی دست نخورده می‌ماند (سیاست create-once در deploy.sh)
+
+Stage Summary:
+- ریپوی دیپلوی آمادهٔ Update from Remote → Deploy است؛ production بعد از دیپلوی: real routes + AI-SEO + round-3 + هیروی خدمات
+- تنها اقدام مالک: cPanel → Git → mehrdad-deploy → Update from Remote → Deploy HEAD Commit → تست سایت
