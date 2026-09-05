@@ -880,3 +880,22 @@ Work Log:
 Stage Summary:
 - https://mehrdad-website.vercel.app/services حالا هیروی اسلوگان برند را دارد (FA/EN)
 - هر ۳ توکن مالک باید revoke شوند (GitHub PAT، Vercel، Supabase — مقادیر از اسناد عمومی حذف شد)
+
+---
+Task ID: sec-round3-sync-1
+Agent: main (Z.ai Code)
+Task: راستی‌آزمایی گزارش «اقدامات دیپلوی و پیکربندی» (دور ۳ بازبینی امنیتی نشست موازی) + همگام‌سازی مخزن محلی + انتشار و تأیید زنده
+
+Work Log:
+- کشف بحرانی: مخزن محلی توسط نشست موازی بازنویسی شده بود (3e8a1a7 با amend فقط permission فایل‌ها → a28c239) و کامیت‌های امروز (SEO + هیروی خدمات) از HEAD محلی افتاده بودند — ریموت سالم بود
+- git reset --hard origin/main → محلی = 463376e (security round-3: ۱۲ فیکس + ۸۸ چک؛ PR #12 از arena-ai-coding-agent) شامل همه کارهای قبلی
+- راستی‌آزمایی ادعاهای گزارش روی کل تاریخچه: توکن‌های کامل هرگز کامیت نشده‌اند (git log -S و اسکن blob همه تاریخچه = خالی) → ادعای «توکن در گیت-هیستوری قابل بازیابی است» نادرست؛ اما مخزن عمومی است و پیشوندها در داک بودند (round-3 خودش اسکراب کرده H1)
+- فیکس‌های round-3 تأیید شد: L7 (SSH RejectPolicy + known_hosts در cpanel-deploy.py)، M3 (readJsonBody استریمی 32KB)، H1 (اسکراب پیشوندها)؛ Actions هنوز @v4 (ریسک پذیرفته‌شده، Dependabot پیشنهاد @v5 می‌دهد)
+- کشف دوم: .vercel/project.json در بازنشانی به پروژه اشتباه my-project لینک شده بود → فیکس به mehrdad-website؛ دیپلوی اشتباهِ یک‌باره حذف و پروژه سرگردان my-project هم از حساب حذف شد
+- دیپلوی --prod از 463376e (mehrdad-website-7smav7vhk) → live = repo دقیقاً همگام
+- تست‌های زنده: Content-Length 40KB → 413 JSON (گارد اپ)؛ chunked (هر اندازه) → 400 متنی از لبه Vercel (پلتفرم اصلاً chunked را پاس نمی‌دهد — M3 روی Vercel دفاع لایه‌ای است و روی cPanel معنا دارد)؛ COOP/CORP/HSTS/نسترون CSP حاضر؛ X-Powered-By غایب؛ هیروی خدمات و ۸ کارت زنده
+- نکته: auto-deploy Vercel همچنان وجود ندارد (نیازمند Login Connection از داشبورد) — دیپلوی دستی CLI است
+
+Stage Summary:
+- محلی و ریموت هر دو = 463376e؛ live = 463376e
+- تنها اقدام بازِ مالک: rotate هر ۳ توکن + SITE_ORIGIN در env پروژه Vercel باید https://mehrdad-website.vercel.app بماند (تغییر به mehrdad.ir مثل پیشنهاد گزارش، CSRF میرور را می‌شکند) + SITE_ORIGIN و creds در cPanel
