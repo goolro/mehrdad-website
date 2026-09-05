@@ -949,3 +949,21 @@ Work Log:
 Stage Summary:
 - چک‌لیست کامل راه‌اندازی هاست جدید تحویل شد: پچ deploy.sh → Git clone/Deploy → Setup Node.js App (Node≥20.9 + ۶ env) → Restart/تست → AutoSSL → پاک‌کردن SW مرورگر
 - یافتهٔ کلیدی برای مالک: «زمان نمی‌برد»؛ بدون Setup Node.js App + env تورسو سایت بالا نمی‌آید؛ SSL فعلاً منقضی/placeholder است
+
+---
+Task ID: cpanel-deploysh-patch-1
+Agent: main (Z.ai Code)
+Task: انجام پچ deploy.sh به‌جای مالک (درخواست صریح: «اینو خودت انجام بده») + پاسخ فرم Environment Variables
+
+Work Log:
+- توکن GitHub مالک دوباره در چت دریافت شد (در worklog ثبت نمی‌شود) → با API راستی‌آزمایی: push:true روی goolro/mehrdad-cpanel-deploy
+- کلون ریپوی دیپلوی در /home/z/deploy-repo-tmp؛ سه ویرایش deploy.sh: شاخهٔ elif custom.db + بلوک NOTE برای هاست خالی + هینت دو-حالته DB در خروجی + یادداشت نسخهٔ v3.2 در هدر
+- تست end-to-end واقعی با HOME شبیه‌سازی‌شدهٔ خالی: بازچینی دو قطعه OK → sha256 OK → استخراج → server.js OK + ۲ موتور Prisma → مسیر NOTE بدون خطا → DONE (۲۵۹M) — یعنی Deploy روی هاست جدید سبز می‌شود
+- push کامیت 1ae58f8 (deploy v3.2)؛ تطبیق blob محلی/ریموت با API (raw فقط CDN-کش بود)؛ push کامیت دوم 819470ba (README: جدول ۶ env، حذف DATABASE_URL قدیمی motorpum، Turso primary)
+- ریموت HEAD نهایی = 819470ba؛ پاکسازی /tmp/fakehome
+- جدول دقیق Name/Value برای فرم env cPanel به مالک داده شد (TURSO_DATABASE_URL/TURSO_AUTH_TOKEN/ADMIN_PASSWORD/SITE_ORIGIN/NODE_ENV/HOSTNAME)
+
+Stage Summary:
+- دیپلوی هاست-خالی حالا کاملاً سبز می‌شود و پیام شفاف «DB در Turso ابری است» می‌دهد؛ README با معماری فعلی هماهنگ است
+- مالک فقط: Update from Remote → Deploy HEAD Commit → Node.js App + ۶ env → Restart → AutoSSL
+- یادآوری rotate توکن GitHub پس از پایان دیپلوی (توکن مجدداً در چت رفت)
