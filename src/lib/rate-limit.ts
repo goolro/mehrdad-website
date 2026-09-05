@@ -57,14 +57,38 @@ export function rateLimit(key: string, limit: number, windowMs: number): RateLim
 
 /**
  * Best-effort client IP for rate limiting behind the cPanel/Passenger proxy.
+ *
+ * TRUST MODEL: Apache/Passenger acts as the only reverse proxy and APPENDS
+ * the real client address to any client-sent X-Forwarded-For header. The
+ * LAST entry is therefore the proxy-observed client IP; taking the FIRST
+ * would let an attacker rotate spoofed IPs and bypass every rate limit.
  */
 export function clientIp(req: NextRequest): string {
   const fwd = req.headers.get('x-forwarded-for');
   if (fwd) {
-    const first = fwd.split(',')[0]?.trim();
-    if (first) return first;
+    const parts = fwd.split(',').map((p) => p.trim()).filter(Boolean);
+    if (parts.length > 0) return parts[parts.length - 1];
   }
   return req.headers.get('x-real-ip') || 'unknown';
+}
+
+/**
+ * Reject oversized JSON bodies early. The App Router has no default body
+ * limit, and on a memory-capped shared host a multi-megabyte POST is a
+ * trivially cheap DoS vector. Only the unauthenticated public endpoints
+ * use this (authenticated admin is a trusted principal).
+ */
+export function bodyTooLarge(req: NextRequest, maxKb = 32): boolean {
+  const len = Number(req.headers.get('content-length') || '0');
+  return Number.isFinite(len) && len > maxKb * 1024;
+}
+
+/** Standard 413 response for the body-size guard. */
+export function payloadTooLarge(): Response {
+  return new Response(JSON.stringify({ error: 'Payload too large' }), {
+    status: 413,
+    headers: { 'Content-Type': 'application/json' },
+  });
 }
 
 /** Standard 429 response with Retry-After. */

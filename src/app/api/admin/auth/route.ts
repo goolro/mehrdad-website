@@ -4,9 +4,10 @@ import {
   ADMIN_COOKIE,
   ADMIN_SESSION_TTL_SECONDS,
   createAdminSessionToken,
+  revokeAdminSessionToken,
   verifyAdminSessionToken,
 } from '@/lib/admin-session';
-import { clientIp, rateLimit, tooManyRequests } from '@/lib/rate-limit';
+import { clientIp, bodyTooLarge, payloadTooLarge, rateLimit, tooManyRequests } from '@/lib/rate-limit';
 
 export const dynamic = 'force-dynamic';
 
@@ -26,6 +27,9 @@ export async function POST(req: NextRequest) {
   // brute-force guard: 5 attempts per IP per 15 minutes
   const rl = rateLimit(`login:${clientIp(req)}`, 5, 15 * 60 * 1000);
   if (!rl.ok) return tooManyRequests(rl.retryAfter);
+
+  // tiny bodies only — the login payload is a single short password
+  if (bodyTooLarge(req, 8)) return payloadTooLarge();
 
   // FAIL-CLOSED: never allow an empty/unset secret to authenticate.
   if (!adminAuthAvailable()) {
@@ -57,8 +61,10 @@ export async function GET(req: NextRequest) {
   return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 }
 
-/** DELETE = logout: expire the cookie (stateless sessions need no server cleanup). */
-export async function DELETE() {
+/** DELETE = logout: revoke the token server-side + expire the cookie. */
+export async function DELETE(req: NextRequest) {
+  // stateless logout needs the token value to revoke it
+  revokeAdminSessionToken(req.cookies.get(ADMIN_COOKIE)?.value);
   const res = NextResponse.json({ ok: true });
   res.cookies.set(ADMIN_COOKIE, '', { ...cookieOptions, maxAge: 0 });
   return res;

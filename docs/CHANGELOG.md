@@ -4,6 +4,24 @@ All notable changes to mehrdad.ir. Format: Keep-a-Changelog-ish, newest first.
 
 ## [Unreleased]
 
+### Security (2026-09-05 penetration-test round)
+- **Full pentest harness committed**: `scripts/pentest-local.sh` — 55
+  automated black-box checks (auth, session forgery, CSRF, rate limits,
+  DoS bodies, SQLi, stored XSS, headers, secret scan, open redirect) with
+  PASS/FAIL summary and exit code; report in `docs/PENTEST_2026-09-05.md`
+  (**55/55 green**).
+- Fixes surfaced by the recon, all now covered by tests:
+  - `clientIp()` takes the LAST `X-Forwarded-For` entry (proxy-appended) —
+    first-entry selection let attackers rotate spoofed IPs and bypass every
+    rate limit;
+  - logout now **revokes** the stateless session token (in-memory set) —
+    a stolen token no longer survives logout;
+  - `Cache-Control: no-store` on all `/api/admin/*` responses;
+  - 413 body-size guards on unauthenticated POSTs (login 8 KB,
+    chat/contact/comments 32 KB) — App Router has no default body cap and
+    multi-MB JSON was a trivial memory-DoS on the shared host.
+- Residual risks + trust model documented in the pentest report §5.
+
 ### Security (2026-09-05 hardening round)
 - **Admin session cookies replace the per-request `x-admin-key` password
   header**: `POST /api/admin/auth` now issues a stateless HMAC-signed

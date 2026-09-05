@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { clientIp, rateLimit, tooManyRequests } from '@/lib/rate-limit';
+import { clientIp, bodyTooLarge, payloadTooLarge, rateLimit, tooManyRequests } from '@/lib/rate-limit';
 
 export const dynamic = 'force-dynamic';
 
@@ -8,6 +8,9 @@ export async function POST(req: NextRequest) {
   // spam guard: 3 submissions per IP per 10 minutes
   const rl = rateLimit(`contact:${clientIp(req)}`, 3, 10 * 60 * 1000);
   if (!rl.ok) return tooManyRequests(rl.retryAfter);
+
+  // memory guard on the shared host: real submissions are ≤ ~5.5 KB
+  if (bodyTooLarge(req)) return payloadTooLarge();
 
   try {
     const body = await req.json();
