@@ -62,6 +62,14 @@ export function rateLimit(key: string, limit: number, windowMs: number): RateLim
  * the real client address to any client-sent X-Forwarded-For header. The
  * LAST entry is therefore the proxy-observed client IP; taking the FIRST
  * would let an attacker rotate spoofed IPs and bypass every rate limit.
+ *
+ * `X-Real-IP` is deliberately NOT consulted (round-3 finding M4): it is a
+ * plain client-controlled header, so honouring it would hand an attacker a
+ * one-header rate-limit bypass on any request path that reaches Node without
+ * the proxy appending XFF. Requests with no XFF at all collapse into the
+ * single 'unknown' bucket — stricter, never looser. Both real deployments
+ * (cPanel/Apache and the Caddy preview) set X-Forwarded-For, so the bucket is
+ * per-client in practice.
  */
 export function clientIp(req: NextRequest): string {
   const fwd = req.headers.get('x-forwarded-for');
@@ -69,7 +77,7 @@ export function clientIp(req: NextRequest): string {
     const parts = fwd.split(',').map((p) => p.trim()).filter(Boolean);
     if (parts.length > 0) return parts[parts.length - 1];
   }
-  return req.headers.get('x-real-ip') || 'unknown';
+  return 'unknown';
 }
 
 /**
@@ -100,4 +108,77 @@ export function tooManyRequests(retryAfter: number): Response {
       'Retry-After': String(retryAfter),
     },
   });
+}
+
+/** Standard 400 response for a body that is not valid JSON. */
+export function badRequest(error = 'Invalid JSON body'): Response {
+  return new Response(JSON.stringify({ error }), {
+    status: 400,
+    headers: { 'Content-Type': 'application/json' },
+  });
+}
+
+export type LimitedJsonResult =
+  | { ok: true; data: any }
+  | { ok: false; error: 'payload-too-large' }
+  | { ok: false; error: 'invalid-json' };
+
+/**
+ * Read + parse a JSON body with a HARD size cap.
+ *
+ * WHY (round-3 finding M3): `bodyTooLarge()` only inspects `Content-Length`,
+ * and a request sent with `Transfer-Encoding: chunked` carries no such
+ * header — so the old guard returned false and the route handed an
+ * unbounded body to `req.json()`. On a memory-capped shared host that is the
+ * exact DoS the guard exists to prevent. This helper counts the bytes as
+ * they stream in and stops at the limit regardless of the transfer encoding.
+ *
+ * The two failure modes are reported separately so each route can keep its
+ * own status-code contract (login answers malformed JSON with 401, the
+ * public forms with 400).
+ */
+export async function readJsonBody(req: NextRequest, maxKb = 32): Promise<LimitedJsonResult> {
+  // fast path: an honest Content-Length over the cap never gets read at all
+  if (bodyTooLarge(req, maxKb)) return { ok: false, error: 'payload-too-large' };
+
+  const limit = maxKb * 1024;
+  let text = '';
+  try {
+    if (req.body) {
+      const reader = req.body.getReader();
+      const decoder = new TextDecoder();
+      let tooLarge = false;
+      try {
+        for (;;) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          text += decoder.decode(value, { stream: true });
+          if (text.length > limit) {
+            tooLarge = true; // chunked body with no Content-Length — counted here
+            break;
+          }
+        }
+        if (!tooLarge) text += decoder.decode();
+      } finally {
+        if (tooLarge) await reader.cancel().catch(() => {});
+        else {
+          try {
+            reader.releaseLock();
+          } catch {
+            /* stream already closed */
+          }
+        }
+      }
+      if (tooLarge) return { ok: false, error: 'payload-too-large' };
+    }
+    if (!text) return { ok: true, data: null };
+    return { ok: true, data: JSON.parse(text) };
+  } catch {
+    return { ok: false, error: text.length > limit ? 'payload-too-large' : 'invalid-json' };
+  }
+}
+
+/** Map a readJsonBody failure onto the standard public-endpoint responses. */
+export function jsonBodyError(error: 'payload-too-large' | 'invalid-json'): Response {
+  return error === 'payload-too-large' ? payloadTooLarge() : badRequest();
 }

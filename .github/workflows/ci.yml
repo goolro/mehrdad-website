@@ -41,3 +41,22 @@ jobs:
   # part of CI — they are live-server penetration harnesses that need a
   # running instance with a real local database. Run them locally per
   # docs/SECURITY.md §5 after any auth/API change.
+
+  # Round-3 security regression suite (docs/SECURITY_REVIEW_2026-09-05-round3.md).
+  # Needs Node >= 22.6 for --experimental-strip-types, so it runs as its own job
+  # and does not build the app.
+  security-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --include=dev
+
+      - name: Security regression suite (88 checks)
+        run: node --expose-gc --experimental-strip-types scripts/security-checks.mts

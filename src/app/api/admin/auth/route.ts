@@ -7,7 +7,7 @@ import {
   revokeAdminSessionToken,
   verifyAdminSessionToken,
 } from '@/lib/admin-session';
-import { clientIp, bodyTooLarge, payloadTooLarge, rateLimit, tooManyRequests } from '@/lib/rate-limit';
+import { clientIp, readJsonBody, payloadTooLarge, rateLimit, tooManyRequests } from '@/lib/rate-limit';
 import { totpEnabled, verifyTotp } from '@/lib/admin-totp';
 
 export const dynamic = 'force-dynamic';
@@ -31,27 +31,34 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Cross-origin request rejected' }, { status: 403 });
   }
 
-  // brute-force guard: 5 attempts per IP per 15 minutes
+  // brute-force guard: 5 attempts per IP per 15 minutes, plus a global
+  // ceiling so a botnet with N addresses cannot buy itself N×5 attempts
+  // (round-3 finding M4). The global bucket is generous: a single admin
+  // needs ≤5, and a restart/second device still fits comfortably.
   const rl = rateLimit(`login:${clientIp(req)}`, 5, 15 * 60 * 1000);
   if (!rl.ok) return tooManyRequests(rl.retryAfter);
+  const rlGlobal = rateLimit('login:__global__', 60, 15 * 60 * 1000);
+  if (!rlGlobal.ok) return tooManyRequests(rlGlobal.retryAfter);
 
-  // tiny bodies only — the login payload is a single short password
-  if (bodyTooLarge(req, 8)) return payloadTooLarge();
+  // tiny bodies only — the login payload is a single short password.
+  // readJsonBody enforces the cap while streaming, so a chunked request
+  // (no Content-Length) cannot slip an unbounded body past it.
+  const parsed = await readJsonBody(req, 8);
+  if (!parsed.ok) {
+    // unchanged contract: an oversized body is 413, an unparsable one is a
+    // plain failed login (no parse-error oracle)
+    return parsed.error === 'payload-too-large'
+      ? payloadTooLarge()
+      : NextResponse.json({ error: 'Wrong password' }, { status: 401 });
+  }
 
   // FAIL-CLOSED: never allow an empty/unset secret to authenticate.
   if (!adminAuthAvailable()) {
     return NextResponse.json({ error: 'Admin auth is unavailable' }, { status: 503 });
   }
 
-  let password: unknown;
-  let totp: unknown;
-  try {
-    const body = await req.json();
-    password = body?.password;
-    totp = body?.totp;
-  } catch {
-    return NextResponse.json({ error: 'Wrong password' }, { status: 401 });
-  }
+  const password: unknown = parsed.data?.password;
+  const totp: unknown = parsed.data?.totp;
 
   if (typeof password === 'string' && safeEqual(password, ADMIN_PASSWORD)) {
     // second factor (only when ADMIN_TOTP_SECRET is configured): a valid

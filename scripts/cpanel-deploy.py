@@ -62,6 +62,8 @@ def main() -> None:
     p.add_argument("--artifact", default=None, help="default: newest dist/mehrdad-deploy-*.tar.gz")
     p.add_argument("--db", default="db/custom.db", help="seed source (only used if production DB absent)")
     p.add_argument("--skip-upload", action="store_true", help="re-extract from the already-uploaded artifact")
+    p.add_argument("--known-hosts", default=os.path.expanduser("~/.ssh/known_hosts"),
+                   help="host key database — the deploy channel verifies the server key (round-3 L7)")
     args = p.parse_args()
 
     repo = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -85,10 +87,26 @@ def main() -> None:
     prod_db = posixpath.join(app, "data", "production.db")
 
     ssh = paramiko.SSHClient()
-    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    # SECURITY (round-3 finding L7): verify the server's host key instead of
+    # AutoAddPolicy(), which would let a man-in-the-middle substitute the
+    # build artifact on the way to production. First connect: pin the key with
+    #   ssh-keyscan -p <port> <host> >> ~/.ssh/known_hosts
+    # after verifying the fingerprint against the one cPanel shows.
+    known_hosts = os.path.expanduser(args.known_hosts)
+    if os.path.exists(known_hosts):
+        ssh.load_host_keys(known_hosts)
+    ssh.load_system_host_keys()
+    ssh.set_missing_host_key_policy(paramiko.RejectPolicy())
     print(f"==> connect {args.user}@{args.host}:{args.port}")
-    ssh.connect(args.host, port=args.port, username=args.user,
-                key_filename=args.key, look_for_keys=False, allow_agent=False, timeout=30)
+    try:
+        ssh.connect(args.host, port=args.port, username=args.user,
+                    key_filename=args.key, look_for_keys=False, allow_agent=False, timeout=30)
+    except paramiko.ssh_exception.SSHException as exc:
+        sys.exit(
+            f"FATAL: host key for {args.host}:{args.port} is not trusted ({exc}).\n"
+            f"  Verify the fingerprint in cPanel, then pin it:\n"
+            f"    ssh-keyscan -p {args.port} {args.host} >> {known_hosts}"
+        )
     try:
         print("==> server recon")
         run(ssh, "uname -sr && node --version 2>/dev/null || echo 'node: not on PATH (fine — Passenger provides it)'")

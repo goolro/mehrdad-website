@@ -59,6 +59,7 @@ Respond with ONLY valid JSON (no markdown fences) in this exact shape:
     return NextResponse.json({ ok: true, article: parsed });
   } catch (e) {
     console.error('ai write error:', e);
-    return NextResponse.json({ error: e instanceof Error ? e.message : 'Generation failed' }, { status: 500 });
+    // the raw provider/stack message stays in the server log (round-3 L2)
+    return NextResponse.json({ error: 'Generation failed' }, { status: 500 });
   }
 }

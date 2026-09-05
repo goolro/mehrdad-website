@@ -23,7 +23,12 @@ export async function GET(req: NextRequest) {
       categories: { select: { nameEn: true, nameFa: true } },
     },
   });
-  return NextResponse.json({ posts });
+  // XSS guard on read as well (round-3 finding M1): the admin panel renders
+  // contentEn with dangerouslySetInnerHTML, and legacy WordPress imports can
+  // carry markup that never passed through the write-side sanitizer.
+  return NextResponse.json({
+    posts: posts.map((p) => ({ ...p, contentEn: sanitizePostHtml(p.contentEn) })),
+  });
 }
 
 export async function POST(req: NextRequest) {

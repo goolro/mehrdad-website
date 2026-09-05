@@ -27,6 +27,33 @@ export interface Chunk {
   body: string;
 }
 
+type ChunkRow = Pick<Chunk, 'id' | 'refType' | 'refSlug' | 'title' | 'body'>;
+
+/**
+ * In-process TTL cache for the corpus (round-3 finding L3).
+ *
+ * `retrieveContext()` used to read the ENTIRE kb_chunk table on every chat
+ * message — an unauthenticated DB/CPU amplifier on a shared host. The corpus
+ * only changes when the admin writes/translates a post, so a short TTL plus
+ * explicit invalidation from lib/kb.ts is both cheaper and no staler.
+ */
+const CHUNK_CACHE_TTL_MS = 5 * 60 * 1000;
+let chunkCache: { at: number; rows: ChunkRow[] } | null = null;
+
+/** Drop the cached corpus (called after any KB write). */
+export function invalidateKbCache(): void {
+  chunkCache = null;
+}
+
+async function loadChunks(): Promise<ChunkRow[]> {
+  if (chunkCache && Date.now() - chunkCache.at < CHUNK_CACHE_TTL_MS) return chunkCache.rows;
+  const rows = await db.kbChunk.findMany({
+    select: { id: true, refType: true, refSlug: true, title: true, body: true },
+  });
+  chunkCache = { at: Date.now(), rows };
+  return rows;
+}
+
 /**
  * Lightweight BM25-style lexical retrieval over the knowledge base.
  * Works well for a site-sized corpus and avoids external embedding APIs.
@@ -35,9 +62,7 @@ export async function retrieveContext(query: string, topK = 6): Promise<Chunk[]>
   const terms = tokenize(query);
   if (terms.length === 0) return [];
 
-  const chunks = await db.kbChunk.findMany({
-    select: { id: true, refType: true, refSlug: true, title: true, body: true },
-  });
+  const chunks = await loadChunks();
   if (chunks.length === 0) return [];
 
   const avgLen = chunks.reduce((s, c) => s + c.body.length, 0) / chunks.length;

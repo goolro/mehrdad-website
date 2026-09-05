@@ -31,8 +31,22 @@ export const ADMIN_SESSION_TTL_SECONDS = 12 * 60 * 60;
  * out. Every logout therefore revokes the token's payload here, and
  * verification rejects revoked tokens. The set clears on process restart —
  * an accepted residual risk for a single-instance personal site.
+ *
+ * BOUNDED (round-3 finding L1): `DELETE /api/admin/auth` needs no
+ * authentication and revokes whatever cookie value it is handed, so an
+ * attacker could previously grow this set without limit by sending forged
+ * tokens. Only tokens that would otherwise be ACCEPTED are worth revoking —
+ * forged/expired values are rejected by verification anyway — and the set is
+ * additionally capped FIFO. Measured before the fix: +5.6 MB heap for 500k
+ * forged logouts.
  */
+const MAX_REVOKED_PAYLOADS = 5000;
 const revokedPayloads = new Set<string>();
+
+/** Current size of the revocation set (diagnostics/tests). */
+export function revokedSessionCount(): number {
+  return revokedPayloads.size;
+}
 
 /** Extract the signed payload ("expiry.nonce") from a full token. */
 function payloadOf(token: string | undefined | null): string | null {
@@ -43,8 +57,16 @@ function payloadOf(token: string | undefined | null): string | null {
 }
 
 export function revokeAdminSessionToken(token: string | undefined | null): void {
+  // a token that would never verify needs no revocation entry
+  if (!verifyAdminSessionToken(token)) return;
   const payload = payloadOf(token);
-  if (payload) revokedPayloads.add(payload);
+  if (!payload) return;
+  revokedPayloads.add(payload);
+  while (revokedPayloads.size > MAX_REVOKED_PAYLOADS) {
+    const oldest = revokedPayloads.values().next().value;
+    if (oldest === undefined) break;
+    revokedPayloads.delete(oldest);
+  }
 }
 
 function hmacKey(): string {

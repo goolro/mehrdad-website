@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { clientIp, bodyTooLarge, payloadTooLarge, rateLimit, tooManyRequests } from '@/lib/rate-limit';
+import { clientIp, readJsonBody, jsonBodyError, rateLimit, tooManyRequests } from '@/lib/rate-limit';
 
 export const dynamic = 'force-dynamic';
 
@@ -9,11 +9,14 @@ export async function POST(req: NextRequest) {
   const rl = rateLimit(`contact:${clientIp(req)}`, 3, 10 * 60 * 1000);
   if (!rl.ok) return tooManyRequests(rl.retryAfter);
 
-  // memory guard on the shared host: real submissions are ≤ ~5.5 KB
-  if (bodyTooLarge(req)) return payloadTooLarge();
+  // memory guard on the shared host: real submissions are ≤ ~5.5 KB.
+  // readJsonBody enforces the cap while streaming, so a chunked body with no
+  // Content-Length cannot bypass it — round-3 finding M3.
+  const parsed = await readJsonBody(req);
+  if (!parsed.ok) return jsonBodyError(parsed.error);
 
   try {
-    const body = await req.json();
+    const body = parsed.data || {};
     const name = (body.name || '').trim().slice(0, 120);
     const email = (body.email || '').trim().slice(0, 200);
     const subject = (body.subject || '').trim().slice(0, 200) || null;

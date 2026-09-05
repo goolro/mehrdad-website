@@ -46,9 +46,10 @@ export function safeEqual(a: string, b: string): boolean {
  * - `x-forwarded-host` is client-controllable in many proxy setups, so it is
  *   NEVER allowed to vouch for an Origin on its own. It is only consulted
  *   when no Host header exists at all (pure-proxy setups).
- * - Set SITE_ORIGIN (e.g. `https://mehrdad.ir`) in production for a hard
- *   allow-list: then Origin must match the configured site origin or Host,
- *   and no header trickery can satisfy the check.
+ * - Set SITE_ORIGIN (e.g. `https://mehrdad.ir`, or a comma-separated list of
+ *   canonical origins) in production for a hard allow-list: then the Origin
+ *   MUST match one of the configured origins — the request's own Host header
+ *   can no longer vouch for it, so no header trickery can satisfy the check.
  */
 export function originAllowed(req: NextRequest): boolean {
   const origin = req.headers.get('origin');
@@ -59,17 +60,32 @@ export function originAllowed(req: NextRequest): boolean {
   } catch {
     return false;
   }
-  const host = req.headers.get('host');
+  const host = req.headers.get('host') || '';
   const xfh = req.headers.get('x-forwarded-host');
 
   // hard allow-list when configured (recommended in production)
   const siteOrigin = process.env.SITE_ORIGIN ?? '';
   if (siteOrigin) {
-    let siteHost = '';
-    try {
-      siteHost = new URL(siteOrigin).host;
-    } catch {}
-    if (siteHost) return originHost === siteHost || originHost === host;
+    // Hard allow-list. SITE_ORIGIN may be a comma-separated list of origins
+    // (e.g. "https://mehrdad.ir,https://www.mehrdad.ir") so a deployment can
+    // serve more than one canonical host.
+    const allowedHosts = siteOrigin
+      .split(',')
+      .map((s) => {
+        try {
+          return new URL(s.trim()).host;
+        } catch {
+          return '';
+        }
+      })
+      .filter(Boolean);
+    // NOTE (round-3 finding M2): this used to be
+    // `originHost === siteHost || originHost === host`. The second disjunct
+    // made the allow-list cosmetic — a request carrying a *matching* pair of
+    // spoofed Host and Origin headers satisfied it, which contradicted the
+    // "no header trickery can satisfy the check" guarantee above. When a
+    // SITE_ORIGIN is configured it is now the ONLY accepted anchor.
+    if (allowedHosts.length > 0) return allowedHosts.includes(originHost);
   }
 
   if (host && originHost === host) return true;

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { slugCandidates } from '@/lib/slug-lookup';
-import { clientIp, bodyTooLarge, payloadTooLarge, rateLimit, tooManyRequests } from '@/lib/rate-limit';
+import { clientIp, readJsonBody, jsonBodyError, rateLimit, tooManyRequests } from '@/lib/rate-limit';
 
 export const dynamic = 'force-dynamic';
 
@@ -49,11 +49,14 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ slug: stri
     const rl = rateLimit(`comment:${clientIp(req)}`, 5, 10 * 60 * 1000);
     if (!rl.ok) return tooManyRequests(rl.retryAfter);
 
-    // memory guard on the shared host: real comments are ≤ 2 KB
-    if (bodyTooLarge(req)) return payloadTooLarge();
+    // memory guard on the shared host: real comments are ≤ 2 KB.
+    // readJsonBody enforces the cap while streaming, so a chunked body with
+    // no Content-Length cannot bypass it — round-3 finding M3.
+    const parsed = await readJsonBody(req, 8);
+    if (!parsed.ok) return jsonBodyError(parsed.error);
 
     const { slug } = await ctx.params;
-    const body = await req.json();
+    const body = parsed.data || {};
     const author = String(body.author || '').trim().slice(0, 80);
     const content = String(body.content || '').trim().slice(0, 2000);
     const parentId = typeof body.parentId === 'string' && body.parentId ? body.parentId : null;

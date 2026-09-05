@@ -17,6 +17,15 @@ import sanitizeHtml from 'sanitize-html';
  * no script/style/iframe/form, no event handlers, no javascript: URLs.
  */
 
+/**
+ * Only raster `data:` URIs survive. The scheme allowlist below permits `data:`
+ * for `<img>` (sanitize-html's default), which also admits
+ * `data:image/svg+xml` — and SVG is a script container. It cannot execute from
+ * inside an `<img>`, but there is no reason to keep the door open
+ * (round-3 finding L5).
+ */
+const SAFE_DATA_URI = /^data:image\/(png|jpe?g|gif|webp|avif);base64,/i;
+
 const POST_OPTIONS: sanitizeHtml.IOptions = {
   allowedTags: [
     // structure
@@ -60,10 +69,13 @@ const POST_OPTIONS: sanitizeHtml.IOptions = {
       tagName: 'a',
       attribs: { ...attribs, rel: 'noopener noreferrer nofollow' },
     }),
-    img: (tagName, attribs) => ({
-      tagName: 'img',
-      attribs: { ...attribs, loading: attribs.loading || 'lazy' },
-    }),
+    img: (tagName, attribs) => {
+      const next: Record<string, string> = { ...attribs, loading: attribs.loading || 'lazy' };
+      if (typeof next.src === 'string' && /^\s*data:/i.test(next.src) && !SAFE_DATA_URI.test(next.src.trim())) {
+        delete next.src; // non-raster data: URI dropped
+      }
+      return { tagName: 'img', attribs: next };
+    },
   },
   disallowedTagsMode: 'discard',
 };
