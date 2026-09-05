@@ -2,7 +2,8 @@ import type { NextConfig } from "next";
 
 const securityHeaders = [
   // Content-Security-Policy is intentionally NOT set here anymore: it is
-  // issued per-request with a fresh nonce by src/middleware.ts (strict
+  // issued per-request with a fresh nonce by src/proxy.ts (Next 16's name
+  // for middleware) (strict
   // 'nonce-…' + 'strict-dynamic', no 'unsafe-inline' for scripts in
   // production). A second static CSP here would AND-restrict the nonce
   // policy back to 'unsafe-inline' semantics and break every page.
@@ -16,6 +17,11 @@ const securityHeaders = [
   { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), payment=()" },
   // force HTTPS for 6 months (cPanel AutoSSL keeps the cert renewed)
   { key: "Strict-Transport-Security", value: "max-age=15552000; includeSubDomains" },
+  // cross-origin isolation basics (round-3 finding L6): other origins cannot
+  // embed/hotload our resources, and our documents get their own browsing
+  // context group (blocks a whole class of cross-window side channels)
+  { key: "Cross-Origin-Resource-Policy", value: "same-site" },
+  { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
 ];
 
 const nextConfig: NextConfig = {
