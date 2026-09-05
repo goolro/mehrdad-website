@@ -768,3 +768,24 @@ Work Log:
 Stage Summary:
 - درخت وابستگی هم سبک‌تر و هم بدون آسیب‌پذیری ثبت‌شده است؛ lint و tsc در سندباکس و CI یک‌رفتار شدند
 - درس ثبت‌شده: eslint --fix سندباکس را بدون مقایسه با CI کامیت نکن (rule-activation drift بین نسخه‌های پلاگین)
+
+---
+Task ID: deploy-mirror-1
+Agent: Z.ai Code (main)
+Task: کامیت/پوش به گیت‌هاب + دیپلوی آینه روی Vercel + راه‌اندازی Supabase (درخواست مالک)
+
+Work Log:
+- push چهار کامیت عقب‌افتاده به origin/main با توکن در URL موقت (6d06f27..17239ff) — توکن در .git/config ذخیره نشد؛ کارت درست `.github` نویز stat-cache بود
+- کشف: دیتابیس محلی db/custom.db خالی بود (db/*.db گیت‌ایگنور) و داده واقعی فقط روی DB ریموت production است
+- Supabase: توکن کاربر project-scoped بود (ساخت پروژه/org → 403)؛ پروژه موجود کاربر gcaksemjwkhqkyhaseui (Tokyo, PG17) مبنای کار شد؛ پسورد postgres قابل ALTER نیست (نقش غیر-superuser) و Supavisor shared pooler فقط نقش postgres را می‌پذیرد (mehrdad_app با SCRAM سالم ولی pooler رد می‌کند)
+- نقش کم‌اختیار mehrdad_app + GRANTها از طریق endpoint /database/query ساخته شد
+- DDL با prisma migrate diff (آفلاین) → اعمال از طریق HTTPS endpoint؛ اسکیمای آینه prisma/schema.postgres.prisma (provider postgresql, binaryTargets native+rhel-openssl-3.2) کامیت شد
+- بازسازی محتوا: اسکریپت جدید analysis/import_content.ts از migration_data.json + translations.json + wp_comments.json (پست 7995=draft؛ 82 published)؛ تگ‌گذاری قطعی با analysis/seed_tags.ts --apply (32 تگ، 205 لینک)
+- مهاجرت داده: اسکریپت جدید scripts/migrate-sqlite-to-supabase.ts (تمام ردیف‌ها از طریق HTTPS، dollar-quote یکتا، idempotent، verify) → همه ۱۵ جدول تطابق کامل (83 پست، 235 m2m، 205 postTag، 17 کامنت) — باگ epoch-millis تاریخ‌های SQLite هم رفع شد
+- Vercel: whoami=goolroir-9039؛ پروژه‌های موجود my-project (فقط BLOB token — بدون DB، علت شکست قبلی) و v6probe (probe آزمایشی IPv6 خودم)؛ getaddrinfo در runtime Vercel AAAA برنمی‌گرداند → اتصال مستقیم IPv6 کنار گذاشته شد؛ مسیر نهایی = transaction pooler با نقش postgres
+- mehrdad.ir الان به 88.135.68.30 (هاست ایران) اشاره می‌کند که placeholder 163 بایتی سرو می‌کند — سایت زنده فعلاً عملاً down است؛ دیپلوی Vercel اهمیت حیاتی یافت
+- docs: DEPLOYMENT.md بخش «Vercel mirror + Supabase Postgres»؛ SECURITY.md ردیف رخداد جدید + inventory
+
+Stage Summary:
+- گیت‌هاب همگام (main=17239ff)؛ Supabase حاوی کل محتوا با اسکیمای Postgres؛ vercel.json (build با schema.postgres) آماده؛ تنها گام باقی‌مانده: DATABASE_URL (پسورد postgres از مالک) → vercel deploy --prod → تأیید
+- سه توکن IM (GitHub/Vercel/Supabase) در لاگ رخداد برای rotate ثبت شد
