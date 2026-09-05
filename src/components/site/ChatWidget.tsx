@@ -25,7 +25,7 @@ export function ChatWidget() {
   // reset conversation when the UI language switches — deliberate one-shot
   // reset (new session per language), not an accidental cascading render
   useEffect(() => {
-     
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- deliberate one-shot reset on language change (documented)
     setMessages([{ role: 'assistant', content: t.chat.welcome }]);
     sessionIdRef.current = '';
   }, [lang]);

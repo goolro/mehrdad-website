@@ -726,3 +726,30 @@ Stage Summary:
 - وضعیت امنیتی: ۱۳۴ چک نفوذ (دو راند) همگی سبز؛ ۹ ضعف تجمعی بسته شده (راند ۱: ۴، راند ۲: ۵)
 - اکشن جدید برای کاربر در cPanel: اضافه‌کردن SITE_ORIGIN=https://mehrdad.ir به env vars (allow-list CSRF سخت + ریدایرکت‌های ضد-مسمومیت)
 - یادآوری امنیتی به کاربر: ADMIN_PASSWORD و توکن گیت‌هاب در چت دیده شده‌اند — بعد از push باید rotate شوند
+
+---
+Task ID: review-fixes-28
+Agent: Z.ai Code (main)
+Task: اجرای کامل لیست بازبینی خارجی (TASKS — Security, Architecture & Positioning Fixes) با نظر کارشناسی: P0 تطبیق staging/برندینگ، P1 مسیرهای واقعی + بهداشت وابستگی‌ها + تنظیمات گیت‌هاب، P2 توتوپ 2FA + CSP nonce + CI، سپس وریفای و پوش
+
+Work Log:
+- راستی‌آزمایی ادعاهای ریویو: staging == main (b500684)، ادعای «کپی قدیمی روی استیجینگ» رد شد؛ رشته‌های positioning قدیمی فقط در کد بودند (i18n projectsSub/seeking، بلاک آمار HomeView، BIZPAL در keywords، پرسونای AI) — همه اصلاح شد
+- P1-3 مسیرهای واقعی: src/lib/queries.ts (لایه داده مشترک API+صفحات)؛ SiteChrome (پوسته مشترک + bridge ناوبری + ارتقای هش‌های قدیمی)؛ store.ts با VIEW_PATH و ناوبری App Router؛ صفحات /blog، /blog/[slug]، /work، /work/[slug]، /services، /fde، /about، /contact، /admin، /lab (308→/fde)، not-found؛ صفحات سرور-فد (HomeView/BlogView/PostDetail/ProjectsView/ServicesView با props) — محتوا در HTML اولیه؛ generateMetadata و canonical برای همه؛ skipHydration برای هیدریشن بدون mismatch
+- middleware → src/proxy.ts (کانوکشن Next 16)؛ گارد مسیرهای واقعی (exact + subtree blog/work)؛ تبدیل اهداف /#blog/<slug> به /blog/<slug>؛ فیکس 404 شدن /services/* قدیمی؛ CSP nonce درخواستی (prod: بدون unsafe-inline/unsafe-eval)
+- next.config: حذف CSP استاتیک (تجمیع دو CSP می‌شکست)؛ سایر هدرها سر جایشان
+- sitemap.ts داینامیک DB-درایو (20 URL در seed) + robots.txt Sitemap line + /feed.xml RSS — README قبلا ادعای اینها را داشت ولی وجود نداشتند
+- P1-4: نام پکیج mehrdad-website، پین دقیق z-ai-web-dev-sdk 0.0.18 و otpauth 9.5.2، حذف next-auth و next-intl (بلااستفاده — با grep تأیید)، سینک هر دو lockfile (D-024: هر دو عمداً نگه داشته می‌شوند — dev=bun، بیلد آرتیفکت/CI=npm ci)
+- P2-6 TOTP: src/lib/admin-totp.ts با otpauth؛ گیت دومرحله‌ای در POST auth (401 totp_required)؛ فلگ totpRequired در GET؛ فیلد کد در AdminView (autoComplete=one-time-code)؛ scripts/generate-totp-secret.ts؛ E2E واقعی با secret تولیدشده: رمز بدون کد=401، کد غلط=401، کد درست=200+کوکی، stats=200 (D-025)
+- P2-8/P1-5: .github/workflows/ci.yml (npm ci→lint→tsc→build با env dummy) + dependabot.yml؛ تنظیمات گیت‌هاب با API فعال شد: secret_scanning ✓ push_protection ✓ dependabot alerts ✓ security updates ✓
+- وریفای: lint 0، tsc 0؛ پنتست راند1 = 50/50 و راند2 = 82/82 (انتظارات CSP هارنس به مسیرهای document منتقل شد — CSP روی API عمداً نیست)؛ بیلد پروداکشن ایزوله در /tmp/prodcheck با npm ci و env dummy (شبیه‌سازی CI) موفق — همه مسیرها ƒ Dynamic؛ سرور پروداکشن روی 3100: CSP دقیقاً nonce+strict-dynamic بدون unsafe-inline، مقاله در HTML کامل، auth 401/200، ریدایرکت 301، sitemap/feed/404 همه سبز
+- مرورگر E2E (dev 3000): هیرو و کارت‌ها SSR، ناوبری واقعی /blog↔/blog/<slug>↔/work/bizpal، فیلتر دسته و جستجو، کامنت‌سکشن، هش قدیمی /#blog/x → خودکار /blog/x، ادمین لاگین→داشبورد، FA→rtl/fa، موبایل 390px بدون overflow؛ فیکس هیدریشن nonce boot script با suppressHydrationWarning؛ کنسول پس از ۳ ناوبری پیوسته صفر؛ مرورگر روی پروداکشن 3100: هیدریشن و ناوبری زیر CSP سخت سالم
+- مستندات: README (status 2026-09-05، ساختار واقعی، معماری)، CHANGELOG، DECISIONS D-022..D-025، SECURITY (§2 session+TOTP، §5 CSP nonce، لاگ رخداد توکن)، SEO.md بازنویسی صادقانه + برنامه Lighthouse/Serach Console مالک، CPANEL_DEPLOYMENT (ADMIN_TOTP_SECRET)
+- commit a37480b → push موفق b500684..a37480b به origin/main
+
+Stage Summary:
+- هر ۸ بند لیست بازبینی اجرا یا مستند شد؛ معیار پذیرش P1-3 پاس شد (curl بدون JS → HTML کامل مقاله)
+- CSP پروداکشن دیگر unsafe-inline اسکریپت ندارد (تأییدشده با بیلد و مرورگر واقعی)؛ استثناهای باقی‌مانده (style-src attr، dev eval) مستند شدند
+- IP allowlist به نفع TOTP رد شد (IP داینامیک مالک)؛ TOTP اختیاری و fail-closed است — فعال‌سازی با یک env var
+- تنظیمات امنیتی گیت‌هاب همگی فعال؛ CI روی push اجرا می‌شود
+- توکن گیت‌هاب همچنان معتبر است و مالک rotate را رد کرده — در لاگ رخداد SECURITY.md ثبت و یادآوری باز ماند
+- آرتیفکت v5 باید از این کامیت بازسازی شود (مسیریابی و CSP عوض شده) — منتظر جواب تیکت میزبان‌فا
