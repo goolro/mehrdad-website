@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { HomeView } from '@/components/site/HomeView';
+import { JsonLd } from '@/components/site/JsonLd';
 import { listPosts, getProjects, getServices } from '@/lib/queries';
 
 // every request carries a fresh CSP nonce (middleware) → dynamic rendering
@@ -21,8 +22,49 @@ export default async function HomePage() {
     listPosts({ page: 1, perPage: 6 }).catch(() => ({ posts: [] })),
   ]);
 
+  // AI-SEO: entity graph for search engines AND LLMs (ChatGPT/Claude/
+  // Perplexity parse schema.org to understand and cite the site)
+  const base = (process.env.SITE_ORIGIN || 'https://mehrdad.ir').replace(/\/+$/, '');
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'WebSite',
+        '@id': `${base}/#website`,
+        url: `${base}/`,
+        name: 'Mehrdad — Product Builder',
+        alternateName: 'مهرداد — سازنده محصول',
+        inLanguage: ['en', 'fa'],
+        publisher: { '@id': `${base}/#person` },
+      },
+      {
+        '@type': 'Person',
+        '@id': `${base}/#person`,
+        name: 'Mehrdad',
+        alternateName: 'مهرداد',
+        url: `${base}/`,
+        jobTitle: 'Product Builder',
+        description:
+          'Designs businesses and products with care and builds them fast with AI — startups, smart city, AI products.',
+        knowsAbout: [
+          'product design',
+          'AI products',
+          'startups',
+          'smart city',
+          'investment',
+          'طراحی محصول',
+          'هوش مصنوعی',
+          'استارتاپ',
+          'شهر هوشمند',
+        ],
+      },
+    ],
+  };
+
   return (
-    <HomeView
+    <>
+      <JsonLd data={jsonLd} />
+      <HomeView
       initial={{
         services,
         projects,
@@ -37,6 +79,7 @@ export default async function HomePage() {
           categories: p.categories,
         })),
       }}
-    />
+      />
+    </>
   );
 }
