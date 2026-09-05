@@ -1,0 +1,188 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// Postgres schema mirror — Supabase pipeline (Vercel deployment).
+//
+// DO NOT edit the models below directly: they are an exact copy of
+// prisma/schema.prisma (source of truth). To sync after model changes:
+//   tail -n +15 prisma/schema.prisma >> prisma/schema.postgres.prisma  (with a fresh header)
+//
+// Local dev and cPanel production stay on SQLite (prisma/schema.prisma).
+// This schema is used by:
+//   - the Vercel build (vercel.json buildCommand → prisma generate --schema prisma/schema.postgres.prisma)
+//   - scripts/migrate-sqlite-to-supabase.ts (SQLite → Supabase data copy)
+// ─────────────────────────────────────────────────────────────────────────────
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "rhel-openssl-3.2"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+// ───────────────────────── Content Models ─────────────────────────
+
+model Category {
+  id      String @id @default(cuid())
+  slug    String @unique
+  nameEn  String
+  nameFa  String
+  wpId    Int?   @unique
+  posts   Post[]
+}
+
+/** Curated topic tags (≤50, analysis/curated_tags.json) — Task 15, D-020 */
+model Tag {
+  id     String    @id @default(cuid())
+  slug   String    @unique
+  nameEn String
+  nameFa String
+  posts  PostTag[]
+}
+
+model PostTag {
+  postId String
+  post   Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  tagId  String
+  tag    Tag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([postId, tagId])
+  @@index([tagId])
+}
+
+model Post {
+  id           String   @id @default(cuid())
+  slug         String   @unique
+  wpId         Int?     @unique
+  titleEn      String?
+  titleFa      String?
+  excerptEn    String?
+  excerptFa    String?
+  contentEn    String?
+  contentFa    String?
+  cover        String?
+  date         DateTime
+  modified     DateTime @default(now())
+  published    Boolean  @default(true)
+  featured     Boolean  @default(false)
+  source       String   @default("wordpress") // wordpress | ai
+  categories   Category[]
+  tags         PostTag[]
+  comments     Comment[]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([date])
+}
+
+model Comment {
+  id         String   @id @default(cuid())
+  postId     String
+  post       Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  wpId       Int?     @unique
+  parentWpId Int? // for threading (WP comment id)
+  parentLocalId String? // for threading (new local comment id)
+  author     String
+  content    String
+  date       DateTime @default(now())
+  approved   Boolean  @default(false) // migrated WP comments = true, new = false until moderation
+  createdAt  DateTime @default(now())
+
+  @@index([postId, date])
+}
+
+model Service {
+  id        String @id @default(cuid())
+  slug      String @unique
+  titleEn   String
+  titleFa   String
+  descEn    String
+  descFa    String
+  icon      String @default("Sparkles")
+  order     Int    @default(0)
+}
+
+model Project {
+  id         String  @id @default(cuid())
+  slug       String  @unique
+  titleEn    String
+  titleFa    String
+  summaryEn  String
+  summaryFa  String
+  cover      String?
+  status     String  @default("seeking") // under-construction | seeking | live | coming-soon
+  progress   Int     @default(0) // 0-100 build progress
+  statusEn   String  @default("Seeking partners")
+  statusFa   String  @default("در جستجوی همکار")
+  order      Int     @default(0)
+}
+
+model SiteSetting {
+  key   String @id
+  value String
+}
+
+// ───────────────────────── Contact ─────────────────────────
+
+model ContactMessage {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  subject   String?
+  body      String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+// ───────────────────────── AI Chatbot ─────────────────────────
+
+model ChatSession {
+  id        String        @id @default(cuid())
+  createdAt DateTime      @default(now())
+  messages  ChatMessage[]
+}
+
+model ChatMessage {
+  id        String      @id @default(cuid())
+  sessionId String
+  session   ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  role      String // user | assistant
+  content   String
+  lang      String      @default("en")
+  createdAt DateTime    @default(now())
+}
+
+// ───────────────────────── RAG Knowledge Base ─────────────────────────
+
+model KbChunk {
+  id        String @id @default(cuid())
+  refType   String // post | service | project | site
+  refId     String?
+  refSlug   String?
+  title     String
+  body      String
+  tokens    Int    @default(0)
+  createdAt DateTime @default(now())
+
+  @@index([refType, refId])
+}
+
+// ───────────────────────── Admin ─────────────────────────
+
+model AdminUser {
+  id           String   @id @default(cuid())
+  username     String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+}
+
+model AiJob {
+  id        String   @id @default(cuid())
+  kind      String   // article | image | translate
+  status    String   @default("pending") // pending | running | done | failed
+  prompt    String?
+  result    String?
+  error     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

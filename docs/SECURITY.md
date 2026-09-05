@@ -23,7 +23,7 @@ committed here must be assumed readable by everyone, forever.
 
 | Variable | Used by | Notes |
 |---|---|---|
-| `DATABASE_URL` | Prisma | SQLite file path — no credential (dev only; production uses Turso) |
+| `DATABASE_URL` | Prisma | SQLite file path — no credential (dev; cPanel uses Turso). **Vercel mirror:** Supabase transaction-pooler URL with password — Vercel env only, never committed |
 | `TURSO_DATABASE_URL` / `TURSO_AUTH_TOKEN` | `src/lib/db.ts` | Remote DB credentials, set in cPanel env only |
 | `ADMIN_PASSWORD` | `src/lib/admin.ts`, `src/lib/admin-session.ts` | Admin login; also the HMAC key material for session tokens |
 
@@ -88,6 +88,7 @@ plaintext.
 | 2026-09-01 | Local working history contained `.env`, DB backup snapshots and `dev.pid` (tracked before ignore rules matured). | Files untracked + gitignored; **entire local history squashed to one clean baseline commit** before the first push of this state, so none of it exists on the public remote. |
 | 2026-09-01 | A GitHub personal access token was shared through an IM channel (not via the repository). | Used only for the git remote URL (stored in untracked `.git/config`). Owner advised to rotate the token after the initial sync. |
 | 2026-09-05 | Same IM token was reused for pushes and **remains valid** — the owner explicitly decided not to rotate it for now. Mitigations enabled repo-side: secret scanning + push protection + Dependabot alerts/security updates (via API), so any future leak of a similar secret gets flagged; the token grants repo access only. | Owner reminder kept open: revoke/renew `ghp_9omo…` in GitHub → Settings → Developer settings whenever convenient; it is the single remaining known credential exposed outside the repo. |
+| 2026-09-05 | **Vercel and Supabase tokens shared through the same IM channel** (`vcp_1f3s…`, `sbp_fcd7…` — the Supabase one project-scoped). Used transiently for: git pushes (token-in-URL, never saved to `.git/config`), Vercel CLI deploy, and Supabase schema/data setup + app role creation via the Management API. No token value ever entered a committed file; the Supabase **DB password stays owner-held** (never sent through the channel). | Rotation reminder now covers all three tokens — revoke in GitHub → Developer settings, Vercel → Account settings → Tokens, and Supabase → Account → Access tokens once the mirror is stable. |
 
 ## 5. Production hardening (cPanel)
 

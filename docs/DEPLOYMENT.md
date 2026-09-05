@@ -57,3 +57,68 @@ old-site migration to `m.mehrdad.ir`, troubleshooting).
   need internet; the host never does.
 - `middleware` convention: Next 16 calls it proxy internally; the code
   lives in `src/middleware.ts` (build output shows "Proxy (Middleware)").
+
+## Vercel mirror + Supabase Postgres (2026-09-05)
+
+A second, fully-managed deployment target alongside cPanel. Both targets
+serve the same content; cPanel stays primary unless the owner decides
+otherwise.
+
+### Topology
+
+- **Hosting**: Vercel project `mehrdad-website` (CLI deploy from this repo;
+  `vercel.json` overrides the build to
+  `prisma generate --schema prisma/schema.postgres.prisma && next build`).
+- **Database**: Supabase Postgres, project ref `gcaksemjwkhqkyhaseui`
+  (ap-northeast-1). Schema mirror: `prisma/schema.postgres.prisma` — an
+  exact copy of the `prisma/schema.prisma` models with
+  `provider = "postgresql"`. **Keep the two schemas in sync** after any
+  model change (copy the model block; header differs).
+- **App DB role**: `mehrdad_app` (least-privilege, created via the
+  Management API). Note: the Supavisor **shared pooler accepts the
+  `postgres` role only** on the free plan — `mehrdad_app` is usable for
+  direct/paid-pooler connections.
+
+### Data pipeline (no direct PG connection needed)
+
+`scripts/migrate-sqlite-to-supabase.ts` copies ALL rows over HTTPS via the
+Supabase Management API SQL endpoint (free-tier direct endpoint is
+IPv6-only; sandbox/CI hosts are usually IPv4):
+
+```bash
+SUPABASE_REF=<ref> SUPABASE_TOKEN=<pat> SQLITE_DB=db/custom.db \
+  bun scripts/migrate-sqlite-to-supabase.ts            # truncate + copy + verify
+bun scripts/migrate-sqlite-to-supabase.ts --verify-only # counts only
+```
+
+Content source of record: the local `db/custom.db` (gitignored). If it is
+ever empty again, rebuild it first with `bun analysis/import_content.ts`
+(replays `analysis/migration_data.json` + `translations.json` +
+`wp_comments.json` per docs/CONTENT_MIGRATION.md) then
+`bun analysis/seed_tags.ts --apply`.
+
+### Runtime connection (Vercel env only)
+
+`DATABASE_URL` = Supavisor **transaction pooler** (serverless-safe, IPv4):
+
+```
+postgresql://postgres.<ref>:<db-password>@aws-0-ap-northeast-1.pooler.supabase.com:6543/postgres?sslmode=require&pgbouncer=true&connection_limit=10
+```
+
+`src/lib/db.ts` needs **no change**: with no `TURSO_*` vars set it uses the
+generated postgres client + `DATABASE_URL`. Prisma's `pgbouncer=true`
+disables prepared statements (required behind transaction-mode PgBouncer).
+
+Other Vercel env vars: `ADMIN_PASSWORD` (its own value — sessions are
+HMAC-signed per deployment), `SITE_ORIGIN=https://mehrdad-website.vercel.app`
+(update if a custom domain is attached), `NEXT_TELEMETRY_DISABLED=1`.
+
+### Deploy
+
+```bash
+vercel link --project mehrdad-website
+vercel deploy --prod
+```
+
+Attaching the real domain later: add `mehrdad.ir` in the Vercel project →
+point DNS (`cname.vercel-dns.com`) at the registrar → update `SITE_ORIGIN`.
