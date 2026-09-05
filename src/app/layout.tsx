@@ -47,6 +47,20 @@ export const metadata: Metadata = {
     description: "I design businesses and products with care, and build them fast with AI.",
     siteName: "mehrdad.ir",
     type: "website",
+    // square brand mark as the fallback card image (per-page covers override)
+    images: [{ url: "/icons/icon-512.png", width: 512, height: 512, alt: "Mehrdad" }],
+  },
+  twitter: {
+    card: "summary",
+    title: "Mehrdad — Product Builder | مهرداد — سازنده محصول",
+    description: "I design businesses and products with care, and build them fast with AI.",
+    images: ["/icons/icon-512.png"],
+  },
+  robots: {
+    // explicit + future-proof: allow index/follow, let AI crawlers in
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true, "max-image-preview": "large", "max-snippet": -1 },
   },
 };
 

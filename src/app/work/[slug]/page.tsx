@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { StatusBadge, ProgressBar } from '@/components/site/ProjectsView';
 import { getProjectBySlug } from '@/lib/queries';
+import { JsonLd } from '@/components/site/JsonLd';
 import { ContactCta } from '@/components/site/ContactCta';
 
 export const dynamic = 'force-dynamic';
@@ -44,8 +45,24 @@ export default async function ProjectPage({ params }: Props) {
   const project = await getProjectBySlug(slug);
   if (!project) notFound();
 
+  // AI-SEO: machine-readable project card for search engines and LLMs
+  const base = (process.env.SITE_ORIGIN || 'https://mehrdad.ir').replace(/\/+$/, '');
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'CreativeWork',
+    '@id': `${base}/work/${project.slug}#project`,
+    name: project.titleEn,
+    alternateName: project.titleFa,
+    description: project.summaryEn,
+    url: `${base}/work/${project.slug}`,
+    creator: { '@type': 'Person', '@id': `${base}/#person`, name: 'Mehrdad', url: `${base}/` },
+    ...(project.cover ? { image: [project.cover] } : {}),
+  };
+
   return (
-    <article className="mx-auto w-full max-w-4xl px-4 py-12 sm:px-6">
+    <>
+      <JsonLd data={jsonLd} />
+      <article className="mx-auto w-full max-w-4xl px-4 py-12 sm:px-6">
       <div className="flex flex-wrap items-center gap-3">
         <StatusBadge
           status={project.status}
@@ -92,5 +109,6 @@ export default async function ProjectPage({ params }: Props) {
 
       <ContactCta label="I'm interested in this project" />
     </article>
+    </>
   );
 }
