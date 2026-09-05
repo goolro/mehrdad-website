@@ -1,0 +1,15 @@
+version: 2
+updates:
+  # Dependabot monitors npm manifests (package.json / package-lock.json).
+  # bun.lock is not a supported ecosystem — package-lock.json is the
+  # lockfile used by the production artifact build (see DECISIONS.md).
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"

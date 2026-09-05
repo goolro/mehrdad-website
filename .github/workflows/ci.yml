@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    env:
+      # dummy values — the build never queries the database (all pages are
+      # dynamically rendered for the per-request CSP nonce), and no AI
+      # service is called at build time
+      DATABASE_URL: "file:./ci.db"
+      ADMIN_PASSWORD: "ci-dummy-password"
+      NODE_ENV: "production"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npx tsc --noEmit
+
+      - name: Build (prisma generate + next build)
+        run: npm run build
+
+  # NOTE: scripts/pentest-local.sh / pentest-round2.sh are intentionally NOT
+  # part of CI — they are live-server penetration harnesses that need a
+  # running instance with a real local database. Run them locally per
+  # docs/SECURITY.md §5 after any auth/API change.

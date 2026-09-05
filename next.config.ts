@@ -1,35 +1,11 @@
 import type { NextConfig } from "next";
 
-// 'unsafe-eval' is needed ONLY in dev: React's development mode uses eval()
-// for debugging features. Production React never evals, so the production
-// CSP stays strict.
-const isDev = process.env.NODE_ENV !== "production";
-
 const securityHeaders = [
-  // Content-Security-Policy: everything is self-hosted (fonts are inlined by
-  // next/font), so the policy can be strict. 'unsafe-inline' for scripts/
-  // styles is required because statically prerendered pages embed inline
-  // bootstrap tags WITHOUT a per-request nonce — nonce-based CSP would force
-  // every page dynamic, which this weak shared host cannot afford.
-  // It still blocks external script/style/img origins, plugins, framing,
-  // form hijacking and base-tag injection on top of the sanitizer layers.
-  {
-    key: "Content-Security-Policy",
-    value: [
-      "default-src 'self'",
-      `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
-      "style-src 'self' 'unsafe-inline'",
-      "img-src 'self' data: blob: https:",
-      "font-src 'self' data:",
-      "connect-src 'self'",
-      "media-src 'self'",
-      "object-src 'none'",
-      "base-uri 'self'",
-      "form-action 'self'",
-      "frame-ancestors 'none'",
-      "upgrade-insecure-requests",
-    ].join("; "),
-  },
+  // Content-Security-Policy is intentionally NOT set here anymore: it is
+  // issued per-request with a fresh nonce by src/middleware.ts (strict
+  // 'nonce-…' + 'strict-dynamic', no 'unsafe-inline' for scripts in
+  // production). A second static CSP here would AND-restrict the nonce
+  // policy back to 'unsafe-inline' semantics and break every page.
   // clickjacking protection
   { key: "X-Frame-Options", value: "DENY" },
   // prevent MIME-type sniffing

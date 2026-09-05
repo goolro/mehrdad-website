@@ -31,14 +31,21 @@ The site is:
 - Artifact builder: `bash scripts/build-production.sh` (database excluded —
   production SQLite lives in `data/production.db`, survives every deploy).
 
-## Current status (2026-09-01)
+## Current status (2026-09-05)
 
-- ✅ **Core site live in development**: home, work, writing (83 migrated
-  articles + 17 comments), lab, about, contact, admin panel
-- ✅ **Migration complete**: evidence-based publication dates (Wayback
-  Machine CDX probes + upload-path/comment signals), legacy links
-  internalized (316 occurrences now route inside the app), media mirrored
-  locally (`public/uploads/wp/`, `public/media/`)
+- ✅ **Real routes + server-rendered content**: home, `/services`, `/fde`,
+  `/work`, `/work/[slug]`, `/blog`, `/blog/[slug]`, `/about`, `/contact`,
+  `/admin` — every page returns real content in the initial HTML
+  (`curl /blog/<slug>` shows the full article with no JS). Legacy
+  `#…` deep links and WordPress URLs still resolve via 301s + a
+  client-side hash upgrade
+- ✅ **Writing archive live**: 83 migrated articles + 17 comments with
+  evidence-based publication dates
+- ✅ **Migration complete**: legacy links internalized (316 occurrences
+  route inside the app), media mirrored locally (`public/uploads/wp/`,
+  `public/media/`)
+- ✅ **SEO plumbing**: dynamic `sitemap.xml` (DB-driven), `robots.txt`
+  sitemap reference, `/feed.xml` RSS, per-page canonical/OG metadata
 - ✅ **PWA**: manifest, service worker, install prompt, app shortcuts
 - ✅ **Theme engine shipped**: shared design-token system, 5 themes
   (Default ☼, Autumn 🍂, Winter ❄️, Digital ⚡, Nowruz 🌱) with animated
@@ -48,18 +55,28 @@ The site is:
 - ✅ **Approved brand positioning everywhere**: the slogan is the homepage
   H1 (EN+FA), metadata/OG/manifests, footer motto, About identity and the
   AI persona; BUILD/HELP/SHARE trio + ecosystem chain rendered on the
-  homepage ([docs/BRAND_STRATEGY.md](docs/BRAND_STRATEGY.md))
-- ✅ **Bilingual archive**: all 82 published posts now carry full English
-  content (resumable batch + manual chunk rescue for the content-filtered
-  rail post, D-021); the only Persian-only item is the draft smart-waste
-  post awaiting the owner's publish decision; fa-locale visitors get a
-  one-time Persian suggestion banner (EN default stays, D-019)
+  homepage; project cards show each project's real status
+  ([docs/BRAND_STRATEGY.md](docs/BRAND_STRATEGY.md))
+- ✅ **Security posture**: HMAC-signed session cookies with revocation,
+  CSRF origin anchoring, strict nonce CSP (no `unsafe-inline` scripts in
+  production), rate limits, XSS sanitizer layers, optional TOTP 2FA
+  (`ADMIN_TOTP_SECRET`), 132 automated pentest checks across two rounds
+  ([docs/SECURITY.md](docs/SECURITY.md))
+- ✅ **CI + repo hygiene**: GitHub Actions runs lint → typecheck →
+  production build on every push/PR; Dependabot + secret scanning + push
+  protection enabled
+- ✅ **Bilingual archive**: all 82 published posts carry full English
+  content; fa-locale visitors get a one-time Persian suggestion banner
+  (EN default stays, D-019)
 - ✅ **Curated topic tags (D-020)**: fixed 32-tag bilingual taxonomy with
   constrained per-post assignment — filterable "Topics" row in the blog
 - 🔜 **TWA (Android)**: everything prepared — Bubblewrap config
   (`twa-manifest.json`), `scripts/generate-assetlinks.ts`, full runbook
   ([docs/MOBILE_TWA.md](docs/MOBILE_TWA.md)); signed build + Play listing
   await the owner's keystore
+- 🔜 **cPanel deploy**: artifact v5 must be rebuilt from this commit —
+  routing/CSP changed substantially
+  ([docs/CPANEL_DEPLOYMENT.md](docs/CPANEL_DEPLOYMENT.md))
 - 🌐 **Language**: English default, full Persian (RTL) secondary — every
   UI string translated
 
@@ -77,37 +94,39 @@ built fast with AI. Results, decisions and failures are documented openly.
 | Framework | Next.js 16 (App Router) + TypeScript |
 | UI | Tailwind CSS 4 + shadcn/ui (New York) + Lucide icons |
 | Font | Vazirmatn (Persian-first typography) |
-| Data | Prisma ORM + SQLite (`db/custom.db`) |
-| Rendering | React Server Components, dynamic reads, API routes for forms/comments |
+| Data | Prisma ORM — SQLite (dev) / Turso cloud (`@prisma/adapter-libsql`) in production |
+| Rendering | Server components + dynamic SSR on every route (per-request CSP nonce), API routes for forms/comments/chat |
 | Language | English (default) + Persian `fa` (full RTL) — persisted preference |
 | PWA | `manifest.json` + service worker + install prompt + shortcuts |
-| SEO | Metadata API, JSON-LD (Person / WebSite / Article), `sitemap.xml`, `robots.txt`, `/feed.xml`, 301 redirect layer for all legacy WordPress URLs |
+| SEO | Metadata API (per-route canonical/OG), JSON-LD (Person / WebSite / Article), dynamic `sitemap.xml`, `robots.txt`, `/feed.xml` RSS, 301 redirect layer for all legacy WordPress URLs |
 
 See [ARCHITECTURE.md](docs/ARCHITECTURE.md) for details.
 
 ## Site structure
 
-The app is a single-route SPA with hash routing (mobile-app feel, PWA
-navigation, no full page reloads):
+Every section is a real, server-rendered, indexable URL (hash routing
+was retired in D-022; old `/#…` bookmarks are upgraded automatically):
 
-- `/#home` — positioning, approach, selected work, latest writing, contact CTA
-- `/#work` + `/#work/<slug>` — real projects with honest status
-  (Idea / Research / Concept / Designing / Building / Testing / Beta / Live /
-  Paused / Archived)
-- `/#blog` + `/#blog/<slug>` — articles (83 migrated + new), category
+- `/` — positioning, approach, selected work, latest writing, contact CTA
+- `/work` + `/work/<slug>` — real projects with honest status
+  (Under construction / Seeking collaborators / Launched / Coming soon)
+- `/blog` + `/blog/<slug>` — articles (83 migrated + new), category
   filters, search, pagination, moderated threaded comments
-- `/#lab` — experiments without a business model yet
-- `/#about` — personal narrative (not a CV)
-- `/#contact` — one contact funnel (AI/product solution / project /
+- `/services` — service grid; `/fde` (alias `/lab`) — Forward Deployed
+  Engineering, the core service
+- `/about` — personal narrative (not a CV)
+- `/contact` — one contact funnel (AI/product solution / project /
   collaborate / partnership / connecting / other)
-- `/#admin` — authenticated admin panel (articles, projects, comments
-  moderation, contact leads, site settings incl. theme, AI content tools)
+- `/admin` — authenticated admin panel (articles, projects, comments
+  moderation, contact leads, site settings incl. theme, AI content tools;
+  optional TOTP second factor)
+- `/sitemap.xml`, `/robots.txt`, `/feed.xml` — SEO plumbing
 
 API (all under `/api`): `posts`, `posts/[slug]`, `posts/[slug]/comments`,
 `site` (aggregated nav/categories/settings), `chat` (AI assistant,
 grounded in site content), `contact`, `admin/*` (auth + content + AI
-tools; every admin call checks the `x-admin-key` header against the
-env-only `ADMIN_PASSWORD`).
+tools; every admin call verifies the HMAC-signed session cookie against
+the env-only `ADMIN_PASSWORD`, with an optional TOTP second factor).
 
 ## Current projects
 

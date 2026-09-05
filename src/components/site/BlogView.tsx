@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useApp, pick, formatDate } from './store';
 import { ui } from './i18n';
 import { Button } from '@/components/ui/button';
@@ -8,31 +8,40 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { CommentsSection } from './CommentsSection';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Search, FileText, ChevronLeft, ChevronRight, Clock, Info, MessageSquare } from 'lucide-react';
 
-interface CategoryItem { id: string; slug: string; nameEn: string; nameFa: string; count: number }
-interface TagItem { id: string; slug: string; nameEn: string; nameFa: string; count: number }
+interface CategoryItem { id: string; slug: string; nameEn: string; nameFa: string; count?: number }
+interface TagItem { id: string; slug: string; nameEn: string; nameFa: string; count?: number }
 interface PostItem {
-  slug: string; titleEn: string; titleFa: string; excerptEn: string | null; excerptFa: string | null;
-  cover: string | null; date: string; hasEn: boolean; readMinutes: number; commentCount?: number;
+  slug: string; titleEn: string | null; titleFa: string | null; excerptEn: string | null; excerptFa: string | null;
+  cover: string | null; date: string | Date; hasEn?: boolean; readMinutes?: number; commentCount?: number;
   categories: CategoryItem[]; tags?: TagItem[];
 }
 
-export function BlogView() {
+/** server-fetched first page (real-routes SEO migration) */
+export interface BlogInitialData {
+  posts: PostItem[];
+  totalPages: number;
+  cats: CategoryItem[];
+  tags: TagItem[];
+}
+
+export function BlogView({ initial }: { initial?: BlogInitialData }) {
   const { lang } = useApp();
   const t = ui[lang];
-  const [cats, setCats] = useState<CategoryItem[]>([]);
-  const [tags, setTags] = useState<TagItem[]>([]);
+  const [cats, setCats] = useState<CategoryItem[]>(initial?.cats || []);
+  const [tags, setTags] = useState<TagItem[]>(initial?.tags || []);
   const [activeCat, setActiveCat] = useState('');
   const [activeTag, setActiveTag] = useState('');
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [posts, setPosts] = useState<PostItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [totalPages, setTotalPages] = useState(initial?.totalPages || 1);
+  const [posts, setPosts] = useState<PostItem[]>(initial?.posts || []);
+  const [loading, setLoading] = useState(false);
+  const didInitial = useRef(initial !== undefined);
 
   useEffect(() => {
+    if (cats.length > 0 && tags.length > 0) return;
     fetch('/api/site')
       .then((r) => r.json())
       .then((d) => {
@@ -40,6 +49,7 @@ export function BlogView() {
         setTags(d.tags || []);
       })
       .catch(() => {});
+     
   }, []);
 
   const load = useCallback(() => {
@@ -59,6 +69,12 @@ export function BlogView() {
   }, [page, activeCat, activeTag, search]);
 
   useEffect(() => {
+    // the server-rendered first page is already in the HTML — only
+    // subsequent filter/search/page changes hit the API
+    if (didInitial.current) {
+      didInitial.current = false;
+      return;
+    }
     const timer = setTimeout(load, search ? 350 : 0);
     return () => clearTimeout(timer);
   }, [load, search]);
@@ -94,7 +110,7 @@ export function BlogView() {
                 variant={activeCat === c.slug ? 'default' : 'outline'}
                 className={`cursor-pointer px-3 py-1.5 ${activeCat === c.slug ? 'bg-violet-600 hover:bg-violet-700' : 'hover:border-violet-500/60'}`}
               >
-                {pick(lang, c.nameEn, c.nameFa)} ({c.count})
+                {pick(lang, c.nameEn, c.nameFa)} {c.count !== undefined && `(${c.count})`}
               </Badge>
             </button>
           ))}
@@ -175,7 +191,7 @@ export function BlogView() {
   );
 }
 
-function BlogCard({ post }: { post: PostItem }) {
+export function BlogCard({ post }: { post: PostItem }) {
   const { lang, openPost } = useApp();
   return (
     <button
@@ -184,7 +200,6 @@ function BlogCard({ post }: { post: PostItem }) {
     >
       <div className="aspect-video w-full overflow-hidden bg-muted">
         {post.cover ? (
-           
           <img src={post.cover} alt="" loading="lazy" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
         ) : (
           <div className="flex h-full items-center justify-center">
@@ -203,10 +218,12 @@ function BlogCard({ post }: { post: PostItem }) {
               </span>
             </>
           )}
-          <span className="ms-auto inline-flex items-center gap-1">
-            <Clock className="h-3 w-3" />
-            {post.readMinutes} {ui[lang].common.minRead}
-          </span>
+          {post.readMinutes !== undefined && (
+            <span className="ms-auto inline-flex items-center gap-1">
+              <Clock className="h-3 w-3" />
+              {post.readMinutes} {ui[lang].common.minRead}
+            </span>
+          )}
         </div>
         <h3 className="mt-2 line-clamp-2 font-bold leading-snug transition-colors group-hover:text-violet-600 dark:group-hover:text-violet-400">
           {pick(lang, post.titleEn, post.titleFa)}
@@ -235,68 +252,24 @@ function BlogCard({ post }: { post: PostItem }) {
   );
 }
 
-// ─────────────────── Post Detail ───────────────────
+// ─────────────────── Post Detail (server-fed) ───────────────────
 
 interface FullPost {
-  slug: string; titleEn: string; titleFa: string;
+  slug: string; titleEn: string | null; titleFa: string | null;
   excerptEn: string | null; excerptFa: string | null;
   contentEn: string | null; contentFa: string | null;
-  cover: string | null; date: string;
+  cover: string | null; date: string | Date;
   categories: CategoryItem[]; tags: TagItem[];
 }
 
-export function PostDetail({ slug }: { slug: string }) {
+/**
+ * Article body rendered from server-provided data — the full article
+ * (title, cover, content) is present in the initial HTML response, so
+ * `curl /blog/<slug>` returns real content without any JS execution.
+ */
+export function PostDetail({ post, related }: { post: FullPost; related: PostItem[] }) {
   const { lang, closePost, openPost } = useApp();
   const t = ui[lang];
-  const [post, setPost] = useState<FullPost | null>(null);
-  const [related, setRelated] = useState<PostItem[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    let cancelled = false;
-    const timer = setTimeout(() => {
-      if (cancelled) return;
-      setLoading(true);
-      fetch(`/api/posts/${slug}`)
-        .then((r) => r.json())
-        .then((d) => {
-          if (cancelled) return;
-          setPost(d.post || null);
-          setRelated(d.related || []);
-        })
-        .catch(() => {})
-        .finally(() => {
-          if (!cancelled) setLoading(false);
-        });
-      window.scrollTo({ top: 0 });
-    }, 0);
-    return () => {
-      cancelled = true;
-      clearTimeout(timer);
-    };
-  }, [slug]);
-
-  if (loading) {
-    return (
-      <div className="mx-auto w-full max-w-4xl px-4 py-12 sm:px-6">
-        <Skeleton className="h-10 w-3/4" />
-        <Skeleton className="mt-4 h-4 w-1/3" />
-        <Skeleton className="mt-8 aspect-video w-full" />
-        <Skeleton className="mt-6 h-4 w-full" />
-        <Skeleton className="mt-2 h-4 w-full" />
-        <Skeleton className="mt-2 h-4 w-2/3" />
-      </div>
-    );
-  }
-
-  if (!post) {
-    return (
-      <div className="mx-auto w-full max-w-4xl px-4 py-20 text-center sm:px-6">
-        <p className="text-muted-foreground">{t.blog.noResults}</p>
-        <Button className="mt-4" variant="outline" onClick={closePost}>{t.blog.back}</Button>
-      </div>
-    );
-  }
 
   const title = pick(lang, post.titleEn, post.titleFa);
   const isEnMissing = lang === 'en' && !post.contentEn;
@@ -338,7 +311,6 @@ export function PostDetail({ slug }: { slug: string }) {
       )}
 
       {post.cover && (
-         
         <img src={post.cover} alt={title} className="mt-7 w-full rounded-2xl object-cover shadow-lg" />
       )}
 
@@ -348,7 +320,7 @@ export function PostDetail({ slug }: { slug: string }) {
         dangerouslySetInnerHTML={{ __html: pick(lang, post.contentEn, post.contentFa) || `<p>${pick(lang, post.excerptEn, post.excerptFa)}</p>` }}
       />
 
-      <CommentsSection slug={slug} />
+      <CommentsSection slug={post.slug} />
 
       {related.length > 0 && (
         <div className="mt-14 border-t border-border pt-8">

@@ -23,9 +23,9 @@ export async function POST(req: NextRequest) {
 
     const zai = await ZAI.create();
 
-    const sys = `You are the AI content writer for Mehrdad's website (designer & researcher: startups, smart city, AI, investment, inventions, product design, digital marketing).
+    const sys = `You are the AI content writer for Mehrdad's website (independent product builder: startups, smart city, AI, inventions, product design, digital marketing).
 Write an original, well-structured blog article about the given topic.
-Style: professional yet engaging, practical insights, suitable for the site's audience (entrepreneurs, investors, tech enthusiasts).
+Style: professional yet engaging, practical insights, suitable for the site's audience (entrepreneurs, business owners, tech enthusiasts).
 Structure: title, excerpt (2 sentences), then article body with HTML headings (<h2>, <h3>) and <p> paragraphs. No <html>/<body> wrapper.
 You may reference and build upon the existing site knowledge below to stay consistent with Mehrdad's other content ("learning from existing content").
 

@@ -8,6 +8,7 @@ import {
   verifyAdminSessionToken,
 } from '@/lib/admin-session';
 import { clientIp, bodyTooLarge, payloadTooLarge, rateLimit, tooManyRequests } from '@/lib/rate-limit';
+import { totpEnabled, verifyTotp } from '@/lib/admin-totp';
 
 export const dynamic = 'force-dynamic';
 
@@ -43,14 +44,22 @@ export async function POST(req: NextRequest) {
   }
 
   let password: unknown;
+  let totp: unknown;
   try {
     const body = await req.json();
     password = body?.password;
+    totp = body?.totp;
   } catch {
     return NextResponse.json({ error: 'Wrong password' }, { status: 401 });
   }
 
   if (typeof password === 'string' && safeEqual(password, ADMIN_PASSWORD)) {
+    // second factor (only when ADMIN_TOTP_SECRET is configured): a valid
+    // password without a valid 6-digit code is rejected — 401 with the
+    // 'totp_required' hint so the UI reveals the code field
+    if (totpEnabled() && !verifyTotp(totp)) {
+      return NextResponse.json({ error: 'totp_required' }, { status: 401 });
+    }
     const { token, maxAge } = createAdminSessionToken();
     const res = NextResponse.json({ ok: true });
     res.cookies.set(ADMIN_COOKIE, token, { ...cookieOptions, maxAge });
@@ -59,12 +68,13 @@ export async function POST(req: NextRequest) {
   return NextResponse.json({ error: 'Wrong password' }, { status: 401 });
 }
 
-/** GET = session restore: does the current browser still hold a valid session? */
+/** GET = session restore + advertise whether the 2FA factor is configured */
 export async function GET(req: NextRequest) {
   if (verifyAdminSessionToken(req.cookies.get(ADMIN_COOKIE)?.value)) {
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({ ok: true, totpRequired: totpEnabled() });
   }
-  return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  // the flag is safe to expose: an attacker learns it from a login attempt anyway
+  return NextResponse.json({ error: 'Unauthorized', totpRequired: totpEnabled() }, { status: 401 });
 }
 
 /** DELETE = logout: revoke the token server-side + expire the cookie. */
