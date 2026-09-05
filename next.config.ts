@@ -15,6 +15,11 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  // Turso/libsql driver stack must stay a real node_modules dependency in the
+  // standalone bundle: it loads native bindings (@libsql/linux-x64-gnu) at
+  // runtime, which cannot be bundled into server chunks. Without this the
+  // artifact ships without the packages and remote DB mode crashes on boot.
+  serverExternalPackages: ["@prisma/adapter-libsql", "@libsql/client", "@libsql/engine"],
   // don't advertise the framework version in production responses
   poweredByHeader: false,
   async headers() {
