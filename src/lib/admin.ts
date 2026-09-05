@@ -39,10 +39,18 @@ export function safeEqual(a: string, b: string): boolean {
  * CSRF defense-in-depth: for state-changing methods, reject requests whose
  * Origin header points at another site. Browser fetches always send Origin
  * on mutations; non-browser clients (curl/health checks) may omit it.
- * `x-forwarded-host` is honored too because reverse proxies (e.g. cPanel
- * Passenger) may rewrite the Host header.
+ *
+ * TRUST MODEL:
+ * - The primary anchor is the request's own Host header (set by the browser,
+ *   rewritten by the proxy only to the app's real public host).
+ * - `x-forwarded-host` is client-controllable in many proxy setups, so it is
+ *   NEVER allowed to vouch for an Origin on its own. It is only consulted
+ *   when no Host header exists at all (pure-proxy setups).
+ * - Set SITE_ORIGIN (e.g. `https://mehrdad.ir`) in production for a hard
+ *   allow-list: then Origin must match the configured site origin or Host,
+ *   and no header trickery can satisfy the check.
  */
-function originAllowed(req: NextRequest): boolean {
+export function originAllowed(req: NextRequest): boolean {
   const origin = req.headers.get('origin');
   if (!origin) return true;
   let originHost: string;
@@ -51,8 +59,22 @@ function originAllowed(req: NextRequest): boolean {
   } catch {
     return false;
   }
-  const hosts = [req.headers.get('host'), req.headers.get('x-forwarded-host')];
-  return hosts.some((h) => h === originHost);
+  const host = req.headers.get('host');
+  const xfh = req.headers.get('x-forwarded-host');
+
+  // hard allow-list when configured (recommended in production)
+  const siteOrigin = process.env.SITE_ORIGIN ?? '';
+  if (siteOrigin) {
+    let siteHost = '';
+    try {
+      siteHost = new URL(siteOrigin).host;
+    } catch {}
+    if (siteHost) return originHost === siteHost || originHost === host;
+  }
+
+  if (host && originHost === host) return true;
+  // only a missing Host header (pure proxy) may fall back to x-forwarded-host
+  return !host && xfh === originHost;
 }
 
 export function checkAdmin(req: NextRequest): NextResponse | null {

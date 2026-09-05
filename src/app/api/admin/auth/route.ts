@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { ADMIN_PASSWORD, adminAuthAvailable, safeEqual } from '@/lib/admin';
+import { ADMIN_PASSWORD, adminAuthAvailable, safeEqual, originAllowed } from '@/lib/admin';
 import {
   ADMIN_COOKIE,
   ADMIN_SESSION_TTL_SECONDS,
@@ -24,6 +24,12 @@ const cookieOptions = {
 
 /** POST = login: verify password once, then hand out an HMAC-signed session cookie. */
 export async function POST(req: NextRequest) {
+  // CSRF hardening: a cross-site page must never be able to POST credentials
+  // here (login CSRF would let an attacker seed a session they know).
+  if (!originAllowed(req)) {
+    return NextResponse.json({ error: 'Cross-origin request rejected' }, { status: 403 });
+  }
+
   // brute-force guard: 5 attempts per IP per 15 minutes
   const rl = rateLimit(`login:${clientIp(req)}`, 5, 15 * 60 * 1000);
   if (!rl.ok) return tooManyRequests(rl.retryAfter);

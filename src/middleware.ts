@@ -67,8 +67,14 @@ export function middleware(req: NextRequest) {
   const target = lookup(req.nextUrl.pathname, req.nextUrl.searchParams);
   if (!target) return NextResponse.next();
 
+  // Host-header poisoning guard: `req.nextUrl.origin` mirrors the client's
+  // Host header, so a spoofed Host could turn the 301 into an off-site
+  // redirect. When SITE_ORIGIN is configured (production), redirects always
+  // anchor to it; dev/local falls back to the request origin.
+  const base = process.env.SITE_ORIGIN || req.nextUrl.origin;
+
   // target like "/#blog/<slug>" or "/" — build a clean absolute URL
-  return NextResponse.redirect(`${req.nextUrl.origin}${target}`, 301);
+  return NextResponse.redirect(`${base}${target}`, 301);
 }
 
 export const config = {

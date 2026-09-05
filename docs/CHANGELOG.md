@@ -4,6 +4,29 @@ All notable changes to mehrdad.ir. Format: Keep-a-Changelog-ish, newest first.
 
 ## [Unreleased]
 
+### Security (2026-09-05 penetration-test round 2)
+- **Deep-dive pentest harness committed**: `scripts/pentest-round2.sh` —
+  82 new black-box checks beyond round 1 (13-shape token fuzzing, cookie
+  shadowing, session isolation, admin verb tampering & path tricks,
+  Origin-spoof matrix, parser abuse, query/operator injection, XFF-
+  rotation floods on all public write endpoints, encoded stored XSS,
+  info-exposure paths, Host-header poisoning) — report in
+  `docs/PENTEST_2026-09-05-round2.md` (**82/82 green, plus 52/52 round-1
+  regression**).
+- Fixes surfaced by the round, all now covered by tests:
+  - `originAllowed()` no longer trusts client-sent `X-Forwarded-Host` —
+    `Origin` + spoofed XFH could previously satisfy the CSRF check;
+    optional `SITE_ORIGIN` env enables a hard allow-list;
+  - login route (`POST /api/admin/auth`) now enforces the same Origin
+    check (login-CSRF gate was open);
+  - SEO 301 redirects anchor to `SITE_ORIGIN` — a spoofed `Host` header
+    could previously redirect `/?p=<id>` off-site;
+  - `/api/posts?page=abc` no longer 500s (NaN reached Prisma skip/take);
+  - session tokens are `<expiry>.<nonce>.<sig>` — same-second logins used
+    to collide on one token, so logging out one revoked all of them
+    (session DoS, caught live during regression);
+  - `DELETE /api/chat` rate-limited (10/min, same as chat POST).
+
 ### Security (2026-09-05 penetration-test round)
 - **Full pentest harness committed**: `scripts/pentest-local.sh` — 55
   automated black-box checks (auth, session forgery, CSRF, rate limits,
