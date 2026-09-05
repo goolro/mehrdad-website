@@ -79,6 +79,19 @@ otherwise. **Production URL: https://mehrdad-website.vercel.app
    fails with `ENOENT .next/next-server.js.nft.json` when standalone
    output is enabled (standalone stays for the cPanel artifact flow).
 
+### Custom domain: NONE (owner decision, 2026-09-05)
+
+The owner decided Vercel has **no involvement with the `mehrdad.ir`
+domain** — the domain stays on the Iran host, untouched. The canonical
+Vercel URL is therefore `https://mehrdad-website.vercel.app` (SITE_ORIGIN
+matches it; sitemap/feed/metadataBase/admin origin-check are all
+consistent). No DNS records were added or required.
+
+Git auto-deploy (`vercel git connect`) needs a one-time **Login
+Connection** between the owner's GitHub and Vercel accounts (dashboard
+action only — not possible via token). Until then, deployments run from
+this repo via CLI: `vercel deploy --prod`.
+
 ### Topology
 
 - **Hosting**: Vercel project `mehrdad-website` (CLI deploy from this repo;
