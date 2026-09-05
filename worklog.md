@@ -865,3 +865,18 @@ Work Log:
 Stage Summary:
 - /services حالا هیروی اسلوگان برند دارد (فارسی و انگلیسی)؛ فایل تغییر یافته: src/components/site/ServicesView.tsx فقط
 - مانده برای انتشار: push (توکن GitHub) + vercel deploy --prod (توکن Vercel)
+
+---
+Task ID: ui-services-hero-2
+Agent: main (Z.ai Code)
+Task: انتشار تغییر هیروی /services روی گیت‌هاب و Vercel با توکن‌های تازه مالک
+
+Work Log:
+- push موفق main (6c955fc..2cb7de2: فیکس هیروی خدمات + ورودی worklog) با توکن GitHub در URL یک‌بارمصرف
+- vercel deploy --prod با توکن CLI → Ready in 2m، پراجکت mehrdad-website
+- راستی‌آزمایی زنده: /services کد 200؛ SSR حاوی h1 اسلوگان (EN پیش‌فرض) + ۸ کارت h3؛ با مرورگر و ست lang=fa نسخه فارسی کامل تأیید شد (badge + تیتر گرادیان + زیرنویس)
+- امنیت: grep کل مخزن → فقط پیشوندهای کوتاه توکن‌ها در docs/SECURITY.md و worklog.md (برای یادآوری revoke، از قبل موجود)؛ .git/config پاک؛ شمارنده tracking با fetch یک‌باره اصلاح شد (main همگام با origin/main)
+
+Stage Summary:
+- https://mehrdad-website.vercel.app/services حالا هیروی اسلوگان برند را دارد (FA/EN)
+- هر ۳ توکن مالک باید revoke شوند (ghp_9omo…، vcp_1f3s…، sbp_fcd7…)
