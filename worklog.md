@@ -753,3 +753,18 @@ Stage Summary:
 - تنظیمات امنیتی گیت‌هاب همگی فعال؛ CI روی push اجرا می‌شود
 - توکن گیت‌هاب همچنان معتبر است و مالک rotate را رد کرده — در لاگ رخداد SECURITY.md ثبت و یادآوری باز ماند
 - آرتیفکت v5 باید از این کامیت بازسازی شود (مسیریابی و CSP عوض شده) — منتظر جواب تیکت میزبان‌فا
+
+---
+Task ID: review-fixes-28-b (addendum)
+Agent: Z.ai Code (main)
+Task: رساندن CI به سبز + بستن ۶ هشدار Dependabot
+
+Work Log:
+- اولین ران push روی main شکست خورد: NODE_ENV=production در سطح job باعث می‌شد npm ci وابستگی‌های dev را نصب نکند (eslint: not found) → حذف NODE_ENV از job env + npm ci --include=dev
+- ران دوم خطای واقعی lint آشکار کرد: سه خطای set-state-in-effect در ChatWidget/carousel/use-mobile — سندباکس (bun) نسخهٔ تودرتوی 7.0.1 پلاگین را لود می‌کرد ولی npm ci در CI نسخهٔ 7.1.1 (hoisted) → ریشه: دو نسخهٔ موازی eslint-plugin-react-hooks → overrides پین 7.1.1 در هر دو اکوسیستم + کامنت‌های disable مستند سه reset عمدی بازگردانی شد
+- ۶ هشدار Dependabot (۴ high) بررسی شد: @mdxeditor/editor و react-syntax-highlighter و uuid کاملاً بلااستفاده بودند (dead deps استارتر) → حذف (prismjs و deepmerge-ts و js-yaml پین‌شدهٔ mdxeditor از درخت حذف شدند)؛ sharp 0.34.3→0.35.0 (GHSA-f88m)؛ deepmerge-ts با override به 8.0.2 (prisma generate/db:push تست شد)؛ js-yaml فقط نسخهٔ dev-only 4.3.2 باقی ماند
+- نتیجه: open alerts: 0 | CI روی 6d06f27 سه‌بار success | سه PR بسته‌شدهٔ Dependabot خودکار
+
+Stage Summary:
+- درخت وابستگی هم سبک‌تر و هم بدون آسیب‌پذیری ثبت‌شده است؛ lint و tsc در سندباکس و CI یک‌رفتار شدند
+- درس ثبت‌شده: eslint --fix سندباکس را بدون مقایسه با CI کامیت نکن (rule-activation drift بین نسخه‌های پلاگین)
