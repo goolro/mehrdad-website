@@ -41,7 +41,10 @@ export async function POST(req: NextRequest) {
         { role: 'system', content: 'You are a connection test. Reply with exactly: OK' },
         { role: 'user', content: 'ping' },
       ],
-      { timeoutMs: 30_000, maxTokens: 10, temperature: 0 }
+      // thinking models (GLM-4.5+/5.x) burn tokens on reasoning before the
+      // final "OK" — a tiny cap returned an empty content and failed the
+      // test even with a perfectly valid key.
+      { timeoutMs: 30_000, maxTokens: 200, temperature: 0 }
     );
     return NextResponse.json({
       ok: reply.length > 0,

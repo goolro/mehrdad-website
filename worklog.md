@@ -1189,3 +1189,19 @@ Work Log:
 Stage Summary:
 - چت‌بات روی پروداکشن زنده شد (منتظر کلید مالک برای پاسخ واقعی؛ تا آن موقع پیام محترمانه + ثبت سؤال)
 - صندوق گفتگوها با فیلتر/جستجو/لیدها فعال؛ کلیدهای AI قابل مدیریت از پنل؛ اشتراک‌گذاری روی مطالب/خدمات/طرح‌ها
+
+---
+Task ID: ai-zai-provider-1
+Agent: main (Z.ai Code)
+Task: راهنمای اتصال کلید Z.ai به پنل + سازگارسازی کد با مدل‌های thinking دار GLM
+
+Work Log:
+- تأیید زندهٔ اندپوینت: POST https://api.z.ai/api/paas/v4/chat/completions بدون کلید → 401 «Authentication parameter not received» (اندپوینت سالم و OpenAI-compatible)
+- وب‌سرچ مدل‌های فعلی Z.ai (سپتامبر ۲۰۲۶): فلگ‌شیپ glm-5.3، ارزان/سریع glm-5.3-flash (320B-A18B، کانتکست ۱M)، قدیمی‌ترها glm-4.6 / glm-4.5-flash
+- src/lib/ai-provider.ts: تابع isZaiHost + استخراج متن tolerant (content آرایه‌ای، fallback به reasoning_content وقتی بودجهٔ توکن در فکر تمام می‌شود) + ارسال thinking:{type:'disabled'} برای هاست‌های z.ai/bigmodel با retry بدون پارامتر در 400 + سقف پیش‌فرض max_tokens از 900 به 1600
+- src/app/api/admin/ai-providers/check/route.ts: maxTokens دکمهٔ تست از 10 به 200 (مدل‌های thinking با 10 توکن پاسخ خالی می‌دادند و تست با کلید سالم «ناموفق» نشان داده می‌شد)
+- lint پاک؛ push به main → دیپلوی خودکار ورسل
+
+Stage Summary:
+- مالک فقط باید در پنل: Base URL = https://api.z.ai/api/paas/v4 و Model = glm-5.3-flash و کلید خودش را وارد کند؛ چت‌بات + تست اتصال با GLM-5.x سازگار شد
+- ترکیب URL اوپن‌روتر با کلید Z.ai خطای 401 می‌دهد — URL و کلید باید هم‌سرویس باشند

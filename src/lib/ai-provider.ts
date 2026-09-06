@@ -56,6 +56,48 @@ function endpointOf(baseUrl: string): string {
   return `${baseUrl.replace(/\/+$/, '')}/chat/completions`;
 }
 
+/** Z.ai / BigModel gateways accept a `thinking` switch that strict OpenAI-compatible APIs reject. */
+function isZaiHost(baseUrl: string): boolean {
+  try {
+    const h = new URL(baseUrl).hostname;
+    return h === 'z.ai' || h.endsWith('.z.ai') || h.endsWith('bigmodel.cn');
+  } catch {
+    return false;
+  }
+}
+
+interface RawCompletionResponse {
+  choices?: {
+    message?: {
+      content?: unknown;
+      reasoning_content?: unknown;
+    };
+  }[];
+}
+
+/**
+ * Tolerant text extraction across OpenAI-compatible shapes: plain string
+ * content, content-parts arrays, and thinking models (GLM-4.5/5.x) that can
+ * spend the whole token budget on reasoning and leave `content` empty while
+ * the answer lives in `reasoning_content`.
+ */
+function extractText(data: RawCompletionResponse): string {
+  const msg = data?.choices?.[0]?.message;
+  if (!msg) return '';
+  let content = msg.content;
+  if (Array.isArray(content)) {
+    content = content
+      .map((p) => (typeof p === 'string' ? p : (p as { text?: string })?.text || ''))
+      .join('');
+  }
+  const text = typeof content === 'string' ? content.trim() : '';
+  if (text) return text;
+  const reasoning = typeof msg.reasoning_content === 'string' ? msg.reasoning_content.trim() : '';
+  // thinking-only reply (max_tokens burned by reasoning): the tail usually
+  // carries the conclusion — better for the visitor than an empty bubble.
+  return reasoning ? reasoning.slice(-700) : '';
+}
+
 /**
  * One OpenAI-compatible chat completion. Throws on HTTP/network errors —
  * callers own the retry & graceful-degradation policy.
@@ -67,29 +109,39 @@ export async function chatCompletion(
 ): Promise<string> {
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), opts.timeoutMs ?? 50_000);
+  const base: Record<string, unknown> = {
+    model: provider.model,
+    messages,
+    // thinking models (GLM-4.5+/5.x) need headroom: reasoning tokens count
+    // against max_tokens, so the old 900 could end mid-thought with an
+    // empty `content` bubble.
+    max_tokens: opts.maxTokens ?? 1600,
+    temperature: opts.temperature ?? 0.6,
+  };
   try {
-    const res = await fetch(endpointOf(provider.baseUrl), {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${provider.apiKey}`,
-      },
-      body: JSON.stringify({
-        model: provider.model,
-        messages,
-        max_tokens: opts.maxTokens ?? 900,
-        temperature: opts.temperature ?? 0.6,
-      }),
-      signal: ctrl.signal,
-    });
-    if (!res.ok) {
-      const detail = await res.text().catch(() => '');
-      throw new Error(`provider ${res.status}: ${detail.slice(0, 300)}`);
+    // On Z.ai gateways first try with the thinking switch (fast + cheap for
+    // a chatbot); if the gateway/model rejects it with 400, retry once
+    // without it (e.g. always-on-thinking flagships).
+    for (const withThinking of isZaiHost(provider.baseUrl) ? [true, false] : [false]) {
+      const payload = withThinking ? { ...base, thinking: { type: 'disabled' } } : base;
+      const res = await fetch(endpointOf(provider.baseUrl), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${provider.apiKey}`,
+        },
+        body: JSON.stringify(payload),
+        signal: ctrl.signal,
+      });
+      if (!res.ok) {
+        const detail = await res.text().catch(() => '');
+        if (res.status === 400 && withThinking) continue;
+        throw new Error(`provider ${res.status}: ${detail.slice(0, 300)}`);
+      }
+      const data = (await res.json()) as RawCompletionResponse;
+      return extractText(data);
     }
-    const data = (await res.json()) as {
-      choices?: { message?: { content?: string } }[];
-    };
-    return data.choices?.[0]?.message?.content?.trim() || '';
+    return ''; // unreachable
   } finally {
     clearTimeout(timer);
   }
