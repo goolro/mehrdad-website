@@ -1117,3 +1117,21 @@ Stage Summary:
 - تنها گام باقی: App Password جیمیل مالک (۱۶ کاراکتر) → SMTP_PASS → تست
 - SITE_ORIGIN اکنون دامنهٔ اصلی است (کار نیمه‌کارهٔ قبلی هم بسته شد)
 - یادآوری چرخش توکن‌ها: GitHub/Vercel/Supabase دوباره در چت رفتند
+
+---
+Task ID: contact-email-forward-2
+Agent: main (Z.ai Code)
+Task: دریافت App Password جیمیل از مالک («wkak hvwg mjse kdfk») و فعال‌سازی نهایی فوروارد ایمیل فرم تماس
+
+Work Log:
+- پیام نامفهوم‌نمای مالک تشخیص داده شد: فرمت دقیق App Password گوگل (۱۶ حرف، ۴ گروه چهارتایی) →moshtarakinapp@gmail.com / wkakhvwgmjsekdfk
+- pre-check اعتبار با openssl s_client به smtp.gmail.com:465 → 235 2.7.0 Accepted (رمز معتبر)
+- کشف سشن: سندباکس خودش کلون goolro/mehrdad-website است؛ origin/main = ebd03f5 (کارهای contact-email-forward-1 همگی روی گیت‌هاب)؛ فقط کامیت worklog محلی 974394f عقب‌تر بود
+- DNS دوباره چک شد: گوگل/کلادفلر/کوآد۹ همه IP ورسل می‌دهند؛ 404 LiteSpeed قبلی فقط کش سندباکس بود
+- SMTP_USER=moshtarakinapp@gmail.com و SMTP_PASS روی Vercel production ست شد (POST /v10/env?upsert=true، type sensitive)
+- ری‌دپلوی پروداکشن با API (dpl_wkvujCZsEb6p9TJKX9JNh5W2mSV7) → READY در ~50 ثانیه
+- تست زندهٔ end-to-end: POST /api/contact روی mehrdad.ir → {"ok":true,"emailed":true} HTTP 200 — پیام در DB ذخیره و با SMTP به جیمیل مالک تحویل شد
+
+Stage Summary:
+- وظیفهٔ فرم تماس کامل شد: بدون ایمیل عمومی در سایت + هر پیام → ذخیره در DB (پنل ادمین) + ایمیل به moshtarakinapp@gmail.com
+- باقی برای مالک: چک اینباکس/اسپم جیمیل، حذف پیام تست از پنل ادمین، چرخش توکن‌ها (GitHub/Vercel/Supabase + همین App Password در چت رفته)، پاک‌کردن Site Data مرورگر برای PWA
