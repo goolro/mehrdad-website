@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Mail, Send, Sparkles } from 'lucide-react';
+import { Send, Sparkles } from 'lucide-react';
 
 export function ContactView() {
   const { lang, setChatOpen } = useApp();
@@ -48,13 +48,13 @@ export function ContactView() {
 
       <div className="mt-8 flex items-center gap-3 rounded-2xl border border-border bg-card p-4">
         <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-violet-600/10 text-violet-600 dark:text-violet-400">
-          <Mail className="h-5 w-5" />
+          <Send className="h-5 w-5" />
         </div>
         <div>
           <div className="text-sm text-muted-foreground">{t.contact.emailUs}</div>
-          <a href="mailto:admin@mehrdad.ir" className="font-semibold hover:text-violet-600 dark:hover:text-violet-400" dir="ltr">
-            admin@mehrdad.ir
-          </a>
+          <div className="font-semibold" dir="auto">
+            {lang === 'fa' ? 'فرم زیر را پر کنید — پیام‌تان مستقیم به صندوق ایمیل ما می‌رسد.' : 'Fill in the form below — your message goes straight to our inbox.'}
+          </div>
         </div>
       </div>
 
