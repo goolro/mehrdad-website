@@ -28,6 +28,7 @@ export function ChatWidget() {
   const [lead, setLead] = useState<LeadState>('idle');
   const [leadForm, setLeadForm] = useState({ name: '', email: '', phone: '', note: '' });
   const [leadSending, setLeadSending] = useState(false);
+  const [leadError, setLeadError] = useState(false);
   // mirror of sessionIdRef for render-time decisions (refs must not be read during render)
   const [hasSession, setHasSession] = useState(false);
 
@@ -78,6 +79,7 @@ export function ChatWidget() {
     e.preventDefault();
     if (!sessionIdRef.current || leadSending) return;
     setLeadSending(true);
+    setLeadError(false);
     try {
       const res = await fetch('/api/chat/contact', {
         method: 'POST',
@@ -87,10 +89,10 @@ export function ChatWidget() {
       if (res.ok) {
         setLead('sent');
       } else {
-        setLead('error');
+        setLeadError(true);
       }
     } catch {
-      setLead('error');
+      setLeadError(true);
     } finally {
       setLeadSending(false);
     }
@@ -230,7 +232,7 @@ export function ChatWidget() {
                 className="h-8 text-xs"
                 dir="auto"
               />
-              {lead === 'error' && <p className="text-[11px] text-red-500">{t.chat.requestError}</p>}
+              {leadError && <p className="text-[11px] text-red-500">{t.chat.requestError}</p>}
               <div className="flex gap-1.5">
                 <Button
                   type="submit"
