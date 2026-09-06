@@ -13,7 +13,11 @@ function ScrollArea({
   return (
     <ScrollAreaPrimitive.Root
       data-slot="scroll-area"
-      className={cn("relative", className)}
+      // overflow-hidden matches upstream shadcn — WITHOUT it a flex-sized
+      // ScrollArea never shrinks below its content height (CSS min-height:
+      // auto), pushing siblings out of fixed-height parents (the chat widget
+      // lost its input box exactly this way)
+      className={cn("relative overflow-hidden", className)}
       {...props}
     >
       <ScrollAreaPrimitive.Viewport

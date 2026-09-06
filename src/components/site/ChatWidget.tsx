@@ -82,34 +82,24 @@ export function ChatWidget() {
         setMessages((m) => [...m, { role: 'assistant', content: data?.reply || t.common.error }]);
         return;
       }
-      // ── SSE streaming: render deltas live (word-by-word) ──
+      // ── SSE streaming: render deltas LIVE, as each event arrives ──
+      // (handling must sit inside the read loop: processing after the
+      // stream completes is exactly the "dots for the whole wait, then a
+      // wall of text" experience the owner reported)
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
       let buf = '';
       let acc = '';
       let open = true; // first delta closes the typing indicator
-      const events: Record<string, unknown>[] = [];
-      const parseEvent = (raw: string) => {
+      const handleEvent = (raw: string) => {
         const line = raw.split('\n').find((l) => l.startsWith('data:'));
         if (!line) return;
+        let ev: Record<string, unknown>;
         try {
-          events.push(JSON.parse(line.slice(5).trim()) as Record<string, unknown>);
+          ev = JSON.parse(line.slice(5).trim()) as Record<string, unknown>;
         } catch {
-          // ignore malformed event
+          return; // ignore malformed event
         }
-      };
-      for (;;) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buf += decoder.decode(value, { stream: true });
-        let sep: number;
-        while ((sep = buf.indexOf('\n\n')) >= 0) {
-          parseEvent(buf.slice(0, sep));
-          buf = buf.slice(sep + 2);
-        }
-      }
-      if (buf.trim()) parseEvent(buf);
-      for (const ev of events) {
         if (typeof ev.sessionId === 'string' && ev.sessionId) {
           sessionIdRef.current = ev.sessionId;
           setHasSession(true);
@@ -126,7 +116,18 @@ export function ChatWidget() {
           acc = acc || t.common.error;
           setStreamText(acc);
         }
+      };
+      for (;;) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buf += decoder.decode(value, { stream: true });
+        let sep: number;
+        while ((sep = buf.indexOf('\n\n')) >= 0) {
+          handleEvent(buf.slice(0, sep));
+          buf = buf.slice(sep + 2);
+        }
       }
+      if (buf.trim()) handleEvent(buf);
       setMessages((m) => [...m, { role: 'assistant', content: acc || t.common.error }]);
     } catch {
       setMessages((m) => [...m, { role: 'assistant', content: t.common.error }]);
@@ -222,7 +223,7 @@ export function ChatWidget() {
         </div>
       </div>
 
-      <ScrollArea className="flex-1 p-3" ref={scrollRef as never}>
+      <ScrollArea className="min-h-0 flex-1 p-3" ref={scrollRef as never}>
         <div className="flex flex-col gap-3">
           {messages.map((m, i) => (
             <div

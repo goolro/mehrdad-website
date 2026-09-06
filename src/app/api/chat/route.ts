@@ -36,6 +36,21 @@ const UNCONFIGURED_FA =
 const UNCONFIGURED_EN =
   'The AI assistant service is not configured yet. Your question has been logged for the site owner — if you would like a personal reply, tap "Ask Mehrdad to reply" below, or use the contact form at mehrdad.ir/contact.';
 
+// Reply language follows the visitor's MESSAGE, not the site UI toggle —
+// a visitor can browse in EN and type فارسی; answering English to a
+// Persian greeting is the #1 chatbot rudeness (owner-reported).
+const PERSIAN_RE = /[\u0600-\u06FF\u0750-\u077F\uFB50-\uFDFF\uFE70-\uFEFF]/;
+
+// Pure greetings ("سلام", "hi!", "درود") get an instant canned reply — no
+// AI round-trip, so the very first impression never waits on a free-tier
+// queue. Anything beyond a bare greeting goes to the model as usual.
+const GREETING_RE =
+  /^(سلام|درود|هی|هیلو|هلو|salam|salaam|slam|hi|hey|hello|yo|hiya|greetings|good\s?(morning|afternoon|evening)|صبح\s?بخیر|عصر\s?بخیر|شب\s?بخیر|وقت\s?بخیر)[\s!.,\u061F?ـ]*$/i;
+const GREETING_FA =
+  'سلام! خوش آمدید — من دستیار هوش مصنوعی مهرداد هستم. دربارهٔ خدمات، پروژه‌ها، مقاله‌ها یا همکاری با مهرداد هر سؤالی دارید بپرسید.';
+const GREETING_EN =
+  "Hello! Welcome — I'm Mehrdad's AI assistant. Ask me anything about Mehrdad's services, projects, articles, or working with him.";
+
 export async function POST(req: NextRequest) {
   purgeOldChats();
 
@@ -59,7 +74,7 @@ export async function POST(req: NextRequest) {
   try {
     const body = parsed.data || {};
     const message = String(body.message ?? '').trim().slice(0, 2000);
-    const lang: 'en' | 'fa' = body.lang === 'fa' ? 'fa' : 'en';
+    const lang: 'en' | 'fa' = PERSIAN_RE.test(message) ? 'fa' : body.lang === 'fa' ? 'fa' : 'en';
     let sessionId = String(body.sessionId ?? '').trim();
 
     if (!message) {
@@ -76,19 +91,30 @@ export async function POST(req: NextRequest) {
       sessionId = s.id;
     }
 
-    // history (last 8 messages)
-    const history = await db.chatMessage.findMany({
-      where: { sessionId },
-      orderBy: { createdAt: 'asc' },
-      take: 8,
-    });
+    // greeting fast-path: create the session, log both turns, answer now
+    if (message.length <= 40 && GREETING_RE.test(message)) {
+      const reply = lang === 'fa' ? GREETING_FA : GREETING_EN;
+      await db.chatMessage.create({ data: { sessionId, role: 'user', content: message, lang } });
+      await db.chatMessage.create({ data: { sessionId, role: 'assistant', content: reply, lang } });
+      return NextResponse.json({ reply, sessionId, sources: [], aiUnavailable: false });
+    }
+
+    // history — the LAST 6 messages (asc+take was silently sending the
+    // OLDEST 6 of long conversations to the model)
+    const history = (
+      await db.chatMessage.findMany({
+        where: { sessionId },
+        orderBy: { createdAt: 'desc' },
+        take: 6,
+      })
+    ).reverse();
 
     await db.chatMessage.create({
       data: { sessionId, role: 'user', content: message, lang },
     });
 
-    // RAG retrieval (4 chunks: fewer prompt tokens → faster first token)
-    const chunks = await retrieveContext(message, 4);
+    // RAG retrieval (3 chunks: fewer prompt tokens → faster first token)
+    const chunks = await retrieveContext(message, 3);
     const context = buildContextBlock(chunks);
 
     // page context (§13): the visitor's current page steers the assistant
@@ -109,7 +135,7 @@ PAGE CONTEXT (important): The user is RIGHT NOW on the "Forward Deployed Enginee
 
 Use ONLY the following site knowledge to answer. If the answer is not in the knowledge, say you don't have that info and suggest using the contact form at mehrdad.ir/contact.
 
-Be helpful and VERY concise: 2–3 short sentences, max ~40 words. Plain text only — no lists, headings or markdown. If more detail is truly needed, invite them to ask a follow-up. Answer in English.
+Be helpful and VERY concise: 2–3 short sentences, at most ~40 words. Plain text only — NEVER use bullet lists, headings or markdown. If more detail is truly needed, invite them to ask a follow-up. Answer in English.
 
 SITE KNOWLEDGE:
 ${context || '(no specific knowledge found — rely only on the general info above)'}${pageCtxEn}`;
@@ -118,7 +144,7 @@ ${context || '(no specific knowledge found — rely only on the general info abo
 
 فقط از دانش سایت زیر برای پاسخ استفاده کن. اگر پاسخ در دانش موجود نبود، بگو اطلاعاتی نداری و فرم تماس در mehrdad.ir/contact را پیشنهاد بده.
 
-کوتاه و مفید پاسخ بده: فقط ۲–۳ جملهٔ کوتاه (حداکثر ~۴۰ کلمه). متن ساده — بدون لیست، تیتر یا مارک‌داون. اگر جزئیات بیشتر واقعاً لازم بود، دعوت کن سؤال بعدی بپرسد. به فارسی روان پاسخ بده.
+کوتاه و مفید پاسخ بده: فقط ۲–۳ جملهٔ کوتاه (حداکثر ~۴۰ کلمه). متن ساده — هرگز از لیست گلوله‌ای، تیتر یا مارک‌داون استفاده نکن. اگر جزئیات بیشتر واقعاً لازم بود، دعوت کن سؤال بعدی بپرسد. به فارسی روان پاسخ بده.
 
 دانش سایت:
 ${context || '(دانش خاصی یافت نشد — فقط از اطلاعات کلی بالا استفاده کن)'}${pageCtxFa}`;
@@ -148,15 +174,33 @@ ${context || '(دانش خاصی یافت نشد — فقط از اطلاعات 
             send({ sessionId }); // bind the session before first token
             const provider = await getActiveProvider();
             if (provider) {
-              for (const waitMs of [0, 3000]) {
+              // attempt 1: generous budget; attempt 2 (transient 429/5xx):
+              // short — the visitor is already waiting. Tight overall so the
+              // 60s serverless ceiling can never cut mid-fallback.
+              const attempts: [number, number][] = [
+                [0, 40_000],
+                [1_500, 10_000],
+              ];
+              for (const [waitMs, tmo] of attempts) {
                 if (waitMs) await sleep(waitMs);
                 try {
-                  for await (const piece of chatCompletionStream(provider, turns, { timeoutMs: 50_000, maxTokens: 900 })) {
+                  for await (const piece of chatCompletionStream(provider, turns, { timeoutMs: tmo, maxTokens: 400 })) {
                     full += piece;
                     if (!started) {
                       started = true;
                     }
                     send({ delta: piece });
+                  }
+                  if (full) break;
+                  // stream ended but produced nothing (thinking-model burned
+                  // the budget on reasoning): one non-stream retry — its
+                  // extractText() can surface the reasoning tail
+                  if (!started) {
+                    full = await chatCompletion(provider, turns, { timeoutMs: 8_000, maxTokens: 400 });
+                    if (full) {
+                      started = true;
+                      send({ delta: full });
+                    }
                   }
                   if (full) break;
                 } catch (err) {
@@ -169,7 +213,7 @@ ${context || '(دانش خاصی یافت نشد — فقط از اطلاعات 
             }
             if (!full) {
               // sandbox/dev fallback (no-op '' on Vercel), then honest message
-              full = await zaiComplete(turns, { timeoutMs: 50_000 });
+              full = await zaiComplete(turns, { timeoutMs: 8_000 });
               if (!full) {
                 full = lang === 'fa' ? UNCONFIGURED_FA : UNCONFIGURED_EN;
                 send({ delta: full });
@@ -209,10 +253,10 @@ ${context || '(دانش خاصی یافت نشد — فقط از اطلاعات 
     if (provider) {
       // resilience: short retries for transient 429/5xx storms, then graceful
       let lastErr: unknown = null;
-      for (const waitMs of [0, 3000]) {
+      for (const waitMs of [0, 1_500]) {
         if (waitMs) await new Promise((r) => setTimeout(r, waitMs));
         try {
-          reply = await chatCompletion(provider, turns, { timeoutMs: 50_000, maxTokens: 900 });
+          reply = await chatCompletion(provider, turns, { timeoutMs: 45_000, maxTokens: 400 });
           if (reply) break;
         } catch (err) {
           lastErr = err;
@@ -226,9 +270,9 @@ ${context || '(دانش خاصی یافت نشد — فقط از اطلاعات 
     // 2) sandbox/dev fallback (z-ai-web-dev-sdk) — a no-op '' on hosting
     //    environments without the SDK, so the route degrades gracefully
     if (!reply) {
-      for (const waitMs of [0, 3000]) {
+      for (const waitMs of [0, 1_500]) {
         if (waitMs) await new Promise((r) => setTimeout(r, waitMs));
-        reply = await zaiComplete(turns, { timeoutMs: 50_000 });
+        reply = await zaiComplete(turns, { timeoutMs: 8_000 });
         if (reply) break;
       }
     }
