@@ -981,3 +981,21 @@ Work Log:
 
 Stage Summary:
 - معماری فعلی تأیید/توضیح داده شد؛ تصمیم نهایی با مالک، پیشنهاد: فعلاً Turso برای بالا آمدن سایت، سوییچ بعدی اختیاری
+
+---
+Task ID: cpanel-nodejs-missing-1
+Agent: main (Z.ai Code)
+Task: عیب‌یابی گزارش مالک «Setup Node.js App اصلا همچین چیزی نداره» + عکس صفحهٔ Tools در cPanel
+
+Work Log:
+- تحلیل اسکرین‌شات cPanel 126.0.39 میزبان‌فا: بخش Software فقط PHP INI Settings / PHP Version & Extensions / Optimize Website دارد
+- تأیید: ابزار Setup Node.js App (Application Manager / Node.js Selector) و نیز Terminal در پنل وجود ندارد — یعنی هاست قابلیت Node.js را برای این پلن فعال نکرده (فعال‌سازی فقط از سمت پشتیبانی هاست ممکن است، نه کاربر)
+- نکات مثبت مشاهده‌شده در همان عکس: CloudLinux (ویجت Resource Usage با سقف 1.95GB حافظه / 150 پروسه)، Cron Jobs در بخش Advanced موجود (راه جایگزین اجرای deploy.sh بدون دکمهٔ Deploy)، DNS Manager موجود (راه برگشت به Vercel)، Git Version Control در تب جدا کار می‌کند
+- سناریوهای پاسخ داده‌شده به مالک: (۱) تیکت/چت به میزبان‌فا برای فعال‌سازی Application Manager/Node.js Selector یا معرفی پلن Node-دار؛ (۲) اگر نشد: DNS Manager → برگشت دامنه به Vercel (میرور زندهٔ mehrdad-website.vercel.app با ۸۲ پست)؛ (۳) جایگزین: خرید پلن Node-دار هاست دیگر — تکرار همان نقشهٔ cPanel-Git
+- یادآوری: دکمهٔ Deploy HEAD Commit هم قبلاً گیر داشت؛ با Cron Jobs (بدون SSH/Terminal) می‌شود deploy.sh را یک‌بار دستی اجرا کرد: bash /home/mehrdad3/repositories/mehrdad-cpanel-deploy/deploy.sh
+- متن آمادهٔ تیکت فارسی برای پشتیبانی میزبان‌فا تحویل شد
+
+Stage Summary:
+- گلوگاه جدید شناسایی شد: پلن فعلی Node.js ندارد و بدون آن اجرای server.js (اپ Next.js) روی هاست ممکن نیست
+- مسیر تصمیم: پشتیبانی هاست (فعال‌سازی Node.js) → در غیر این صورت DNS به Vercel یا پلن Node-دار
+- ریپوی دیپلوی/اسکریپت/۶ env همچنان آماده‌اند؛ به‌محض فعال شدن Node.js ادامهٔ نقشه بدون تغییر
