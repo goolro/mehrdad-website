@@ -21,6 +21,8 @@ export function ChatWidget() {
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  // live token stream: null = idle, string = assistant bubble being typed out
+  const [streamText, setStreamText] = useState<string | null>(null);
   const sessionIdRef = useRef<string>('');
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -44,7 +46,7 @@ export function ChatWidget() {
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
-  }, [messages, loading, lead]);
+  }, [messages, loading, lead, streamText]);
 
   async function send(text?: string) {
     const msg = (text ?? input).trim();
@@ -52,26 +54,85 @@ export function ChatWidget() {
     setInput('');
     setMessages((m) => [...m, { role: 'user', content: msg }]);
     setLoading(true);
+    setStreamText(null);
     try {
       const res = await fetch('/api/chat', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: msg, lang, sessionId: sessionIdRef.current, context: view === 'fde' ? 'fde' : undefined }),
+        headers: { 'Content-Type': 'application/json', Accept: 'text/event-stream' },
+        body: JSON.stringify({
+          message: msg,
+          lang,
+          sessionId: sessionIdRef.current,
+          stream: true,
+          context: view === 'fde' ? 'fde' : undefined,
+        }),
       });
-      const data = await res.json();
       if (res.status === 429) {
         setMessages((m) => [...m, { role: 'assistant', content: t.chat.tooFast }]);
         return;
       }
-      if (data.sessionId) {
-        sessionIdRef.current = data.sessionId;
-        setHasSession(true);
+      const ct = res.headers.get('content-type') || '';
+      // legacy JSON (or error) response — render the whole reply at once
+      if (!res.ok || !res.body || !ct.includes('text/event-stream')) {
+        const data = (await res.json().catch(() => null)) as { reply?: string; sessionId?: string } | null;
+        if (data?.sessionId) {
+          sessionIdRef.current = data.sessionId;
+          setHasSession(true);
+        }
+        setMessages((m) => [...m, { role: 'assistant', content: data?.reply || t.common.error }]);
+        return;
       }
-      setMessages((m) => [...m, { role: 'assistant', content: data.reply || t.common.error }]);
+      // ── SSE streaming: render deltas live (word-by-word) ──
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buf = '';
+      let acc = '';
+      let open = true; // first delta closes the typing indicator
+      const events: Record<string, unknown>[] = [];
+      const parseEvent = (raw: string) => {
+        const line = raw.split('\n').find((l) => l.startsWith('data:'));
+        if (!line) return;
+        try {
+          events.push(JSON.parse(line.slice(5).trim()) as Record<string, unknown>);
+        } catch {
+          // ignore malformed event
+        }
+      };
+      for (;;) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buf += decoder.decode(value, { stream: true });
+        let sep: number;
+        while ((sep = buf.indexOf('\n\n')) >= 0) {
+          parseEvent(buf.slice(0, sep));
+          buf = buf.slice(sep + 2);
+        }
+      }
+      if (buf.trim()) parseEvent(buf);
+      for (const ev of events) {
+        if (typeof ev.sessionId === 'string' && ev.sessionId) {
+          sessionIdRef.current = ev.sessionId;
+          setHasSession(true);
+        }
+        if (typeof ev.delta === 'string' && ev.delta) {
+          if (open) {
+            open = false; // first delta replaces the typing indicator
+            setStreamText('');
+          }
+          acc += ev.delta;
+          setStreamText(acc);
+        }
+        if (ev.error) {
+          acc = acc || t.common.error;
+          setStreamText(acc);
+        }
+      }
+      setMessages((m) => [...m, { role: 'assistant', content: acc || t.common.error }]);
     } catch {
       setMessages((m) => [...m, { role: 'assistant', content: t.common.error }]);
     } finally {
       setLoading(false);
+      setStreamText(null);
     }
   }
 
@@ -175,7 +236,13 @@ export function ChatWidget() {
               {m.content}
             </div>
           ))}
-          {loading && (
+          {streamText !== null && (
+            <div className="max-w-[85%] whitespace-pre-wrap rounded-2xl bg-muted px-3.5 py-2.5 text-sm leading-relaxed text-foreground">
+              {streamText}
+              <span className="ms-0.5 inline-block h-3.5 w-1.5 animate-pulse rounded-sm bg-violet-500 align-middle" />
+            </div>
+          )}
+          {loading && streamText === null && (
             <div className="self-start rounded-2xl bg-muted px-4 py-2.5 text-sm text-muted-foreground">
               <span className="inline-flex gap-1">
                 <span className="h-2 w-2 animate-bounce rounded-full bg-violet-500 [animation-delay:0ms]" />

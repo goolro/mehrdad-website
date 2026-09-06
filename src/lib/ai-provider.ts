@@ -153,6 +153,77 @@ export function maskKey(key: string): string {
   return `${key.slice(0, 3)}••••••••${key.slice(-4)}`;
 }
 
+/**
+ * Streaming chat completion (SSE) for OpenAI-compatible providers.
+ * Yields text deltas as they arrive so the widget can render word-by-word
+ * — the perceived-latency fix for slow free-tier models. Thinking-model
+ * deltas (reasoning_content) are skipped; only final content is yielded.
+ * Same thinking-switch/retry semantics as chatCompletion.
+ */
+export async function* chatCompletionStream(
+  provider: ProviderConfig,
+  messages: ChatTurn[],
+  opts: { timeoutMs?: number; maxTokens?: number; temperature?: number } = {}
+): AsyncGenerator<string> {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), opts.timeoutMs ?? 50_000);
+  const base: Record<string, unknown> = {
+    model: provider.model,
+    messages,
+    stream: true,
+    max_tokens: opts.maxTokens ?? 1600,
+    temperature: opts.temperature ?? 0.6,
+  };
+  try {
+    for (const withThinking of isZaiHost(provider.baseUrl) ? [true, false] : [false]) {
+      const payload = withThinking ? { ...base, thinking: { type: 'disabled' } } : base;
+      const res = await fetch(endpointOf(provider.baseUrl), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${provider.apiKey}`,
+        },
+        body: JSON.stringify(payload),
+        signal: ctrl.signal,
+      });
+      if (!res.ok) {
+        const detail = await res.text().catch(() => '');
+        if (res.status === 400 && withThinking) continue;
+        throw new Error(`provider ${res.status}: ${detail.slice(0, 300)}`);
+      }
+      if (!res.body) throw new Error('provider returned empty body');
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buf = '';
+      for (;;) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buf += decoder.decode(value, { stream: true });
+        let nl: number;
+        while ((nl = buf.indexOf('\n')) >= 0) {
+          const line = buf.slice(0, nl).trim();
+          buf = buf.slice(nl + 1);
+          if (!line.startsWith('data:')) continue;
+          const data = line.slice(5).trim();
+          if (!data || data === '[DONE]') continue;
+          try {
+            const j = JSON.parse(data) as {
+              choices?: { delta?: { content?: unknown } }[];
+            };
+            const piece = j.choices?.[0]?.delta?.content;
+            if (typeof piece === 'string' && piece) yield piece;
+          } catch {
+            // ignore malformed SSE line — providers occasionally pad
+          }
+        }
+      }
+      return; // stream consumed — do not retry thinking-off after success
+    }
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 /** Basic URL sanity for the admin "add provider" form. */
 export function isValidBaseUrl(url: string): boolean {
   try {

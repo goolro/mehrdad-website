@@ -1255,3 +1255,19 @@ Stage Summary:
 - سیستم چند-پرووایدر تأیید شد: هر سرویس OpenAI-compatible با ۴ فیلد وصل می‌شود؛ فقط یکی Active است
 - OpenAI در پنل به‌عنوان رزرو (غیرفعال) ثبت شد؛ با شارژ اعتبار، با یک کلیک فعال می‌شود
 - کلید OpenAI هم در چت رفته → در صورت ادامهٔ استفاده، rotate شود
+
+---
+Task ID: chat-stream-1 (slow-chatbot fix)
+Agent: main (Z.ai Code)
+Task: رفع کندیِ حس‌شدهٔ چت‌بات با استریم کلمه‌به‌کلمه
+
+Work Log:
+- اندازه‌گیری زنده: پاسخ فارسی ۱۰٫۶ و ۱۴٫۵ ثانیه (aiUnavailable:false) — کندی مالک = صف سرویس رایگان در ساعات شلوغ + انتظارِ بی‌بازخورد تا آمدن کل جواب
+- src/lib/ai-provider.ts: ژنراتور chatCompletionStream (SSE، پرش روی delta های reasoning_content، همان منطق thinking-switch/retry)
+- src/app/api/chat/route.ts: شاخهٔ stream:true → SSE (event اول sessionId، سپس delta ها، در پایان done+sources+aiUnavailable)؛ ذخیرهٔ پیام assistant بعد از اتمام استریم؛ RAG از ۶ به ۴ chunk؛ max_tokens چت ۹۰۰؛ retry ها کوتاه‌تر [0,3s]؛ مسیر JSON قدیمی حفظ شد
+- src/components/site/ChatWidget.tsx: کلاینت SSE — حباب زنده با کرسر چشمک‌زن، نقطه‌چین «در حال نوشتن» فقط تا اولین توکن، fallback به JSON برای پاسخ‌های غیر SSE، مدیریت 429/error
+- tsc --noEmit و eslint هر دو پاک؛ push → دیپلوی خودکار
+
+Stage Summary:
+- اولین کلمات جواب از این پس در ~۲-۳ ثانیه دیده می‌شود (به‌جای سکوت ۱۰-۶۰ ثانیه)
+- اگر مدل رایگان باز هم در صف بماند، حداقل کاربر پیشرفت را می‌بیند؛ راه‌حل نهایی سرعت: شارژ چند دلاری z.ai و مدل air/flash پولی

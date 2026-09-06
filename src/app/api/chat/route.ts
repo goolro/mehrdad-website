@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { retrieveContext, buildContextBlock } from '@/lib/rag';
-import { chatCompletion, getActiveProvider, zaiComplete, type ChatTurn } from '@/lib/ai-provider';
+import { chatCompletion, chatCompletionStream, getActiveProvider, zaiComplete, type ChatTurn } from '@/lib/ai-provider';
 import { clientIp, readJsonBody, jsonBodyError, rateLimit, tooManyRequests } from '@/lib/rate-limit';
 
 export const dynamic = 'force-dynamic';
@@ -87,8 +87,8 @@ export async function POST(req: NextRequest) {
       data: { sessionId, role: 'user', content: message, lang },
     });
 
-    // RAG retrieval
-    const chunks = await retrieveContext(message, 6);
+    // RAG retrieval (4 chunks: fewer prompt tokens → faster first token)
+    const chunks = await retrieveContext(message, 4);
     const context = buildContextBlock(chunks);
 
     // page context (§13): the visitor's current page steers the assistant
@@ -132,16 +132,87 @@ ${context || '(دانش خاصی یافت نشد — فقط از اطلاعات 
     let reply = '';
     let aiUnavailable = false;
 
+    const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+    // ── streaming mode ────────────────────────────────────────────────
+    // The widget sends stream:true and renders word-by-word (SSE). This is
+    // the perceived-latency fix for free-tier models that can take 10s+.
+    if (body.stream === true) {
+      const encoder = new TextEncoder();
+      const stream = new ReadableStream<Uint8Array>({
+        async start(ctrl) {
+          const send = (obj: unknown) => ctrl.enqueue(encoder.encode(`data: ${JSON.stringify(obj)}\n\n`));
+          let full = '';
+          let started = false; // any delta already sent → no retries (would duplicate)
+          try {
+            send({ sessionId }); // bind the session before first token
+            const provider = await getActiveProvider();
+            if (provider) {
+              for (const waitMs of [0, 3000]) {
+                if (waitMs) await sleep(waitMs);
+                try {
+                  for await (const piece of chatCompletionStream(provider, turns, { timeoutMs: 50_000, maxTokens: 900 })) {
+                    full += piece;
+                    if (!started) {
+                      started = true;
+                    }
+                    send({ delta: piece });
+                  }
+                  if (full) break;
+                } catch (err) {
+                  if (started) break; // mid-stream: end gracefully with what we have
+                  const msg = String((err as Error)?.message || err);
+                  if (!/429|5\d\d/.test(msg)) break; // non-transient
+                  console.error('chat stream provider error:', msg.slice(0, 200));
+                }
+              }
+            }
+            if (!full) {
+              // sandbox/dev fallback (no-op '' on Vercel), then honest message
+              full = await zaiComplete(turns, { timeoutMs: 50_000 });
+              if (!full) {
+                full = lang === 'fa' ? UNCONFIGURED_FA : UNCONFIGURED_EN;
+                send({ delta: full });
+                send({ aiUnavailable: true });
+              } else {
+                send({ delta: full });
+              }
+            }
+            await db.chatMessage.create({ data: { sessionId, role: 'assistant', content: full, lang } });
+            const sources = [...new Set(chunks.map((c) => c.refSlug).filter(Boolean))].slice(0, 4);
+            send({ done: true, sources, aiUnavailable: full === (lang === 'fa' ? UNCONFIGURED_FA : UNCONFIGURED_EN) });
+            ctrl.close();
+          } catch (e) {
+            console.error('chat stream error:', e);
+            try {
+              send({ error: 'Chat failed' });
+              ctrl.close();
+            } catch {
+              // client already gone
+            }
+          }
+        },
+      });
+      return new Response(stream, {
+        headers: {
+          'Content-Type': 'text/event-stream; charset=utf-8',
+          'Cache-Control': 'no-cache, no-transform',
+          'X-Accel-Buffering': 'no',
+        },
+      });
+    }
+
+    // ── legacy JSON mode (non-streaming callers) ──────────────────────
     // 1) admin-configured OpenAI-compatible provider (works everywhere,
     //    including Vercel production)
     const provider = await getActiveProvider();
     if (provider) {
       // resilience: short retries for transient 429/5xx storms, then graceful
       let lastErr: unknown = null;
-      for (const waitMs of [0, 4000, 9000]) {
+      for (const waitMs of [0, 3000]) {
         if (waitMs) await new Promise((r) => setTimeout(r, waitMs));
         try {
-          reply = await chatCompletion(provider, turns, { timeoutMs: 50_000 });
+          reply = await chatCompletion(provider, turns, { timeoutMs: 50_000, maxTokens: 900 });
           if (reply) break;
         } catch (err) {
           lastErr = err;
@@ -155,7 +226,7 @@ ${context || '(دانش خاصی یافت نشد — فقط از اطلاعات 
     // 2) sandbox/dev fallback (z-ai-web-dev-sdk) — a no-op '' on hosting
     //    environments without the SDK, so the route degrades gracefully
     if (!reply) {
-      for (const waitMs of [0, 4000, 9000]) {
+      for (const waitMs of [0, 3000]) {
         if (waitMs) await new Promise((r) => setTimeout(r, waitMs));
         reply = await zaiComplete(turns, { timeoutMs: 50_000 });
         if (reply) break;
