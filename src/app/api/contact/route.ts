@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import nodemailer from 'nodemailer';
 import { db } from '@/lib/db';
 import { clientIp, readJsonBody, jsonBodyError, rateLimit, tooManyRequests } from '@/lib/rate-limit';
 
@@ -6,44 +7,64 @@ export const dynamic = 'force-dynamic';
 
 // Destination inbox for contact-form messages (changeable via env without a redeploy of code).
 const CONTACT_TO = (process.env.CONTACT_TO_EMAIL || 'moshtarakinapp@gmail.com').trim();
+const SMTP_USER = (process.env.SMTP_USER || '').trim();
+const SMTP_PASS = process.env.SMTP_PASS || '';
 
-// Forward the message to the owner's inbox through FormSubmit's AJAX endpoint.
-// Kept server-side so the destination address never ships in the client bundle.
-// Best-effort: the DB copy (below) is the source of truth; a forward hiccup
-// must never lose a message or fail the user's submission.
+// Deliver the message straight to the owner's inbox over SMTP (Gmail app
+// password or any provider). Kept server-side so credentials and the
+// destination address never ship in the client bundle. Best-effort: the DB
+// copy (below) is the source of truth; a delivery hiccup must never lose a
+// message or fail the user's submission.
 async function forwardByEmail(fields: {
   name: string;
   email: string;
   subject: string | null;
   message: string;
 }): Promise<boolean> {
+  if (!SMTP_USER || !SMTP_PASS) {
+    console.error('contact email forward skipped: SMTP_USER/SMTP_PASS not configured');
+    return false;
+  }
   try {
-    const res = await fetch(`https://formsubmit.co/ajax/${CONTACT_TO}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-      signal: AbortSignal.timeout(8000),
-      body: JSON.stringify({
-        _subject: fields.subject
-          ? `mehrdad.ir — ${fields.subject}`
-          : 'mehrdad.ir — new contact message',
-        _template: 'table',
-        _captcha: 'false',
-        _replyto: fields.email,
-        Name: fields.name,
-        Email: fields.email,
-        Subject: fields.subject || '—',
-        Message: fields.message,
-      }),
+    const transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST || 'smtp.gmail.com',
+      port: Number(process.env.SMTP_PORT || 465),
+      secure: true,
+      auth: { user: SMTP_USER, pass: SMTP_PASS },
+      connectionTimeout: 8000,
+      greetingTimeout: 6000,
+      socketTimeout: 10000,
     });
-    if (!res.ok) {
-      console.error('contact email forward: HTTP', res.status);
-      return false;
-    }
+    const subject = fields.subject
+      ? `mehrdad.ir — ${fields.subject}`
+      : 'mehrdad.ir — new contact message';
+    await transporter.sendMail({
+      from: `"mehrdad.ir contact form" <${SMTP_USER}>`,
+      to: CONTACT_TO,
+      replyTo: fields.email,
+      subject,
+      text: `Name: ${fields.name}\nEmail: ${fields.email}\nSubject: ${fields.subject || '—'}\n\n${fields.message}`,
+      html: [
+        '<div style="font:14px/1.6 -apple-system,Segoe UI,Tahoma,sans-serif;color:#222">',
+        '<table style="border-collapse:collapse">',
+        `<tr><td style="padding:4px 12px 4px 0;color:#666">Name</td><td style="padding:4px 0"><b>${esc(fields.name)}</b></td></tr>`,
+        `<tr><td style="padding:4px 12px 4px 0;color:#666">Email</td><td style="padding:4px 0">${esc(fields.email)}</td></tr>`,
+        `<tr><td style="padding:4px 12px 4px 0;color:#666">Subject</td><td style="padding:4px 0">${esc(fields.subject || '—')}</td></tr>`,
+        '</table>',
+        `<hr style="border:none;border-top:1px solid #eee;margin:12px 0"><p style="white-space:pre-wrap">${esc(fields.message)}</p>`,
+        '</div>',
+      ].join(''),
+    });
     return true;
   } catch (e) {
     console.error('contact email forward failed:', e);
     return false;
   }
+}
+
+// minimal HTML escaper for the email template
+function esc(s: string): string {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
 export async function POST(req: NextRequest) {
