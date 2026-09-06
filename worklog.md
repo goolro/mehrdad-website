@@ -1135,3 +1135,20 @@ Work Log:
 Stage Summary:
 - وظیفهٔ فرم تماس کامل شد: بدون ایمیل عمومی در سایت + هر پیام → ذخیره در DB (پنل ادمین) + ایمیل به moshtarakinapp@gmail.com
 - باقی برای مالک: چک اینباکس/اسپم جیمیل، حذف پیام تست از پنل ادمین، چرخش توکن‌ها (GitHub/Vercel/Supabase + همین App Password در چت رفته)، پاک‌کردن Site Data مرورگر برای PWA
+
+---
+Task ID: admin-password-reset-1
+Agent: main (Z.ai Code)
+Task: رفع مشکل «رمز اشتباه» ورود مالک به پنل ادمین (Admin Panel)
+
+Work Log:
+- تشخیص: ADMIN_PASSWORD فعلی مقدار openssl rand -hex 16 از دیپلوی قبلی بود که فقط همان‌جا در چت اعلام شد؛ ورودی مالک ~۲۰ کاراکتر بود (ناکامل/متفاوت) → 401 Wrong password
+- تحلیل کد: ورود فقط ADMIN_PASSWORD است (ADMIN_TOTP_SECRET در env نیست → 2FA غیرفعال)؛ محدودیت ۵ تلاش/۱۵ دقیقه per IP
+- رمز جدید ۱۶ کاراکتری random-alphanumeric تولید (vUUz29lhGvGkm3CB) و ADMIN_PASSWORD روی Vercel production upsert شد
+- ری‌دپلوی پروداکشن (dpl_7qsqdif4eyMReYEaUDW83VKHHocF) → READY
+- تست زنده: POST /api/admin/auth با Origin صحیح → رمز جدید 200 {ok:true}، رمز غلط 401 ✓
+- یادداشت: تغییر ADMIN_PASSWORD کلید HMAC سشن‌ها را هم عوض می‌کند → همهٔ نشست‌های قبلی ادمین باطل شدند (طراحی‌شده)
+
+Stage Summary:
+- مالک با رمز جدید وارد پنل می‌شود؛ ایمیل فرم تماس هم طبق تأیید مالک («ایمیل اومده») سالم است
+- رمز جدید فقط در چت به مالک داده شد؛ reminder rotate توکن‌ها/رمزها باقی است
