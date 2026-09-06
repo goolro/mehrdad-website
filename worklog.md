@@ -1035,3 +1035,19 @@ Work Log:
 Stage Summary:
 - تصمیم: بدون خرید — دامنه به ورسل رایگان وصل می‌شود؛ سایت از همان پروژهٔ زندهٔ موجود سرویس خواهد شد
 - مقادیر دقیق DNS برای کپی به مالک داده شد؛ SITE_ORIGIN پس از اتصال باید به دامنهٔ اصلی تغییر کند
+
+---
+Task ID: vercel-domain-verify-1
+Agent: main (Z.ai Code)
+Task: بررسی paste صفحهٔ Domains ورسل توسط مالک («ببین درسته») + پروب زندهٔ DNS
+
+Work Log:
+- مالک دامنه را در Vercel (تیم goolroir-9039) اضافه و به پروژهٔ mehrdad-website وصل کرده — سمت ورسل صحیح؛ CAA (pki.goog/sectigo/letsencrypt) و «No certificates yet» طبیعی
+- پروب زنده: NS = ns1..ns4.parspack.co (zone دست پارس‌پک است)؛ A = 178.239.158.141 (IP جدید سرور cPanel، قبلاً 88.135.68.30 بود)؛ www اصلاً رکورد ندارد
+- سرور فعلی: LiteSpeed با صفحهٔ placeholder «ParsPack cloud Hosting Services»؛ گواهی Let's Encrypt فعلی CN=cpanel.mehrdad.ir است (میس‌مچ برای mehrdad.ir)
+- توضیح گیج‌کننده‌های صفحهٔ ورسل به مالک: NS های vercel-dns فقط پیشنهاد سوییچ است (لازم نیست، .ir از طریق IRNIC سخت‌تر می‌شود)؛ CAA های نمایش‌داده‌شده فقط مال zone ورسل‌اند؛ فرم A در ورسل لازم نیست پر شود
+- تنها گام باقی‌مانده مشخص شد: در Zone Editor cPanel یا پنل DNS پارس‌پک: A @ → 76.76.21.21 و CNAME www → cname.vercel-dns.com
+
+Stage Summary:
+- سمت ورسل ۱۰۰٪ آماده؛ گلوگاه فقط دو رکورد در DNS پارس‌پک است
+- وعدهٔ پروب تأییدی پس از اعمال رکوردها + سپس SITE_ORIGIN/Redeploy/پاک‌کردن SW
