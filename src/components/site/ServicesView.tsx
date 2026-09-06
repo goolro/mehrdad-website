@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Rocket, BrainCircuit, Code2, PenTool, Briefcase, Megaphone, Store, Lightbulb, Sparkles, ChevronRight, Compass } from 'lucide-react';
+import { ShareBar } from './ShareBar';
 
 const ICONS: Record<string, typeof Rocket> = {
   Rocket, BrainCircuit, Code2, PenTool, Briefcase, Megaphone, Store, Lightbulb, Sparkles, Compass,
@@ -48,6 +49,9 @@ export function ServicesView({ initialServices }: { initialServices: ServiceItem
       </section>
 
       <div className="mx-auto w-full max-w-7xl px-4 py-12 sm:px-6">
+          <div className="mb-8 flex justify-end">
+            <ShareBar title={t.sections.servicesTitle} label={t.common.shareService} />
+          </div>
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {services.map((s) => {
               const Icon = ICONS[s.icon] || Sparkles;
@@ -111,6 +115,10 @@ export function ServicesView({ initialServices }: { initialServices: ServiceItem
                   {pick(lang, selected.descEn, selected.descFa)}
                 </DialogDescription>
               </DialogHeader>
+              <ShareBar
+                title={pick(lang, selected.titleEn, selected.titleFa)}
+                label={t.common.shareService}
+              />
               <Button
                 onClick={() => {
                   setSelected(null);

@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { StatusBadge, ProgressBar } from '@/components/site/ProjectsView';
+import { ShareBar } from '@/components/site/ShareBar';
+import { ui } from '@/components/site/i18n';
 import { getProjectBySlug } from '@/lib/queries';
 import { JsonLd } from '@/components/site/JsonLd';
 import { ContactCta } from '@/components/site/ContactCta';
@@ -106,6 +108,14 @@ export default async function ProjectPage({ params }: Props) {
           <ProgressBar value={project.progress} barCls={BAR_CLS[project.status] || BAR_CLS.seeking} />
         </div>
       )}
+
+      <div className="mt-8 border-y border-border py-4">
+        <ShareBar
+          url={`${base}/work/${project.slug}`}
+          title={project.titleEn}
+          label={ui.en.common.shareProject}
+        />
+      </div>
 
       <ContactCta label="I'm interested in this project" />
     </article>

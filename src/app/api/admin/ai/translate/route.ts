@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import ZAI from 'z-ai-web-dev-sdk';
 import { db } from '@/lib/db';
 import { checkAdmin } from '@/lib/admin';
 import { addPostToKb } from '@/lib/kb';
+import { textCompleteStrict } from '@/lib/ai-provider';
 import { sanitizePostHtml } from '@/lib/sanitize';
 
 export const dynamic = 'force-dynamic';
@@ -30,20 +30,36 @@ function chunkHtml(html: string, maxLen = 7000): string[] {
   return chunks;
 }
 
-async function translateHtml(zai: Awaited<ReturnType<typeof ZAI.create>>, html: string): Promise<string> {
+async function translateHtml(html: string): Promise<string> {
   const chunks = chunkHtml(html);
   const out: string[] = [];
   for (const c of chunks) {
-    const completion = await zai.chat.completions.create({
-      messages: [
-        { role: 'assistant', content: SYS },
+    const completion = await textCompleteStrict(
+      [
+        { role: 'system', content: SYS },
         { role: 'user', content: c },
       ],
-      thinking: { type: 'disabled' },
-    });
-    out.push((completion.choices[0]?.message?.content || '').trim());
+      { timeoutMs: 110_000, maxTokens: 4000, temperature: 0.3 }
+    );
+    out.push(completion.trim());
   }
   return out.join('');
+}
+
+async function shortTranslate(text: string, to: 'en' | 'fa'): Promise<string> {
+  const sys =
+    to === 'en'
+      ? 'Translate Persian to English. Return ONLY the translation.'
+      : 'Translate English to Persian (Farsi). Return ONLY the translation.';
+  return (
+    await textCompleteStrict(
+      [
+        { role: 'system', content: sys },
+        { role: 'user', content: text },
+      ],
+      { timeoutMs: 60_000, maxTokens: 500, temperature: 0.3 }
+    )
+  ).trim();
 }
 
 export async function POST(req: NextRequest) {
@@ -54,39 +70,13 @@ export async function POST(req: NextRequest) {
     const post = await db.post.findUnique({ where: { id: postId } });
     if (!post) return NextResponse.json({ error: 'Post not found' }, { status: 404 });
 
-    const zai = await ZAI.create();
-
     // translate TO English (from FA)
     if (post.contentFa && !post.contentEn) {
-      let contentEn = '';
-      if (post.contentFa.length > 200) {
-        contentEn = await translateHtml(zai, post.contentFa);
-      } else {
-        const c = await zai.chat.completions.create({
-          messages: [
-            { role: 'assistant', content: SYS },
-            { role: 'user', content: post.contentFa },
-          ],
-          thinking: { type: 'disabled' },
-        });
-        contentEn = c.choices[0]?.message?.content || '';
-      }
-      const c2 = await zai.chat.completions.create({
-        messages: [
-          { role: 'assistant', content: 'Translate Persian to English. Return ONLY the translation.' },
-          { role: 'user', content: post.titleFa || '' },
-        ],
-        thinking: { type: 'disabled' },
-      });
-      const titleEn = (c2.choices[0]?.message?.content || '').trim();
-      const c3 = await zai.chat.completions.create({
-        messages: [
-          { role: 'assistant', content: 'Translate Persian to English. Return ONLY the translation.' },
-          { role: 'user', content: post.excerptFa || titleFaSafe(post.titleFa) },
-        ],
-        thinking: { type: 'disabled' },
-      });
-      const excerptEn = (c3.choices[0]?.message?.content || '').trim().slice(0, 500);
+      const contentEn = post.contentFa.length > 200
+        ? await translateHtml(post.contentFa)
+        : await shortTranslate(post.contentFa, 'en');
+      const titleEn = await shortTranslate(post.titleFa || '', 'en');
+      const excerptEn = (await shortTranslate(post.excerptFa || titleFaSafe(post.titleFa), 'en')).slice(0, 500);
 
       await db.post.update({
         where: { id: post.id },
@@ -98,15 +88,8 @@ export async function POST(req: NextRequest) {
 
     // translate TO Persian (from EN)
     if (post.contentEn && !post.contentFa) {
-      const contentFa = await translateHtml(zai, post.contentEn);
-      const c2 = await zai.chat.completions.create({
-        messages: [
-          { role: 'assistant', content: 'Translate English to Persian (Farsi). Return ONLY the translation.' },
-          { role: 'user', content: post.titleEn || '' },
-        ],
-        thinking: { type: 'disabled' },
-      });
-      const titleFa = (c2.choices[0]?.message?.content || '').trim();
+      const contentFa = await translateHtml(post.contentEn);
+      const titleFa = await shortTranslate(post.titleEn || '', 'fa');
       await db.post.update({
         where: { id: post.id },
         data: { contentFa: sanitizePostHtml(contentFa), titleFa: titleFa || post.titleEn },

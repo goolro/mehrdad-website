@@ -6,12 +6,14 @@ import { ui } from './i18n';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { X, Send, Sparkles, Trash2 } from 'lucide-react';
+import { X, Send, Sparkles, Trash2, UserCheck } from 'lucide-react';
 
 interface Msg {
   role: 'user' | 'assistant';
   content: string;
 }
+
+type LeadState = 'idle' | 'form' | 'sent' | 'error';
 
 export function ChatWidget() {
   const { lang, chatOpen, setChatOpen, view } = useApp();
@@ -22,17 +24,26 @@ export function ChatWidget() {
   const sessionIdRef = useRef<string>('');
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  // lead ("reply from Mehrdad") mini-form state
+  const [lead, setLead] = useState<LeadState>('idle');
+  const [leadForm, setLeadForm] = useState({ name: '', email: '', phone: '', note: '' });
+  const [leadSending, setLeadSending] = useState(false);
+  // mirror of sessionIdRef for render-time decisions (refs must not be read during render)
+  const [hasSession, setHasSession] = useState(false);
+
   // reset conversation when the UI language switches — deliberate one-shot
   // reset (new session per language), not an accidental cascading render
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- deliberate one-shot reset on language change (documented)
     setMessages([{ role: 'assistant', content: t.chat.welcome }]);
     sessionIdRef.current = '';
+    setHasSession(false);
+    setLead('idle');
   }, [lang]);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
-  }, [messages, loading]);
+  }, [messages, loading, lead]);
 
   async function send(text?: string) {
     const msg = (text ?? input).trim();
@@ -51,7 +62,10 @@ export function ChatWidget() {
         setMessages((m) => [...m, { role: 'assistant', content: t.chat.tooFast }]);
         return;
       }
-      if (data.sessionId) sessionIdRef.current = data.sessionId;
+      if (data.sessionId) {
+        sessionIdRef.current = data.sessionId;
+        setHasSession(true);
+      }
       setMessages((m) => [...m, { role: 'assistant', content: data.reply || t.common.error }]);
     } catch {
       setMessages((m) => [...m, { role: 'assistant', content: t.common.error }]);
@@ -60,7 +74,31 @@ export function ChatWidget() {
     }
   }
 
+  async function submitLead(e: React.FormEvent) {
+    e.preventDefault();
+    if (!sessionIdRef.current || leadSending) return;
+    setLeadSending(true);
+    try {
+      const res = await fetch('/api/chat/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId: sessionIdRef.current, ...leadForm }),
+      });
+      if (res.ok) {
+        setLead('sent');
+      } else {
+        setLead('error');
+      }
+    } catch {
+      setLead('error');
+    } finally {
+      setLeadSending(false);
+    }
+  }
+
   const showSuggestions = chatOpen && view === 'fde' && !loading && !messages.some((m) => m.role === 'user');
+  // the personal-reply entry point appears once a real exchange has happened
+  const showLeadCta = lead === 'idle' && hasSession && messages.some((m) => m.role === 'user');
 
   if (!chatOpen) {
     return (
@@ -107,6 +145,8 @@ export function ChatWidget() {
               }
               sessionIdRef.current = '';
               setMessages([{ role: 'assistant', content: t.chat.welcome }]);
+              setHasSession(false);
+              setLead('idle');
             }}
             className="rounded-lg p-1.5 hover:bg-white/20"
             aria-label={t.chat.clear}
@@ -142,8 +182,82 @@ export function ChatWidget() {
               </span>
             </div>
           )}
+
+          {lead === 'sent' && (
+            <div className="self-start rounded-2xl border border-emerald-500/40 bg-emerald-500/10 px-3.5 py-2.5 text-sm font-medium text-emerald-700 dark:text-emerald-400">
+              {t.chat.requestSent}
+            </div>
+          )}
+
+          {lead === 'form' && (
+            <form
+              onSubmit={submitLead}
+              className="self-start w-[92%] space-y-2 rounded-2xl border border-violet-500/40 bg-violet-600/5 p-3"
+            >
+              <div className="flex items-center gap-1.5 text-xs font-bold text-violet-700 dark:text-violet-300">
+                <UserCheck className="h-3.5 w-3.5" />
+                {t.chat.leadTitle}
+              </div>
+              <p className="text-[11px] leading-relaxed text-muted-foreground">{t.chat.leadDesc}</p>
+              <Input
+                required
+                value={leadForm.name}
+                onChange={(e) => setLeadForm({ ...leadForm, name: e.target.value })}
+                placeholder={t.chat.yourName}
+                className="h-8 text-xs"
+                dir="auto"
+              />
+              <Input
+                required
+                type="email"
+                value={leadForm.email}
+                onChange={(e) => setLeadForm({ ...leadForm, email: e.target.value })}
+                placeholder={t.chat.yourEmail}
+                className="h-8 text-xs"
+                dir="ltr"
+              />
+              <Input
+                value={leadForm.phone}
+                onChange={(e) => setLeadForm({ ...leadForm, phone: e.target.value })}
+                placeholder={t.chat.yourPhone}
+                className="h-8 text-xs"
+                dir="ltr"
+              />
+              <Input
+                value={leadForm.note}
+                onChange={(e) => setLeadForm({ ...leadForm, note: e.target.value })}
+                placeholder={t.chat.leadNote}
+                className="h-8 text-xs"
+                dir="auto"
+              />
+              {lead === 'error' && <p className="text-[11px] text-red-500">{t.chat.requestError}</p>}
+              <div className="flex gap-1.5">
+                <Button
+                  type="submit"
+                  size="sm"
+                  disabled={leadSending}
+                  className="h-8 flex-1 bg-gradient-to-r from-violet-600 to-fuchsia-600 text-xs text-white"
+                >
+                  {leadSending ? t.chat.sending : t.chat.sendRequest}
+                </Button>
+                <Button type="button" size="sm" variant="outline" className="h-8 text-xs" onClick={() => setLead('idle')}>
+                  ✕
+                </Button>
+              </div>
+            </form>
+          )}
         </div>
       </ScrollArea>
+
+      {showLeadCta && (
+        <button
+          onClick={() => setLead('form')}
+          className="border-t border-border px-3 pt-2 text-start text-[11px] font-semibold text-violet-600 transition-colors hover:text-violet-700 dark:text-violet-400 dark:hover:text-violet-300"
+        >
+          <UserCheck className="me-1 inline h-3.5 w-3.5" />
+          {t.chat.needHuman}
+        </button>
+      )}
 
       {showSuggestions && (
         <div className="border-t border-border px-3 pt-2 pb-1" aria-label={lang === 'fa' ? 'پیشنهاد سوال' : 'Suggested questions'}>

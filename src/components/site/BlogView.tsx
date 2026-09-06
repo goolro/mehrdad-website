@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { CommentsSection } from './CommentsSection';
+import { ShareBar } from './ShareBar';
 import { Search, FileText, ChevronLeft, ChevronRight, Clock, Info, MessageSquare } from 'lucide-react';
 
 interface CategoryItem { id: string; slug: string; nameEn: string; nameFa: string; count?: number }
@@ -267,7 +268,7 @@ interface FullPost {
  * (title, cover, content) is present in the initial HTML response, so
  * `curl /blog/<slug>` returns real content without any JS execution.
  */
-export function PostDetail({ post, related }: { post: FullPost; related: PostItem[] }) {
+export function PostDetail({ post, related, shareUrl }: { post: FullPost; related: PostItem[]; shareUrl?: string }) {
   const { lang, closePost, openPost } = useApp();
   const t = ui[lang];
 
@@ -319,6 +320,10 @@ export function PostDetail({ post, related }: { post: FullPost; related: PostIte
         dir={isEnMissing || lang === 'fa' ? 'rtl' : 'ltr'}
         dangerouslySetInnerHTML={{ __html: pick(lang, post.contentEn, post.contentFa) || `<p>${pick(lang, post.excerptEn, post.excerptFa)}</p>` }}
       />
+
+      <div className="mt-8 border-y border-border py-4">
+        <ShareBar url={shareUrl} title={title} label={t.common.shareArticle} />
+      </div>
 
       <CommentsSection slug={post.slug} />
 

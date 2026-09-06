@@ -129,9 +129,17 @@ model ContactMessage {
 // ───────────────────────── AI Chatbot ─────────────────────────
 
 model ChatSession {
-  id        String        @id @default(cuid())
-  createdAt DateTime      @default(now())
-  messages  ChatMessage[]
+  id           String        @id @default(cuid())
+  contactName  String?
+  contactEmail String?
+  contactPhone String?
+  contactNote  String?
+  lead         Boolean       @default(false) // visitor explicitly asked Mehrdad to reply personally
+  read         Boolean       @default(false)
+  createdAt    DateTime      @default(now())
+  messages     ChatMessage[]
+
+  @@index([lead, createdAt])
 }
 
 model ChatMessage {
@@ -142,6 +150,24 @@ model ChatMessage {
   content   String
   lang      String      @default("en")
   createdAt DateTime    @default(now())
+}
+
+// ───────────────────────── AI Providers (admin-configurable) ─────────────────────────
+
+/// OpenAI-compatible text provider used by the public chatbot and the admin
+/// AI writer/translator. The apiKey is server-only: it never leaves the
+/// backend and is always masked in admin API responses.
+model AiProvider {
+  id        String   @id @default(cuid())
+  name      String // display label, e.g. "OpenRouter"
+  baseUrl   String // OpenAI-compatible base, e.g. https://api.openai.com/v1
+  apiKey    String // secret
+  model     String // e.g. gpt-4o-mini
+  active    Boolean  @default(false) // exactly one active at a time
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([active])
 }
 
 // ───────────────────────── RAG Knowledge Base ─────────────────────────
