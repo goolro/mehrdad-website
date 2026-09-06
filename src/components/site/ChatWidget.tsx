@@ -172,7 +172,7 @@ export function ChatWidget() {
         aria-label={t.chat.title}
       >
         <Sparkles className="h-6 w-6" />
-        <span className="absolute -top-1 -end-1 flex h-4 w-4 items-center justify-center rounded-full bg-emerald-500 text-[9px] font-bold">
+        <span className="absolute -top-1 -end-1 flex h-4 w-4 items-center justify-center rounded-full bg-emerald-700 text-[9px] font-bold text-white">
           AI
         </span>
       </button>

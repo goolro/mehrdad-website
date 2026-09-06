@@ -63,10 +63,10 @@ export function Header() {
         </nav>
 
         <div className="flex items-center gap-2">
-          <div className="flex items-center rounded-lg border border-border p-0.5 text-xs font-semibold">
+          <div className="flex items-center gap-1 rounded-lg border border-border p-0.5 text-xs font-semibold">
             <button
               onClick={() => chooseLang('en')}
-              className={`rounded-md px-2 py-1 transition-colors ${
+              className={`inline-flex min-h-9 min-w-11 items-center justify-center rounded-md px-2 transition-colors ${
                 lang === 'en' ? 'bg-violet-600 text-white' : 'text-muted-foreground hover:text-foreground'
               }`}
             >
@@ -74,7 +74,7 @@ export function Header() {
             </button>
             <button
               onClick={() => chooseLang('fa')}
-              className={`rounded-md px-2 py-1 transition-colors ${
+              className={`inline-flex min-h-9 min-w-11 items-center justify-center rounded-md px-2 transition-colors ${
                 lang === 'fa' ? 'bg-violet-600 text-white' : 'text-muted-foreground hover:text-foreground'
               }`}
             >

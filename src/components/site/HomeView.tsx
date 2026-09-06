@@ -150,7 +150,7 @@ export function HomeView({ initial }: { initial: HomeInitialData }) {
       {/* ── Projects ── */}
       <section id="projects" className="scroll-mt-24 border-y border-border/40 bg-muted/30">
         <div className="mx-auto w-full max-w-7xl px-4 py-14 sm:px-6">
-          <SectionHeader title={t.sections.projectsTitle} sub={t.sections.projectsSub} />
+          <SectionHeader title={t.sections.projectsTitle} sub={t.sections.projectsSub} subClassName="text-foreground/70" />
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {(data.projects || []).map((p) => (
               <button
@@ -175,8 +175,8 @@ export function HomeView({ initial }: { initial: HomeInitialData }) {
               className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-violet-500/40 bg-violet-600/5 p-5 text-center transition-colors hover:bg-violet-600/10"
             >
               <div className="text-2xl">🤝</div>
-              <h3 className="mt-2 font-bold text-violet-600 dark:text-violet-400">{t.projects.interested}</h3>
-              <p className="mt-1 text-sm text-muted-foreground">{t.contact.sub}</p>
+              <h3 className="mt-2 font-bold text-violet-700 dark:text-violet-300">{t.projects.interested}</h3>
+              <p className="mt-1 text-sm text-foreground/80">{t.contact.sub}</p>
             </button>
           </div>
         </div>
@@ -238,12 +238,12 @@ export function HomeView({ initial }: { initial: HomeInitialData }) {
   );
 }
 
-function SectionHeader({ title, sub, action }: { title: string; sub: string; action?: { label: string; onClick: () => void } }) {
+function SectionHeader({ title, sub, subClassName, action }: { title: string; sub: string; subClassName?: string; action?: { label: string; onClick: () => void } }) {
   return (
     <div className="mb-8 flex items-end justify-between gap-4">
       <div>
         <h2 className="text-2xl font-extrabold sm:text-3xl">{title}</h2>
-        <p className="mt-1 text-sm text-muted-foreground sm:text-base">{sub}</p>
+        <p className={`mt-1 text-sm sm:text-base ${subClassName || 'text-muted-foreground'}`}>{sub}</p>
       </div>
       {action && (
         <Button variant="ghost" size="sm" onClick={action.onClick} className="whitespace-nowrap text-violet-600 dark:text-violet-400">
