@@ -1205,3 +1205,20 @@ Work Log:
 Stage Summary:
 - مالک فقط باید در پنل: Base URL = https://api.z.ai/api/paas/v4 و Model = glm-5.3-flash و کلید خودش را وارد کند؛ چت‌بات + تست اتصال با GLM-5.x سازگار شد
 - ترکیب URL اوپن‌روتر با کلید Z.ai خطای 401 می‌دهد — URL و کلید باید هم‌سرویس باشند
+
+---
+Task ID: ai-zai-provider-2 (deploy + live verify + empty-provider finding)
+Agent: main (Z.ai Code)
+Task: push پچ GLM با توکن جدید مالک + راستی‌آزمایی زنده + کشف خالی‌بودن جدول پرووایدر
+
+Work Log:
+- مالک خطای «Connection failed: 200» را گرفت → دقیقاً باگ پیش‌بینی‌شده: کلید/مدل درست (HTTP 200) ولی بودجهٔ ۱۰ توکنی تست با فکرِ glm-4.5-flash تمام و content خالی شده بود
+- توکن fine-grained جدید از مالک دریافت شد؛ push موفق: a7efce8..321be95 (پچ thinking + maxTokens تست 200)
+- تأیید دیپلوی: GitHub commit status → «Vercel success Deployment has completed»
+- build اسکریپت فقط prisma generate + next build است — هیچ دیپلوی به DB دست نمی‌زند
+- بررسی زندهٔ DB پروداکشن: پست‌ها ۸۲ (سالم)، پیام‌های تماس موجود، ولی جدول AiProvider خالی است در حالی که پنل مالک در 01:55 پرووایدر «mehrdadwebsite/glm-4.5-flash/Active» را نشان می‌داد → ردیف بین 01:55 و 02:33 از بین رفته؛ هیچ مسیر کدی حذف خودکار ندارد (فقط DELETE دستی با نشست ادمین) → مالک باید یک بار دیگر پرووایدر را وارد کند
+- auth ادمین زنده 200؛ چت عمومی بدون پرووایدر → پیام محترمانه (رفتار درست)
+
+Stage Summary:
+- پچ GLM روی پروداکشن زنده است؛ به‌محض re-add پرووایدر (glm-4.5-flash رایگان) تست باید سبز شود و چت‌بات پایدار کار کند
+- بعد از تأیید مالک، توکن گیت‌هاب باید Delete شود
