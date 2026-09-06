@@ -1096,3 +1096,24 @@ Work Log:
 Stage Summary:
 - اتصال دامنه عملاً کامل: apex زنده روی ورسل با SSL معتبر و API سالم (۸۲ پست)
 - باقی: گواهی www (خودکار) + فید شدن کش‌های ISP ظرف چند ساعت + دو کار نظافتی آخر
+
+---
+Task ID: contact-email-forward-1
+Agent: main (Z.ai Code)
+Task: حذف ایمیل عمومی از سایت + اتصال فرم تماس به ایمیل MOSHTARAKINAPP@GMAIL.COM (با توکن‌های GitHub/Vercel/Supabase مالک)
+
+Work Log:
+- سینک سندباکس: origin/main در 377c4c2 (فقط worklog جدید)؛ شاخهٔ تمیز contact-email-fix از origin/main (۱۲ کامیت UUID محلی فقط worklog/mode — پوش نشد)
+- حذف admin@mehrdad.ir از ۴ نقطه: ContactView (کارت ایمیل → نوت دوزبانه «پیامت مستقیم به inbox ما می‌رسد»)، Footer (لینک mailto)، پرامپت‌های EN/FA چت‌بات (→ فرم تماس در mehrdad.ir/contact)، seed متن KB
+- تلاش اول با FormSubmit.co AJAX (بدون نیاز به اکانت) → روی live فهمیدیم Cloudflare managed challenge آن، POST سرور-به-سرور از Vercel را 403 می‌کند → کنار گذاشته شد
+- راه‌حل نهایی: nodemailer + SMTP مستقیم (پیش‌فرض smtp.gmail.com:465)؛ env: SMTP_USER/SMTP_PASS (+SMTP_HOST/SMTP_PORT اختیاری)؛ CONTACT_TO_EMAIL=moshtarakinapp@gmail.com روی Vercel production ست شد؛ DB کپی source of truth و پیام‌ها در پنل ادمین (/api/admin/messages) قابل خواندن‌اند
+- SITE_ORIGIN روی Vercel از https://mehrdad-website.vercel.app به https://mehrdad.ir پچ شد (PATCH env بدون فیلد key برای sensitive var)
+- push دو کامیت: 4ee82ec (حذف ایمیل + فوروارد) و ebd03f5 (SMTP nodemailer) — هر دو دیپلوی READY و تأیید live: /contact بدون ایمیل ✓، فوتر پاک ✓، POST تست → {ok:true} و رکورد در DB
+- مانع: کش DNS سندباکس هنوز گاهی به IP پارس‌پک می‌رود؛ تست‌ها با --resolve به IP ورسل انجام شد
+- در انتظار: App Password گوگل برای SMTP_USER=moshtarakinapp@gmail.com از مالک → ست کردن SMTP_PASS + redeploy + تست نهایی emailed:true
+
+Stage Summary:
+- ایمیل عمومی از کل سایت حذف و در production مستقر شد؛ فرم تماس فعال و ایمیل‌محور
+- تنها گام باقی: App Password جیمیل مالک (۱۶ کاراکتر) → SMTP_PASS → تست
+- SITE_ORIGIN اکنون دامنهٔ اصلی است (کار نیمه‌کارهٔ قبلی هم بسته شد)
+- یادآوری چرخش توکن‌ها: GitHub/Vercel/Supabase دوباره در چت رفتند
