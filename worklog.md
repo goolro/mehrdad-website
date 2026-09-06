@@ -1337,3 +1337,23 @@ Work Log:
 
 Stage Summary:
 - فایل وریفیکیشن گوگل زنده است؛ مالک می‌تواند در Search Console دکمهٔ Verify را بزند
+
+---
+Task ID: perf-psi-1
+Agent: Z.ai Code (main)
+Task: بررسی سرعت سایت با PageSpeed Insights + فیکس یافته‌ها
+
+Work Log:
+- API کلیدless گوگل 429 (سهمیه روزانه صفر) → گزارش مالک و ران‌های تازه از pagespeed.web.dev با agent-browser خوانده شد
+- baseline (گزارش مالک، موبایل): Perf 90 | A11y 92 | BP 100 | SEO 100 | FCP 1.2s | LCP 1.8s | TBT 30ms | CLS 0 | SI 9.8s ← فقط SI قرمز
+- ریشه SI: انیمیشن بی‌پایان aurora (۳ لایه blur(90px) با tb-drift infinite) → تکمیل بصری هیچ‌وقت رخ نمی‌دهد
+- فیکس: gate تماتیک — .theme-bg بدون .tb-live = animation-play-state:paused (فریز روی قاب طبیعی به‌خاطر delay منفی)؛ useEffect بعد از mount کلاس اضافه می‌کند (ابتدا 6.5s، بعد 10s)؛ reduced-motion همچنان animation:none
+- a11y از DOM گزارش استخراج شد: کنتراست (muted-foreground روی کارت‌های بنفش‌رنگ + بج emerald-500 با متن سفید 9px) و target-size (دکمه‌های EN/فا ~28px)
+- فیکس‌ها: بج AI → emerald-700؛ CTA خط‌چین HomeView → violet-700/foreground-80؛ SectionHeader prop subClassName (بخش projects → foreground/70)؛ دکمه‌های زبان → inline-flex min-h-9 min-w-11
+- تأیید مرورگر: ابتدا paused، بعد از gate running؛ ظاهر بدون تغییر (اسکرین‌شات)
+- نتایج بعد از دیپلوی (۲ ران): Perf 88-92 | A11y 100 ✅ | SI 5.5-6.3s (از 9.8) | LCP نوسان 1.8-2.9s (variance سردی function)
+- یافتهٔ معماری مهم: صفحهٔ اصلی force-dynamic → SSR + ۳ کوئری DB به‌ازای هر بازدید؛ TTFB پروداکشن 2.6-2.8s اندازه‌گیری شد (یک بار 6s سرد) → ریشهٔ نوسان LCP؛ حل قطعی = ISR/استاتیک که با CSP nonce per-request فعلی سازگار نیست (نیازمند بازطراحی CSP به hash-based یا الگوی دیگر) → فاز بعد
+
+Stage Summary:
+- A11y 92→100، SI 9.8→~6s، همهٔ Core Web Vitals سبز، Best Practices و SEO 100
+- کارهای بعدی پیشنهادی: (۱) ISR صفحهٔ اصلی + بازطراحی CSP → حذف TTFB 2.6s برای همهٔ کاربران واقعی (۲) Agentic Browsing 2/3 (llms.txt timeout) بررسی شود
