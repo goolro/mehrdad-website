@@ -1222,3 +1222,20 @@ Work Log:
 Stage Summary:
 - پچ GLM روی پروداکشن زنده است؛ به‌محض re-add پرووایدر (glm-4.5-flash رایگان) تست باید سبز شود و چت‌بات پایدار کار کند
 - بعد از تأیید مالک، توکن گیت‌هاب باید Delete شود
+
+---
+Task ID: ai-zai-provider-3 (fix + end-to-end live success)
+Agent: main (Z.ai Code)
+Task: فعال‌سازی نهایی چت‌بات با کلید واقعی مالک و راستی‌آزمایی کامل
+
+Work Log:
+- مالک پرووایدر را دوباره ساخت (Z.ai GLM / glm-5.3-flash) و کلید واقعی Z.ai را در چت فرستاد
+- تست مستقیم کلید روی Z.ai: glm-4.5-flash → 200 «OK» (رایگان، با thinking disabled فقط 2 توکن)؛ glm-5.3-flash → 400/1210 «always thinking, cannot be disabled» (و طبق خطای 1113 قبلی پروداکشن، پولی هم هست)
+- PATCH زندهٔ پرووایدر روی پروداکشن: model → glm-4.5-flash (id: cmtqe4i1i0000ju04mho5qfc5)
+- تست رسمی پنل (همان دکمهٔ Test): ok:true — 560ms — sample «OK» → باگ «Connection failed: 200» به‌طور قطعی بسته شد
+- تست طلایی چت عمومی فارسی: پاسخ واقعی AI از دانش سایت (BIZPAL/کلیکا/سه حوزه)، aiUnavailable:false → چت‌بات کاملاً عملیاتی
+
+Stage Summary:
+- چت‌بات سایت با مدل رایگان glm-4.5-flash زنده و پایدار است؛ هزینه فعلی: صفر
+- برای ارتقا بعدی: شارژ Balance در z.ai → تغییر Model به glm-5.3-flash (فکر همیشگی دارد؛ پچ، بودجهٔ توکن و fallback دارد)
+- کلید Z.ai و توکن گیت‌هاب هر دو در چت رفته‌اند → پس از پایداری، هردو rotate/delete شوند
