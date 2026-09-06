@@ -789,7 +789,7 @@ function AiProvidersTab({ t, lang }: { t: T; lang: 'en' | 'fa' }) {
 
   async function test(p: AiProviderItem) {
     setTestingId(p.id);
-    const res = await fetch('/api/admin/ai-providers/test', {
+    const res = await fetch('/api/admin/ai-providers/check', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id: p.id }),
