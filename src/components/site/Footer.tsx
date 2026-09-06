@@ -28,14 +28,6 @@ export function Footer() {
             <button onClick={() => setView('blog')} className="hover:text-foreground">{t.nav.blog}</button>
             <button onClick={() => setView('contact')} className="hover:text-foreground">{t.nav.contact}</button>
           </nav>
-
-          <a
-            href="mailto:admin@mehrdad.ir"
-            className="text-sm text-muted-foreground hover:text-foreground"
-            dir="ltr"
-          >
-            admin@mehrdad.ir
-          </a>
         </div>
 
         <p className="mx-auto mt-6 max-w-xl border-t border-border/40 pt-4 text-center text-xs italic leading-relaxed text-muted-foreground">
