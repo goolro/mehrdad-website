@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import ZAI from 'z-ai-web-dev-sdk';
 import { retrieveContext, buildContextBlock } from '@/lib/rag';
+import { chatCompletion, getActiveProvider, zaiComplete, type ChatTurn } from '@/lib/ai-provider';
 import { clientIp, readJsonBody, jsonBodyError, rateLimit, tooManyRequests } from '@/lib/rate-limit';
 
 export const dynamic = 'force-dynamic';
@@ -9,17 +9,32 @@ export const maxDuration = 60;
 
 // privacy retention: chat sessions (and their messages, via cascade) older
 // than this are purged — lazily, on a small fraction of requests, so no cron
-// is needed on the resource-limited host
+// is needed. Sessions where the visitor left contact info or explicitly
+// asked for a personal reply ("leads") are business records and are NEVER
+// auto-purged — only anonymous conversations age out.
 const CHAT_RETENTION_DAYS = 30;
 
 function purgeOldChats(): void {
   if (Math.random() > 0.02) return; // ~2% of requests carry the cleanup
   const cutoff = new Date(Date.now() - CHAT_RETENTION_DAYS * 24 * 60 * 60 * 1000);
   db.chatSession
-    .deleteMany({ where: { createdAt: { lt: cutoff } } })
+    .deleteMany({
+      where: {
+        createdAt: { lt: cutoff },
+        lead: false,
+        contactName: null,
+        contactEmail: null,
+        contactPhone: null,
+      },
+    })
     .then((r) => { if (r.count > 0) console.log(`chat retention: purged ${r.count} old sessions`); })
     .catch((e) => console.error('chat retention purge failed:', e));
 }
+
+const UNCONFIGURED_FA =
+  'فعلاً سرویس هوش مصنوعی پاسخگو تنظیم نشده است. سؤالتان ثبت شد و به دست مدیر سایت رسید — اگر پاسخ انسانی می‌خواهید، دکمهٔ «درخواست پاسخ از مهرداد» را بزنید یا از فرم تماس در mehrdad.ir/contact استفاده کنید.';
+const UNCONFIGURED_EN =
+  'The AI assistant service is not configured yet. Your question has been logged for the site owner — if you would like a personal reply, tap "Ask Mehrdad to reply" below, or use the contact form at mehrdad.ir/contact.';
 
 export async function POST(req: NextRequest) {
   purgeOldChats();
@@ -108,37 +123,50 @@ ${context || '(no specific knowledge found — rely only on the general info abo
 دانش سایت:
 ${context || '(دانش خاصی یافت نشد — فقط از اطلاعات کلی بالا استفاده کن)'}${pageCtxFa}`;
 
-    const zai = await ZAI.create();
-    const payload = {
-      messages: [
-        { role: 'assistant' as const, content: lang === 'fa' ? sysFa : sysEn },
-        ...history.map((h) => ({ role: h.role as 'user' | 'assistant', content: h.content })),
-        { role: 'user' as const, content: message },
-      ],
-      thinking: { type: 'disabled' as const },
-    };
+    const turns: ChatTurn[] = [
+      { role: 'system', content: lang === 'fa' ? sysFa : sysEn },
+      ...history.map((h) => ({ role: h.role as 'user' | 'assistant', content: h.content })),
+      { role: 'user', content: message },
+    ];
 
-    // resilience: short retries for transient 429/5xx storms, then a graceful message
     let reply = '';
-    let lastErr: unknown = null;
-    for (const waitMs of [0, 4000, 9000]) {
-      if (waitMs) await new Promise((r) => setTimeout(r, waitMs));
-      try {
-        const completion = await zai.chat.completions.create(payload);
-        reply = completion.choices[0]?.message?.content || '';
+    let aiUnavailable = false;
+
+    // 1) admin-configured OpenAI-compatible provider (works everywhere,
+    //    including Vercel production)
+    const provider = await getActiveProvider();
+    if (provider) {
+      // resilience: short retries for transient 429/5xx storms, then graceful
+      let lastErr: unknown = null;
+      for (const waitMs of [0, 4000, 9000]) {
+        if (waitMs) await new Promise((r) => setTimeout(r, waitMs));
+        try {
+          reply = await chatCompletion(provider, turns, { timeoutMs: 50_000 });
+          if (reply) break;
+        } catch (err) {
+          lastErr = err;
+          const msg = String((err as Error)?.message || err);
+          if (!/429|5\d\d/.test(msg)) break; // non-transient: no point retrying
+        }
+      }
+      if (!reply && lastErr) console.error('chat provider error:', lastErr);
+    }
+
+    // 2) sandbox/dev fallback (z-ai-web-dev-sdk) — a no-op '' on hosting
+    //    environments without the SDK, so the route degrades gracefully
+    if (!reply) {
+      for (const waitMs of [0, 4000, 9000]) {
+        if (waitMs) await new Promise((r) => setTimeout(r, waitMs));
+        reply = await zaiComplete(turns, { timeoutMs: 50_000 });
         if (reply) break;
-      } catch (err) {
-        lastErr = err;
-        const msg = String((err as Error)?.message || err);
-        if (!/429|5\d\d/.test(msg)) throw err; // non-transient: fail fast
       }
     }
+
+    // 3) nothing configured / everything failed → honest message; the user's
+    //    message is already saved so the owner sees the question in the panel
     if (!reply) {
-      if (lastErr) console.error('chat api error (after retries):', lastErr);
-      reply =
-        lang === 'fa'
-          ? 'الان پشت‌بار ترافیک هوش مصنوعی بالاست و نتوانستم پاسخ بسازم. چند لحظه بعد دوباره بپرسید، یا مسئله‌تان را از طریق فرم تماس بنویسید — سریع پاسخ می‌دهم.'
-          : 'The AI service is unusually busy right now and I could not compose an answer. Please try again in a moment, or describe your problem via the contact form — I will get back to you quickly.';
+      aiUnavailable = true;
+      reply = lang === 'fa' ? UNCONFIGURED_FA : UNCONFIGURED_EN;
     }
 
     await db.chatMessage.create({
@@ -147,7 +175,7 @@ ${context || '(دانش خاصی یافت نشد — فقط از اطلاعات 
 
     const sources = [...new Set(chunks.map((c) => c.refSlug).filter(Boolean))].slice(0, 4);
 
-    return NextResponse.json({ reply, sessionId, sources });
+    return NextResponse.json({ reply, sessionId, sources, aiUnavailable });
   } catch (e) {
     console.error('chat api error:', e);
     return NextResponse.json({ error: 'Chat failed' }, { status: 500 });

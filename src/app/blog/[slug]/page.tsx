@@ -88,6 +88,7 @@ export default async function BlogPostPage({ params }: Props) {
       <PostDetail
         post={detail.post}
         related={detail.related.map((r) => ({ ...r, categories: [] }))}
+        shareUrl={pageUrl}
       />
     </>
   );

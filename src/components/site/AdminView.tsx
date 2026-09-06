@@ -16,6 +16,7 @@ import { useToast } from '@/hooks/use-toast';
 import {
   LayoutDashboard, FileText, Sparkles, Mail, Lock, Trash2, Languages,
   RefreshCw, ImageIcon, Eye, Loader2, LogOut, Globe, MessageSquare, Check, X, Palette,
+  Bot, MessagesSquare, Phone, KeyRound, PlayCircle, Pencil, BadgeCheck, UserCheck,
 } from 'lucide-react';
 import { THEMES } from '@/lib/themes';
 
@@ -26,6 +27,18 @@ interface AdminPost {
   categories: { nameEn: string; nameFa: string }[];
 }
 interface Msg { id: string; name: string; email: string; subject: string | null; body: string; read: boolean; createdAt: string }
+interface AiProviderItem {
+  id: string; name: string; baseUrl: string; model: string; active: boolean; keyMasked: string; createdAt: string;
+}
+interface ChatListItem {
+  id: string; createdAt: string; read: boolean; lead: boolean;
+  contactName: string | null; contactEmail: string | null; contactPhone: string | null; contactNote: string | null;
+  messageCount: number; firstUserMessage: string | null;
+  lastMessage: { role: string; content: string; createdAt: string } | null;
+}
+interface ChatDetail extends ChatListItem {
+  messages: { id: string; role: string; content: string; createdAt: string }[];
+}
 interface AdminComment {
   id: string; author: string; content: string; date: string; approved: boolean;
   post: { slug: string; titleEn: string; titleFa: string } | null;
@@ -149,6 +162,8 @@ export function AdminView() {
           <TabsTrigger value="messages" className="gap-1.5"><Mail className="h-4 w-4" />{t.admin.tabs.messages}</TabsTrigger>
           <TabsTrigger value="comments" className="gap-1.5"><MessageSquare className="h-4 w-4" />{t.admin.tabs.comments}</TabsTrigger>
           <TabsTrigger value="theme" className="gap-1.5"><Palette className="h-4 w-4" />{t.admin.tabs.theme}</TabsTrigger>
+          <TabsTrigger value="ai" className="gap-1.5"><Bot className="h-4 w-4" />{t.admin.tabs.ai}</TabsTrigger>
+          <TabsTrigger value="chats" className="gap-1.5"><MessagesSquare className="h-4 w-4" />{t.admin.tabs.chats}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="dashboard"><Dashboard t={t} lang={lang} /></TabsContent>
@@ -157,6 +172,8 @@ export function AdminView() {
         <TabsContent value="messages"><MessagesTab t={t} /></TabsContent>
         <TabsContent value="comments"><CommentsTab t={t} /></TabsContent>
         <TabsContent value="theme"><ThemeTab t={t} lang={lang} /></TabsContent>
+        <TabsContent value="ai"><AiProvidersTab t={t} lang={lang} /></TabsContent>
+        <TabsContent value="chats"><ChatsTab t={t} lang={lang} /></TabsContent>
       </Tabs>
     </div>
   );
@@ -718,5 +735,353 @@ function MessagesTab({ t }: { t: T }) {
         ))}
       </div>
     </ScrollArea>
+  );
+}
+
+// ─────────── AI Providers ───────────
+
+function AiProvidersTab({ t, lang }: { t: T; lang: 'en' | 'fa' }) {
+  const { toast } = useToast();
+  const [providers, setProviders] = useState<AiProviderItem[]>([]);
+  const [busy, setBusy] = useState(false);
+  const [testingId, setTestingId] = useState('');
+  const [editingId, setEditingId] = useState('');
+  const [form, setForm] = useState({ name: '', baseUrl: '', apiKey: '', model: '' });
+
+  const load = useCallback(() => {
+    fetch('/api/admin/ai-providers')
+      .then((r) => r.json())
+      .then((d) => setProviders(d.providers || []))
+      .catch(() => {});
+  }, []);
+
+  useEffect(load, [load]);
+
+  async function addOrUpdate(e: React.FormEvent) {
+    e.preventDefault();
+    setBusy(true);
+    const editing = editingId !== '';
+    const res = await fetch('/api/admin/ai-providers', {
+      method: editing ? 'PATCH' : 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(editing ? { id: editingId, ...form, apiKey: form.apiKey || undefined } : form),
+    });
+    const d = await res.json().catch(() => ({}));
+    setBusy(false);
+    if (res.ok && d.ok) {
+      toast({ title: editing ? '✓ Updated' : '✓ Added' });
+      setForm({ name: '', baseUrl: '', apiKey: '', model: '' });
+      setEditingId('');
+      load();
+    } else {
+      toast({ title: d.error || 'Failed', variant: 'destructive' });
+    }
+  }
+
+  async function toggleActive(p: AiProviderItem) {
+    await fetch('/api/admin/ai-providers', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: p.id, active: !p.active }),
+    });
+    load();
+  }
+
+  async function test(p: AiProviderItem) {
+    setTestingId(p.id);
+    const res = await fetch('/api/admin/ai-providers/test', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: p.id }),
+    });
+    const d = await res.json().catch(() => ({}));
+    setTestingId('');
+    if (res.ok && d.ok) {
+      toast({ title: `${t.admin.aiTestOk} (${d.latencyMs}ms · ${d.model})` });
+    } else {
+      toast({ title: `${t.admin.aiTestFail}: ${d.error || res.status}`, variant: 'destructive' });
+    }
+  }
+
+  async function remove(id: string) {
+    if (!confirm(lang === 'fa' ? 'این سرویس حذف شود؟' : 'Delete this provider?')) return;
+    await fetch(`/api/admin/ai-providers?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
+    toast({ title: 'Deleted' });
+    load();
+  }
+
+  function startEdit(p: AiProviderItem) {
+    setEditingId(p.id);
+    setForm({ name: p.name, baseUrl: p.baseUrl, apiKey: '', model: p.model });
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-start gap-2 rounded-xl border border-violet-500/30 bg-violet-600/5 p-4 text-sm text-muted-foreground">
+        <KeyRound className="mt-0.5 h-4 w-4 shrink-0 text-violet-600 dark:text-violet-400" />
+        <p>{t.admin.aiHint}</p>
+      </div>
+
+      <form onSubmit={addOrUpdate} className="space-y-3 rounded-2xl border border-border bg-card p-5">
+        <h3 className="font-bold">{editingId ? t.admin.aiEdit : t.admin.aiAdd}</h3>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="space-y-1.5">
+            <Label>{t.admin.aiName} *</Label>
+            <Input required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="OpenRouter" dir="auto" />
+          </div>
+          <div className="space-y-1.5">
+            <Label>{t.admin.aiModel} *</Label>
+            <Input required value={form.model} onChange={(e) => setForm({ ...form, model: e.target.value })} placeholder="gpt-4o-mini" dir="ltr" />
+          </div>
+        </div>
+        <div className="space-y-1.5">
+          <Label>{t.admin.aiBaseUrl} *</Label>
+          <Input required value={form.baseUrl} onChange={(e) => setForm({ ...form, baseUrl: e.target.value })} placeholder="https://openrouter.ai/api/v1" dir="ltr" />
+          <p className="text-xs text-muted-foreground">{t.admin.aiHintBaseUrl}</p>
+        </div>
+        <div className="space-y-1.5">
+          <Label>{t.admin.aiApiKey} {editingId ? '' : '*'}</Label>
+          <Input
+            type="password"
+            required={!editingId}
+            value={form.apiKey}
+            onChange={(e) => setForm({ ...form, apiKey: e.target.value })}
+            placeholder={editingId ? t.admin.aiKeyKeep : 'sk-...'}
+            dir="ltr"
+            autoComplete="off"
+          />
+        </div>
+        <div className="flex gap-2">
+          <Button type="submit" disabled={busy} className="bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white">
+            {busy ? <Loader2 className="me-2 h-4 w-4 animate-spin" /> : <Check className="me-2 h-4 w-4" />}
+            {editingId ? t.admin.aiUpdate : t.admin.aiAddBtn}
+          </Button>
+          {editingId && (
+            <Button type="button" variant="outline" onClick={() => { setEditingId(''); setForm({ name: '', baseUrl: '', apiKey: '', model: '' }); }}>
+              {t.admin.cancel}
+            </Button>
+          )}
+        </div>
+      </form>
+
+      {providers.length === 0 ? (
+        <p className="rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
+          {t.admin.aiNoProviders}
+        </p>
+      ) : (
+        <div className="divide-y divide-border rounded-xl border border-border">
+          {providers.map((p) => (
+            <div key={p.id} className="flex flex-wrap items-center gap-3 p-4" dir="ltr">
+              <Bot className={`h-5 w-5 shrink-0 ${p.active ? 'text-emerald-600' : 'text-muted-foreground'}`} />
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="font-semibold">{p.name}</span>
+                  {p.active && (
+                    <Badge variant="secondary" className="bg-emerald-600/15 text-emerald-600">
+                      <BadgeCheck className="me-1 h-3 w-3" /> {t.admin.aiActive}
+                    </Badge>
+                  )}
+                  <span className="text-xs text-muted-foreground">{p.model}</span>
+                </div>
+                <div className="mt-0.5 truncate text-xs text-muted-foreground">
+                  {p.baseUrl} · {p.keyMasked}
+                </div>
+              </div>
+              <div className="flex shrink-0 items-center gap-1">
+                <Button variant="ghost" size="sm" className="h-8 gap-1 text-xs" disabled={testingId === p.id} onClick={() => test(p)}>
+                  {testingId === p.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <PlayCircle className="h-3.5 w-3.5" />}
+                  {testingId === p.id ? t.admin.aiTesting : t.admin.aiTest}
+                </Button>
+                {!p.active && (
+                  <Button variant="ghost" size="sm" className="h-8 gap-1 text-xs text-emerald-600 hover:text-emerald-700" onClick={() => toggleActive(p)}>
+                    <Check className="h-3.5 w-3.5" /> {t.admin.aiActivate}
+                  </Button>
+                )}
+                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => startEdit(p)} title={t.admin.aiEdit}>
+                  <Pencil className="h-3.5 w-3.5" />
+                </Button>
+                <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:text-red-600" onClick={() => remove(p.id)}>
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─────────── AI Conversations ───────────
+
+function ChatsTab({ t, lang }: { t: T; lang: 'en' | 'fa' }) {
+  const { toast } = useToast();
+  const [sessions, setSessions] = useState<ChatListItem[]>([]);
+  const [filter, setFilter] = useState<'all' | 'lead' | 'contact' | 'unread'>('all');
+  const [q, setQ] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [detail, setDetail] = useState<ChatDetail | null>(null);
+
+  const load = useCallback(() => {
+    setLoading(true);
+    fetch(`/api/admin/chats?filter=${filter}&q=${encodeURIComponent(q)}`)
+      .then((r) => r.json())
+      .then((d) => setSessions(d.sessions || []))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [filter, q]);
+
+  useEffect(() => {
+    const timer = setTimeout(load, q ? 350 : 0); // small debounce while typing
+    return () => clearTimeout(timer);
+  }, [load, q]);
+
+  async function openDetail(id: string) {
+    const res = await fetch(`/api/admin/chats?id=${encodeURIComponent(id)}`);
+    if (!res.ok) return;
+    const d = await res.json();
+    setDetail(d.session);
+    if (!d.session.read) {
+      await fetch('/api/admin/chats', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, read: true }),
+      });
+      setSessions((s) => s.map((x) => (x.id === id ? { ...x, read: true } : x)));
+    }
+  }
+
+  async function toggleRead(s: ChatListItem) {
+    await fetch('/api/admin/chats', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: s.id, read: !s.read }),
+    });
+    load();
+  }
+
+  async function remove(id: string) {
+    if (!confirm(lang === 'fa' ? 'این گفتگو برای همیشه حذف شود؟' : 'Delete this conversation permanently?')) return;
+    await fetch(`/api/admin/chats?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
+    setDetail(null);
+    toast({ title: 'Deleted' });
+    load();
+  }
+
+  return (
+    <div>
+      <p className="mb-4 text-sm text-muted-foreground">{t.admin.chatsHint}</p>
+
+      <div className="mb-3 flex flex-wrap gap-2">
+        {(
+          [
+            ['all', t.admin.chatsFilterAll],
+            ['lead', t.admin.chatsFilterLeads],
+            ['contact', t.admin.chatsFilterContacts],
+            ['unread', t.admin.chatsFilterUnread],
+          ] as const
+        ).map(([key, label]) => (
+          <Button key={key} variant={filter === key ? 'default' : 'outline'} size="sm" onClick={() => setFilter(key)}>
+            {label}
+          </Button>
+        ))}
+      </div>
+      <Input placeholder={t.admin.chatsSearch} value={q} onChange={(e) => setQ(e.target.value)} className="mb-4 max-w-sm" dir="auto" />
+
+      <ScrollArea className="h-[55vh] rounded-xl border border-border">
+        <div className="divide-y divide-border">
+          {loading && <div className="p-8 text-center text-sm text-muted-foreground">{t.common.loading}</div>}
+          {!loading && sessions.length === 0 && <div className="p-8 text-center text-sm text-muted-foreground">{t.admin.chatsEmpty}</div>}
+          {sessions.map((s) => (
+            <button key={s.id} onClick={() => openDetail(s.id)} className={`block w-full p-4 text-start ${s.read ? '' : 'bg-violet-600/5'}`} dir="auto">
+              <div className="flex flex-wrap items-center gap-2">
+                {!s.read && <span className="h-2 w-2 shrink-0 rounded-full bg-violet-600" />}
+                <span className="font-semibold">
+                  {s.contactName || (lang === 'fa' ? 'بازدیدکننده' : 'Visitor')}
+                </span>
+                {s.lead && (
+                  <Badge variant="secondary" className="bg-fuchsia-600/15 text-fuchsia-600">
+                    <UserCheck className="me-1 h-3 w-3" />
+                    {t.admin.chatsFilterLeads}
+                  </Badge>
+                )}
+                {s.contactEmail && <span className="text-xs text-muted-foreground" dir="ltr">{s.contactEmail}</span>}
+                {s.contactPhone && <span className="text-xs text-muted-foreground" dir="ltr"><Phone className="me-0.5 inline h-3 w-3" />{s.contactPhone}</span>}
+                <span className="ms-auto text-xs text-muted-foreground">{formatDate('en', s.createdAt)}</span>
+                <span className="text-xs text-muted-foreground">· {s.messageCount} {t.admin.chatsMessages}</span>
+              </div>
+              {s.firstUserMessage && (
+                <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
+                  <span className="font-medium text-foreground">{t.admin.chatsFirstMsg}: </span>
+                  {s.firstUserMessage}
+                </p>
+              )}
+            </button>
+          ))}
+        </div>
+      </ScrollArea>
+
+      <Dialog open={!!detail} onOpenChange={(o) => !o && setDetail(null)}>
+        <DialogContent className="max-h-[80vh] max-w-xl overflow-y-auto" dir={lang === 'fa' ? 'rtl' : 'ltr'}>
+          {detail && (
+            <>
+              <DialogHeader>
+                <DialogTitle className="flex flex-wrap items-center gap-2">
+                  {detail.contactName || t.admin.chatsAnonymous}
+                  {detail.lead && (
+                    <Badge variant="secondary" className="bg-fuchsia-600/15 text-fuchsia-600">
+                      {t.admin.chatsFilterLeads}
+                    </Badge>
+                  )}
+                </DialogTitle>
+              </DialogHeader>
+
+              {(detail.contactEmail || detail.contactPhone || detail.contactNote) && (
+                <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-3 text-sm">
+                  <div className="mb-1 text-xs font-bold text-emerald-700 dark:text-emerald-400">{t.admin.chatsContact}</div>
+                  {detail.contactEmail && (
+                    <div dir="ltr" className="text-sm">
+                      ✉ <a className="text-violet-600 underline dark:text-violet-400" href={`mailto:${detail.contactEmail}`}>{detail.contactEmail}</a>
+                    </div>
+                  )}
+                  {detail.contactPhone && (
+                    <div dir="ltr" className="text-sm">
+                      <Phone className="me-1 inline h-3.5 w-3.5" />{detail.contactPhone}
+                    </div>
+                  )}
+                  {detail.contactNote && (
+                    <div className="mt-1 text-sm text-muted-foreground">
+                      <span className="font-medium">{t.admin.chatsNote}: </span>{detail.contactNote}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <div className="flex flex-col gap-2">
+                {detail.messages.map((m) => (
+                  <div
+                    key={m.id}
+                    className={`max-w-[88%] whitespace-pre-wrap rounded-2xl px-3 py-2 text-sm leading-relaxed ${
+                      m.role === 'user' ? 'self-end bg-violet-600/15' : 'self-start bg-muted'
+                    }`}
+                  >
+                    {m.content}
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" onClick={() => toggleRead(detail)}>
+                  {detail.read ? t.admin.chatsMarkUnread : t.admin.chatsMarkRead}
+                </Button>
+                <Button variant="destructive" size="sm" onClick={() => remove(detail.id)}>
+                  <Trash2 className="me-1 h-3.5 w-3.5" /> {t.admin.delete}
+                </Button>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
+    </div>
   );
 }

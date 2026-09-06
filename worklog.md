@@ -1152,3 +1152,21 @@ Work Log:
 Stage Summary:
 - مالک با رمز جدید وارد پنل می‌شود؛ ایمیل فرم تماس هم طبق تأیید مالک («ایمیل اومده») سالم است
 - رمز جدید فقط در چت به مالک داده شد؛ reminder rotate توکن‌ها/رمزها باقی است
+
+---
+Task ID: ai-admin-share-1
+Agent: main (Z.ai Code)
+Task: رفع چت‌بات خراب روی پروداکشن + مدیریت کلید AI در پنل + صندوق گفتگوها/لیدها + دکمهٔ اشتراک‌گذاری
+
+Work Log:
+- ریشه‌یابی: /api/chat هاردکد ZAI.create() بود که فقط در سندباکس کار می‌کند → پروداکشن 500 («Chat failed»)؛ پروب زنده تأیید کرد
+- اسکیما (sqlite + postgres mirror): جدول AiProvider (name/baseUrl/apiKey/model/active) + ستون‌های ChatSession (contactName/Email/Phone/Note, lead, read) + ایندکس‌ها؛ db push لوکال ✓
+- مایگریشن Supabase با Management API (POST /v1/projects/{ref}/database/query، توکن sbp_): DDL idempotent اجرا و ستون‌ها راستی‌آزمایی شد
+- src/lib/ai-provider.ts: getActiveProvider (کش ۶۰ث + invalidate)، chatCompletion (سازگار OpenAI با AbortController)، zaiComplete (fallback سندباکس، system→assistant)، textCompleteStrict (برای نویسنده/مترجم)، maskKey
+- /api/chat بازنویسی: پرووایدر ادمین → fallback ZAI → پیام محترمانه «تنظیم نشده» + aiUnavailable؛ پیام کاربر همیشه در DB ذخیره می‌شود؛ retention فقط سشن‌های ناشناس را پاک می‌کند (لید/تماس هرگز)
+- روت‌های جدید: POST /api/chat/contact (لید با ایمیل یا تلفن، rate limit)، /api/admin/ai-providers (CRUD + تک‌فعال + keyMasked، کلید هرگز به کلاینت برنمی‌گردد)، /api/admin/ai-providers/test (پینگ واقعی مدل)، /api/admin/chats (لیست با فیلتر all/lead/contact/unread + جستجو + جزئیات + read/lead + DELETE)
+- نویسنده AI و مترجم ادمین هم به textCompleteStrict وصل شدند (روی ورسل با کلید خود مالک کار می‌کنند)
+- UI ادمین: تب «کلیدهای AI» (فرم افزودن/ویرایش/فعال‌سازی/تست/حذف) و تب «گفتگوها» (فیلتر + جستجو + دیالوگ کامل گفتگو + کارت تماس mailto)؛ تب‌ها به AdminView و i18n (EN/FA) اضافه شد
+- ChatWidget: دکمهٔ «می‌خواهید خود مهرداد جواب بدهد؟» بعد از اولین تبادل + فرم تماس داخل چت
+- ShareBar (تلگرام/واتساپ/X/لینکدین/کپی/سهم بومی) در: جزئیات مقاله (+shareUrl canonical از صفحهٔ سرور)، صفحه خدمات + دیالوگ هر خدمت، جزئیات طرح
+- lint پاک؛ تست لوکال: چت فارسی جواب داد (ZAI)، لید ثبت شد (ok:true)، همهٔ صفحات 200
