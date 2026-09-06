@@ -999,3 +999,23 @@ Stage Summary:
 - گلوگاه جدید شناسایی شد: پلن فعلی Node.js ندارد و بدون آن اجرای server.js (اپ Next.js) روی هاست ممکن نیست
 - مسیر تصمیم: پشتیبانی هاست (فعال‌سازی Node.js) → در غیر این صورت DNS به Vercel یا پلن Node-دار
 - ریپوی دیپلوی/اسکریپت/۶ env همچنان آماده‌اند؛ به‌محض فعال شدن Node.js ادامهٔ نقشه بدون تغییر
+
+---
+Task ID: parspack-paas-research-1
+Agent: main (Z.ai Code)
+Task: اصلاح هویت هاست (پارس‌پک نه میزبان‌فا) + تحقیق دربارهٔ Node.js روی پارس‌پک و مسیرهای جایگزین
+
+Work Log:
+- مالک اصلاح کرد: هاست cPanel از parspack.com خریده شده (نه میزبان‌فا)
+- جستجوی وب + خواندن ۳ صفحهٔ پارس‌پک: بلاگ «هاست NodeJS چیست»، صفحهٔ PaaS نودجی‌اس، مستندات Next.js و «استقرار از طریق سورس‌کد»
+- تأیید از FAQ خود پارس‌پک: روی هاست اشتراکی معمولی Node.js نصب نمی‌شود مگر NodeJS Selector فعال شود → با اسکرین‌شات cPanel (فقط PHP) سازگار است
+- پارس‌پک محصول رسمی PaaS Node.js دارد: پرداخت مصرفی، دیتاسنتر ایران (vCore 180k/رم 216k به‌ازای هر GB/SSD 10.8k تومان‌ماهانه) و آلمان (244.8k/432k/10.8k)
+- مستندات PaaS: پشتیبانی رسمی Next.js؛ پورت پیش‌فرض 3000؛ الزام bind روی 0.0.0.0؛ دیپلوی از Public Repository (فقط URL + branch!) یا OAuth/HTTPS-token یا zip؛ تب‌های env runtime/build + آپلود .env؛ دامنهٔ اختصاصی + SSL و وب‌هوک دیپلوی خودکار
+- چک پروژه: build = prisma generate && next build + کپی standalone؛ start = node .next/standalone/server.js؛ بدون متغیر NEXT_PUBLIC_*؛ next 16.1.1 (نیاز Node ≥20.9 → انتخاب Node 22)؛ next.config خروجی standalone وقتی VERCEL تنظیم نباشد — سازگار با PaaS
+- برآورد هزینهٔ ماهانهٔ ایران: 1vCPU/1GB/5GB ≈ 450k؛ 1vCPU/2GB/10GB ≈ 720k تومان (رم 2GB برای build توصیه شد، بعداً قابل کاهش)
+- سه مسیر به مالک: (۱) تیکت رایگان فعال‌سازی Node.js Selector روی cPanel فعلی (شانس کم)؛ (۲) PaaS نودجی‌اس پارس‌پک — پیشنهاد اصلی، دیپلوی مستقیم از goolro/mehrdad-website (public، main) با همان ۶ env؛ (۳) رایگان: تغییر A record به Vercel
+
+Stage Summary:
+- مسیر PaaS پارس‌پک به‌عنوان جانشین طبیعی cPanel تأیید شد (همان ارائه‌دهنده، Next.js رسمی، گیت‌محور)؛ متن تیکت فارسی برای پشتیبانی پارس‌پک تحویل شد
+- ریپوی cpanel-deploy و آرتیفکت به‌عنوان fallback برای هر هاست cPanel آینده با Node Selector حفظ می‌شود
+- نکتهٔ deploy: ابتدا رم ۲ گیگ برای بیلد، کاهش پس از استقرار؛ دامنه از DNS Manager همین cPanel به IP اپ PaaS تغییر می‌کند
