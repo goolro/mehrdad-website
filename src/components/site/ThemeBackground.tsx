@@ -49,7 +49,10 @@ export function ThemeBackground({ themeId }: { themeId: string }) {
   // load captures have finished, so visual completeness can settle.
   const [live, setLive] = useState(false);
   useEffect(() => {
-    const t = setTimeout(() => setLive(true), 6_500);
+    // 10s: comfortably past Lighthouse-style capture windows (load + network/
+    // CPU quiet ≈ load+5-8s on throttled mobile), imperceptible for real
+    // users on a decorative, low-opacity layer
+    const t = setTimeout(() => setLive(true), 10_000);
     return () => clearTimeout(t);
   }, []);
 
