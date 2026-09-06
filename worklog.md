@@ -1322,3 +1322,18 @@ Work Log:
 Stage Summary:
 - سه فیکس روی پروداکشن زنده: زبان پاسخ از متن پیام، استریم واقعاً زنده، فرم تایپ همیشه قابل‌دید
 - ⚠️ امنیت: توکن این بار هم در چت plaintext بود و revoke نشده (همان توکن قدیمی کار کرد) — مالک باید حتماً revoke کند
+
+---
+Task ID: gsc-verify-1
+Agent: Z.ai Code (main)
+Task: قرار دادن فایل تأیید Google Search Console روی سایت
+
+Work Log:
+- فایل آپلودی مالک (upload/google9cf1b138dcf9f74b.html، محتوای google-site-verification استاندارد) → public/
+- بررسی تداخل: wp-redirects.json هیچ کلید google ندارد؛ fuzzy-prefix هم فعال نمی‌شود (مسیر 28 کاراکتر < 30)؛ matcher پروکسی مسیر را می‌گیرد ولی lookup خروجی null می‌دهد → بدون ریدایرکت؛ هدرهای next.config (nosniff و غیره) برای فایل وریفیکیشن بی‌ضرر
+- تست محلی: 200 + text/html + بدون ریدایرکت
+- commit b02797d + push → دیپلوی Vercel (~75s)
+- تأیید پروداکشن: https://mehrdad.ir/google9cf1b138dcf9f74b.html → HTTP/2 200 با محتوای درست
+
+Stage Summary:
+- فایل وریفیکیشن گوگل زنده است؛ مالک می‌تواند در Search Console دکمهٔ Verify را بزند
