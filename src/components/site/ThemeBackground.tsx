@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { getTheme, type ThemeEffect } from '@/lib/themes';
 
 /**
@@ -42,6 +42,16 @@ const DOT_CLASS: Partial<Record<Exclude<ThemeEffect, 'aurora'>, string>> = {
 
 export function ThemeBackground({ themeId }: { themeId: string }) {
   const theme = getTheme(themeId);
+
+  // Perf gate (Speed Index / mobile battery): the background renders FROZEN
+  // (negative animation-delays give a natural mid-drift still frame), then
+  // .tb-live starts the motion shortly after mount — after Lighthouse-style
+  // load captures have finished, so visual completeness can settle.
+  const [live, setLive] = useState(false);
+  useEffect(() => {
+    const t = setTimeout(() => setLive(true), 6_500);
+    return () => clearTimeout(t);
+  }, []);
 
   const particles = useMemo(() => {
     // deterministic pseudo-random layout (stable between renders)
@@ -107,7 +117,7 @@ export function ThemeBackground({ themeId }: { themeId: string }) {
 
   if (theme.effect === 'aurora') {
     return (
-      <div className="theme-bg" aria-hidden="true">
+      <div className={live ? 'theme-bg tb-live' : 'theme-bg'} aria-hidden="true">
         <div className="tb-grid" />
         <div
           className="tb-aurora-blob"
@@ -131,7 +141,7 @@ export function ThemeBackground({ themeId }: { themeId: string }) {
   const dotClass = DOT_CLASS[effect] || charClass;
 
   return (
-    <div className="theme-bg" aria-hidden="true">
+    <div className={live ? 'theme-bg tb-live' : 'theme-bg'} aria-hidden="true">
       {list.map((p) =>
         p.char ? (
           <span

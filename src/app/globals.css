@@ -306,6 +306,18 @@
   will-change: transform;
 }
 
+/* perf gate (see ThemeBackground): frozen during load — Lighthouse Speed
+   Index can reach visual completeness; motion starts via .tb-live after
+   mount. Reduced-motion below still wins (animation: none). */
+.theme-bg:not(.tb-live) .tb-aurora-blob,
+.theme-bg:not(.tb-live) .tb-leaf,
+.theme-bg:not(.tb-live) .tb-snow,
+.theme-bg:not(.tb-live) .tb-snow-dot,
+.theme-bg:not(.tb-live) .tb-matrix,
+.theme-bg:not(.tb-live) .tb-petal {
+  animation-play-state: paused;
+}
+
 /* respect reduced motion */
 @media (prefers-reduced-motion: reduce) {
   .theme-bg * { animation: none !important; }
