@@ -10,7 +10,7 @@ import { readFile } from 'node:fs/promises';
  * Loading follows the official next/og pattern — `new URL(rel,
  * import.meta.url)` — which the bundler traces into serverless output.
  */
-export type OgFont = { name: string; data: ArrayBuffer; weight: number; style: 'normal' };
+export type OgFont = { name: string; data: ArrayBuffer; weight: 400 | 700; style: 'normal' };
 
 let cache: OgFont[] | null = null;
 
