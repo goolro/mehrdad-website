@@ -17,6 +17,6 @@ export const metadata: Metadata = {
 };
 
 export default async function WorkPage() {
-  const projects = await getProjects().catch(() => []);
+  const projects = await getProjects();
   return <ProjectsView initialProjects={projects} />;
 }

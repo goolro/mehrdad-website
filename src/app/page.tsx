@@ -21,12 +21,14 @@ export const metadata: Metadata = {
 export default async function HomePage() {
   // server-rendered first paint: hero, services, projects and featured
   // articles are all present in the initial HTML (crawlers need no JS)
+  // NO catch-to-empty here: if the DB is unreachable at build time the
+  // build MUST fail (Vercel keeps the previous deployment) — silently
+  // publishing an empty homepage is exactly what a Turso outage caused
+  // on 2026-09-07 (live empty page for ~1h until noticed).
   const [services, projects, featured] = await Promise.all([
-    // build-time safety: if the DB is unreachable during `next build`, the
-    // page still prerenders (empty sections) and ISR fills it within 5 min
-    getServices().catch(() => []),
-    getProjects().catch(() => []),
-    listPosts({ page: 1, perPage: 6 }).catch(() => ({ posts: [] })),
+    getServices(),
+    getProjects(),
+    listPosts({ page: 1, perPage: 6 }),
   ]);
 
   // AI-SEO: entity graph for search engines AND LLMs (ChatGPT/Claude/

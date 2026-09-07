@@ -20,22 +20,19 @@ export const metadata: Metadata = {
 export default async function BlogPage() {
   // server-rendered first page + filter data → real content in the
   // initial HTML (crawlers and no-JS visitors see the article cards)
+  // fail-loud at build time (see page.tsx) — never bake empty pages
   const [firstPage, categories, tags] = await Promise.all([
-    listPosts({ page: 1, perPage: 12 }).catch(() => ({ posts: [], totalPages: 0 })),
-    db.category
-      .findMany({
-        where: { posts: { some: {} } },
-        orderBy: { nameEn: 'asc' },
-        include: { _count: { select: { posts: true } } },
-      })
-      .catch(() => []),
-    db.tag
-      .findMany({
-        where: { posts: { some: { post: { published: true } } } },
-        orderBy: { nameEn: 'asc' },
-        include: { _count: { select: { posts: { where: { post: { published: true } } } } } },
-      })
-      .catch(() => []),
+    listPosts({ page: 1, perPage: 12 }),
+    db.category.findMany({
+      where: { posts: { some: {} } },
+      orderBy: { nameEn: 'asc' },
+      include: { _count: { select: { posts: true } } },
+    }),
+    db.tag.findMany({
+      where: { posts: { some: { post: { published: true } } } },
+      orderBy: { nameEn: 'asc' },
+      include: { _count: { select: { posts: { where: { post: { published: true } } } } } },
+    }),
   ]);
 
   return (
