@@ -32,7 +32,9 @@ const AI_CRAWLERS = [
   'CCBot',
 ];
 
-export const dynamic = 'force-dynamic';
+// PRERENDERED AT BUILD (2026-09-08, SEO-growth): nothing here depends on
+// runtime data — a static robots.txt survives any DB outage.
+export const dynamic = 'force-static';
 
 export default function robots(): MetadataRoute.Robots {
   const base = (process.env.SITE_ORIGIN || 'https://mehrdad.ir').replace(/\/+$/, '');

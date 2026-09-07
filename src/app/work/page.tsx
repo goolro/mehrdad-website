@@ -13,7 +13,10 @@ export const dynamic = 'force-static';
 export const metadata: Metadata = {
   title: 'Key Projects & Startups | Mehrdad — Product Builder',
   description: 'Real projects and startups — built in the open, with honest status at every step.',
-  alternates: { canonical: '/work' },
+  alternates: {
+    canonical: '/work',
+    languages: { en: '/work', fa: '/work?lang=fa', 'x-default': '/work' },
+  },
 };
 
 export default async function WorkPage() {

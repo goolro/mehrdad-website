@@ -14,7 +14,10 @@ export const dynamic = 'force-static';
 export const metadata: Metadata = {
   title: 'Blog & Insights | Mehrdad — Product Builder',
   description: 'Articles on startups, smart cities, AI, investment and inventions — from real work, with honest lessons.',
-  alternates: { canonical: '/blog' },
+  alternates: {
+    canonical: '/blog',
+    languages: { en: '/blog', fa: '/blog?lang=fa', 'x-default': '/blog' },
+  },
 };
 
 export default async function BlogPage() {
