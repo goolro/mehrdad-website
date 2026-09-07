@@ -25,7 +25,7 @@
  */
 
 import { createHash } from 'node:crypto';
-import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 // .next/server/app        → Next's own prerender output
@@ -106,7 +106,6 @@ if (hashes.size === 0) console.warn('[inject-csp] WARNING: no inline scripts fou
 // build probe (temporary, 2026-09-07): observable evidence of WHAT the
 // Vercel build environment looked like when postbuild ran — fetched at
 // /build-info.json. Remove once the CSP wiring is confirmed.
-import { existsSync, readdirSync } from 'node:fs';
 const probe = {
   at: new Date().toISOString(),
   cwd: process.cwd(),
