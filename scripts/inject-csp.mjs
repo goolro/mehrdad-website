@@ -103,6 +103,31 @@ for (const file of files) {
   injected++;
 }
 
+// ── CSP delivery layer ────────────────────────────────────────────────
+// Self-hosted (standalone): the patched .html files ARE what the server
+// serves, so the <meta> works there.
+// Vercel: its packager does NOT take post-build mutations of
+// .next/server/app/*.html (verified 2026-09-07 — an HTML-comment marker
+// injected post-build never reached the served deployment), so the SAME
+// policy is additionally attached as a response header by appending to
+// .next/routes-manifest.json, which Vercel's packager DOES consume.
+try {
+  const manifestPath = join(process.cwd(), '.next', 'routes-manifest.json');
+  const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
+  manifest.headers = manifest.headers || [];
+  if (!manifest.headers.some((h) => h.headerKey === 'x-build-csp')) {
+    manifest.headers.push({
+      source: '/:path*',
+      headerKey: 'x-build-csp',
+      headers: [{ key: 'Content-Security-Policy', value: csp }],
+    });
+    writeFileSync(manifestPath, JSON.stringify(manifest));
+    console.log('[inject-csp] CSP header appended to routes-manifest.json');
+  }
+} catch (e) {
+  console.warn('[inject-csp] routes-manifest CSP append skipped:', String(e).slice(0, 120));
+}
+
 console.log(`[inject-csp] ${hashes.size} unique inline-script hashes → CSP meta injected into ${injected}/${files.length} pages`);
 if (hashes.size === 0) console.warn('[inject-csp] WARNING: no inline scripts found — CSP meta allows self scripts only');
 
