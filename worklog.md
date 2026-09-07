@@ -1447,3 +1447,38 @@ Work Log:
 Stage Summary:
 - چرخهٔ کامل بسته شد: کد → گیت‌هاب → بیلد Vercel (با اسکیمای پستگرس) → پروداکشن سالم → ایندکس‌سازی مقاوم → پینگ بینگ/یاندکس
 - دیتابیس پروداکشن = Supabase (ACTIVE_HEALTHY، 82 پست منتشرشده)؛ Turso دیگر در مسیر Vercel نیست (env اصلاً ست نبود)
+
+---
+Task ID: chat-scroll-fix-1
+Agent: Z.ai Code (main)
+Task: گزارش کاربر — «در گفتگوی هوش مصنوعی، پیام دوم که می‌دهیم می‌رود پایین، خودکار اسکرول نمی‌کند و معلوم نیست چت هوش مصنوعی پیام داده»
+
+Work Log:
+- Root cause: scrollRef وصل بود به shadcn ScrollArea که ref آن روی Radix **Root** (overflow: hidden) قرار می‌گیرد؛ اسکرول واقعی در **Viewport** داخلی است → scrollTo روی عنصر غیرقابل‌اسکرول → هیچ‌وقت auto-scroll انجام نمی‌شد
+- ChatWidget.tsx: حذف ScrollArea، جایگزینی با div واقعی overflow-y-auto (کلاس chat-scroll)
+- Smart pin-to-bottom: فقط وقتی کاربر نزدیک پایین است auto-scroll (instant برای stream deltas)؛ هنگام ارسال پیام توسط کاربر همیشه smooth-scroll به پایین؛ باز شدن پنل → پرش به آخرین پیام
+- Pill «پیام جدید»: وقتی کاربر بالا اسکرول کرده و پاسخ جدید می‌رسد → pill با متن + نقطهٔ چشمک‌زن؛ کلیک → برگشت به پایین
+- i18n: newMsg ('New message' / 'پیام جدید')
+- globals.css: استایل اسکرول‌بار باریک .chat-scroll
+- E2E با agent-browser (/?lang=fa): پیام ۱ → no overflow ok؛ پیام ۲ → gapToBottom=0 (قبلاً scrollTop همیشه 0 بود)؛ اسکرول بالا حین stream → pill «پیام جدید» ظاهر شد؛ کلیک pill → gap=0 و pill مخفی
+- console/errors صفر، POST /api/chat 200×3
+- یک commit نویز chmod (ecd7ef8) قبل از commit واقعی drop شد
+
+Stage Summary:
+- اسکرول خودکار چت کاملاً تعمیر شد + نشانگر «پیام جدید» برای وقتی که کاربر بالا اسکرول کرده
+- Commit منتظر push به origin/main (روی 208dd72)
+
+---
+Task ID: chat-scroll-fix-2
+Agent: Z.ai Code (main)
+Task: push + Vercel deploy + تأیید نهایی روی پروداکشن
+
+Work Log:
+- push 9061dea → origin/main (208dd72..9061dea) با توکن گیت‌هاب
+- Vercel deployment dpl_DLp8r4rsGGdZcjtUozUTt89KCm13 → READY (~2 دقیقه BUILDING)
+- تأیید پروداکشن: / 200، sitemap 94 URL، feed 200، llms.txt 200، opengraph-image 200، api/posts 200 (DB سالم)
+- E2E چت روی https://mehrdad.ir/?lang=fa با agent-browser: دو رد و بدل کامل → gapToBottom=0 (auto-scroll ✓)؛ اسکرول بالا → pill ↓ ظاهر شد؛ صفر خطای console
+
+Stage Summary:
+- فیکس اسکرول چت روی پروداکشن زنده و تأیید شده (commit 9061dea)
+- بستهٔ SEO قبلی (208dd72) هم روی پروداکشن READY بود — همهٔ مسیرها سبز
