@@ -96,6 +96,9 @@ for (const file of files) {
   if (prev.test(html)) html = html.replace(prev, meta);
   else if (html.includes('<head>')) html = html.replace('<head>', `<head>${meta}`);
   else continue; // no head — skip file rather than corrupt it
+  // packaging experiment marker: does a post-build mutation of .html files
+  // reach the served deployment at all, or does Vercel re-generate them?
+  html = html.replace('</html>', `<!--postbuild-mutation ${Date.now()}--></html>`);
   writeFileSync(file, html);
   injected++;
 }
