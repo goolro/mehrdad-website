@@ -1413,3 +1413,20 @@ Stage Summary:
 - نسخهٔ فارسی ?lang=fa ایندکس‌پذیر شد + hreflang کامل
 - Analytics نصب شد تا عدد واقعی بازدید دیده شود
 - ⚠️ مسائل مالک: (۱) Turso هنوز از دسترس خارج است — env های Vercel (TURSO_DATABASE_URL/TURSO_AUTH_TOKEN) باید تازه شود تا api/* و chat زنده شوند؛ فید/sitemap/HTML استاتیک از این به بعد بی‌تأثیرند (۲) برای push به token گیت‌هاب نیاز است (۳) کارهای دستی: Bing Webmaster (import از GSC)، پر کردن پروفایل ویرگول، IndexNow خودکار پس از دیپلوی تست شود
+
+---
+Task ID: prod-db-fix-1
+Agent: Z.ai Code (main)
+Task: ریشه‌یابی و رفع قطعی دیتابیس پروداکشن با توکن‌های Vercel/Supabase (+ push سئو)
+
+Work Log:
+- push سئو (9961057 + فیکس تایپ ac75274: next/og وزن فونت literal 400|700 می‌خواهد)
+- Vercel API: پروژه mehrdad-website؛ env vars همه sensitive (نامرئی) ولی DATABASE_URL موجود؛ هیچ TURSO_* ست نشده
+- دیپلوی push اول ERROR شد؛ لاگ build: «the URL must start with the protocol `file:`» — یعنی build از schema.prisma (SQLite) کلاینت می‌ساخت در حالی که DATABASE_URL پروداکشن ریموت است
+- Supabase API: پروژه «goolro's Project» ACTIVE_HEALTHY؛ SQL مستقیم: 83 پست (82 منتشرشده)، 8 خدمت، 5 پروژه → Supabase همان دیتابیس پروداکشن است و داده‌ها سالم‌اند
+- ریشهٔ تاریخی: schema.postgres.prisma (mirror پستگرس برای Vercel) از قبل وجود داشت ولی vercel.json فقط npm run build می‌زد که prisma generate را از schema SQLite اجرا می‌کرد → mirror هیچ‌وقت استفاده نشده بود → همهٔ کوئری‌های runtime و build با کلاینت SQLite علیه Postgres می‌سوختند
+- فیکس ریشه‌ای: vercel.json buildCommand → «prisma generate --schema prisma/schema.postgres.prisma && next build && node scripts/postbuild.mjs» (عمداً بدون npm run build تا کلاینت SQLite دوباره روی پستگرس بازنویسی نشود)
+- db.ts بدون تغییر: مسیر بدون TURSO_* همان PrismaClient خام است که با کلاینت postgres + DATABASE_URL ساپابیس درست کار می‌کند
+
+Stage Summary:
+- در انتظار نتیجهٔ build بعدی؛ اگر READY شد → مقاله‌ها به sitemap/feed/HTML برمی‌گردند و api/* زنده می‌شود
