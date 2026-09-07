@@ -1,12 +1,11 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useApp } from './store';
 import { ui } from './i18n';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { X, Send, Sparkles, Trash2, UserCheck } from 'lucide-react';
+import { ArrowDown, X, Send, Sparkles, Trash2, UserCheck } from 'lucide-react';
 
 interface Msg {
   role: 'user' | 'assistant';
@@ -24,7 +23,15 @@ export function ChatWidget() {
   // live token stream: null = idle, string = assistant bubble being typed out
   const [streamText, setStreamText] = useState<string | null>(null);
   const sessionIdRef = useRef<string>('');
+  // the REAL scrolling element — a plain overflow-y-auto div. Radix ScrollArea
+  // forwards its ref to the non-scrollable Root, which silently broke every
+  // auto-scroll attempt (transcript never followed the conversation).
   const scrollRef = useRef<HTMLDivElement>(null);
+  // true while the transcript sits at (or near) the bottom — only then may we
+  // auto-scroll, otherwise we'd yank the reader away from older messages
+  const pinnedRef = useRef(true);
+  const [atBottom, setAtBottom] = useState(true);
+  const [unseen, setUnseen] = useState(false);
 
   // lead ("reply from Mehrdad") mini-form state
   const [lead, setLead] = useState<LeadState>('idle');
@@ -44,9 +51,40 @@ export function ChatWidget() {
     setLead('idle');
   }, [lang]);
 
+  const scrollToBottom = useCallback((smooth = false) => {
+    const el = scrollRef.current;
+    if (!el) return;
+    el.scrollTo({ top: el.scrollHeight, behavior: smooth ? 'smooth' : 'auto' });
+    pinnedRef.current = true;
+    setAtBottom(true);
+    setUnseen(false);
+  }, []);
+
+  // keep the transcript pinned to the latest content while streaming —
+  // instantly, because a smooth animation re-triggered on every delta stalls
   useEffect(() => {
-    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
+    if (pinnedRef.current) {
+      scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
+    } else {
+      // reader scrolled up: don't yank them down — flag the new reply instead
+      setUnseen(true);
+    }
   }, [messages, loading, lead, streamText]);
+
+  // opening the panel must land on the newest message
+  useEffect(() => {
+    if (chatOpen) scrollToBottom(false);
+  }, [chatOpen, scrollToBottom]);
+
+  function handleTranscriptScroll() {
+    const el = scrollRef.current;
+    if (!el) return;
+    const distance = el.scrollHeight - el.scrollTop - el.clientHeight;
+    const pinned = distance < 64;
+    pinnedRef.current = pinned;
+    setAtBottom(pinned);
+    if (pinned) setUnseen(false);
+  }
 
   async function send(text?: string) {
     const msg = (text ?? input).trim();
@@ -55,6 +93,7 @@ export function ChatWidget() {
     setMessages((m) => [...m, { role: 'user', content: msg }]);
     setLoading(true);
     setStreamText(null);
+    scrollToBottom(true);
     try {
       const res = await fetch('/api/chat', {
         method: 'POST',
@@ -223,8 +262,13 @@ export function ChatWidget() {
         </div>
       </div>
 
-      <ScrollArea className="min-h-0 flex-1 p-3" ref={scrollRef as never}>
-        <div className="flex flex-col gap-3">
+      <div className="relative min-h-0 flex-1">
+        <div
+          ref={scrollRef}
+          onScroll={handleTranscriptScroll}
+          className="chat-scroll absolute inset-0 overflow-y-auto p-3"
+        >
+          <div className="flex flex-col gap-3">
           {messages.map((m, i) => (
             <div
               key={i}
@@ -316,8 +360,25 @@ export function ChatWidget() {
               </div>
             </form>
           )}
+          </div>
         </div>
-      </ScrollArea>
+        {!atBottom && (
+          <button
+            type="button"
+            onClick={() => scrollToBottom(true)}
+            className="absolute inset-x-0 bottom-3 mx-auto flex w-fit items-center gap-1.5 rounded-full border border-border bg-background/95 px-3 py-1.5 text-xs font-medium text-foreground shadow-lg backdrop-blur transition-transform hover:scale-105"
+            aria-label={t.chat.newMsg}
+          >
+            <ArrowDown className="h-3.5 w-3.5" />
+            {unseen && (
+              <>
+                <span>{t.chat.newMsg}</span>
+                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-violet-500" />
+              </>
+            )}
+          </button>
+        )}
+      </div>
 
       {showLeadCta && (
         <button

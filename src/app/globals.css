@@ -325,3 +325,19 @@
 
 /* prose (article body) colors always follow the active theme's tokens
    via var(--color-violet-*) / color-mix — no per-theme overrides needed */
+
+/* thin unobtrusive scrollbar for the AI chat transcript */
+.chat-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in oklab, var(--muted-foreground) 35%, transparent) transparent;
+}
+.chat-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+.chat-scroll::-webkit-scrollbar-thumb {
+  border-radius: 9999px;
+  background: color-mix(in oklab, var(--muted-foreground) 35%, transparent);
+}
+.chat-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
