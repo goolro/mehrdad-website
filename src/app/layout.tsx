@@ -4,6 +4,7 @@ import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
+import { Analytics } from "@vercel/analytics/react";
 import { PwaClient } from "@/components/site/PwaClient";
 import { SiteChrome } from "@/components/site/SiteChrome";
 
@@ -50,14 +51,14 @@ export const metadata: Metadata = {
     description: "I design businesses and products with care, and build them fast with AI.",
     siteName: "mehrdad.ir",
     type: "website",
-    // square brand mark as the fallback card image (per-page covers override)
-    images: [{ url: "/icons/icon-512.png", width: 512, height: 512, alt: "Mehrdad" }],
+    // no images here (2026-09-08): the file-convention opengraph-image.tsx
+    // generates a proper 1200×630 branded banner; the old 512×512 icon
+    // override made WhatsApp/Telegram cards a tiny square.
   },
   twitter: {
-    card: "summary",
+    card: "summary_large_image",
     title: "Mehrdad — Product Builder | مهرداد — سازنده محصول",
     description: "I design businesses and products with care, and build them fast with AI.",
-    images: ["/icons/icon-512.png"],
   },
   robots: {
     // explicit + future-proof: allow index/follow, let AI crawlers in
@@ -84,8 +85,14 @@ export const viewport: Viewport = {
  *
  * The script tag carries the per-request CSP nonce emitted by the
  * middleware (strict CSP, no 'unsafe-inline' for scripts in production).
+ *
+ * 2026-09-08 (SEO-growth): ?lang=fa|en URL override. The site renders EN
+ * server-side (static, crawlable); Persian visitors and social shares land
+ * with ?lang=fa and this script flips language+dir BEFORE first paint —
+ * zero flash, zero extra rendering cost. Google's renderer executes this
+ * script, so the hreflang=fa variants are indexable as Persian content.
  */
-const bootScript = `(function(){try{var raw=localStorage.getItem('mehrdad-app');if(raw){var s=(JSON.parse(raw)||{}).state||{};if(s.mode==='dark')document.documentElement.classList.add('dark');if(s.lang==='fa'){document.documentElement.lang='fa';document.documentElement.dir='rtl';}}var t=localStorage.getItem('mehrdad-theme-cache');if(t)document.documentElement.dataset.theme=t;}catch(e){}})();`;
+const bootScript = `(function(){try{var q=new URLSearchParams(location.search).get('lang');if(q==='fa'||q==='en'){try{var raw2=JSON.parse(localStorage.getItem('mehrdad-app')||'{}');raw2.state=Object.assign({},raw2.state,{lang:q});localStorage.setItem('mehrdad-app',JSON.stringify(raw2));}catch(e){}if(q==='fa')document.documentElement.lang='fa',document.documentElement.dir='rtl';else document.documentElement.lang='en',document.documentElement.dir='ltr';}var raw=localStorage.getItem('mehrdad-app');if(raw){var s=(JSON.parse(raw)||{}).state||{};if(s.mode==='dark')document.documentElement.classList.add('dark');if(s.lang==='fa'){document.documentElement.lang='fa';document.documentElement.dir='rtl';}}var t=localStorage.getItem('mehrdad-theme-cache');if(t)document.documentElement.dataset.theme=t;}catch(e){}})();`;
 
 export default function RootLayout({
   children,
@@ -118,6 +125,7 @@ export default function RootLayout({
         <SiteChrome>{children}</SiteChrome>
         <Toaster />
         <PwaClient />
+        <Analytics />
       </body>
     </html>
   );

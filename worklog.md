@@ -1384,3 +1384,32 @@ Work Log (فاز استاتیک):
 - buildهای بعدی با گاردهای catch-to-empty صفحات «خالی» پختند و منتشر شدند (صفحهٔ اصلی ~1h خالی!)
 - فیکس eb906e3: کوئری‌های build-time بدون DB → build FAILS → ورسل deployment قبلی را نگه می‌دارد (هرگز خالی منتشر نشود)
 - پایش: api/posts همچنان 500 (8 بار در ~6 دقیقه) → نیاز به مداخلهٔ مالک در Turso (پنل/توکن/status)
+
+---
+Task ID: seo-growth-1
+Agent: Z.ai Code (main)
+Task: اقدامات سئو + بک‌لینک + دیده‌شدن در هوش مصنوعی‌ها (درخواست مالک: «اصلا بازدید نداریم»)
+
+Work Log:
+- تشخیص بحرانی: در پروداکشن /api/posts و /feed.xml هر دو 500 بودند (قطعی runtime دیتابیس Turso از شب قبل همچنان پابرجا) → sitemap.xml با fallback داینامیک فقط 7 URL برمی‌گرداند (همهٔ ~82 مقاله غایب!) و feed.xml خطا می‌داد → ریشهٔ اصلی «بازدید صفر»
+- معماری جدید (outage-proof): sitemap.ts / feed.xml / llms.txt / robots.ts همگی force-static شدند — یک بار در build ساخته می‌شوند و از edge سرو می‌شوند؛ قطعی DB دیگر هیچ‌وقت نقشهٔ سایت/فید/llms را ناقص نمی‌کند؛ هر mutation ادمین → Deploy Hook → rebuild → به‌روز. بدون catch-to-empty: بدون DB بیلد fail می‌شود و ورسل دیپلوی قبلیِ سالم را نگه می‌دارد (سیاست eb906e3)
+- IndexNow (بینگ/یاندکس/سزناو — یک endpoint مشترک): کلید hex تولید شد + public/207e2b15f15518b77dd26853300b1261.txt + src/lib/indexnow.ts (fire-and-forget) + پینگ خودکار در POST/PATCH/DELETE ادمین پست‌ها + GET /api/indexnow?key= برای پینگ دستی دسته‌ای (کلید=احراز) — بینگ مستقیم و ChatGPT Search (که از بینگ تغذیه می‌کند) را سریع‌تر پوشش می‌دهد
+- OG image داینامیک با next/og: (۱) src/app/opengraph-image.tsx کارت برند 1200×630 برای همهٔ صفحات (جای آیکون مربع 512) (۲) src/app/blog/[slug]/opengraph-image.tsx کارت اختصاصی هر مقاله با تیتر فارسی RTL/انگلیسی، تاریخ، آواتار M — فونت Vazirmatn TTF (Regular+Bold از ریپو رسمی، OFL) چون satori WOFF2 را parse نمی‌کند («Unsupported OpenType signature wOF2») — src/lib/og-fonts.ts با الگوی رسمی new URL(rel, import.meta.url)
+- باگ metadata کشف و فیکس شد: images: undefined صریح در generateMetadata فایل‌کانونشن OG را خفه می‌کرد (og:image غیب می‌شد) → spread شرطی فقط وقتی cover هست
+- layout: openGraph.images و twitter.images حذف شدند (فایل‌کانونشن接管) + twitter:card → summary_large_image
+- hreflang: صفحهٔ اصلی + blog + مقاله + services/work/about/contact → en (URL تمیز) / fa (?lang=fa) / x-default
+- ?lang=fa قبل از نقاشی (pre-paint) در boot script layout: پارامتر lang از URL خوانده می‌شود → localStorage زبان ذخیره + html[dir/lang] فوری → رندرر گوگل اسکریپت را اجرا می‌کند → نسخهٔ فارسی ایندکس‌پذیر بدون SSR داینامیک/هزینه
+- JSON-LD: Person.sameAs اضافه شد (github.com/goolro + virgool.io/@mehrdad.ir — پروفایل ویرگول موجود از سرچ کشف شد)
+- RSS: atom:link self + lastBuildDate
+- @vercel/analytics نصب و در layout — آمار بازدید واقعی بدون GA (برای تشخیص «بازدید نداریم»)
+- تأیید مرورگر: /?lang=fa صفحهٔ کاملاً فارسی RTL (nav/hero) بدون خطا؛ boot script در HTML؛ og:image مقاله → /blog/slug/opengraph-image
+- تأیید curl: sitemap شامل مقاله seed، feed 200، llms.txt 200، robots 200، indexnow کلید غلط=403 / درست=ok submitted:3
+- تصاویر OG: کارت برند و کارت مقاله هر دو بصری چک شدند (فارسی با فاصله‌گذاری جزئی میان حروف به‌خاطر محدودیت shaping ساتوری — خوانا و قابل‌قبول)
+
+Stage Summary:
+- ایندکس‌سازی در برابر قطعی DB ایمن شد؛ مقاله‌ها همیشه در sitemap هستند
+- بینگ/یاندکس/ChatGPT Search مسیر ایندکس فوری دارند (IndexNow خودکار + دستی)
+- اشتراک‌گذاری در واتساپ/تلگرام کارت بنر 1200×630 اختصاصی هر مقاله می‌گیرد (CTR)
+- نسخهٔ فارسی ?lang=fa ایندکس‌پذیر شد + hreflang کامل
+- Analytics نصب شد تا عدد واقعی بازدید دیده شود
+- ⚠️ مسائل مالک: (۱) Turso هنوز از دسترس خارج است — env های Vercel (TURSO_DATABASE_URL/TURSO_AUTH_TOKEN) باید تازه شود تا api/* و chat زنده شوند؛ فید/sitemap/HTML استاتیک از این به بعد بی‌تأثیرند (۲) برای push به token گیت‌هاب نیاز است (۳) کارهای دستی: Bing Webmaster (import از GSC)، پر کردن پروفایل ویرگول، IndexNow خودکار پس از دیپلوی تست شود

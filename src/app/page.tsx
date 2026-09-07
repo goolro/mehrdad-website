@@ -15,7 +15,17 @@ export const metadata: Metadata = {
   title: 'Mehrdad — Product Builder | مهرداد — سازنده محصول',
   description:
     'I design businesses and products with care, and build them fast with AI. Real projects, honest status, lessons from real work.',
-  alternates: { canonical: '/' },
+  alternates: {
+    canonical: '/',
+    // hreflang: EN is the static, server-rendered default; the Persian
+    // variant is the same URL + ?lang=fa (pre-paint switch in layout boot
+    // script — Google's renderer executes it, so the variant is indexable)
+    languages: {
+      en: '/',
+      fa: '/?lang=fa',
+      'x-default': '/',
+    },
+  },
 };
 
 export default async function HomePage() {
@@ -65,6 +75,12 @@ export default async function HomePage() {
           'هوش مصنوعی',
           'استارتاپ',
           'شهر هوشمند',
+        ],
+        // sameAs ties this entity to its other profiles — how Google/KG and
+        // LLMs disambiguate "Mehrdad" and consolidate authority signals
+        sameAs: [
+          'https://github.com/goolro',
+          'https://virgool.io/@mehrdad.ir',
         ],
       },
     ],

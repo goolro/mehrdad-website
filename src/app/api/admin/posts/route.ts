@@ -2,8 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { checkAdmin } from '@/lib/admin';
 import { sanitizePostHtml } from '@/lib/sanitize';
+import { notifyIndexNow } from '@/lib/indexnow';
 
 export const dynamic = 'force-dynamic';
+
+const BASE = (process.env.SITE_ORIGIN || 'https://mehrdad.ir').replace(/\/+$/, '');
 
 export async function GET(req: NextRequest) {
   const denied = checkAdmin(req);
@@ -76,6 +79,8 @@ export async function POST(req: NextRequest) {
     if (process.env.VERCEL_DEPLOY_HOOK_URL) {
       await fetch(process.env.VERCEL_DEPLOY_HOOK_URL, { method: 'POST' }).catch(() => {});
     }
+    // instant indexing: new article straight into Bing/Yandex (IndexNow)
+    if (post.published) notifyIndexNow([`${BASE}/blog/${encodeURIComponent(post.slug)}`, `${BASE}/blog`]);
     return NextResponse.json({ ok: true, post });
   } catch (e) {
     console.error('admin create post error:', e);

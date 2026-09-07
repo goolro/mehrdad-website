@@ -5,7 +5,10 @@ export const metadata: Metadata = {
   title: 'About Mehrdad | Mehrdad — Product Builder',
   description:
     'Independent product builder: I research, design and build real businesses and products — careful on the design side, fast on the build side with AI.',
-  alternates: { canonical: '/about' },
+  alternates: {
+    canonical: '/about',
+    languages: { en: '/about', fa: '/about?lang=fa', 'x-default': '/about' },
+  },
 };
 
 export default function AboutPage() {

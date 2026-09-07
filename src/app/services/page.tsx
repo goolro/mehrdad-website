@@ -13,7 +13,10 @@ export const dynamic = 'force-static';
 export const metadata: Metadata = {
   title: 'Services | Mehrdad — Product Builder',
   description: 'From product design to AI and market strategy — Forward Deployed Engineering as the core service.',
-  alternates: { canonical: '/services' },
+  alternates: {
+    canonical: '/services',
+    languages: { en: '/services', fa: '/services?lang=fa', 'x-default': '/services' },
+  },
 };
 
 export default async function ServicesPage() {

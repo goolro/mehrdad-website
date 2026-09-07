@@ -2,8 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { checkAdmin } from '@/lib/admin';
 import { sanitizePostHtml } from '@/lib/sanitize';
+import { notifyIndexNow } from '@/lib/indexnow';
 
 export const dynamic = 'force-dynamic';
+
+const BASE = (process.env.SITE_ORIGIN || 'https://mehrdad.ir').replace(/\/+$/, '');
 
 export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
   const denied = checkAdmin(req);
@@ -27,6 +30,10 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: strin
     if ('published' in b) data.published = Boolean(b.published);
     if ('featured' in b) data.featured = Boolean(b.featured);
     const post = await db.post.update({ where: { id }, data });
+    // instant indexing: a (un)publish or content edit re-pings Bing/Yandex
+    if (post.published) {
+      notifyIndexNow([`${BASE}/blog/${encodeURIComponent(post.slug)}`, `${BASE}/blog`, `${BASE}/`]);
+    }
     // content changed → trigger a fresh static build (public pages carry a
     // build-time CSP meta; regenerating HTML at runtime would drop it).
     // VERCEL_DEPLOY_HOOK_URL is optional — without it, changes publish on
@@ -46,7 +53,9 @@ export async function DELETE(req: NextRequest, ctx: { params: Promise<{ id: stri
   if (denied) return denied;
   try {
     const { id } = await ctx.params;
-    await db.post.delete({ where: { id } });
+    const gone = await db.post.delete({ where: { id } });
+    // delist promptly: IndexNow + feed readers get the 404/refresh signal
+    notifyIndexNow([`${BASE}/blog/${encodeURIComponent(gone.slug)}`]);
     // content changed → trigger a fresh static build (public pages carry a
     // build-time CSP meta; regenerating HTML at runtime would drop it).
     // VERCEL_DEPLOY_HOOK_URL is optional — without it, changes publish on

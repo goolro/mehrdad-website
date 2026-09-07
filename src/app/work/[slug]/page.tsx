@@ -43,12 +43,21 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: `${project.titleEn} | Mehrdad — Product Builder`,
     description: project.summaryEn,
-    alternates: { canonical: `/work/${project.slug}` },
+    alternates: {
+      canonical: `/work/${project.slug}`,
+      languages: {
+        en: `/work/${project.slug}`,
+        fa: `/work/${project.slug}?lang=fa`,
+        'x-default': `/work/${project.slug}`,
+      },
+    },
     openGraph: {
       title: project.titleEn,
       description: project.summaryEn,
       url: `/work/${project.slug}`,
-      images: project.cover ? [{ url: project.cover }] : undefined,
+      // only when a cover exists — `images: undefined` would suppress the
+      // file-convention opengraph-image card
+      ...(project.cover ? { images: [{ url: project.cover }] } : {}),
     },
   };
 }

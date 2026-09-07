@@ -43,14 +43,25 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: `${title} | Mehrdad`,
     description,
-    alternates: { canonical: `/blog/${post.slug}` },
+    alternates: {
+      canonical: `/blog/${post.slug}`,
+      // hreflang variants (EN static default / FA pre-paint ?lang=fa)
+      languages: {
+        en: `/blog/${post.slug}`,
+        fa: `/blog/${post.slug}?lang=fa`,
+        'x-default': `/blog/${post.slug}`,
+      },
+    },
     openGraph: {
       title,
       description,
       type: 'article',
       publishedTime: published,
       url: `/blog/${post.slug}`,
-      images: post.cover ? [{ url: post.cover }] : undefined,
+      // NOTE: only set `images` when a cover exists — an explicit
+      // `images: undefined` would suppress the file-convention
+      // opengraph-image.tsx card (verified in dev: og:image meta vanished)
+      ...(post.cover ? { images: [{ url: post.cover }] } : {}),
     },
   };
 }

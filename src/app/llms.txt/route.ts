@@ -3,33 +3,33 @@ import { listPosts, getProjects, getServices } from '@/lib/queries';
 /**
  * llms.txt — the emerging LLM-discovery standard (AI-SEO, 2026-09-05).
  *
+ * 2026-09-08 (SEO-growth): now PRERENDERED AT BUILD instead of
+ * force-dynamic. During the Turso runtime outage this route degraded to
+ * its static sections only (no blog list) while staying 200 — LLMs saw a
+ * site with no content worth citing. Static-at-build is outage-proof and
+ * still always fresh because every admin content mutation fires the
+ * Vercel Deploy Hook → rebuild.
+ *
  * Served at /llms.txt as text/plain: a compact, markdown-style map of the
  * site that LLMs (ChatGPT, Claude, Perplexity, …) can ingest to understand
- * WHO Mehrdad is and WHAT content is worth citing. Built from the live DB
- * so it never goes stale. Same dotted-route pattern as /feed.xml.
+ * WHO Mehrdad is and WHAT content is worth citing. Same dotted-route
+ * pattern as /feed.xml.
  */
-export const dynamic = 'force-dynamic';
+export const dynamic = 'force-static';
 
 const BASE = (process.env.SITE_ORIGIN || 'https://mehrdad.ir').replace(/\/+$/, '');
 
 export async function GET() {
-  const [services, projects] = await Promise.all([
-    getServices().catch(() => []),
-    getProjects().catch(() => []),
-  ]);
+  const [services, projects] = await Promise.all([getServices(), getProjects()]);
 
   // listPosts caps perPage at 48 → page through everything published
   const posts: Awaited<ReturnType<typeof listPosts>>['posts'] = [];
-  try {
-    let page = 1;
-    for (;;) {
-      const res = await listPosts({ page, perPage: 48 });
-      posts.push(...res.posts);
-      if (page >= res.totalPages || page > 10) break;
-      page += 1;
-    }
-  } catch {
-    // DB hiccup → still emit the static sections below
+  let page = 1;
+  for (;;) {
+    const res = await listPosts({ page, perPage: 48 });
+    posts.push(...res.posts);
+    if (page >= res.totalPages || page > 10) break;
+    page += 1;
   }
 
   const lines: string[] = [
