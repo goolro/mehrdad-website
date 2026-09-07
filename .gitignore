@@ -76,4 +76,3 @@ alt_run.log
 # temp HTTP delivery folder for artifacts — never publish
 /public/download/
 tool-results/
-public/build-info.json
