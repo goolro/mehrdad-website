@@ -18,7 +18,8 @@ interface ServiceItem {
 }
 interface ProjectItem {
   id: string; slug: string; titleEn: string; titleFa: string; summaryEn: string; summaryFa: string; cover: string | null;
-  status: string; progress: number; statusEn: string; statusFa: string;
+  section: string; status: string; progress: number; featured: boolean;
+  fundingAsk: string | null; statusEn: string; statusFa: string;
 }
 interface CategoryItem { id: string; slug: string; nameEn: string; nameFa: string }
 interface PostItem {
@@ -147,10 +148,16 @@ export function HomeView({ initial }: { initial: HomeInitialData }) {
         </div>
       </section>
 
-      {/* ── Projects ── */}
+      {/* ── Projects (featured Work items only — max 2, set in admin; the
+          full list lives at /work, Lab items at /lab) ── */}
       <section id="projects" className="scroll-mt-24 border-y border-border/40 bg-muted/30">
         <div className="mx-auto w-full max-w-7xl px-4 py-14 sm:px-6">
-          <SectionHeader title={t.sections.projectsTitle} sub={t.sections.projectsSub} subClassName="text-foreground/70" />
+          <SectionHeader
+            title={t.sections.projectsTitle}
+            sub={t.sections.projectsSub}
+            subClassName="text-foreground/70"
+            action={{ label: t.projects.seeAllWork, onClick: () => setView('projects') }}
+          />
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {(data.projects || []).map((p) => (
               <button
@@ -174,9 +181,9 @@ export function HomeView({ initial }: { initial: HomeInitialData }) {
               onClick={() => setView('contact')}
               className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-violet-500/40 bg-violet-600/5 p-5 text-center transition-colors hover:bg-violet-600/10"
             >
-              <div className="text-2xl">🤝</div>
-              <h3 className="mt-2 font-bold text-violet-700 dark:text-violet-300">{t.projects.interested}</h3>
-              <p className="mt-1 text-sm text-foreground/80">{t.contact.sub}</p>
+              <div className="text-2xl">👋</div>
+              <h3 className="mt-2 font-bold text-violet-700 dark:text-violet-300">{t.projects.ctaTitle}</h3>
+              <p className="mt-1 text-sm text-foreground/80">{t.projects.ctaSub}</p>
             </button>
           </div>
         </div>

@@ -37,9 +37,13 @@ export default async function HomePage() {
   // on 2026-09-07 (live empty page for ~1h until noticed).
   const [services, projects, featured] = await Promise.all([
     getServices(),
-    getProjects(),
+    // homepage Work section: featured Work items ONLY (max 2, set in the
+    // admin panel). Idea-stage and archived projects never appear here and
+    // Lab items live at /lab — see DECISIONS.md (2026-09-07).
+    getProjects({ section: 'work', featured: true }),
     listPosts({ page: 1, perPage: 6 }),
   ]);
+  const homeProjects = projects.slice(0, 2);
 
   // AI-SEO: entity graph for search engines AND LLMs (ChatGPT/Claude/
   // Perplexity parse schema.org to understand and cite the site)
@@ -92,7 +96,7 @@ export default async function HomePage() {
       <HomeView
       initial={{
         services,
-        projects,
+        projects: homeProjects,
         posts: featured.posts.slice(0, 6).map((p) => ({
           slug: p.slug,
           titleEn: p.titleEn,

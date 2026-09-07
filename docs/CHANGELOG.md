@@ -4,6 +4,29 @@ All notable changes to mehrdad.ir. Format: Keep-a-Changelog-ish, newest first.
 
 ## [Unreleased]
 
+### Work/Lab restructure — content authenticity (2026-09-07)
+- **Honest project statuses**: canonical lifecycle `idea | concept |
+  building | testing | live | paused | archived` on the Project model
+  (+ `section` work/lab, `featured`, optional `fundingAsk` that only renders
+  when explicitly set). Badges always derive from the canonical status —
+  legacy "Seeking partners" free-text labels can no longer render.
+- **The five earlier venture-style entries** (Iran Rail Revolution, BIZPAL,
+  Smart City Waste Sorting, Investment Management Platform, KLIKA) are
+  recast as Ideas: one neutral sentence, all financial claims removed,
+  visible only under /work's non-default "Ideas & archive" tab, collapsed.
+- **Homepage**: Work section shows at most 2 featured projects + "See all
+  work →"; the investment-specific CTA is replaced by one general contact
+  card. Investment survives only as an option in the Contact form's intent
+  selector (new).
+- **/lab is a real page** now (the /lab → /fde alias is retired): Lab
+  experiments framed as curiosity-driven, no business-model language.
+  Added to sitemap + llms.txt.
+- **Admin panel**: new Projects tab (full CRUD with section/status/
+  featured/fundingAsk) — saves fire the deploy hook + IndexNow, same as
+  posts.
+- **Production data migration**: `scripts/apply-worklab-restructure.ts`
+  (dry-run default, `--apply` after owner approval).
+
 ### Architecture & SEO (2026-09-05 real-routes migration)
 - **Hash routing retired — every view is now a real, indexable URL**:
   `/` (home), `/services`, `/fde` (+ `/lab` alias), `/work`,

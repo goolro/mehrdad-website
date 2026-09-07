@@ -149,8 +149,14 @@ const findPost = async (candidate: string) =>
 export type FullPost = NonNullable<Awaited<ReturnType<typeof getPostDetail>>>['post'];
 export type RelatedPost = NonNullable<Awaited<ReturnType<typeof getPostDetail>>>['related'][number];
 
-export async function getProjects() {
-  return db.project.findMany({ orderBy: { order: 'asc' } });
+export async function getProjects(opts?: { section?: 'work' | 'lab'; featured?: boolean }) {
+  const where: Record<string, unknown> = {};
+  // Work/Lab split (2026-09-07): /work and the homepage never render Lab
+  // items and /lab never renders Work items — each section is queried
+  // explicitly. Legacy rows predate the `section` column and default to work.
+  if (opts?.section) where.section = opts.section;
+  if (opts?.featured) where.featured = true;
+  return db.project.findMany({ where, orderBy: { order: 'asc' } });
 }
 
 export type ProjectRow = Awaited<ReturnType<typeof getProjects>>[number];

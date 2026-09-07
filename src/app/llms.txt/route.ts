@@ -45,6 +45,7 @@ export async function GET() {
     `- [Home](${BASE}/)`,
     `- [Services](${BASE}/services) — what Mehrdad offers`,
     `- [Projects / Work](${BASE}/work) — real builds with honest status`,
+    `- [The Lab](${BASE}/lab) — experiments built for curiosity; no business model attached`,
     `- [Blog](${BASE}/blog) — essays on AI, startups, smart city, investment`,
     `- [About](${BASE}/about)`,
     `- [Contact](${BASE}/contact)`,

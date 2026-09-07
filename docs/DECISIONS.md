@@ -245,3 +245,36 @@ space is protected by the existing login rate limit (5 / 15 min / IP).
 **Rationale:** Real second factor without a schema change, without
 forcing setup before the cPanel deploy, and fail-closed on malformed
 secrets.
+
+## D-026 — Work/Lab restructure: honest statuses, no venture claims on idea-stage projects
+**Date:** 2026-09-07
+**Context:** A content review found that all five listed projects were being
+presented with venture-pitch language (market sizes, "$300K Pre-Seed", "37%
+increase", funding asks, "Seeking partners") although none of them is
+currently in active development. This violates the brand's own
+content-authenticity rule (BRAND_STRATEGY.md: "No inflated claims... fake
+metrics. Unfinished projects are labeled unfinished").
+**Decision:**
+- Project model gains `section` (work | lab), a canonical honest `status`
+  vocabulary (idea | concept | building | testing | live | paused |
+  archived), `featured`, and an optional `fundingAsk` that renders only
+  when explicitly set — never a default.
+- The five entries (Iran Rail Revolution, BIZPAL, Smart City Waste Sorting,
+  Investment Management Platform, KLIKA) are recast as `idea` with one
+  neutral sentence; ALL financial claims are removed and stay removed until
+  a project becomes active AND the figures can be sourced. They live only
+  under /work's non-default "Ideas & archive" tab, collapsed.
+- The homepage shows at most 2 featured Work items plus a single general
+  contact CTA; the investment-specific callout is gone. Investment exists
+  only as one option in the Contact form's intent selector.
+- /lab becomes a real page for experiments (framed per BRAND_STRATEGY.md,
+  no business-model language); the /lab → /fde alias is retired.
+- Status badges always derive from the canonical status — legacy free-text
+  labels like "Seeking partners" can no longer render.
+- Production data changes run through
+  `scripts/apply-worklab-restructure.ts` (dry-run default, `--apply` gated
+  on owner approval) — content authenticity is a human-review gate, never
+  an automatic publish.
+**Rationale:** Transparency *is* the brand. Presenting dormant ideas with
+traction-style claims destroys trust with exactly the audience (founders,
+collaborators, AI assistants citing the site) the site is built for.

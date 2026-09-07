@@ -13,24 +13,36 @@ export function ContactView() {
   const { lang, setChatOpen } = useApp();
   const t = ui[lang];
   const [form, setForm] = useState({ name: '', email: '', subject: '', message: '' });
+  // intent selector — investment exists ONLY here as one option among several,
+  // never as a homepage callout (content-authenticity restructure, 2026-09-07)
+  const [intent, setIntent] = useState<keyof typeof t.contact.intents>('general');
   const [sending, setSending] = useState(false);
   const [done, setDone] = useState(false);
   const [error, setError] = useState('');
+
+  const INTENT_KEYS = ['general', 'services', 'collaboration', 'feedback', 'investment'] as const;
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setSending(true);
     setError('');
     try {
+      // non-general intents travel as a subject prefix — no schema/API change,
+      // and the inbox stays readable at a glance
+      const intentLabel = t.contact.intents[intent];
+      const subject = intent !== 'general'
+        ? `[${intentLabel}] ${form.subject || intentLabel}`
+        : form.subject;
       const res = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, subject }),
       });
       const data = await res.json();
       if (res.ok) {
         setDone(true);
         setForm({ name: '', email: '', subject: '', message: '' });
+        setIntent('general');
       } else {
         setError(data.error || t.contact.error);
       }
@@ -70,6 +82,27 @@ export function ContactView() {
       )}
 
       <form onSubmit={submit} className="mt-6 space-y-4">
+        <div className="space-y-2">
+          <Label>{t.contact.intentLabel}</Label>
+          <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label={t.contact.intentLabel}>
+            {INTENT_KEYS.map((key) => (
+              <button
+                key={key}
+                type="button"
+                role="radio"
+                aria-checked={intent === key}
+                onClick={() => setIntent(key)}
+                className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
+                  intent === key
+                    ? 'border-violet-500/50 bg-violet-600/10 text-violet-700 dark:text-violet-300'
+                    : 'border-border text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                {t.contact.intents[key]}
+              </button>
+            ))}
+          </div>
+        </div>
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
             <Label htmlFor="c-name">{t.contact.name} *</Label>
