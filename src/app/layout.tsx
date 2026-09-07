@@ -21,6 +21,11 @@ const vazirmatn = localFont({
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.SITE_ORIGIN || "https://mehrdad.ir"),
+  other: {
+    // deploy fingerprint: tells the owner/support which commit the served
+    // HTML came from (injected at build time, visible in view-source)
+    "x-build": process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) || "local",
+  },
   title: "Mehrdad — Product Builder | مهرداد — سازنده محصول",
   description:
     "I design businesses and products with care, and build them fast with AI. Real projects, honest status, lessons from real work. کسب‌وکار و محصولت رو با دقت طراحی می‌کنم، و با AI سریع می‌سازمش.",
