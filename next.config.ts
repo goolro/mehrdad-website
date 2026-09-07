@@ -17,6 +17,33 @@ const securityHeaders = [
   { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), payment=()" },
   // force HTTPS for 6 months (cPanel AutoSSL keeps the cert renewed)
   { key: "Strict-Transport-Security", value: "max-age=15552000; includeSubDomains" },
+  // CSP FLOOR (2026-09-07): Vercel packages prerendered HTML itself and
+  // ignores post-build mutations of .next (verified — both .html edits and
+  // routes-manifest header appends never reached the deployment), so a
+  // per-build hash CSP cannot be delivered there. This static policy is
+  // the floor everywhere: foreign scripts, framing, object embeds and
+  // base/form hijacks are blocked; inline scripts are allowed ('unsafe-inline'
+  // — SSR content is owner-authored and sanitized, so the injection surface
+  // is minimal). SELF-HOSTED builds additionally get the strict hash-based
+  // <meta CSP> from scripts/inject-csp.mjs — CSP policies INTERSECT, so the
+  // strict meta wins wherever it exists.
+  {
+    key: "Content-Security-Policy",
+    value: [
+      "default-src 'self'",
+      "script-src 'self' 'unsafe-inline'",
+      "style-src 'self' 'unsafe-inline'",
+      "img-src 'self' data: blob: https:",
+      "font-src 'self' data:",
+      "connect-src 'self'",
+      "media-src 'self'",
+      "object-src 'none'",
+      "base-uri 'self'",
+      "form-action 'self'",
+      "frame-ancestors 'none'",
+      "upgrade-insecure-requests",
+    ].join('; '),
+  },
   // cross-origin isolation basics (round-3 finding L6): other origins cannot
   // embed/hotload our resources, and our documents get their own browsing
   // context group (blocks a whole class of cross-window side channels)

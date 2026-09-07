@@ -96,72 +96,16 @@ for (const file of files) {
   if (prev.test(html)) html = html.replace(prev, meta);
   else if (html.includes('<head>')) html = html.replace('<head>', `<head>${meta}`);
   else continue; // no head — skip file rather than corrupt it
-  // packaging experiment marker: does a post-build mutation of .html files
-  // reach the served deployment at all, or does Vercel re-generate them?
-  html = html.replace('</html>', `<!--postbuild-mutation ${Date.now()}--></html>`);
   writeFileSync(file, html);
   injected++;
 }
 
-// ── CSP delivery layer ────────────────────────────────────────────────
-// Self-hosted (standalone): the patched .html files ARE what the server
-// serves, so the <meta> works there.
-// Vercel: its packager does NOT take post-build mutations of
-// .next/server/app/*.html (verified 2026-09-07 — an HTML-comment marker
-// injected post-build never reached the served deployment), so the SAME
-// policy is additionally attached as a response header by appending to
-// .next/routes-manifest.json, which Vercel's packager DOES consume.
-try {
-  const manifestPath = join(process.cwd(), '.next', 'routes-manifest.json');
-  const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
-  manifest.headers = manifest.headers || [];
-  if (!manifest.headers.some((h) => h.headerKey === 'x-build-csp')) {
-    manifest.headers.push({
-      source: '/:path*',
-      headerKey: 'x-build-csp',
-      headers: [{ key: 'Content-Security-Policy', value: csp }],
-    });
-    writeFileSync(manifestPath, JSON.stringify(manifest));
-    console.log('[inject-csp] CSP header appended to routes-manifest.json');
-  }
-} catch (e) {
-  console.warn('[inject-csp] routes-manifest CSP append skipped:', String(e).slice(0, 120));
-}
+// ── self-hosted strictness layer ─────────────────────────────────────
+// The patched .html files ARE what a standalone server serves, so the
+// strict hash <meta> works there. On Vercel the packager ignores these
+// mutations (verified 2026-09-07) — deployments fall back to the static
+// CSP floor from next.config headers(); policies intersect, so wherever
+// the meta exists the strict policy wins.
 
 console.log(`[inject-csp] ${hashes.size} unique inline-script hashes → CSP meta injected into ${injected}/${files.length} pages`);
 if (hashes.size === 0) console.warn('[inject-csp] WARNING: no inline scripts found — CSP meta allows self scripts only');
-
-// build probe (temporary, 2026-09-07): observable evidence of WHAT the
-// Vercel build environment looked like when postbuild ran — fetched at
-// /build-info.json. Remove once the CSP wiring is confirmed.
-const probe = {
-  at: new Date().toISOString(),
-  cwd: process.cwd(),
-  vercel: Boolean(process.env.VERCEL),
-  candidates: ['.next/server/app', '.next/standalone/.next/server/app'].map((p) => ({
-    path: p,
-    exists: existsSync(join(process.cwd(), p)),
-    htmlFiles: (() => {
-      try {
-        let n = 0;
-        const walk = (d) => {
-          for (const e of readdirSync(d, { withFileTypes: true })) {
-            const fp = join(d, e.name);
-            if (e.isDirectory()) walk(fp);
-            else if (e.name.endsWith('.html')) n++;
-          }
-        };
-        walk(join(process.cwd(), p));
-        return n;
-      } catch {
-        return -1;
-      }
-    })(),
-  })),
-};
-try {
-  writeFileSync('public/build-info.json', JSON.stringify(probe, null, 2));
-  console.log('[inject-csp] probe written to public/build-info.json');
-} catch (e) {
-  console.warn('[inject-csp] probe write failed:', String(e).slice(0, 120));
-}
