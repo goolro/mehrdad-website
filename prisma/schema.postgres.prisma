@@ -110,10 +110,22 @@ model Project {
   summaryEn  String
   summaryFa  String
   cover      String?
-  status     String  @default("seeking") // under-construction | seeking | live | coming-soon
-  progress   Int     @default(0) // 0-100 build progress
-  statusEn   String  @default("Seeking partners")
-  statusFa   String  @default("در جستجوی همکار")
+  // Work/Lab restructure (2026-09-07, DECISIONS.md):
+  // section — "work" (real products/tools) vs "lab" (experiments/curiosity)
+  section    String  @default("work") // work | lab
+  // honest lifecycle: idea | concept | building | testing | live | paused | archived
+  // (legacy rows may still carry under-construction | seeking | live | coming-soon —
+  // normalized in the UI layer until the content migration runs)
+  status     String  @default("idea")
+  progress   Int     @default(0) // 0-100 build progress (building/testing only)
+  // homepage Work section shows featured Work items only (max 2)
+  featured   Boolean @default(false)
+  // optional; rendered ONLY when explicitly set — never implied language like
+  // "Seeking partners" may be attached to projects by default
+  fundingAsk String?
+  // legacy display labels — kept for data safety, no longer rendered by default
+  statusEn   String  @default("")
+  statusFa   String  @default("")
   order      Int     @default(0)
 }
 

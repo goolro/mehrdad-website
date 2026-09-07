@@ -17,7 +17,10 @@ import {
   LayoutDashboard, FileText, Sparkles, Mail, Lock, Trash2, Languages,
   RefreshCw, ImageIcon, Eye, Loader2, LogOut, Globe, MessageSquare, Check, X, Palette,
   Bot, MessagesSquare, Phone, KeyRound, PlayCircle, Pencil, BadgeCheck, UserCheck,
+  FolderKanban,
 } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { PROJECT_STATUSES, normalizeStatus } from '@/lib/project-status';
 import { THEMES } from '@/lib/themes';
 
 interface CategoryItem { id: string; slug: string; nameEn: string; nameFa: string; count: number }
@@ -158,6 +161,7 @@ export function AdminView() {
         <TabsList className="flex w-full justify-start overflow-x-auto sm:w-auto">
           <TabsTrigger value="dashboard" className="gap-1.5"><LayoutDashboard className="h-4 w-4" />{t.admin.tabs.dashboard}</TabsTrigger>
           <TabsTrigger value="posts" className="gap-1.5"><FileText className="h-4 w-4" />{t.admin.tabs.posts}</TabsTrigger>
+          <TabsTrigger value="projects" className="gap-1.5"><FolderKanban className="h-4 w-4" />{t.admin.tabs.projects}</TabsTrigger>
           <TabsTrigger value="writer" className="gap-1.5"><Sparkles className="h-4 w-4" />{t.admin.tabs.writer}</TabsTrigger>
           <TabsTrigger value="messages" className="gap-1.5"><Mail className="h-4 w-4" />{t.admin.tabs.messages}</TabsTrigger>
           <TabsTrigger value="comments" className="gap-1.5"><MessageSquare className="h-4 w-4" />{t.admin.tabs.comments}</TabsTrigger>
@@ -168,6 +172,7 @@ export function AdminView() {
 
         <TabsContent value="dashboard"><Dashboard t={t} lang={lang} /></TabsContent>
         <TabsContent value="posts"><PostsTab t={t} /></TabsContent>
+        <TabsContent value="projects"><ProjectsTab lang={lang} /></TabsContent>
         <TabsContent value="writer"><WriterTab t={t} lang={lang} /></TabsContent>
         <TabsContent value="messages"><MessagesTab t={t} /></TabsContent>
         <TabsContent value="comments"><CommentsTab t={t} /></TabsContent>
@@ -333,6 +338,244 @@ function PostsTab({ t }: { t: T }) {
                 dir="ltr"
                 dangerouslySetInnerHTML={{ __html: preview.contentEn || `<p>${preview.titleFa}</p><p dir="rtl">این مقاله هنوز ترجمه نشده است.</p>` }}
               />
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+
+// ─────────── Projects (Work/Lab restructure, 2026-09-07) ───────────
+
+interface AdminProject {
+  id: string; slug: string; titleEn: string; titleFa: string;
+  summaryEn: string; summaryFa: string; cover: string | null;
+  section: string; status: string; progress: number; featured: boolean;
+  fundingAsk: string | null; statusEn: string; statusFa: string; order: number;
+}
+
+const BLANK_PROJECT: AdminProject = {
+  id: '', slug: '', titleEn: '', titleFa: '', summaryEn: '', summaryFa: '',
+  cover: null, section: 'work', status: 'idea', progress: 0, featured: false,
+  fundingAsk: null, statusEn: '', statusFa: '', order: 0,
+};
+
+function ProjectsTab({ lang }: { lang: 'en' | 'fa' }) {
+  const { toast } = useToast();
+  const [items, setItems] = useState<AdminProject[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [editing, setEditing] = useState<AdminProject | null>(null);
+  const [saving, setSaving] = useState(false);
+  const t = ui[lang];
+
+  // field labels kept inline (admin-only surface, bilingual in one place)
+  const F = lang === 'fa'
+    ? {
+        newProject: 'پروژهٔ جدید', sectionWork: 'کارها', sectionLab: 'آزمایشگاه',
+        section: 'بخش', status: 'وضعیت', progress: 'پیشرفت ساخت (٪)',
+        featured: 'نمایش در صفحهٔ اصلی', fundingAsk: 'درخواست سرمایه (اختیاری — برای ایده‌ها خالی بگذارید)',
+        slug: 'نامک (slug)', titleEn: 'عنوان (انگلیسی)', titleFa: 'عنوان (فارسی)',
+        summaryEn: 'خلاصه (انگلیسی)', summaryFa: 'خلاصه (فارسی)', cover: 'نشانی تصویر کاور',
+        order: 'ترتیب نمایش', save: 'ذخیره', saving: 'در حال ذخیره…', confirmDelete: 'این پروژه حذف شود؟',
+        saved: 'پروژه ذخیره شد', deleted: 'پروژه حذف شد', none: 'هنوز پروژه‌ای نیست.',
+      }
+    : {
+        newProject: 'New project', sectionWork: 'Work', sectionLab: 'Lab',
+        section: 'Section', status: 'Status', progress: 'Build progress (%)',
+        featured: 'Featured on homepage', fundingAsk: 'Funding ask (optional — leave empty for ideas)',
+        slug: 'Slug', titleEn: 'Title (EN)', titleFa: 'Title (FA)',
+        summaryEn: 'Summary (EN)', summaryFa: 'Summary (FA)', cover: 'Cover image URL',
+        order: 'Display order', save: 'Save', saving: 'Saving…', confirmDelete: 'Delete this project?',
+        saved: 'Project saved', deleted: 'Project deleted', none: 'No projects yet.',
+      };
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await fetch('/api/admin/projects');
+      if (res.ok) {
+        const data = await res.json();
+        setItems(data.projects || []);
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- deliberate one-shot data load on tab mount (same pattern as other admin tabs)
+    load();
+  }, [load]);
+
+  async function save() {
+    if (!editing || saving) return;
+    setSaving(true);
+    try {
+      const payload = {
+        slug: editing.slug, titleEn: editing.titleEn, titleFa: editing.titleFa,
+        summaryEn: editing.summaryEn, summaryFa: editing.summaryFa, cover: editing.cover,
+        section: editing.section, status: editing.status, progress: editing.progress,
+        featured: editing.featured, fundingAsk: editing.fundingAsk || '', order: editing.order,
+      };
+      const res = await fetch(editing.id ? `/api/admin/projects/${editing.id}` : '/api/admin/projects', {
+        method: editing.id ? 'PATCH' : 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (res.ok) {
+        toast({ description: F.saved });
+        setEditing(null);
+        await load();
+      } else {
+        const data = await res.json().catch(() => null);
+        toast({ description: data?.error || 'Error', variant: 'destructive' });
+      }
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function remove(id: string) {
+    if (!window.confirm(F.confirmDelete)) return;
+    const res = await fetch(`/api/admin/projects/${id}`, { method: 'DELETE' });
+    if (res.ok) {
+      toast({ description: F.deleted });
+      await load();
+    }
+  }
+
+  const statusLabel = (s: string) => t.projects[normalizeStatus(s) as keyof typeof t.projects] || s;
+
+  return (
+    <div>
+      <div className="mb-4 flex items-center justify-between">
+        <p className="text-xs text-muted-foreground" dir={lang === 'fa' ? 'rtl' : 'ltr'}>
+          {lang === 'fa'
+            ? 'تغییرات این بخش پس از ذخیره، بازسازی خودکار صفحه‌های استاتیک را فعال می‌کند.'
+            : 'Saving here triggers the static-pages rebuild (deploy hook) automatically.'}
+        </p>
+        <Button size="sm" onClick={() => setEditing({ ...BLANK_PROJECT })}>
+          <FolderKanban className="me-1.5 h-4 w-4" /> {F.newProject}
+        </Button>
+      </div>
+
+      {loading ? (
+        <div className="flex h-32 items-center justify-center">
+          <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+        </div>
+      ) : items.length === 0 ? (
+        <p className="text-sm text-muted-foreground">{F.none}</p>
+      ) : (
+        <ScrollArea className="h-[60vh] rounded-xl border border-border">
+          <div className="divide-y divide-border">
+            {items.map((p) => (
+              <div key={p.id} className="flex items-center gap-3 p-3 text-sm" dir="ltr">
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="truncate font-semibold">{p.titleEn}</span>
+                    {p.featured && <Badge className="bg-violet-600/15 text-violet-600" variant="secondary">★</Badge>}
+                  </div>
+                  <div className="mt-0.5 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                    <span className="font-mono">{p.slug}</span>
+                    <Badge variant="outline" className="h-4 px-1.5 text-[10px]">
+                      {p.section === 'lab' ? F.sectionLab : F.sectionWork}
+                    </Badge>
+                    <Badge variant="outline" className="h-4 px-1.5 text-[10px]">{statusLabel(p.status)}</Badge>
+                    {p.fundingAsk && <Badge variant="outline" className="h-4 px-1.5 text-[10px]">$</Badge>}
+                  </div>
+                </div>
+                <div className="flex shrink-0 items-center gap-1">
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setEditing(p)} title="Edit">
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                  <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:text-red-600" onClick={() => remove(p.id)}>
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </ScrollArea>
+      )}
+
+      <Dialog open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
+        <DialogContent className="max-h-[85vh] max-w-2xl overflow-y-auto">
+          {editing && (
+            <>
+              <DialogHeader>
+                <DialogTitle dir="ltr">{editing.id ? `${editing.titleEn} (${editing.slug})` : F.newProject}</DialogTitle>
+              </DialogHeader>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="space-y-1.5">
+                  <Label htmlFor="p-slug">{F.slug} *</Label>
+                  <Input id="p-slug" dir="ltr" value={editing.slug} onChange={(e) => setEditing({ ...editing, slug: e.target.value })} />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="p-order">{F.order}</Label>
+                  <Input id="p-order" dir="ltr" type="number" value={editing.order} onChange={(e) => setEditing({ ...editing, order: Number(e.target.value) })} />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="p-title-en">{F.titleEn} *</Label>
+                  <Input id="p-title-en" dir="ltr" value={editing.titleEn} onChange={(e) => setEditing({ ...editing, titleEn: e.target.value })} />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="p-title-fa">{F.titleFa} *</Label>
+                  <Input id="p-title-fa" dir="rtl" value={editing.titleFa} onChange={(e) => setEditing({ ...editing, titleFa: e.target.value })} />
+                </div>
+                <div className="space-y-1.5 sm:col-span-2">
+                  <Label htmlFor="p-sum-en">{F.summaryEn} *</Label>
+                  <Textarea id="p-sum-en" dir="ltr" rows={2} value={editing.summaryEn} onChange={(e) => setEditing({ ...editing, summaryEn: e.target.value })} />
+                </div>
+                <div className="space-y-1.5 sm:col-span-2">
+                  <Label htmlFor="p-sum-fa">{F.summaryFa} *</Label>
+                  <Textarea id="p-sum-fa" dir="rtl" rows={2} value={editing.summaryFa} onChange={(e) => setEditing({ ...editing, summaryFa: e.target.value })} />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="p-section">{F.section}</Label>
+                  <Select value={editing.section} onValueChange={(v) => setEditing({ ...editing, section: v })}>
+                    <SelectTrigger id="p-section"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="work">{F.sectionWork}</SelectItem>
+                      <SelectItem value="lab">{F.sectionLab}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="p-status">{F.status}</Label>
+                  <Select value={editing.status} onValueChange={(v) => setEditing({ ...editing, status: v })}>
+                    <SelectTrigger id="p-status"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {PROJECT_STATUSES.map((s) => (
+                        <SelectItem key={s} value={s}>{t.projects[s]}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="p-progress">{F.progress}</Label>
+                  <Input id="p-progress" dir="ltr" type="number" min={0} max={100} value={editing.progress} onChange={(e) => setEditing({ ...editing, progress: Number(e.target.value) })} />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="p-cover">{F.cover}</Label>
+                  <Input id="p-cover" dir="ltr" value={editing.cover || ''} onChange={(e) => setEditing({ ...editing, cover: e.target.value || null })} />
+                </div>
+                <label className="flex items-center gap-2 text-sm sm:col-span-2">
+                  <Checkbox checked={editing.featured} onCheckedChange={(v) => setEditing({ ...editing, featured: v === true })} />
+                  {F.featured}
+                </label>
+                <div className="space-y-1.5 sm:col-span-2">
+                  <Label htmlFor="p-funding" dir="ltr">{F.fundingAsk}</Label>
+                  <Input id="p-funding" dir="ltr" value={editing.fundingAsk || ''} onChange={(e) => setEditing({ ...editing, fundingAsk: e.target.value })} />
+                </div>
+              </div>
+              <div className="mt-2 flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setEditing(null)}>{lang === 'fa' ? 'انصراف' : 'Cancel'}</Button>
+                <Button onClick={save} disabled={saving} className="bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white">
+                  {saving && <Loader2 className="me-1 h-4 w-4 animate-spin" />}
+                  {saving ? F.saving : F.save}
+                </Button>
+              </div>
             </>
           )}
         </DialogContent>

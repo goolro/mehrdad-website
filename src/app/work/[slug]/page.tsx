@@ -6,6 +6,7 @@ import { ui } from '@/components/site/i18n';
 import { getProjectBySlug, getProjects } from '@/lib/queries';
 import { JsonLd } from '@/components/site/JsonLd';
 import { ContactCta } from '@/components/site/ContactCta';
+import { normalizeStatus, showsProgress } from '@/lib/project-status';
 
 // Fully static: rendered once per BUILD (the build-time CSP meta can
 // only be injected then) and served from the edge until the next deploy.
@@ -30,10 +31,13 @@ type Props = { params: Promise<{ slug: string }> };
 // local mirror of STATUS_STYLE gradients (client-module values cannot be
 // dereferenced inside server components)
 const BAR_CLS: Record<string, string> = {
-  'under-construction': 'bg-gradient-to-r from-amber-500 to-orange-500',
-  seeking: 'bg-gradient-to-r from-violet-600 to-fuchsia-600',
+  building: 'bg-gradient-to-r from-amber-500 to-orange-500',
+  testing: 'bg-gradient-to-r from-teal-500 to-emerald-500',
+  idea: 'bg-gradient-to-r from-violet-600 to-fuchsia-600',
+  concept: 'bg-gradient-to-r from-slate-400 to-slate-500',
   live: 'bg-gradient-to-r from-emerald-500 to-teal-500',
-  'coming-soon': 'bg-gradient-to-r from-slate-400 to-slate-500',
+  paused: 'bg-gradient-to-r from-orange-500 to-amber-500',
+  archived: 'bg-gradient-to-r from-zinc-400 to-zinc-500',
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -71,6 +75,7 @@ export default async function ProjectPage({ params }: Props) {
   const { slug } = await params;
   const project = await getProjectBySlug(slug);
   if (!project) notFound();
+  const st = normalizeStatus(project.status);
 
   // AI-SEO: machine-readable project card for search engines and LLMs
   const base = (process.env.SITE_ORIGIN || 'https://mehrdad.ir').replace(/\/+$/, '');
@@ -97,7 +102,7 @@ export default async function ProjectPage({ params }: Props) {
           statusFa={project.statusFa}
           lang="en"
         />
-        {project.status === 'under-construction' && (
+        {showsProgress(st) && (
           <span className="text-sm font-semibold text-amber-600 dark:text-amber-400">
             {project.progress}%
           </span>
@@ -124,13 +129,22 @@ export default async function ProjectPage({ params }: Props) {
         <p>{project.summaryFa}</p>
       </div>
 
-      {project.status === 'under-construction' && (
+      {showsProgress(st) && (
         <div className="mt-8 rounded-2xl border border-amber-500/30 bg-amber-500/5 p-5">
           <div className="mb-2 flex items-center justify-between text-sm font-medium">
-            <span>Build progress</span>
+            <span>Build progress · پیشرفت ساخت</span>
             <span className="font-extrabold text-amber-600 dark:text-amber-400">{project.progress}%</span>
           </div>
-          <ProgressBar value={project.progress} barCls={BAR_CLS[project.status] || BAR_CLS.seeking} />
+          <ProgressBar value={project.progress} barCls={BAR_CLS[st] || BAR_CLS.idea} />
+        </div>
+      )}
+
+      {project.fundingAsk && (
+        <div className="mt-8 rounded-2xl border border-violet-500/30 bg-violet-600/5 p-5">
+          <div className="text-sm font-semibold text-violet-700 dark:text-violet-300">
+            Funding ask · درخواست سرمایه
+          </div>
+          <p className="mt-1 text-sm">{project.fundingAsk}</p>
         </div>
       )}
 

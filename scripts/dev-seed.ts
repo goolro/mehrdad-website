@@ -74,85 +74,156 @@ async function main() {
     },
   });
 
-  // ── projects (honest statuses) ──
-  await db.project.upsert({
-    where: { slug: 'bizpal' },
-    update: {},
-    create: {
-      slug: 'bizpal',
-      titleEn: 'BIZPAL',
-      titleFa: 'بیزپل',
-      summaryEn: 'Data-driven sales, marketing and advertising startup — an AI copilot for small businesses.',
-      summaryFa: 'استارتاپ داده‌محور فروش، بازاریابی و تبلیغات — دستیار هوش مصنوعی کسب‌وکارهای کوچک.',
-      status: 'under-construction',
-      progress: 60,
-      statusEn: 'Building',
-      statusFa: 'در حال ساخت',
-      order: 0,
-    },
-  });
-  await db.project.upsert({
-    where: { slug: 'smart-city' },
-    update: {},
-    create: {
-      slug: 'smart-city',
-      titleEn: 'Smart City Ecosystem',
-      titleFa: 'اکوسیستم شهر هوشمند',
-      summaryEn: 'Multi-layer smart city ecosystem research and design: mobility, energy, citizens.',
-      summaryFa: 'پژوهش و طراحی اکوسیستم چندلایه شهر هوشمند: حمل‌ونقل، انرژی، شهروندان.',
-      status: 'under-construction',
-      progress: 35,
-      statusEn: 'Designing',
-      statusFa: 'در حال طراحی',
-      order: 1,
-    },
-  });
-  await db.project.upsert({
-    where: { slug: 'iran-rail-corridor' },
-    update: {},
-    create: {
-      slug: 'iran-rail-corridor',
-      titleEn: 'Iran Rail Corridor',
-      titleFa: 'کریدور ریلی ایران',
-      summaryEn: 'Phased research plan for an Iranian rail corridor — logistics, economics, technology.',
-      summaryFa: 'طرح پژوهشی مرحله‌ای برای کریدور ریلی ایران — لجستیک، اقتصاد، فناوری.',
-      status: 'seeking',
-      progress: 20,
-      statusEn: 'Research',
-      statusFa: 'پژوهش',
-      order: 2,
-    },
-  });
-  await db.project.upsert({
-    where: { slug: 'klika' },
-    update: {},
-    create: {
-      slug: 'klika',
-      titleEn: 'KLIKA (Fintech)',
-      titleFa: 'کلیکا (فین‌تک)',
-      summaryEn: 'Banking fintech startup concept — digital financial services for the unbanked.',
-      summaryFa: 'مفهوم استارتاپ فین‌تک بانکی — خدمات مالی دیجیتال برای بدون-بانک‌ها.',
-      status: 'seeking',
-      progress: 10,
-      statusEn: 'Seeking collaborators',
-      statusFa: 'در جستجوی همکار',
-      order: 3,
-    },
-  });
+  // ── projects — Work/Lab restructure (2026-09-07) ──
+  // The five earlier venture-style entries are recast honestly as IDEAS:
+  // no funding asks, no market figures, no "seeking partners" language.
+  // They live only under /work → "Ideas & archive" tab (collapsed).
+  const IDEA_EN = "An early idea I've explored; not currently in active development.";
+  const IDEA_FA = 'ایدهٔ اولیه‌ای است که بررسی کرده‌ام؛ در حال حاضر در حال توسعهٔ فعال نیست.';
+  const five = [
+    { slug: 'iran-rail-corridor', titleEn: 'Iran Rail Revolution', titleFa: 'انقلاب ریلی ایران', order: 0 },
+    { slug: 'bizpal', titleEn: 'BIZPAL', titleFa: 'بیزپل', order: 1 },
+    { slug: 'smart-city-waste-sorting', titleEn: 'Smart City Waste Sorting', titleFa: 'تفکیک پسماند هوشمند شهری', order: 2 },
+    { slug: 'investment-management-platform', titleEn: 'Investment Management Platform', titleFa: 'پلتفرم مدیریت سرمایه‌گذاری', order: 3 },
+    { slug: 'klika', titleEn: 'KLIKA', titleFa: 'کلیکا', order: 4 },
+  ];
+  for (const p of five) {
+    await db.project.upsert({
+      where: { slug: p.slug },
+      update: {
+        titleEn: p.titleEn,
+        titleFa: p.titleFa,
+        summaryEn: IDEA_EN,
+        summaryFa: IDEA_FA,
+        section: 'work',
+        status: 'idea',
+        progress: 0,
+        featured: false,
+        fundingAsk: null,
+        statusEn: '',
+        statusFa: '',
+        order: p.order,
+      },
+      create: {
+        slug: p.slug,
+        titleEn: p.titleEn,
+        titleFa: p.titleFa,
+        summaryEn: IDEA_EN,
+        summaryFa: IDEA_FA,
+        section: 'work',
+        status: 'idea',
+        progress: 0,
+        featured: false,
+        order: p.order,
+      },
+    });
+  }
   await db.project.upsert({
     where: { slug: 'club-mehrdad' },
-    update: {},
+    update: {
+      status: 'archived',
+      statusEn: '',
+      statusFa: '',
+      section: 'work',
+      featured: false,
+      order: 5,
+    },
     create: {
       slug: 'club-mehrdad',
       titleEn: 'Club Mehrdad (Clubhouse)',
       titleFa: 'کلاب مهرداد (کلاب‌هاوس)',
       summaryEn: '2021 weekly audio rooms about startups and technology — archived, lessons documented.',
       summaryFa: 'اتاق‌های صوتی هفتگی ۲۰۲۱ درباره استارتاپ و تکنولوژی — بایگانی‌شده، درس‌ها مستند.',
-      status: 'live',
-      progress: 100,
-      statusEn: 'Archived',
-      statusFa: 'بایگانی',
-      order: 4,
+      status: 'archived',
+      section: 'work',
+      order: 5,
+    },
+  });
+
+  // ── new project entries — DRAFTS (owner to confirm names/status before publish) ──
+  // 4a. Game → Lab (experiments/curiosity framing per BRAND_STRATEGY.md — no business language)
+  await db.project.upsert({
+    where: { slug: 'lab-game' },
+    update: {
+      section: 'lab',
+      status: 'building',
+      featured: false,
+      order: 10,
+    },
+    create: {
+      slug: 'lab-game',
+      titleEn: 'Game Experiment (working title)',
+      titleFa: 'آزمایش بازی (نام موقت)',
+      summaryEn: 'A small game experiment, built in the open for curiosity and learning. Lab item — no business model attached.',
+      summaryFa: 'یک آزمایش بازی کوچک که برای کنجکاوی و یادگیری به‌صورت باز ساخته می‌شود. آیتم آزمایشگاهی — بدون مدل کسب‌وکار.',
+      section: 'lab',
+      status: 'building',
+      progress: 30,
+      order: 10,
+    },
+  });
+  // 4b. Health app → Work (strict tool framing; no diagnostic/medical-advice language)
+  await db.project.upsert({
+    where: { slug: 'health-app' },
+    update: {
+      section: 'work',
+      status: 'building',
+      featured: false,
+      order: 11,
+    },
+    create: {
+      slug: 'health-app',
+      titleEn: 'Personal Health Tool (working title)',
+      titleFa: 'ابزار سلامت شخصی (نام موقت)',
+      summaryEn: 'A personal health-tracking utility — everyday logs and trends, strictly a tool. Not a medical device and not a substitute for professional care; a data-handling note will be published before any personal data is collected.',
+      summaryFa: 'ابزار شخصی ثبت و پیگیری سلامت — صرفاً یک ابزار روزمره؛ دستگاه پزشکی نیست و جایگزین متخصص نیست. یادداشت نحوهٔ مدیریت داده‌ها پیش از جمع‌آوری هر داده شخصی منتشر خواهد شد.',
+      section: 'work',
+      status: 'building',
+      progress: 25,
+      order: 11,
+    },
+  });
+  // 4c. Financial app → Work (neutral utility framing — no regulated "bank/neobank" terms)
+  await db.project.upsert({
+    where: { slug: 'personal-finance-tool' },
+    update: {
+      section: 'work',
+      status: 'building',
+      featured: false,
+      order: 12,
+    },
+    create: {
+      slug: 'personal-finance-tool',
+      titleEn: 'Personal Finance Tool (working title)',
+      titleFa: 'ابزار مالی شخصی (نام موقت)',
+      summaryEn: 'A personal finance tool for tracking spending and budgets — a private utility. Not a bank and not financial advice.',
+      summaryFa: 'ابزار مالی شخصی برای ثبت هزینه و بودجه‌بندی — یک ابزار خصوصی؛ بانک نیست و مشاورهٔ مالی هم نیست.',
+      section: 'work',
+      status: 'building',
+      progress: 20,
+      order: 12,
+    },
+  });
+  // 4d. Car super-app → Work (software-led; hardware explicitly a future concept)
+  await db.project.upsert({
+    where: { slug: 'car-super-app' },
+    update: {
+      section: 'work',
+      status: 'building',
+      featured: true,
+      order: 13,
+    },
+    create: {
+      slug: 'car-super-app',
+      titleEn: 'Car Super-App (working title)',
+      titleFa: 'سوپراپ خودرو (نام موقت)',
+      summaryEn: 'A connected-car companion, software first: the app is in early building. The hardware device is a labeled future concept — not part of the current product.',
+      summaryFa: 'همراه خودرو با تمرکز بر نرم‌افزار: اپلیکیشن در مراحل اولیهٔ ساخت است. سخت‌افزار صرفاً یک ایدهٔ برچسب‌خورده برای آینده است و بخشی از محصول فعلی نیست.',
+      section: 'work',
+      status: 'building',
+      progress: 35,
+      featured: true, // default pick — owner confirms final 1–2 featured
+      order: 13,
     },
   });
 
