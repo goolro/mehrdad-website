@@ -1357,3 +1357,30 @@ Work Log:
 Stage Summary:
 - A11y 92→100، SI 9.8→~6s، همهٔ Core Web Vitals سبز، Best Practices و SEO 100
 - کارهای بعدی پیشنهادی: (۱) ISR صفحهٔ اصلی + بازطراحی CSP → حذف TTFB 2.6s برای همهٔ کاربران واقعی (۲) Agentic Browsing 2/3 (llms.txt timeout) بررسی شود
+
+---
+Task ID: phase-static-1 (+ admin-security-audit)
+Agent: Z.ai Code (main)
+Task: استارت فاز بعد (حذف TTFB 2.6s با معماری استاتیک) + جواب ممیزی امنیتی دکمهٔ /admin
+
+Work Log (امنیت ادمین — همه سبز):
+- auth: HMAC session cookie (HttpOnly/SameSite=Strict/Secure) + revoke-set محدود + fail-closed
+- rate limit ورود: 5/IP/15min + سقف سراسری 60/15min؛ CSRF origin-check (SITE_ORIGIN allowlist)
+- هر ۱۳ route ادمین checkAdmin دارند (تست زنده: stats بدون کوکی=401، پسورد غلط=401)
+- /admin robots noindex ✓ → نمایش لینک ادمین در هدر مشکل امنیتی نیست (security-by-obscurity نیست)
+
+Work Log (فاز استاتیک):
+- تجزیه TTFB پروداکشن: TLS در 0.02s، اولین بایت 3.3s → کل تأخیر = SSR سرد + کوئری (نه شبکه)
+- ریشهٔ force-dynamic: خواندن headers() برای nonce در layout و JsonLd → همهٔ صفحات داینامیک
+- تغییر معماری: همهٔ صفحات عمومی + /admin → force-static؛ proxy فقط 301های WP؛ CSP به‌صورت build-time hash-meta برای self-hosted + CSP floor استاتیک در next.config برای ورسل (کف: اسکریپت خارجی/فریم/ابجکت بسته، inline باز با دلیل محتوای owner-authored+sanitize)
+- کشف‌های مسیر: ورسل buildCommand خودش را دارد (npm run build لازم شد → vercel.json)؛ پکِج ورسل post-build mutations از .next را نادیده می‌گیرد (.html و routes-manifest هر دو آزمایش شد — به deployment نمی‌رسند؛ فقط public/ می‌رسد) → meta سخت‌گیر فقط self-hosted
+- فونت‌ها: next/font/google در build به fonts.googleapis.com وابسته بود → Geist با پکیج رسمی geist + Vazirmatn variable (OFL) در src/fonts → build هرمتیک
+- باگ قدیمی فیکس شد: کلاس‌های variable فونت روی body بودند ولی Tailwind از html می‌خواند → Geist هرگز اعمال نمی‌شد؛ حالا روی html → 'GeistSans' computed ✓
+- تزریق محتوای ادمین → Vercel Deploy Hook (VERCEL_DEPLOY_HOOK_URL اختیاری) به‌جای revalidatePath که meta-less می‌ساخت
+- تست ایزوله /tmp: build کامل + سرور standalone → TTFB 0.005s، meta سرو، چت/سلام فوری فارسی/RTL/ادمین fail-closed 503 همه ✓
+
+🚨 حادثهٔ زنده در جریان:
+- Turso (DB ریموت پروداکشن) از ~00:40 UTC از دسترس خارج شد → api/site|posts|chat|article = 500
+- buildهای بعدی با گاردهای catch-to-empty صفحات «خالی» پختند و منتشر شدند (صفحهٔ اصلی ~1h خالی!)
+- فیکس eb906e3: کوئری‌های build-time بدون DB → build FAILS → ورسل deployment قبلی را نگه می‌دارد (هرگز خالی منتشر نشود)
+- پایش: api/posts همچنان 500 (8 بار در ~6 دقیقه) → نیاز به مداخلهٔ مالک در Turso (پنل/توکن/status)
