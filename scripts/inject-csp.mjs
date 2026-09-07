@@ -102,3 +102,39 @@ for (const file of files) {
 
 console.log(`[inject-csp] ${hashes.size} unique inline-script hashes → CSP meta injected into ${injected}/${files.length} pages`);
 if (hashes.size === 0) console.warn('[inject-csp] WARNING: no inline scripts found — CSP meta allows self scripts only');
+
+// build probe (temporary, 2026-09-07): observable evidence of WHAT the
+// Vercel build environment looked like when postbuild ran — fetched at
+// /build-info.json. Remove once the CSP wiring is confirmed.
+import { existsSync, readdirSync } from 'node:fs';
+const probe = {
+  at: new Date().toISOString(),
+  cwd: process.cwd(),
+  vercel: Boolean(process.env.VERCEL),
+  candidates: ['.next/server/app', '.next/standalone/.next/server/app'].map((p) => ({
+    path: p,
+    exists: existsSync(join(process.cwd(), p)),
+    htmlFiles: (() => {
+      try {
+        let n = 0;
+        const walk = (d) => {
+          for (const e of readdirSync(d, { withFileTypes: true })) {
+            const fp = join(d, e.name);
+            if (e.isDirectory()) walk(fp);
+            else if (e.name.endsWith('.html')) n++;
+          }
+        };
+        walk(join(process.cwd(), p));
+        return n;
+      } catch {
+        return -1;
+      }
+    })(),
+  })),
+};
+try {
+  writeFileSync('public/build-info.json', JSON.stringify(probe, null, 2));
+  console.log('[inject-csp] probe written to public/build-info.json');
+} catch (e) {
+  console.warn('[inject-csp] probe write failed:', String(e).slice(0, 120));
+}
