@@ -17,6 +17,6 @@ export const metadata: Metadata = {
 };
 
 export default async function ServicesPage() {
-  const services = await getServices().catch(() => []);
+  const services = await getServices();
   return <ServicesView initialServices={services} />;
 }
