@@ -4,7 +4,28 @@ import { PostDetail } from '@/components/site/BlogView';
 import { JsonLd } from '@/components/site/JsonLd';
 import { getPostDetail } from '@/lib/queries';
 
-export const dynamic = 'force-dynamic';
+// Fully static: rendered once per BUILD (the build-time CSP meta can
+// only be injected then) and served from the edge until the next deploy.
+// Content updates publish via the Vercel Deploy Hook fired by the admin
+// panel (VERCEL_DEPLOY_HOOK_URL) — a ~2-3 min rebuild, same ballpark as
+// the ISR window it replaces. Unknown slugs between deploys still render
+// on demand (dynamicParams) and are cached until the next deploy.
+export const dynamic = 'force-static';
+
+// prerender every published article at build; if the DB is unreachable
+// during build, return [] — pages then render on demand at runtime (ISR)
+export async function generateStaticParams() {
+  try {
+    const { db } = await import('@/lib/db');
+    const posts = await db.post.findMany({
+      where: { published: true },
+      select: { slug: true },
+    });
+    return posts.map((p) => ({ slug: p.slug }));
+  } catch {
+    return [];
+  }
+}
 
 type Props = { params: Promise<{ slug: string }> };
 

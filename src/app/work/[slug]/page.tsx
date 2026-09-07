@@ -3,11 +3,27 @@ import { notFound } from 'next/navigation';
 import { StatusBadge, ProgressBar } from '@/components/site/ProjectsView';
 import { ShareBar } from '@/components/site/ShareBar';
 import { ui } from '@/components/site/i18n';
-import { getProjectBySlug } from '@/lib/queries';
+import { getProjectBySlug, getProjects } from '@/lib/queries';
 import { JsonLd } from '@/components/site/JsonLd';
 import { ContactCta } from '@/components/site/ContactCta';
 
-export const dynamic = 'force-dynamic';
+// Fully static: rendered once per BUILD (the build-time CSP meta can
+// only be injected then) and served from the edge until the next deploy.
+// Content updates publish via the Vercel Deploy Hook fired by the admin
+// panel (VERCEL_DEPLOY_HOOK_URL) — a ~2-3 min rebuild, same ballpark as
+// the ISR window it replaces. Unknown slugs between deploys still render
+// on demand (dynamicParams) and are cached until the next deploy.
+export const dynamic = 'force-static';
+
+// prerender all project pages at build; [] → render on demand at runtime
+export async function generateStaticParams() {
+  try {
+    const projects = await getProjects();
+    return projects.map((p) => ({ slug: p.slug }));
+  } catch {
+    return [];
+  }
+}
 
 type Props = { params: Promise<{ slug: string }> };
 

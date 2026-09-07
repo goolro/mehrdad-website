@@ -27,6 +27,13 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: strin
     if ('published' in b) data.published = Boolean(b.published);
     if ('featured' in b) data.featured = Boolean(b.featured);
     const post = await db.post.update({ where: { id }, data });
+    // content changed → trigger a fresh static build (public pages carry a
+    // build-time CSP meta; regenerating HTML at runtime would drop it).
+    // VERCEL_DEPLOY_HOOK_URL is optional — without it, changes publish on
+    // the next deploy/git push instead.
+    if (process.env.VERCEL_DEPLOY_HOOK_URL) {
+      await fetch(process.env.VERCEL_DEPLOY_HOOK_URL, { method: 'POST' }).catch(() => {});
+    }
     return NextResponse.json({ ok: true, post });
   } catch (e) {
     console.error('admin patch post error:', e);
@@ -40,6 +47,13 @@ export async function DELETE(req: NextRequest, ctx: { params: Promise<{ id: stri
   try {
     const { id } = await ctx.params;
     await db.post.delete({ where: { id } });
+    // content changed → trigger a fresh static build (public pages carry a
+    // build-time CSP meta; regenerating HTML at runtime would drop it).
+    // VERCEL_DEPLOY_HOOK_URL is optional — without it, changes publish on
+    // the next deploy/git push instead.
+    if (process.env.VERCEL_DEPLOY_HOOK_URL) {
+      await fetch(process.env.VERCEL_DEPLOY_HOOK_URL, { method: 'POST' }).catch(() => {});
+    }
     return NextResponse.json({ ok: true });
   } catch (e) {
     console.error('admin delete post error:', e);
