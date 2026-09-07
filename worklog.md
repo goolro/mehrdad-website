@@ -1430,3 +1430,20 @@ Work Log:
 
 Stage Summary:
 - در انتظار نتیجهٔ build بعدی؛ اگر READY شد → مقاله‌ها به sitemap/feed/HTML برمی‌گردند و api/* زنده می‌شود
+
+---
+Task ID: prod-db-fix-1 (تکمیل)
+Agent: Z.ai Code (main)
+Task: تأیید نهایی پروداکشن بعد از build سالم + پینگ کامل IndexNow
+
+Work Log:
+- دیپلوی dpl_AjC5GadXf9SUSinUNJuF8BT7VJXs → READY
+- تأیید پروداکشن: sitemap 94 URL (قبلاً 7!) | feed.xml 200 RSS | api/posts 200 (چت/کامنت هم زنده شد) | llms.txt با 82 مقاله | og:image صفحهٔ اصلی 200 PNG
+- مقاله: hreflang fa ✓؛ اگر cover داشته باشد cover وگرنه کارت OG اختصاصی (هر دو 200)
+- کلید IndexNow در پروداکشن 200؛ پینگ دستی endpoint داخلی: 51 URL؛ batch مستقیم api.indexnow.org با هر 94 URL sitemap → **200 OK** (کلید validate و پذیرش کامل)
+- TTFB: صفحهٔ اصلی 0.13s، مقاله 0.09s (استاتیک edge)
+- ?lang=fa در پروداکشن فعال؛ robots.txt هر 3 ربات اصلی AI را می‌پذیرد
+
+Stage Summary:
+- چرخهٔ کامل بسته شد: کد → گیت‌هاب → بیلد Vercel (با اسکیمای پستگرس) → پروداکشن سالم → ایندکس‌سازی مقاوم → پینگ بینگ/یاندکس
+- دیتابیس پروداکشن = Supabase (ACTIVE_HEALTHY، 82 پست منتشرشده)؛ Turso دیگر در مسیر Vercel نیست (env اصلاً ست نبود)
