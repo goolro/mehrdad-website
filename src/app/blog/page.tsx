@@ -3,7 +3,13 @@ import { BlogView } from '@/components/site/BlogView';
 import { listPosts } from '@/lib/queries';
 import { db } from '@/lib/db';
 
-export const dynamic = 'force-dynamic';
+// Fully static: rendered once per BUILD (the build-time CSP meta can
+// only be injected then) and served from the edge until the next deploy.
+// Content updates publish via the Vercel Deploy Hook fired by the admin
+// panel (VERCEL_DEPLOY_HOOK_URL) — a ~2-3 min rebuild, same ballpark as
+// the ISR window it replaces. Unknown slugs between deploys still render
+// on demand (dynamicParams) and are cached until the next deploy.
+export const dynamic = 'force-static';
 
 export const metadata: Metadata = {
   title: 'Blog & Insights | Mehrdad — Product Builder',
@@ -15,17 +21,21 @@ export default async function BlogPage() {
   // server-rendered first page + filter data → real content in the
   // initial HTML (crawlers and no-JS visitors see the article cards)
   const [firstPage, categories, tags] = await Promise.all([
-    listPosts({ page: 1, perPage: 12 }),
-    db.category.findMany({
-      where: { posts: { some: {} } },
-      orderBy: { nameEn: 'asc' },
-      include: { _count: { select: { posts: true } } },
-    }),
-    db.tag.findMany({
-      where: { posts: { some: { post: { published: true } } } },
-      orderBy: { nameEn: 'asc' },
-      include: { _count: { select: { posts: { where: { post: { published: true } } } } } },
-    }),
+    listPosts({ page: 1, perPage: 12 }).catch(() => ({ posts: [], totalPages: 0 })),
+    db.category
+      .findMany({
+        where: { posts: { some: {} } },
+        orderBy: { nameEn: 'asc' },
+        include: { _count: { select: { posts: true } } },
+      })
+      .catch(() => []),
+    db.tag
+      .findMany({
+        where: { posts: { some: { post: { published: true } } } },
+        orderBy: { nameEn: 'asc' },
+        include: { _count: { select: { posts: { where: { post: { published: true } } } } } },
+      })
+      .catch(() => []),
   ]);
 
   return (

@@ -2,22 +2,26 @@ import { NextRequest, NextResponse } from 'next/server';
 import redirects from '@/lib/wp-redirects.json';
 
 /**
- * Proxy (Next 16 name for middleware), three jobs:
+ * Proxy (Next 16 name for middleware) — SEO redirects only, since the
+ * 2026-09-07 ISR migration:
  *
- * 1. SEO redirects: every old WordPress URL 301-redirects to the new site.
- *    - post URLs (encoded + decoded Persian slugs) → /blog/<slug>
- *    - ?p=<wpId> / ?page_id= → mapped post
- *    - /services/* → /services, /category/* /tag/* /web-stories/* → /blog, etc.
- *    Targets are the REAL routes now (hash-routing retired); real routes
- *    themselves are guarded so the legacy map can never shadow them.
+ * Every public page is static/ISR and carries a BUILD-TIME hash-based CSP
+ * <meta> injected by scripts/inject-csp.mjs. The old per-request
+ * nonce+CSP logic lived here, but (a) a per-request nonce can never match a
+ * cached HTML body, and (b) reading/setting it forced every page to render
+ * dynamically on every request (~2.6s TTFB measured on production).
  *
- * 2. Strict CSP with a per-request nonce (production): script-src carries
- *    'nonce-…' + 'strict-dynamic' — no 'unsafe-inline'. Next.js reads the
- *    CSP from the request headers and propagates the nonce to its own
- *    scripts; layout.tsx passes the same nonce to the boot script.
+ * Job:
+ * - every old WordPress URL 301-redirects to the new site:
+ *   - post URLs (encoded + decoded Persian slugs) → /blog/<slug>
+ *   - ?p=<wpId> / ?page_id= → mapped post
+ *   - /services/* → /services, /category/* /tag/* /web-stories/* → /blog, etc.
+ *   Targets are the REAL routes now (hash-routing retired); real routes
+ *   themselves are guarded so the legacy map can never shadow them.
  *
- * 3. Dev CSP keeps 'unsafe-inline'/'unsafe-eval' (React dev needs eval;
- *    the nonce is still emitted so behaviour matches production).
+ * Security headers (HSTS, X-Frame-Options, …) come from next.config.ts
+ * headers(); the script CSP comes from the per-page <meta> produced at
+ * build time.
  */
 
 type RedirectMap = { paths: Record<string, string>; wpIds: Record<string, string> };
@@ -101,30 +105,7 @@ function lookup(rawPath: string, searchParams: URLSearchParams): string | null {
   return null;
 }
 
-function buildCsp(nonce: string, isDev: boolean): string {
-  return [
-    "default-src 'self'",
-    // 'strict-dynamic' lets nonce-carrying scripts load chunks; the nonce
-    // replaces 'unsafe-inline' entirely in production (CSP3)
-    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${isDev ? " 'unsafe-eval'" : ''}`,
-    // CSS: Tailwind ships as an external sheet; 'unsafe-inline' stays for
-    // React's inline style *attributes* (progress bars, animations) —
-    // style attributes cannot execute script in modern browsers.
-    "style-src 'self' 'unsafe-inline'",
-    "img-src 'self' data: blob: https:",
-    "font-src 'self' data:",
-    "connect-src 'self'",
-    "media-src 'self'",
-    "object-src 'none'",
-    "base-uri 'self'",
-    "form-action 'self'",
-    "frame-ancestors 'none'",
-    'upgrade-insecure-requests',
-  ].join('; ');
-}
-
 export function proxy(req: NextRequest) {
-  // ── 1. legacy WP redirects (real routes are never shadowed) ──
   const path = req.nextUrl.pathname;
   const normalized = normalize(path);
   if (!EXACT_REAL_ROUTES.has(normalized) && !REAL_SUBTREE.test(path)) {
@@ -139,19 +120,7 @@ export function proxy(req: NextRequest) {
     }
   }
 
-  // ── 2/3. per-request nonce CSP ──
-  const isDev = process.env.NODE_ENV !== 'production';
-  const nonce = btoa(crypto.randomUUID());
-  const csp = buildCsp(nonce, isDev);
-
-  const requestHeaders = new Headers(req.headers);
-  requestHeaders.set('x-nonce', nonce);
-  // Next.js reads this request CSP and applies the nonce to its scripts
-  requestHeaders.set('Content-Security-Policy', csp);
-
-  const res = NextResponse.next({ request: { headers: requestHeaders } });
-  res.headers.set('Content-Security-Policy', csp);
-  return res;
+  return NextResponse.next();
 }
 
 export const config = {

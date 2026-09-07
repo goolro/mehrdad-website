@@ -33,6 +33,13 @@ export async function PATCH(req: NextRequest) {
       update: { value: body.theme },
       create: { key: 'theme', value: body.theme },
     });
+    // content changed → trigger a fresh static build (public pages carry a
+    // build-time CSP meta; regenerating HTML at runtime would drop it).
+    // VERCEL_DEPLOY_HOOK_URL is optional — without it, changes publish on
+    // the next deploy/git push instead.
+    if (process.env.VERCEL_DEPLOY_HOOK_URL) {
+      await fetch(process.env.VERCEL_DEPLOY_HOOK_URL, { method: 'POST' }).catch(() => {});
+    }
     return NextResponse.json({ ok: true, theme: body.theme });
   }
 

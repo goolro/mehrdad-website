@@ -1,24 +1,22 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono, Vazirmatn } from "next/font/google";
-import { headers } from "next/headers";
+import localFont from "next/font/local";
+import { GeistSans } from "geist/font/sans";
+import { GeistMono } from "geist/font/mono";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { PwaClient } from "@/components/site/PwaClient";
 import { SiteChrome } from "@/components/site/SiteChrome";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
-const vazirmatn = Vazirmatn({
+// Fonts are SELF-HOSTED (2026-09-07): next/font/google fetched CSS from
+// fonts.googleapis.com at build time — an external dependency that broke
+// hermetic builds (sandbox blocks it) and adds a Google round-trip to every
+// deploy. Geist ships via the official `geist` package (next/font/local
+// under the hood, same --font-geist-* variables); Vazirmatn's OFL variable
+// font is committed in src/fonts.
+const vazirmatn = localFont({
+  src: "../fonts/Vazirmatn-Variable.woff2",
   variable: "--font-vazirmatn",
-  subsets: ["arabic"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -84,28 +82,31 @@ export const viewport: Viewport = {
  */
 const bootScript = `(function(){try{var raw=localStorage.getItem('mehrdad-app');if(raw){var s=(JSON.parse(raw)||{}).state||{};if(s.mode==='dark')document.documentElement.classList.add('dark');if(s.lang==='fa'){document.documentElement.lang='fa';document.documentElement.dir='rtl';}}var t=localStorage.getItem('mehrdad-theme-cache');if(t)document.documentElement.dataset.theme=t;}catch(e){}})();`;
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // nonce generated per request in src/proxy.ts (undefined when the
-  // middleware did not run — e.g. some static contexts / older flows)
-  const h = await headers();
-  const nonce = h.get("x-nonce") || undefined;
-
+  // No per-request nonce anymore (2026-09-07): all HTML pages are static /
+  // ISR and carry a BUILD-TIME hash-based CSP <meta> injected by
+  // scripts/inject-csp.mjs — reading headers() here would force every page
+  // to render dynamically on every request (~2.6s TTFB measured on prod).
+  // The boot script text is identical for every visitor, so its hash
+  // allow-lists it.
   return (
-    <html lang="en" dir="ltr" suppressHydrationWarning>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} ${vazirmatn.variable} antialiased bg-background text-foreground`}
-      >
+    <html
+      lang="en"
+      dir="ltr"
+      // font variable classes live on <html> (not <body>): Tailwind's
+      // --default-font-family resolves var(--font-geist-sans) at :root —
+      // on body it never reached the html element, silently falling back
+      // to the system font stack (pre-existing bug, fixed 2026-09-07)
+      className={`${GeistSans.variable} ${GeistMono.variable} ${vazirmatn.variable}`}
+      suppressHydrationWarning
+    >
+      <body className="antialiased bg-background text-foreground">
         <script
           id="theme-boot"
-          nonce={nonce}
-          // the nonce differs per request, so a client-side navigation's RSC
-          // payload would "mismatch" the already-executed document script —
-          // that diff is intentional and must not be patched (suppressing it
-          // keeps the original, correctly-nonced script untouched)
           suppressHydrationWarning
           dangerouslySetInnerHTML={{ __html: bootScript }}
         />
