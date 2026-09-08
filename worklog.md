@@ -1597,3 +1597,20 @@ Stage Summary:
 - مسیر ورود ادمین دیگر در UI عمومی دیده نمی‌شود؛ دفاع لایه‌لایه کامل شد (noindex متا + Disallow ربات‌ها + rate limit + 2FA اختیاری)
 - یادآوری برای مالک: /admin را بوکمارک کن — تنها راه ورود همین URL مستقیم است
 - push منتظر تأیید مالک (قانون انتشار)
+
+---
+Task ID: admin-lock-hide-deploy-1
+Agent: Z.ai Code (main)
+Task: انتشار پروداکشن — حذف دکمهٔ قفل ادمین از هدر + Disallow ربات‌ها (تأیید مالک: «انجام بده»)
+
+Work Log:
+- push 9cfc800..d1522b7 → origin/main؛ ورسل deploy زنده (~۱۴۰ ثانیه)
+- تأیید پروداکشن mehrdad.ir:
+  - robots.txt: User-Agent: * → Disallow: /admin و /api/admin
+  - HTML صفحهٔ اصلی: صفر ارجاع به admin / بدون دکمهٔ قفل در هدر
+  - /admin مستقیم → 200 با متای noindex, nofollow, nocache (ورود مالک سالم)
+  - /api/admin/auth → 401 (مسیر زنده، احراز هویت فعال)
+
+Stage Summary:
+- ورود ادمین دیگر در UI عمومی تبلیغ نمی‌شود؛ مالک با بوکمارک /admin وارد می‌شود
+- دفاع کامل: noindex متا + Disallow ربات‌ها + rate limit (5/IP/15min + سقف global) + 2FA اختیاری
