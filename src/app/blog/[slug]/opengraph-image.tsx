@@ -1,6 +1,8 @@
 import { ImageResponse } from 'next/og';
 import { ogFonts, OG } from '@/lib/og-fonts';
 import { db } from '@/lib/db';
+import { isUnpublishedPostSlug } from '@/lib/queries';
+import { slugCandidates } from '@/lib/slug-lookup';
 
 /**
  * Per-article OG card (SEO-growth, 2026-09-08): every shared article link on
@@ -23,11 +25,16 @@ export default async function Image({ params }: Props) {
   let title = 'Article | مقاله';
   let date = '';
   let rtl = true;
+  // kill-switch posts (owner decision 2026-01) get the generic branded
+  // card — their pages 404, so no title/date may leak onto a share card
+  const hidden = slugCandidates(slug).some((c) => isUnpublishedPostSlug(c));
   try {
-    const post = await db.post.findUnique({
-      where: { slug },
-      select: { titleFa: true, titleEn: true, date: true },
-    });
+    const post = hidden
+      ? null
+      : await db.post.findUnique({
+          where: { slug },
+          select: { titleFa: true, titleEn: true, date: true },
+        });
     if (post) {
       // Persian-first: the audience sharing these links is Persian-speaking
       const t = post.titleFa || post.titleEn || title;

@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { PostDetail } from '@/components/site/BlogView';
 import { JsonLd } from '@/components/site/JsonLd';
-import { getPostDetail } from '@/lib/queries';
+import { getPostDetail, isUnpublishedPostSlug } from '@/lib/queries';
 
 // Fully static: rendered once per BUILD (the build-time CSP meta can
 // only be injected then) and served from the edge until the next deploy.
@@ -21,7 +21,11 @@ export async function generateStaticParams() {
       where: { published: true },
       select: { slug: true },
     });
-    return posts.map((p) => ({ slug: p.slug }));
+    // kill-switch posts (owner decision 2026-01) are never prerendered —
+    // getPostDetail 404s them at runtime too
+    return posts
+      .filter((p) => !isUnpublishedPostSlug(p.slug))
+      .map((p) => ({ slug: p.slug }));
   } catch {
     return [];
   }

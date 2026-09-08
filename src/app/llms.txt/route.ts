@@ -1,4 +1,4 @@
-import { listPosts, getProjects, getServices } from '@/lib/queries';
+import { listPosts, getProjects } from '@/lib/queries';
 
 /**
  * llms.txt — the emerging LLM-discovery standard (AI-SEO, 2026-09-05).
@@ -20,7 +20,7 @@ export const dynamic = 'force-static';
 const BASE = (process.env.SITE_ORIGIN || 'https://mehrdad.ir').replace(/\/+$/, '');
 
 export async function GET() {
-  const [services, projects] = await Promise.all([getServices(), getProjects()]);
+  const [projects] = await Promise.all([getProjects()]);
 
   // listPosts caps perPage at 48 → page through everything published
   const posts: Awaited<ReturnType<typeof listPosts>>['posts'] = [];
@@ -43,7 +43,7 @@ export async function GET() {
     '',
     '## Pages',
     `- [Home](${BASE}/)`,
-    `- [Services](${BASE}/services) — what Mehrdad offers`,
+    `- [What I Do](${BASE}/services) — one process, not eight services: design the real problem, build fast with AI, share what actually worked`,
     `- [Projects / Work](${BASE}/work) — real builds with honest status`,
     `- [The Lab](${BASE}/lab) — experiments built for curiosity; no business model attached`,
     `- [Blog](${BASE}/blog) — essays on AI, startups, smart city, investment`,
@@ -52,14 +52,6 @@ export async function GET() {
     `- [RSS feed](${BASE}/feed.xml)`,
     '',
   ];
-
-  if (services.length > 0) {
-    lines.push('## Services', '');
-    for (const s of services) {
-      lines.push(`- [${s.titleEn} | ${s.titleFa}](${BASE}/services) — ${(s.descEn || '').slice(0, 160)}`);
-    }
-    lines.push('');
-  }
 
   if (projects.length > 0) {
     lines.push('## Projects', '');

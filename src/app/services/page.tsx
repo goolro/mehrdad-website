@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import { ServicesView } from '@/components/site/ServicesView';
-import { getServices } from '@/lib/queries';
 
 // Fully static: rendered once per BUILD (the build-time CSP meta can
 // only be injected then) and served from the edge until the next deploy.
@@ -11,15 +10,17 @@ import { getServices } from '@/lib/queries';
 export const dynamic = 'force-static';
 
 export const metadata: Metadata = {
-  title: 'Services | Mehrdad — Product Builder',
-  description: 'From product design to AI and market strategy — Forward Deployed Engineering as the core service.',
+  title: 'What I Do | Mehrdad — Product Builder',
+  description:
+    'One process, not eight services — design the real problem, build fast with AI, share what actually worked. Forward Deployed Engineering as the core engagement.',
   alternates: {
     canonical: '/services',
     languages: { en: '/services', fa: '/services?lang=fa', 'x-default': '/services' },
   },
 };
 
-export default async function ServicesPage() {
-  const services = await getServices();
-  return <ServicesView initialServices={services} />;
+// The DB-driven service grid is gone (2026-01): the page is the static
+// "What I Do" block — no content query needed here anymore.
+export default function ServicesPage() {
+  return <ServicesView />;
 }

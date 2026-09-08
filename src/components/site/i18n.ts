@@ -41,6 +41,27 @@ export const ui = {
       aiCtaSub: 'An AI assistant trained on all of Mehrdad\'s content. Ask anything about projects, services, startups or collaboration.',
       aiCtaBtn: 'Start chatting',
     },
+    // "What I Do" — replaces the old 8-service card grid (owner copy, verbatim EN)
+    whatIDo: {
+      title: 'What I Do',
+      sub: 'One process, not eight services.',
+      design: {
+        title: 'Design',
+        desc: 'I start with the real problem — who has it, what it\'s costing them, what an actual fix looks like. This is where most of the time goes.',
+      },
+      build: {
+        title: 'Build',
+        desc: 'Once the direction is clear, AI gets me to a working version fast — days or weeks, not months.',
+      },
+      share: {
+        title: 'Share',
+        before: 'Decisions, mistakes, and what actually worked get written up publicly — that\'s what feeds ',
+        linkWork: 'Work',
+        mid: ' and ',
+        linkWriting: 'Writing',
+        after: '.',
+      },
+    },
     services: {
       contact: 'Request this service',
       details: 'Details',
@@ -411,6 +432,27 @@ export const ui = {
       aiCtaTitle: 'با هوش مصنوعی مهرداد آشنا شوید',
       aiCtaSub: 'دستیار هوشمندی که روی تمام محتوای مهرداد آموزش دیده است. درباره پروژه‌ها، خدمات، استارتاپ‌ها یا همکاری بپرسید.',
       aiCtaBtn: 'شروع گفتگو',
+    },
+    // "چه کاری انجام می‌دهم" — جایگزین شبکهٔ ۸ کارت خدمات (ترجمهٔ وفادار به متن مرجع)
+    whatIDo: {
+      title: 'چه کاری انجام می‌دهم',
+      sub: 'یک فرایند، نه هشت خدمت.',
+      design: {
+        title: 'طراحی',
+        desc: 'از مسئلهٔ واقعی شروع می‌کنم — چه کسی آن را دارد، چه هزینه‌ای برایش می‌سازد و راه‌حل واقعی چه شکلی است. بخش عمدهٔ زمان دقیقاً همین‌جا صرف می‌شود.',
+      },
+      build: {
+        title: 'ساخت',
+        desc: 'وقتی مسیر روشن شد، هوش مصنوعی مرا سریع به نسخه‌ای کارکردی می‌رساند — روزها یا هفته‌ها، نه ماه‌ها.',
+      },
+      share: {
+        title: 'به‌اشتراک‌گذاری',
+        before: 'تصمیم‌ها، اشتباه‌ها و چیزهایی که واقعاً جواب دادند، عمومی نوشته می‌شوند — همین‌هاست که ',
+        linkWork: 'کارها',
+        mid: ' و ',
+        linkWriting: 'بلاگ',
+        after: ' را تغذیه می‌کند.',
+      },
     },
     services: {
       contact: 'درخواست این خدمت',

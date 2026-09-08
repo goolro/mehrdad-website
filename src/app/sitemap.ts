@@ -1,5 +1,6 @@
 import type { MetadataRoute } from 'next';
 import { db } from '@/lib/db';
+import { isUnpublishedPostSlug } from '@/lib/queries';
 
 // PRERENDERED AT BUILD (2026-09-08, SEO-growth): the sitemap is generated
 // once per deploy, not per request.
@@ -44,7 +45,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     db.project.findMany({ select: { slug: true } }),
   ]);
 
-  const postUrls: MetadataRoute.Sitemap = posts.map((p) => ({
+  const postUrls: MetadataRoute.Sitemap = posts
+    // kill-switch posts (owner decision 2026-01) never appear in the map —
+    // their article pages 404, so listing them would poison the crawl
+    .filter((p) => !isUnpublishedPostSlug(p.slug))
+    .map((p) => ({
     url: `${BASE}/blog/${p.slug}`,
     lastModified: p.date,
     changeFrequency: 'monthly',
