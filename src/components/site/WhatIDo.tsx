@@ -2,7 +2,7 @@
 
 import { useApp } from './store';
 import { ui } from './i18n';
-import { PenTool, Hammer, Share2, ChevronRight } from 'lucide-react';
+import { PenTool, Hammer, Share2, ChevronRight, Workflow } from 'lucide-react';
 
 /**
  * "What I Do" — one process, not eight services.
@@ -88,16 +88,26 @@ export function WhatIDo({ headingLevel = 'h2' }: { headingLevel?: 'h1' | 'h2' })
       </div>
 
       {/* FDE stays discoverable — a slim pointer to its dedicated page,
-          NOT a service category card (the 8-card grid is gone for good) */}
+          NOT a service category card (the 8-card grid is gone for good).
+          Deliberately distinctive (owner request 2026-09-08): animated
+          gradient border beam (.fde-beam in globals.css) + gradient icon
+          + glow hover — it must read as "something else", not card #4. */}
       <button
         onClick={() => setView('fde')}
-        className="group mt-6 flex w-full items-center justify-between gap-4 rounded-2xl border border-violet-500/30 bg-violet-600/5 px-5 py-4 text-start transition-colors hover:bg-violet-600/10"
+        className="fde-beam group mt-6 flex w-full items-center justify-between gap-4 rounded-2xl border border-violet-500/30 bg-gradient-to-r from-violet-600/10 via-fuchsia-600/[0.06] to-transparent px-5 py-4 text-start transition-all hover:-translate-y-0.5 hover:border-violet-500/60 hover:shadow-lg hover:shadow-violet-600/20"
       >
-        <span className="text-sm sm:text-base">
-          <span className="font-bold text-violet-700 dark:text-violet-300">{t.fde.hero.title}</span>
-          <span className="text-muted-foreground"> — {t.fde.cardTagline}</span>
+        <span className="flex min-w-0 items-center gap-3">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-violet-600 to-fuchsia-600 text-white shadow-md shadow-fuchsia-600/25 transition-transform group-hover:scale-105">
+            <Workflow className="h-5 w-5" aria-hidden />
+          </span>
+          <span className="text-sm sm:text-base">
+            <span className="font-bold text-violet-700 dark:text-violet-300">{t.fde.hero.title}</span>
+            <span className="text-muted-foreground"> — {t.fde.cardTagline}</span>
+          </span>
         </span>
-        <ChevronRight className="h-4 w-4 shrink-0 text-violet-600 transition-transform group-hover:translate-x-0.5 rtl:rotate-180 dark:text-violet-400" />
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-violet-500/40 bg-background/60 text-violet-600 transition-colors group-hover:border-violet-500/70 group-hover:bg-violet-600/10 dark:text-violet-400">
+          <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 rtl:rotate-180" aria-hidden />
+        </span>
       </button>
     </div>
   );
