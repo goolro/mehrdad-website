@@ -14,6 +14,8 @@ import {
   Lightbulb,
   Rocket,
 } from 'lucide-react';
+import { ShareBar } from './ShareBar';
+import { ContactCta } from './ContactCta';
 import {
   isActiveStatus,
   normalizeStatus,
@@ -26,6 +28,17 @@ interface ProjectItem {
   summaryEn: string; summaryFa: string; cover: string | null;
   section: string; status: string; progress: number; featured: boolean;
   fundingAsk: string | null; statusEn: string; statusFa: string;
+}
+
+/** structural subset of the Prisma Project row passed from the server page */
+export interface ProjectDetailRow {
+  slug: string;
+  titleEn: string; titleFa: string;
+  summaryEn: string; summaryFa: string;
+  cover: string | null;
+  status: string; progress: number;
+  fundingAsk: string | null;
+  statusEn: string | null; statusFa: string | null;
 }
 
 type StatusStyle = {
@@ -237,5 +250,83 @@ export function ProjectsView({ initialProjects }: { initialProjects: ProjectItem
       )}
 
     </div>
+  );
+}
+
+/**
+ * Project detail body (client component — replaces the old server-rendered
+ * page that hardcoded BOTH languages stacked, which produced the EN/FA
+ * mixing the owner reported on /work/<slug>). Follows the PostDetail
+ * pattern: the server page fetches the row, this component picks the
+ * language-specific title/summary/labels from the live UI language.
+ * SSR first paint renders EN (store default), FA swaps in after rehydrate —
+ * identical to blog detail pages. SEO: JSON-LD keeps both languages.
+ */
+export function ProjectDetail({ project, shareUrl }: { project: ProjectDetailRow; shareUrl: string }) {
+  const { lang } = useApp();
+  const t = ui[lang];
+  const st = normalizeStatus(project.status);
+  const cfg = STATUS_STYLE[st];
+  const rtl = lang === 'fa';
+  const title = pick(lang, project.titleEn, project.titleFa);
+  const summary = pick(lang, project.summaryEn, project.summaryFa);
+
+  return (
+    <article className="mx-auto w-full max-w-4xl px-4 py-12 sm:px-6">
+      <div className="flex flex-wrap items-center gap-3">
+        <StatusBadge
+          status={project.status}
+          statusEn={project.statusEn ?? undefined}
+          statusFa={project.statusFa ?? undefined}
+          lang={lang}
+        />
+        {showsProgress(st) && (
+          <span className="text-sm font-semibold text-amber-600 dark:text-amber-400">
+            {project.progress}%
+          </span>
+        )}
+      </div>
+
+      <h1 className="mt-4 text-3xl font-extrabold leading-tight sm:text-4xl">{title}</h1>
+
+      {project.cover && (
+        <img
+          src={project.cover}
+          alt={title}
+          className="mt-7 w-full rounded-2xl object-cover shadow-lg"
+        />
+      )}
+
+      <div className="prose-blog mt-8" dir={rtl ? 'rtl' : 'ltr'}>
+        <p>{summary}</p>
+      </div>
+
+      {showsProgress(st) && (
+        <div className="mt-8 rounded-2xl border border-amber-500/30 bg-amber-500/5 p-5">
+          <div className="mb-2 flex items-center justify-between text-sm font-medium">
+            <span>{t.projects.progress}</span>
+            <span className="font-extrabold text-amber-600 dark:text-amber-400">{project.progress}%</span>
+          </div>
+          <ProgressBar value={project.progress} barCls={cfg.barCls} />
+        </div>
+      )}
+
+      {project.fundingAsk && (
+        <div className="mt-8 rounded-2xl border border-violet-500/30 bg-violet-600/5 p-5">
+          <div className="text-sm font-semibold text-violet-700 dark:text-violet-300">
+            {t.projects.fundingAsk}
+          </div>
+          <p className="mt-1 text-sm" dir={rtl ? 'rtl' : 'ltr'}>
+            {project.fundingAsk}
+          </p>
+        </div>
+      )}
+
+      <div className="mt-8 border-y border-border py-4">
+        <ShareBar url={shareUrl} title={title} label={t.common.shareProject} />
+      </div>
+
+      <ContactCta label={t.projects.interestedCta} />
+    </article>
   );
 }

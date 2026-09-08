@@ -1614,3 +1614,21 @@ Work Log:
 Stage Summary:
 - ورود ادمین دیگر در UI عمومی تبلیغ نمی‌شود؛ مالک با بوکمارک /admin وارد می‌شود
 - دفاع کامل: noindex متا + Disallow ربات‌ها + rate limit (5/IP/15min + سقف global) + 2FA اختیاری
+
+---
+Task ID: lang-mix-defaults-1
+Agent: Z.ai Code (main)
+Task: ریشه‌یابی تداخل EN/FA در بخش طرح‌ها + پیش‌فرض زبان انگلیسی و تم شب
+
+Work Log:
+- ریشهٔ مشکل پیدا شد: صفحهٔ جزئیات طرح (/work/[slug]) کامپوننت سروری بود که هر دو زبان را همیشه روی هم می‌چید — عنوان EN + بلافاصله عنوان FA (dir=rtl)، خلاصهٔ EN + خلاصهٔ FA، برچسب‌های دوزبانهٔ هاردکد (Build progress · پیشرفت ساخت، Funding ask · درخواست سرمایه)، ShareBar و ContactCta همیشه EN و StatusBadge با lang="en" ثابت — مستقل از زبان انتخابی بازدیدکننده
+- بررسی سایر بخش‌ها: /work لیست، /blog، صفحهٔ اصلی، Comments، ShareBar، Footer/Header — همگی تمیز (فقط از pick/i18n استفاده می‌کنند)؛ data دیتابیس هم همهٔ رکوردها هر دو زبان را دارند؛ 404 و کارت‌های OG دوزبانهٔ عمدی‌اند
+- فیکس الگوی PostDetail: کامپوننت کلاینت ProjectDetail در ProjectsView.tsx (title/summary/labels با pick از زبان زندهٔ UI)؛ صفحهٔ سروری فقط fetch + 404 + JSON-LD دوزبانه برای SEO؛ کلید جدید i18n: projects.interestedCta (EN/FA)
+- پیش‌فرض تم شب: store.ts mode:'light'→'dark' + boot script در layout.tsx فقط وقتی mode ذخیره‌شده 'light' است روشن می‌ماند (!s.mode||s.mode==='dark' → dark)
+- پیش‌فرض زبان: از قبل EN بود (html lang="en" + store lang:'en' + LangBanner فقط پیشنهاد می‌دهد، auto-switch ندارد) — تأیید شد، تغییری لازم نبود
+- تأیید محلی: lint تمیز؛ بازدید تازه → dark+EN؛ جزئیات طرح EN → فقط EN (بدون عنوان/خلاصهٔ FA)؛ ?lang=fa → فقط FA و rtl (میزان پیشرفت ساخت، اشتراک‌گذاری این طرح، من به این طرح علاقه‌مندم)؛ mode='light' ذخیره‌شده → light می‌ماند؛ بدون خطای کنسول
+
+Stage Summary:
+- تداخل EN/FA در جزئیات طرح‌ها ریشه‌ای حل شد (یک زبان در هر نما، برچسب‌ها هم i18n)
+- پیش‌فرض بازدید تازه: EN + dark؛ انتخاب صریح کاربر (زبان/روشنایی) در localStorage می‌ماند و بر پیش‌فرض می‌بَرد
+- یادآوری: دستگاه مالک اگر قبلاً فارسی/روشن انتخاب کرده، همان را می‌بیند — با یک کلیک EN/🌙 عوض می‌شود

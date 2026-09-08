@@ -218,6 +218,8 @@ export const ui = {
       ctaTitle: 'Have a question or want to work together?',
       ctaSub: 'One form — it goes straight to me.',
       fundingAsk: 'Funding ask',
+      // project detail CTA → /contact (per-language, was hardcoded EN)
+      interestedCta: "I'm interested in this project",
     },
     lab: {
       title: 'The Lab',
@@ -610,6 +612,7 @@ export const ui = {
       ctaTitle: 'سوالی دارید یا می‌خواهید با هم کار کنیم؟',
       ctaSub: 'یک فرم — مستقیم به خودم می‌رسد.',
       fundingAsk: 'درخواست سرمایه',
+      interestedCta: 'من به این طرح علاقه‌مندم',
     },
     lab: {
       title: 'آزمایشگاه',
