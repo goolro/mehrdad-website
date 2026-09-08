@@ -1652,3 +1652,20 @@ Work Log:
 Stage Summary:
 - کارت FDE از سه کارت فرایند قابل‌تشخیص شد: پرتو متحرک + آیکن گرادیانی + hover نوری
 - fallback های امن: بدون @property → حاشیهٔ گرادیان ثابت؛ reduced-motion → بدون انیمیشن
+
+---
+Task ID: fde-card-cta-shimmer-1
+Agent: Z.ai Code (main)
+Task: کلمهٔ دعوت داخل کارت FDE + افکت روی همان کلمه (درخواست مالک)
+
+Work Log:
+- کلمهٔ دعوت به متن کارت اضافه شد: EN «Explore» / FA «کاوش کنید» — بعد از تگ‌لاین، با جداکنندهٔ ·
+- افکت روی کلمه: shimmer متنی — جاروی نور بنفش→سرخابی که مداوم روی خودِ کلمه حرکت می‌کند (CSS خالص: background-clip:text + انیمیشن background-position، کلاس .fde-shimmer در globals.css، چرخهٔ ۳ ثانیه)
+- فلش کوچک ArrowRight بعد از کلمه: با hover کارت کمی جلو می‌رود؛ در فارسی خودکار ۱۸۰ درجه می‌چرخد (rtl:rotate-180)
+- reduced-motion: انیمیشن کلمه هم ثابت می‌شود (گرادیان خوانا می‌ماند)
+- i18n: کلید جدید fde.cardCta (EN/FA) — کلمه در هر زبان درست
+- تأیید محلی: lint تمیز؛ animationName=fde-shimmer + background-clip:text + color transparent روی کلمه؛ EN «Explore» و FA «کاوش کنید» هر دو با اسکرین‌شات تأیید شد؛ rtl آینه‌ای درست
+
+Stage Summary:
+- کارت FDE حالا دعوت صریح دارد: «Explore / کاوش کنید» با افکت نور متحرک روی خود کلمه + فلش جهت‌نما
+- هر دو افکت کارت (پرتو حاشیه + شیمر کلمه) CSS خالص و بدون هزینهٔ JS هستند

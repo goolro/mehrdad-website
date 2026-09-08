@@ -386,3 +386,29 @@
 @media (prefers-reduced-motion: reduce) {
   .fde-beam::before { animation: none; }
 }
+
+/* ── FDE card invitation word: shimmering gradient text ──────────────
+   A violet→fuchsia light sweep travels across the word continuously
+   (owner request 2026-09-08). background-clip:text keeps it a pure CSS
+   effect; reduced-motion freezes it at a readable static gradient. */
+.fde-shimmer {
+  background: linear-gradient(
+    110deg,
+    var(--color-violet-600, #7c3aed) 25%,
+    var(--color-fuchsia-500, #d946ef) 45%,
+    var(--color-violet-400, #a78bfa) 55%,
+    var(--color-violet-600, #7c3aed) 75%
+  );
+  background-size: 250% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: fde-shimmer 3s linear infinite;
+}
+@keyframes fde-shimmer {
+  from { background-position: 200% 0; }
+  to { background-position: -50% 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fde-shimmer { animation: none; }
+}

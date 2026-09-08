@@ -72,6 +72,8 @@ export const ui = {
       seoTitle: 'Forward Deployed Engineering | Mehrdad — Product Builder',
       seoDescription: 'Solving real business and product problems by combining product thinking, software engineering and AI — from problem discovery to building, deploying and improving the solution.',
       cardTagline: 'Engineering on the front line of problem-solving',
+      // invitation word inside the FDE pointer card — shimmering (owner request)
+      cardCta: 'Explore',
       hero: {
         kicker: 'Core Service',
         title: 'Forward Deployed Engineering',
@@ -466,6 +468,7 @@ export const ui = {
       seoTitle: 'مهندسی در خط مقدم حل مسئله | مهرداد — سازنده محصول',
       seoDescription: 'حل مسائل واقعی کسب‌وکار و محصول با ترکیب تفکر محصول، مهندسی نرم‌افزار و هوش مصنوعی؛ از کشف مسئله تا ساخت، استقرار و بهبود راه‌حل.',
       cardTagline: 'Forward Deployed Engineering',
+      cardCta: 'کاوش کنید',
       hero: {
         kicker: 'خدمت اصلی',
         title: 'مهندسی در خط مقدم حل مسئله',

@@ -2,7 +2,7 @@
 
 import { useApp } from './store';
 import { ui } from './i18n';
-import { PenTool, Hammer, Share2, ChevronRight, Workflow } from 'lucide-react';
+import { PenTool, Hammer, Share2, ChevronRight, Workflow, ArrowRight } from 'lucide-react';
 
 /**
  * "What I Do" — one process, not eight services.
@@ -103,6 +103,13 @@ export function WhatIDo({ headingLevel = 'h2' }: { headingLevel?: 'h1' | 'h2' })
           <span className="text-sm sm:text-base">
             <span className="font-bold text-violet-700 dark:text-violet-300">{t.fde.hero.title}</span>
             <span className="text-muted-foreground"> — {t.fde.cardTagline}</span>
+            <span className="text-muted-foreground"> · </span>
+            {/* invitation word with a continuous light sweep (.fde-shimmer) */}
+            <span className="fde-shimmer whitespace-nowrap font-bold">{t.fde.cardCta}</span>
+            <ArrowRight
+              className="ms-0.5 inline h-3.5 w-3.5 text-fuchsia-500 transition-transform group-hover:translate-x-0.5 rtl:rotate-180"
+              aria-hidden
+            />
           </span>
         </span>
         <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-violet-500/40 bg-background/60 text-violet-600 transition-colors group-hover:border-violet-500/70 group-hover:bg-violet-600/10 dark:text-violet-400">
