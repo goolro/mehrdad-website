@@ -1,10 +1,11 @@
 'use client';
 
+import Link from 'next/link';
 import { useApp } from './store';
 import { ui } from './i18n';
 
 export function Footer() {
-  const { lang, setView } = useApp();
+  const { lang } = useApp();
   const t = ui[lang];
   const year = new Date().getFullYear();
 
@@ -23,10 +24,13 @@ export function Footer() {
           </div>
 
           <nav className="flex flex-wrap items-center justify-center gap-4 text-sm text-muted-foreground" aria-label="Footer navigation">
-            <button onClick={() => setView('services')} className="hover:text-foreground">{t.nav.services}</button>
-            <button onClick={() => setView('projects')} className="hover:text-foreground">{t.nav.projects}</button>
-            <button onClick={() => setView('blog')} className="hover:text-foreground">{t.nav.blog}</button>
-            <button onClick={() => setView('contact')} className="hover:text-foreground">{t.nav.contact}</button>
+            {/* real anchors (structural audit 2026-09-08): footer nav was JS
+                buttons — every page lost its simplest crawlable internal
+                links; <a> restores crawling, middle-click and link semantics */}
+            <Link href="/services" className="hover:text-foreground">{t.nav.services}</Link>
+            <Link href="/work" className="hover:text-foreground">{t.nav.projects}</Link>
+            <Link href="/blog" className="hover:text-foreground">{t.nav.blog}</Link>
+            <Link href="/contact" className="hover:text-foreground">{t.nav.contact}</Link>
           </nav>
         </div>
 

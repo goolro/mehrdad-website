@@ -1,12 +1,13 @@
 'use client';
 
+import Link from 'next/link';
 import { useApp } from './store';
 import { ui } from './i18n';
 import { Button } from '@/components/ui/button';
 import { Rocket, BrainCircuit, Code2, PenTool, Briefcase, Megaphone, Store, Lightbulb } from 'lucide-react';
 
 export function AboutView() {
-  const { lang, setView, setChatOpen } = useApp();
+  const { lang, setChatOpen } = useApp();
   const t = ui[lang];
 
   const skills = [
@@ -50,8 +51,8 @@ export function AboutView() {
       <div className="mt-12 rounded-3xl bg-gradient-to-br from-violet-700 via-violet-600 to-fuchsia-600 p-8 text-center text-white">
         <h2 className="text-2xl font-extrabold">{t.about.cta}</h2>
         <div className="mt-5 flex flex-wrap justify-center gap-3">
-          <Button variant="secondary" className="bg-white text-violet-700 hover:bg-white/90" onClick={() => setView('contact')}>
-            {t.nav.contact}
+          <Button variant="secondary" className="bg-white text-violet-700 hover:bg-white/90" asChild>
+            <Link href="/contact">{t.nav.contact}</Link>
           </Button>
           <Button variant="secondary" className="bg-white/15 text-white hover:bg-white/25" onClick={() => setChatOpen(true)}>
             ✦ {t.hero.cta2}

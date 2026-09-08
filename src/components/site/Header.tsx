@@ -1,13 +1,14 @@
 'use client';
 
-import { useApp, pick } from './store';
+import Link from 'next/link';
+import { useApp, pick, VIEW_PATH } from './store';
 import { ui } from './i18n';
 import type { Lang } from './i18n';
 import { Button } from '@/components/ui/button';
 import { Moon, Sun } from 'lucide-react';
 
 export function Header() {
-  const { lang, setLang, view, setView, setChatOpen, mode, setMode } = useApp();
+  const { lang, setLang, view, setChatOpen, mode, setMode } = useApp();
   const t = ui[lang];
 
   /**
@@ -33,8 +34,12 @@ export function Header() {
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border/40 bg-background/80 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 px-4 sm:px-6">
-        <button
-          onClick={() => setView('home')}
+        {/* real <a> links everywhere (2026-09-08 structural audit): the whole
+            site's internal linking used to be JS buttons — invisible to
+            crawlers, un-middle-clickable, not keyboard-link semantics.
+            view-state stays in sync via SiteChrome's pathname effect. */}
+        <Link
+          href="/"
           className="flex items-center gap-2 font-bold tracking-tight"
           aria-label="Mehrdad home"
         >
@@ -44,13 +49,13 @@ export function Header() {
           <span className="text-lg" dir={lang === 'fa' ? 'rtl' : 'ltr'}>
             {lang === 'fa' ? 'مهرداد' : 'Mehrdad'}
           </span>
-        </button>
+        </Link>
 
         <nav className="hidden items-center gap-1 md:flex" aria-label="Main navigation">
           {navItems.map((item) => (
-            <button
+            <Link
               key={item.key}
-              onClick={() => setView(item.key)}
+              href={VIEW_PATH[item.key]}
               className={`rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
                 view === item.key
                   ? 'bg-violet-600/10 text-violet-600 dark:text-violet-400'
@@ -58,7 +63,7 @@ export function Header() {
               }`}
             >
               {item.label}
-            </button>
+            </Link>
           ))}
         </nav>
 
@@ -107,9 +112,9 @@ export function Header() {
       {/* mobile nav */}
       <nav className="flex gap-1 overflow-x-auto border-t border-border/40 px-3 py-2 md:hidden" aria-label="Mobile navigation">
         {navItems.map((item) => (
-          <button
+          <Link
             key={item.key}
-            onClick={() => setView(item.key)}
+            href={VIEW_PATH[item.key]}
             className={`whitespace-nowrap rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
               view === item.key
                 ? 'bg-violet-600/10 text-violet-600 dark:text-violet-400'
@@ -117,7 +122,7 @@ export function Header() {
             }`}
           >
             {item.label}
-          </button>
+          </Link>
         ))}
       </nav>
     </header>
