@@ -341,3 +341,48 @@
 .chat-scroll::-webkit-scrollbar-track {
   background: transparent;
 }
+
+/* ── FDE pointer card: animated gradient border beam ─────────────────
+   A single violet→fuchsia light ray travels slowly around the card
+   border, marking the "beyond the loop" pointer as deliberately
+   different from the three process cards (owner request 2026-09-08).
+   @property animates the conic angle; browsers without @property show
+   the same border as a static gradient (graceful degradation). */
+@property --fde-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+.fde-beam {
+  position: relative;
+  isolation: isolate;
+}
+.fde-beam::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1.5px;
+  background: conic-gradient(
+    from var(--fde-angle),
+    transparent 0deg,
+    transparent 250deg,
+    var(--color-violet-500, #8b5cf6) 310deg,
+    var(--color-fuchsia-500, #d946ef) 340deg,
+    var(--color-violet-500, #8b5cf6) 360deg
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  animation: fde-spin 7s linear infinite;
+  pointer-events: none;
+  z-index: 1;
+}
+@keyframes fde-spin {
+  to { --fde-angle: 360deg; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fde-beam::before { animation: none; }
+}
