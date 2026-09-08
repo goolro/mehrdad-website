@@ -1482,3 +1482,24 @@ Work Log:
 Stage Summary:
 - فیکس اسکرول چت روی پروداکشن زنده و تأیید شده (commit 9061dea)
 - بستهٔ SEO قبلی (208dd72) هم روی پروداکشن READY بود — همهٔ مسیرها سبز
+
+---
+Task ID: worklab-audit-1
+Agent: Z.ai Code (main)
+Task: Final Technical Production Audit — Work/Lab restructure (architecture, code quality, DB/Prisma, API/CRUD, auth, security, XSS, validation, error handling, i18n, SEO, performance, build, migration, E2E, production)
+
+Work Log:
+- تایید قید انتشار: local main = origin/main + 2 commit (1671912 real restructure + f188e57 chmod noise) — هیچ‌چیز push نشده (مطابق قانون «انتشار فقط با تأیید مالک»)
+- Audit کد: schema (sqlite + postgres mirror هم‌خوان)، project-status.ts (واژگان وضعیت صادقانه + normalizer legacy)، queries.ts (فیلتر section/featured)، LabView/ProjectsView/HomeView/work/[slug] (رندر متنِ خالص → XSS-safe)، AdminView ProjectsTab (CRUD کامل)
+- Static checks: ESLint تمیز؛ tsc ۴ خطای build-breaker در API های جدید کشف و فیکس شد → commit 4953878 (notifyIndexNow void است و .catch ندارد؛ ProjectCreateData تایپ‌شده برای prisma create؛ narrowing بخش)
+- Migration check: Prisma db push روی SQLite محلی اعمال شده؛ **پروداکشن Supabase (ref gcaksemjwkhqkyhaseui) هنوز ستون‌های section/featured/fundingAsk را ندارد** — 5 ردیف venture هنوز status='seeking' + 'Seeking partners' — apply-worklab-restructure.ts اجرا نشده (درست: نیازمند تأیید مالک)
+- وابستگی ترتیب انتشار مستند شد: (1) db push پستگرس (2) اجرای اسکریپت restructure با تأیید مالک (3) push کد — وگرنه build ورسل fail ولی deployment قبلی سالم می‌ماند (سیاست fail-safe برقرار است)
+- E2E محلی با مرورگر واقعی: seed 10 پروژه؛ /work تب Work (3 آیتم Building + progress) و تب Ideas (5 ایده neutral + 1 archived، بدون هیچ زبان سرمایه‌گذاری)؛ /lab فقط lab-game؛ صفحهٔ اصلی فقط featured work (car-super-app)؛ /work/[slug] با JSON-LD و progress؛ admin: login → Projects tab → CREATE (dialog کامل: section/status/progress/featured/funding) → detail 200 و دیده‌شدن در /lab → PATCH (building→paused، جزئیات «Paused») → DELETE (confirm، 404، صفر ردیف در DB)
+- Security: GET/POST/PATCH/DELETE همه checkAdmin؛ unauth=401؛ Origin خارجی=403 (CSRF)؛ fail-closed 503 بدون ADMIN_PASSWORD؛ slug normalize؛ progress clamp 0-100؛ status/section whitelist
+- Sweep همهٔ روت‌های محلی 200 (14 مسیر)؛ پروداکشن فعلی (کد قدیمی) سالم: / 200، /work 200، api/posts 200، sitemap 200؛ /lab زنده هنوز 308→/fde است و «Seeking partners» هنوز روی صفحهٔ اصلی زنده است (معلقِ deploy)
+- Cleanup: اسکریپت موقت audit حذف شد؛ ADMIN_PASSWORD محلی فقط در .env (gitignored) برای تست ادمین
+
+Stage Summary:
+- کد restructure از نظر type/lint/E2E/امنیت سبز است و READY برای انتشار پس از تأیید مالک
+- بلاکر انتشار فقط عملیاتی است نه کدی: push اسکیمای پستگرس + اجرای اسکریپت restructure (DRY-RUN اول) + سپس push کد
+- 4 خطای TS (که build ورسل را می‌شکست) قبل از هر push فیکس و commit شد (4953878)
