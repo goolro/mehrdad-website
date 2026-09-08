@@ -1503,3 +1503,22 @@ Stage Summary:
 - کد restructure از نظر type/lint/E2E/امنیت سبز است و READY برای انتشار پس از تأیید مالک
 - بلاکر انتشار فقط عملیاتی است نه کدی: push اسکیمای پستگرس + اجرای اسکریپت restructure (DRY-RUN اول) + سپس push کد
 - 4 خطای TS (که build ورسل را می‌شکست) قبل از هر push فیکس و commit شد (4953878)
+
+---
+Task ID: worklab-deploy-1
+Agent: Z.ai Code (main)
+Task: اجرای ران‌بوک انتشار Work/Lab restructure با تأیید صریح مالک («انجام بده»)
+
+Work Log:
+- گام ۱ (اسکیما): ستون‌های additive روی Supabase پروداکشن (ref gcaksemjwkhqkyhaseui) از طریق management SQL endpoint اعمال شد — section TEXT NOT NULL DEFAULT 'work'، featured BOOLEAN DEFAULT false، fundingAsk TEXT nullable + تغییر default ستون‌های legacy (status→'idea'، statusEn/statusFa→'') — state نهایی با information_schema تأیید شد (دقیقاً مطابق schema.postgres.prisma)
+- گام ۲ (محتوا): معادلِ دقیق apply-worklab-restructure.ts --apply اجرا شد (پسورد مستقیم DB در دسترس نبود و reset آن دیپلوی زنده را می‌شکست؛ endpoint مدیریتی امن‌ترین مسیر بود): 5 پروژهٔ venture → عنوان کوتاه + خلاصهٔ خنثی + status=idea + featured=false + fundingAsk=NULL + پاک‌شدن برچسب‌های «Seeking partners»؛ 4 آیتم جدید upsert شدند (lab-game lab/building/30، health-app work/building/25، personal-finance-tool work/building/20، car-super-app work/building/35/featured=true)
+- تأیید DB: 9 ردیف نهایی مطابق طرح؛ کوئری regex زبان سرمایه‌گذاری ($، pre-seed، market size، همکار، ...) → **صفر ردیف**
+- گام ۳ (کد): push 791eab1..d8ef829 → origin/main (1671912 restructure + 298f4c5 فیکس‌های TS + d8ef829 worklog)
+- گام ۴ (build): dpl_2Z7HW6tHNp1zq2DtwrGSqyAbgiPi → READY در ~2.5 دقیقه
+- گام ۵ (تأیید پروداکشن): همهٔ مسیرها 200 (/, /work, /lab — دیگر 308 نیست, /work/[slug] جدید و قدیم, api/posts, sitemap, feed, llms.txt, og-image)؛ /work: تب Work=3 با progress (اول=25%) + تب Ideas=5 با badge «Idea»؛ /lab: Game Experiment؛ صفحهٔ اصلی FA: فقط سوپراپ خودرو + CTA؛ sitemap=99 URL شامل /lab؛ api/admin/projects بدون auth=401؛ صفر خطای console در مرورگر
+- نکتهٔ کشف‌شده (غیربلاکر): «BIZPAL» در HTML صفحهٔ اصلی از **کارت مقالهٔ بلاگ** (پست WP اکتبر ۲۰۲۵) می‌آید نه بخش پروژه‌ها — اصلاح لحن مقالات بلاگ خارج از اسکوپ restructure بود و نیازمند تصمیم مالک است
+
+Stage Summary:
+- restructure کاملاً روی پروداکشن mehrdad.ir زنده و تأیید شد — صفحات Projects/Work/Lab/homepage با دادهٔ جدید صادقانه بازسازی شدند
+- زبان سرمایه‌گذاری از پروژه‌ها به‌طور کامل حذف شد؛ /lab ایندکس‌پذیر شد (در sitemap)
+- تنها مورد باز (P3، اختیاری، نیازمند تصمیم مالک): مقالات بلاگ مرتبط با venture ها (مثل پست BIZPAL) هنوز لحن استارتاپ فعال دارند
