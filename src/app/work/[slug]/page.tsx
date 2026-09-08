@@ -1,12 +1,8 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { StatusBadge, ProgressBar } from '@/components/site/ProjectsView';
-import { ShareBar } from '@/components/site/ShareBar';
-import { ui } from '@/components/site/i18n';
+import { ProjectDetail } from '@/components/site/ProjectsView';
 import { getProjectBySlug, getProjects } from '@/lib/queries';
 import { JsonLd } from '@/components/site/JsonLd';
-import { ContactCta } from '@/components/site/ContactCta';
-import { normalizeStatus, showsProgress } from '@/lib/project-status';
 
 // Fully static: rendered once per BUILD (the build-time CSP meta can
 // only be injected then) and served from the edge until the next deploy.
@@ -27,18 +23,6 @@ export async function generateStaticParams() {
 }
 
 type Props = { params: Promise<{ slug: string }> };
-
-// local mirror of STATUS_STYLE gradients (client-module values cannot be
-// dereferenced inside server components)
-const BAR_CLS: Record<string, string> = {
-  building: 'bg-gradient-to-r from-amber-500 to-orange-500',
-  testing: 'bg-gradient-to-r from-teal-500 to-emerald-500',
-  idea: 'bg-gradient-to-r from-violet-600 to-fuchsia-600',
-  concept: 'bg-gradient-to-r from-slate-400 to-slate-500',
-  live: 'bg-gradient-to-r from-emerald-500 to-teal-500',
-  paused: 'bg-gradient-to-r from-orange-500 to-amber-500',
-  archived: 'bg-gradient-to-r from-zinc-400 to-zinc-500',
-};
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
@@ -68,14 +52,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 /**
  * Real, indexable project page (replaces the old hash-router modal).
- * Server-rendered: title, status badge, summary and progress bar are in
- * the initial HTML.
+ * 2026-09-08 (lang-mixing fix): the page body moved into the client
+ * `ProjectDetail` component — the old server-rendered version stacked
+ * BOTH languages (EN title + FA title, EN summary + FA summary,
+ * hardcoded EN labels), which produced the EN/FA mixing the owner
+ * reported. Language is client state, so the body must render from it.
+ * Server keeps: fetch, 404 guard, JSON-LD (both languages for SEO).
  */
 export default async function ProjectPage({ params }: Props) {
   const { slug } = await params;
   const project = await getProjectBySlug(slug);
   if (!project) notFound();
-  const st = normalizeStatus(project.status);
 
   // AI-SEO: machine-readable project card for search engines and LLMs
   const base = (process.env.SITE_ORIGIN || 'https://mehrdad.ir').replace(/\/+$/, '');
@@ -94,70 +81,22 @@ export default async function ProjectPage({ params }: Props) {
   return (
     <>
       <JsonLd data={jsonLd} />
-      <article className="mx-auto w-full max-w-4xl px-4 py-12 sm:px-6">
-      <div className="flex flex-wrap items-center gap-3">
-        <StatusBadge
-          status={project.status}
-          statusEn={project.statusEn}
-          statusFa={project.statusFa}
-          lang="en"
-        />
-        {showsProgress(st) && (
-          <span className="text-sm font-semibold text-amber-600 dark:text-amber-400">
-            {project.progress}%
-          </span>
-        )}
-      </div>
-
-      <h1 className="mt-4 text-3xl font-extrabold leading-tight sm:text-4xl">{project.titleEn}</h1>
-      <p className="mt-2 text-lg text-muted-foreground" dir="rtl">
-        {project.titleFa}
-      </p>
-
-      {project.cover && (
-        <img
-          src={project.cover}
-          alt={project.titleEn}
-          className="mt-7 w-full rounded-2xl object-cover shadow-lg"
-        />
-      )}
-
-      <div className="prose-blog mt-8" dir="ltr">
-        <p>{project.summaryEn}</p>
-      </div>
-      <div className="prose-blog mt-4" dir="rtl">
-        <p>{project.summaryFa}</p>
-      </div>
-
-      {showsProgress(st) && (
-        <div className="mt-8 rounded-2xl border border-amber-500/30 bg-amber-500/5 p-5">
-          <div className="mb-2 flex items-center justify-between text-sm font-medium">
-            <span>Build progress · پیشرفت ساخت</span>
-            <span className="font-extrabold text-amber-600 dark:text-amber-400">{project.progress}%</span>
-          </div>
-          <ProgressBar value={project.progress} barCls={BAR_CLS[st] || BAR_CLS.idea} />
-        </div>
-      )}
-
-      {project.fundingAsk && (
-        <div className="mt-8 rounded-2xl border border-violet-500/30 bg-violet-600/5 p-5">
-          <div className="text-sm font-semibold text-violet-700 dark:text-violet-300">
-            Funding ask · درخواست سرمایه
-          </div>
-          <p className="mt-1 text-sm">{project.fundingAsk}</p>
-        </div>
-      )}
-
-      <div className="mt-8 border-y border-border py-4">
-        <ShareBar
-          url={`${base}/work/${project.slug}`}
-          title={project.titleEn}
-          label={ui.en.common.shareProject}
-        />
-      </div>
-
-      <ContactCta label="I'm interested in this project" />
-    </article>
+      <ProjectDetail
+        project={{
+          slug: project.slug,
+          titleEn: project.titleEn,
+          titleFa: project.titleFa,
+          summaryEn: project.summaryEn,
+          summaryFa: project.summaryFa,
+          cover: project.cover,
+          status: project.status,
+          progress: project.progress,
+          fundingAsk: project.fundingAsk,
+          statusEn: project.statusEn,
+          statusFa: project.statusFa,
+        }}
+        shareUrl={`${base}/work/${project.slug}`}
+      />
     </>
   );
 }

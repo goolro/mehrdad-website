@@ -81,7 +81,9 @@ export const useApp = create<AppState>()(
       view: 'home',
       chatOpen: false,
       theme: 'default',
-      mode: 'light',
+      // dark is the site default at first paint (owner request 2026-09-08);
+      // an explicit light choice persists and wins
+      mode: 'dark',
       setLang: (lang) => set({ lang }),
       setView: (view) => {
         set({ view });

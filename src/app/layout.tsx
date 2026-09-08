@@ -77,7 +77,9 @@ export const viewport: Viewport = {
 /**
  * Pre-paint boot script (Theme Engine D-014 limitation fix: dark-mode
  * first-paint flash). Runs synchronously before React hydrates and:
- * 1. applies the persisted Light/Dark mode (.dark class)
+ * 1. applies the Light/Dark mode (.dark class) — DARK is the site default
+ *    (owner request 2026-09-08): a persisted 'light' keeps light, anything
+ *    else (first visit / persisted 'dark') gets dark
  * 2. applies the persisted language direction (fa → rtl)
  * 3. applies the last-known site theme (cached by SiteChrome; the live
  *    value still arrives from the DB via /api/site)
@@ -92,7 +94,7 @@ export const viewport: Viewport = {
  * zero flash, zero extra rendering cost. Google's renderer executes this
  * script, so the hreflang=fa variants are indexable as Persian content.
  */
-const bootScript = `(function(){try{var q=new URLSearchParams(location.search).get('lang');if(q==='fa'||q==='en'){try{var raw2=JSON.parse(localStorage.getItem('mehrdad-app')||'{}');raw2.state=Object.assign({},raw2.state,{lang:q});localStorage.setItem('mehrdad-app',JSON.stringify(raw2));}catch(e){}if(q==='fa')document.documentElement.lang='fa',document.documentElement.dir='rtl';else document.documentElement.lang='en',document.documentElement.dir='ltr';}var raw=localStorage.getItem('mehrdad-app');if(raw){var s=(JSON.parse(raw)||{}).state||{};if(s.mode==='dark')document.documentElement.classList.add('dark');if(s.lang==='fa'){document.documentElement.lang='fa';document.documentElement.dir='rtl';}}var t=localStorage.getItem('mehrdad-theme-cache');if(t)document.documentElement.dataset.theme=t;}catch(e){}})();`;
+const bootScript = `(function(){try{var q=new URLSearchParams(location.search).get('lang');if(q==='fa'||q==='en'){try{var raw2=JSON.parse(localStorage.getItem('mehrdad-app')||'{}');raw2.state=Object.assign({},raw2.state,{lang:q});localStorage.setItem('mehrdad-app',JSON.stringify(raw2));}catch(e){}if(q==='fa')document.documentElement.lang='fa',document.documentElement.dir='rtl';else document.documentElement.lang='en',document.documentElement.dir='ltr';}var raw=localStorage.getItem('mehrdad-app');if(raw){var s=(JSON.parse(raw)||{}).state||{};if(!s.mode||s.mode==='dark')document.documentElement.classList.add('dark');if(s.lang==='fa'){document.documentElement.lang='fa';document.documentElement.dir='rtl';}}var t=localStorage.getItem('mehrdad-theme-cache');if(t)document.documentElement.dataset.theme=t;}catch(e){}})();`;
 
 export default function RootLayout({
   children,
