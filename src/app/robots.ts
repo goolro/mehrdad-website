@@ -42,7 +42,10 @@ export default function robots(): MetadataRoute.Robots {
   return {
     rules: [
       ...AI_CRAWLERS.map((userAgent) => ({ userAgent, allow: '/' })),
-      { userAgent: '*', allow: '/' },
+      // private surfaces: the admin panel is meta-noindexed already; the
+      // Disallow keeps well-behaved crawlers and vulnerability scanners from
+      // even fetching it (the login route lives under /api/admin too)
+      { userAgent: '*', disallow: ['/admin', '/api/admin'] },
     ],
     sitemap: `${base}/sitemap.xml`,
   };
