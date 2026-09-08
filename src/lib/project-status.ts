@@ -58,3 +58,18 @@ export function isActiveStatus(s: ProjectStatus): boolean {
 export function showsProgress(s: ProjectStatus): boolean {
   return s === 'building' || s === 'testing';
 }
+
+/**
+ * Bilingual status labels — single source of truth for server contexts that
+ * cannot reach the client i18n module (OG image routes, emails, ...).
+ * Kept verbatim in sync with ui.en/.fa.projects in components/site/i18n.ts.
+ */
+export const STATUS_LABELS: Record<ProjectStatus, { en: string; fa: string }> = {
+  idea: { en: 'Idea', fa: 'ایده' },
+  concept: { en: 'Concept', fa: 'مفهوم' },
+  building: { en: 'Building', fa: 'در حال ساخت' },
+  testing: { en: 'Testing', fa: 'در حال تست' },
+  live: { en: 'Live', fa: 'فعال' },
+  paused: { en: 'Paused', fa: 'متوقف‌شده' },
+  archived: { en: 'Archived', fa: 'بایگانی' },
+};

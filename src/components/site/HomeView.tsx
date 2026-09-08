@@ -5,7 +5,8 @@ import { ui } from './i18n';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ArrowRight, Sparkles, ChevronLeft, ChevronRight, Rocket, BrainCircuit, Code2, PenTool, Briefcase, Megaphone, Store, Lightbulb, FolderKanban, FileText, Hammer, HeartHandshake, Share2, Search, GraduationCap, Repeat } from 'lucide-react';
-import { StatusBadge } from './ProjectsView';
+import { StatusBadge, ProgressBar, STATUS_STYLE } from './ProjectsView';
+import { normalizeStatus, showsProgress } from '@/lib/project-status';
 
 const CHAIN_ICONS = [Search, PenTool, Hammer, GraduationCap, Share2, Repeat];
 
@@ -159,7 +160,9 @@ export function HomeView({ initial }: { initial: HomeInitialData }) {
             action={{ label: t.projects.seeAllWork, onClick: () => setView('projects') }}
           />
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {(data.projects || []).map((p) => (
+            {(data.projects || []).map((p) => {
+              const st = normalizeStatus(p.status);
+              return (
               <button
                 key={p.id}
                 onClick={() => openProject(p.slug)}
@@ -171,12 +174,25 @@ export function HomeView({ initial }: { initial: HomeInitialData }) {
                 </div>
                 <h3 className="mt-3 font-bold leading-snug">{pick(lang, p.titleEn, p.titleFa)}</h3>
                 <p className="mt-2 line-clamp-3 text-sm text-muted-foreground">{pick(lang, p.summaryEn, p.summaryFa)}</p>
+
+                {/* momentum signal: same honest build-progress row as /work cards */}
+                {showsProgress(st) && (
+                  <div className="mt-4">
+                    <div className="mb-1.5 flex items-center justify-between text-xs font-medium text-muted-foreground">
+                      <span>{t.projects.progress}</span>
+                      <span className="font-bold text-amber-600 dark:text-amber-400">{p.progress}%</span>
+                    </div>
+                    <ProgressBar value={p.progress} barCls={STATUS_STYLE[st].barCls} />
+                  </div>
+                )}
+
                 <span className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-violet-600 dark:text-violet-400">
                   {t.sections.readMore}
                   <ChevronRight className="h-4 w-4 rtl:rotate-180" />
                 </span>
               </button>
-            ))}
+              );
+            })}
             <button
               onClick={() => setView('contact')}
               className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-violet-500/40 bg-violet-600/5 p-5 text-center transition-colors hover:bg-violet-600/10"

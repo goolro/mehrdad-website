@@ -59,9 +59,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       title: project.titleEn,
       description: project.summaryEn,
       url: `/work/${project.slug}`,
-      // only when a cover exists — `images: undefined` would suppress the
-      // file-convention opengraph-image card
-      ...(project.cover ? { images: [{ url: project.cover }] } : {}),
+      // no `images` override: the file-convention opengraph-image.tsx renders
+      // the branded status+progress card (cover photos are embedded inside it),
+      // so every LinkedIn/WhatsApp share shows the honest build state
     },
   };
 }
