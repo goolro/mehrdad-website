@@ -1687,3 +1687,24 @@ Work Log:
 Stage Summary:
 - فلش روشن→شب برای بازدیدکنندهٔ اول بار ریشه‌ای حل شد؛ حالا پیش‌فرض شب از اولین paint اعمال می‌شود
 - رفتار کلی نهایی: بدون state → شب؛ state خراب → شب؛ انتخاب صریح روشن → روشن (همیشه محترم)
+
+---
+Task ID: site-structural-audit-1
+Agent: Z.ai Code (main)
+Task: Full structural audit of mehrdad.ir after theme-flash fix; find and fix remaining structural problems
+
+Work Log:
+- Verified theme-flash fix live on production (x-build=967d113, boot script unconditional dark default; fresh-visit browser test: dark=true pre-paint, no console errors)
+- Swept all routes on production (11 pages 200, /admin noindex, custom 404, canonical+h1 exactly one per page, JSON-LD valid, robots.txt rules correct, sitemap 96 URLs, feed 20 items, llms.txt 200)
+- Confirmed kill-switch semantics correct: 3 slugs fully hidden (404 + absent from sitemap); BIZPAL/rail-corridor/revolutionary intentionally only excluded from homepage preview (still in sitemap/archive) — not a bug
+- Local sandbox DB was wiped (sandbox reset) → seeded 1 project + 1 test post locally for E2E
+- FOUND & FIXED structural issue #1: entire internal linking was JS <button> (header nav desktop+mobile, logo, footer nav, home project/post/CTA cards, work cards + ideas read-more, lab cards, blog cards + related posts, WhatIDo Work/Writing/FDE links, hero + about CTAs). Converted ALL to next/link real anchors; view-state stays in sync via SiteChrome pathname effect (no SPA regression); actions (lang, theme, AI chat, tabs, pagination) correctly remain buttons
+- FOUND & FIXED structural issue #2: WP-migration artifacts (orphaned attr fragments like src="/media/…") leaking into visible post teasers → new sanitizeExcerpt() in sanitize.ts applied in listPosts + getPostDetail related; verified artifact gone from blog HTML and visible text
+- Investigated a raw flight-payload copy of excerpts — identified as Turbopack dev-only owner-stacks instrumentation (not shipped to production builds)
+- Browser E2E (production + local): fresh-visit dark no flash; theme toggle persists reload; lang fa → rtl + per-language detail page correct; footer sticks on short content; mobile 390px no horizontal scroll; card/nav click-through navigates to real URLs; zero console/page errors
+- Lint clean; all local routes 200; committed 7f0eda1 and pushed 967d113..7f0eda1 to main (Vercel auto-deploy)
+
+Stage Summary:
+- Production was already healthy at the SEO/page level; the two real structural defects (button-only internal linking, teaser artifacts) are fixed and deployed
+- Internal linking now exposes ~20+ crawlable anchors per page (was effectively zero besides canonicals)
+- Note for future agents: local db/custom.db gets wiped on sandbox reset — reseed via prisma/seed.ts or ad-hoc inserts when local E2E needs data
