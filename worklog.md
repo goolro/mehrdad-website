@@ -1581,3 +1581,19 @@ Work Log:
 Stage Summary:
 - هر دو خواستهٔ FINAL COPY روی پروداکشن mehrdad.ir برقرار و تأیید شد؛ کارت OG پیشرفت لینکدین هم همزمان زنده شد
 - برای بازنشر هر پست بعد از بازنویسی: حذف اسلاگ از UNPUBLISHED_POST_SLUGS در queries.ts و rebuild
+
+---
+Task ID: admin-lock-hide-1
+Agent: Z.ai Code (main)
+Task: پاسخ به سؤال امنیتی مالک دربارهٔ آیکن قفل هدر (ورود ادمین) + سخت‌سازی
+
+Work Log:
+- تحلیل وضعیت: دکمهٔ قفل هدر (کنار ✦ AI) مسیر /admin را به همهٔ بازدیدکننده‌ها تبلیغ می‌کرد؛ خودِ لاگین محکم است (rate limit 5/IP/15min + سقف global 60/15min، مقایسهٔ timing-safe، کوکی httpOnly/sameSite=strict، CSRF origin check، TOTP اختیاری، noindex روی صفحهٔ ادمین) ولی تبلیغِ مسیر دو مشکل عملی دارد: هدف‌قرار دادن لاگین برای بات‌ها و سوزاندن بودجهٔ rate limit کلی → ریسک 429 شدن لاگین خود مالک
+- Header.tsx: دکمهٔ قفل از هدر عمومی حذف شد (+ کامنت دلیل)؛ ورود مالک از URL مستقیم /admin (بوکمارک)
+- robots.ts: Disallow: /admin و /api/admin برای User-Agent: * (کراولر و اسکنرِ قانون‌مند حتی fetch هم نمی‌کند)؛ noindex متا سر جایش است
+- تأیید: lint تمیز؛ هدر دیگر هیچ دکمهٔ ادمین ندارد (فقط nav/زبان/تم/AI)؛ /admin مستقیم 200؛ robots.txt خروجی درست؛ صفر خطای کنسول
+
+Stage Summary:
+- مسیر ورود ادمین دیگر در UI عمومی دیده نمی‌شود؛ دفاع لایه‌لایه کامل شد (noindex متا + Disallow ربات‌ها + rate limit + 2FA اختیاری)
+- یادآوری برای مالک: /admin را بوکمارک کن — تنها راه ورود همین URL مستقیم است
+- push منتظر تأیید مالک (قانون انتشار)

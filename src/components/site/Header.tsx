@@ -4,7 +4,7 @@ import { useApp, pick } from './store';
 import { ui } from './i18n';
 import type { Lang } from './i18n';
 import { Button } from '@/components/ui/button';
-import { Lock, Moon, Sun } from 'lucide-react';
+import { Moon, Sun } from 'lucide-react';
 
 export function Header() {
   const { lang, setLang, view, setView, setChatOpen, mode, setMode } = useApp();
@@ -90,16 +90,10 @@ export function Header() {
           >
             {mode === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
           </button>
-          <button
-            onClick={() => setView('admin')}
-            className={`hidden rounded-lg p-2 transition-colors sm:inline-flex ${
-              view === 'admin' ? 'text-violet-600 dark:text-violet-400' : 'text-muted-foreground hover:text-foreground'
-            }`}
-            aria-label={t.nav.admin}
-            title={t.nav.admin}
-          >
-            <Lock className="h-4 w-4" />
-          </button>
+          {/* admin entry point deliberately NOT linked in the public header —
+              the owner reaches the panel via the direct /admin URL (bookmark).
+              Advertising the login path just hands scanners a target and lets
+              bots burn the global login rate-limit budget (owner lockout risk). */}
           <Button
             size="sm"
             className="hidden bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white hover:from-violet-700 hover:to-fuchsia-700 sm:inline-flex"
