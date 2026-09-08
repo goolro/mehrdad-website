@@ -1564,3 +1564,20 @@ Stage Summary:
 - هر دو خواستهٔ FINAL COPY کامل شد و پذیرش‌ها برقرارند: «What I Do» verbatim در Home و /services بدون هیچ گرید ۸ کارته؛ Featured بدون پست جغرافیایی و ۲ پست خراب (و بدون پست‌های پیچ استارتاپی)؛ بدون backfill ساختگی
 - نکتهٔ عملیاتی: تغییر پست‌ها کد-محور است (kill-switch در queries.ts) چون دسترسی مستقیم DB پروداکشن در این نشست نبود؛ ردیف‌های پروداکشن دست‌نخورده‌اند — اگر بعداً پستی بازنویسی شد، کافی است اسلاگش از UNPUBLISHED_POST_SLUGS برداشته شود
 - publish در انتظار push: این کامیت + ac84f22 (کارت OG پیشرفت — قبلاً تأیید شده) با هم push می‌شوند
+
+---
+Task ID: whatido-featured-deploy-1
+Agent: Z.ai Code (main)
+Task: انتشار پروداکشن — What I Do + پاک‌سازی Featured (+ کارت OG پیشرفت ac84f22 که تأیید قبلی داشت)
+
+Work Log:
+- push 85ed498..7b16cd3 → origin/main (ac84f22 کارت OG پیشرفت + 7b16cd3 What I Do / Featured cleanup)
+- ورسل deploy زنده شد (poll ~۳ دقیقه)؛ تأیید پروداکشن mehrdad.ir:
+  - /services: h1 یگانه «What I Do»، متن verbatim (Design/Build/Share با لینک‌های Work و Writing)، اشارهٔ FDE، بدون گرید ۸ کارت، بدون هیروی تکراری (عبارت قدیمی servicesSub غایب)
+  - /: بلاک What I Do، بدون ۶ پست مشکل‌دار قبلی (جغرافیایی/BIZPAL/کریدور/۲ خراب)، بدون «Seeking partners»، پروژه با ۳۵٪ پیشرفت، پست‌های واقعی (Clubhouse/Jazr o Mad) زنده
+  - /blog: ۳ پست مخفی غایب؛ پست‌های پیچ در آرشیو می‌مانند (طبق دستور فقط از Featured کنار رفتند)
+  - detail پست‌های مخفی → 404؛ sitemap و feed و llms.txt تمیز؛ /work/car-super-app/opengraph-image → 200 image/png (کارت OG پیشرفت زنده شد)
+
+Stage Summary:
+- هر دو خواستهٔ FINAL COPY روی پروداکشن mehrdad.ir برقرار و تأیید شد؛ کارت OG پیشرفت لینکدین هم همزمان زنده شد
+- برای بازنشر هر پست بعد از بازنویسی: حذف اسلاگ از UNPUBLISHED_POST_SLUGS در queries.ts و rebuild
