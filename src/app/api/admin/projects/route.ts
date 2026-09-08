@@ -10,10 +10,11 @@ const BASE = (process.env.SITE_ORIGIN || 'https://mehrdad.ir').replace(/\/+$/, '
 
 function pingProject(slug: string, section: string) {
   // static pages that render this project — IndexNow nudges search engines;
-  // the full rebuild fires through the deploy hook below
+  // the full rebuild fires through the deploy hook below. notifyIndexNow is
+  // fire-and-forget by design (never throws) — no .catch needed.
   const urls = [`${BASE}/work/${slug}`, `${BASE}/work`, `${BASE}/`];
   if (section === 'lab') urls.splice(1, 0, `${BASE}/lab`);
-  notifyIndexNow(urls).catch(() => {});
+  notifyIndexNow(urls);
 }
 
 async function fireDeployHook() {
@@ -39,18 +40,36 @@ type ProjectPayload = {
   order?: number;
 };
 
+type ProjectCreateData = {
+  slug: string;
+  titleEn: string;
+  titleFa: string;
+  summaryEn: string;
+  summaryFa: string;
+  cover: string | null;
+  section: string;
+  status: string;
+  progress: number;
+  featured: boolean;
+  fundingAsk: string | null;
+  order: number;
+};
+
+type CreateResult = { ok: true; data: ProjectCreateData } | { ok: false; error: string };
+
 /** validate + normalize an incoming create payload (write-side guard) */
-function validateCreate(body: ProjectPayload): { data: Record<string, unknown>; error?: never } | { data?: never; error: string } {
+function validateCreate(body: ProjectPayload): CreateResult {
   const slug = (body.slug || '').trim().toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
-  if (!slug) return { error: 'slug is required' };
+  if (!slug) return { ok: false, error: 'slug is required' };
   const titleEn = (body.titleEn || '').trim();
   const titleFa = (body.titleFa || '').trim();
   const summaryEn = (body.summaryEn || '').trim();
   const summaryFa = (body.summaryFa || '').trim();
   if (!titleEn || !titleFa || !summaryEn || !summaryFa) {
-    return { error: 'titles and summaries (EN/FA) are required' };
+    return { ok: false, error: 'titles and summaries (EN/FA) are required' };
   }
   return {
+    ok: true,
     data: {
       slug,
       titleEn,
@@ -58,7 +77,7 @@ function validateCreate(body: ProjectPayload): { data: Record<string, unknown>; 
       summaryEn,
       summaryFa,
       cover: body.cover ? String(body.cover).trim() || null : null,
-      section: PROJECT_SECTIONS.includes(body.section as never) ? body.section : 'work',
+      section: body.section && PROJECT_SECTIONS.includes(body.section as never) ? body.section : 'work',
       status: isProjectStatus(body.status || '') ? (body.status as string) : 'idea',
       progress: Math.min(100, Math.max(0, Math.trunc(Number(body.progress) || 0))),
       featured: Boolean(body.featured),
@@ -82,7 +101,7 @@ export async function POST(req: NextRequest) {
   try {
     const body = (await req.json()) as ProjectPayload;
     const result = validateCreate(body);
-    if (result.error) return NextResponse.json({ error: result.error }, { status: 400 });
+    if (!result.ok) return NextResponse.json({ error: result.error }, { status: 400 });
     const exists = await db.project.findUnique({ where: { slug: result.data.slug as string } });
     if (exists) return NextResponse.json({ error: 'A project with this slug already exists' }, { status: 409 });
     const project = await db.project.create({ data: result.data });

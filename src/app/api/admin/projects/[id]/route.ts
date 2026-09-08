@@ -9,9 +9,10 @@ export const dynamic = 'force-dynamic';
 const BASE = (process.env.SITE_ORIGIN || 'https://mehrdad.ir').replace(/\/+$/, '');
 
 function pingProject(slug: string, section: string) {
+  // notifyIndexNow is fire-and-forget by design (never throws) — no .catch
   const urls = [`${BASE}/work/${slug}`, `${BASE}/work`, `${BASE}/`];
   if (section === 'lab') urls.splice(1, 0, `${BASE}/lab`);
-  notifyIndexNow(urls).catch(() => {});
+  notifyIndexNow(urls);
 }
 
 async function fireDeployHook() {
