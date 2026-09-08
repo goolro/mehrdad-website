@@ -4,19 +4,12 @@ import { useApp, pick } from './store';
 import { ui } from './i18n';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowRight, Sparkles, ChevronLeft, ChevronRight, Rocket, BrainCircuit, Code2, PenTool, Briefcase, Megaphone, Store, Lightbulb, FolderKanban, FileText, Hammer, HeartHandshake, Share2, Search, GraduationCap, Repeat } from 'lucide-react';
+import { ArrowRight, Sparkles, ChevronLeft, ChevronRight, FolderKanban, FileText, Hammer, HeartHandshake, Share2, Search, GraduationCap, Repeat, PenTool } from 'lucide-react';
 import { StatusBadge, ProgressBar, STATUS_STYLE } from './ProjectsView';
 import { normalizeStatus, showsProgress } from '@/lib/project-status';
+import { WhatIDo } from './WhatIDo';
 
 const CHAIN_ICONS = [Search, PenTool, Hammer, GraduationCap, Share2, Repeat];
-
-const ICONS: Record<string, typeof Rocket> = {
-  Rocket, BrainCircuit, Code2, PenTool, Briefcase, Megaphone, Store, Lightbulb, Sparkles,
-};
-
-interface ServiceItem {
-  id: string; slug: string; titleEn: string; titleFa: string; descEn: string; descFa: string; icon: string;
-}
 interface ProjectItem {
   id: string; slug: string; titleEn: string; titleFa: string; summaryEn: string; summaryFa: string; cover: string | null;
   section: string; status: string; progress: number; featured: boolean;
@@ -29,22 +22,21 @@ interface PostItem {
 }
 
 export interface HomeInitialData {
-  services: ServiceItem[];
   projects: ProjectItem[];
   posts: PostItem[];
 }
 
 /**
  * Server-fed home page: `initial` arrives from the server component
- * (src/app/page.tsx) so the hero, services, projects and featured
- * articles are present in the FIRST HTML response — no client fetch,
- * no empty shell for crawlers (real-routes SEO migration).
+ * (src/app/page.tsx) so the hero, projects and featured articles are
+ * present in the FIRST HTML response — no client fetch, no empty shell
+ * for crawlers (real-routes SEO migration).
  */
 export function HomeView({ initial }: { initial: HomeInitialData }) {
   const { lang, setView, openPost, openProject, setChatOpen } = useApp();
   const t = ui[lang];
 
-  const data = { services: initial.services, projects: initial.projects };
+  const projects = initial.projects;
   const posts = initial.posts;
 
   return (
@@ -126,27 +118,10 @@ export function HomeView({ initial }: { initial: HomeInitialData }) {
         </div>
       </section>
 
-      {/* ── Services ── */}
+      {/* ── What I Do — one process, not eight services (replaces the
+          old DB-driven 8-card service grid; owner FINAL COPY 2026-01) ── */}
       <section id="services" className="mx-auto w-full max-w-7xl scroll-mt-24 px-4 py-14 sm:px-6">
-        <SectionHeader title={t.sections.servicesTitle} sub={t.sections.servicesSub} />
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {(data.services || []).slice(0, 8).map((s) => {
-            const Icon = ICONS[s.icon] || Sparkles;
-            return (
-              <button
-                key={s.id}
-                onClick={() => setView(s.slug === 'forward-deployed-engineering' ? 'fde' : 'services')}
-                className="group rounded-2xl border border-border bg-card p-5 text-start transition-all hover:-translate-y-1 hover:border-violet-500/50 hover:shadow-lg hover:shadow-violet-600/10"
-              >
-                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-violet-600/10 text-violet-600 dark:text-violet-400">
-                  <Icon className="h-5 w-5" />
-                </div>
-                <h3 className="mt-4 font-bold">{pick(lang, s.titleEn, s.titleFa)}</h3>
-                <p className="mt-2 line-clamp-3 text-sm text-muted-foreground">{pick(lang, s.descEn, s.descFa)}</p>
-              </button>
-            );
-          })}
-        </div>
+        <WhatIDo />
       </section>
 
       {/* ── Projects (featured Work items only — max 2, set in admin; the
@@ -160,7 +135,7 @@ export function HomeView({ initial }: { initial: HomeInitialData }) {
             action={{ label: t.projects.seeAllWork, onClick: () => setView('projects') }}
           />
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {(data.projects || []).map((p) => {
+            {(projects || []).map((p) => {
               const st = normalizeStatus(p.status);
               return (
               <button

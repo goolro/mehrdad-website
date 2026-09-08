@@ -1541,3 +1541,26 @@ Stage Summary:
 - از این پس هر لینک پروژه که در لینکدین (یا هر شبکه/پیام‌رسانی) share شود، کارتی با وضعیت صادقانه + درصد پیشرفت زنده نشان می‌دهد — «پیشرفت در لینکدین» بدون هیچ API و نگهداری
 - آپدیت پیشرفت از پنل ادمین → deploy hook ورسل → rebuild ~۲-۳ دقیقه → کارت‌های OG جدید
 - محلی کامیت شد؛ push به پروداکشن منتظر تأیید مالک (قانون انتشار)
+
+---
+Task ID: whatido-featured-1
+Agent: Z.ai Code (main)
+Task: اجرای FINAL COPY مالک — جایگزینی «What I Offer» با «What I Do» در Home و /services + پاک‌سازی Featured Articles (پست جغرافیایی + ۲ پست خراب حذف؛ پست‌های پیچ استارتاپی از Featured کنار)
+
+Work Log:
+- مقایسهٔ دستور مالک با کد: هر دو مورد انجام‌نشده بودند — گرید ۸ کارت خدمت (DB-driven) در Home و /services زنده بود؛ Featured صفحهٔ اصلی دقیقاً ۶ پستِ مشکل‌دار را نشان می‌داد (جغرافیایی + ۲ پستِ کریدور + BIZPAL + ۲ پست خراب)
+- i18n: بلاک whatIDo دوزبانه اضافه شد — EN دقیقاً verbatim متن مالک (What I Do / One process, not eight services. / Design / Build / Share با جملهٔ «that's what feeds Work and Writing.»)؛ FA ترجمهٔ وفادار
+- WhatIDo.tsx (کامپوننت مشترک): سه کارت Design/Build/Share؛ کلمات Work و Writing لینک واقعی به /work و /blog هستند؛ headingLevel=h2 در Home و h1 در /services؛ یک اشارهٔ باریک به FDE زیر بلاک (لینک به /fde — نه کارت خدمت، تا صفحهٔ FDE بی‌راه نشود)
+- HomeView: بخش «What I Offer» با گرید ۸ کارت حذف و با WhatIDo جایگزین شد؛ interface/data/آیکون‌های مرده پاک شد
+- ServicesView: بازنویسی کامل — هیروی تکراری (تکرار H1 صفحهٔ اصلی) حذف؛ صفحه مستقیم با WhatIDo (h1 یگانه) باز می‌شود؛ Dialog و گرید و آیکون‌ها حذف
+- services/page.tsx: دیگر getServices نمی‌خواند؛ metadata جدید («What I Do | …» + توضیح فرایند واحد)
+- page.tsx (خانه): getServices حذف؛ Featured = listPosts با excludeSlugs
+- queries.ts: مکانیزم kill-switch محتوایی — UNPUBLISHED_POST_SLUGS (۳ اسلاگ: iran-ousted-from-trade-corridors، مسله-هاستینگ-دو-فروشگاه، logo) از همهٔ سطوح عمومی حذف می‌شوند (لیست، detail=404، sitemap، feed، llms.txt) با پوشش همهٔ شکل‌های اسلاگ (خام/decode/percent-encoded) از طریق slugCandidates؛ NOT_IN_FEATURED_POST_SLUGS (BIZPAL + ۲ پست کریدور ریلی) فقط از Featured صفحهٔ اصلی کنار می‌روند و در آرشیو بلاگ می‌مانند؛ ردیف‌های DB حفظ شدند (هیچ‌چیز delete نشد)
+- سطوح دیگر: sitemap.ts و generateStaticParams بلاگ با isUnpublishedPostSlug فیلتر شدند؛ OG image بلاگ برای پست‌های مخفی کارت جنریک برند می‌دهد (بدون لو رفتن عنوان)؛ llms.txt بخش Services حذف و خط «What I Do» جایگزین شد
+- دادهٔ محلی: ۸ پست تست با اسلاگ‌های دقیق پروداکشن seed شد (اسکریپت موقت بعد از تست حذف شد)
+- تأیید E2E (مرورگر واقعی): Home EN — بلاک verbatim، بدون هیچ کارت خدمت قدیمی، Featured فقط ۲ پست واقعی (Clubhouse + Jazr o Mad)، کارت پروژه با ۳۵٪ پیشرفت؛ Home FA — ترجمهٔ فارسی کامل؛ /services EN/FA — h1 یگانه «چه کاری انجام می‌دهم»، بدون هیروی تکراری؛ /blog — پست‌های پیچ در آرشیو می‌مانند ولی ۳ پست مخفی نیستند؛ detail سه پست مخفی = 404؛ sitemap/feed/llms.txt بدون ۳ پست مخفی؛ کنسول صفر خطا؛ ESLint تمیز
+
+Stage Summary:
+- هر دو خواستهٔ FINAL COPY کامل شد و پذیرش‌ها برقرارند: «What I Do» verbatim در Home و /services بدون هیچ گرید ۸ کارته؛ Featured بدون پست جغرافیایی و ۲ پست خراب (و بدون پست‌های پیچ استارتاپی)؛ بدون backfill ساختگی
+- نکتهٔ عملیاتی: تغییر پست‌ها کد-محور است (kill-switch در queries.ts) چون دسترسی مستقیم DB پروداکشن در این نشست نبود؛ ردیف‌های پروداکشن دست‌نخورده‌اند — اگر بعداً پستی بازنویسی شد، کافی است اسلاگش از UNPUBLISHED_POST_SLUGS برداشته شود
+- publish در انتظار push: این کامیت + ac84f22 (کارت OG پیشرفت — قبلاً تأیید شده) با هم push می‌شوند

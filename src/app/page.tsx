@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { HomeView } from '@/components/site/HomeView';
 import { JsonLd } from '@/components/site/JsonLd';
-import { listPosts, getProjects, getServices } from '@/lib/queries';
+import { listPosts, getProjects, NOT_IN_FEATURED_POST_SLUGS } from '@/lib/queries';
 
 // Fully static: rendered once per BUILD (the build-time CSP meta can
 // only be injected then) and served from the edge until the next deploy.
@@ -35,13 +35,16 @@ export default async function HomePage() {
   // build MUST fail (Vercel keeps the previous deployment) — silently
   // publishing an empty homepage is exactly what a Turso outage caused
   // on 2026-09-07 (live empty page for ~1h until noticed).
-  const [services, projects, featured] = await Promise.all([
-    getServices(),
+  const [projects, featured] = await Promise.all([
     // homepage Work section: featured Work items ONLY (max 2, set in the
     // admin panel). Idea-stage and archived projects never appear here and
     // Lab items live at /lab — see DECISIONS.md (2026-09-07).
     getProjects({ section: 'work', featured: true }),
-    listPosts({ page: 1, perPage: 6 }),
+    // Featured Articles preview: latest published posts MINUS the content
+    // kill-switches — startup-pitch posts (BIZPAL / rail-corridor series)
+    // are never featured here (owner decision 2026-01); the 3 fully-hidden
+    // posts are filtered inside listPosts itself.
+    listPosts({ page: 1, perPage: 6, excludeSlugs: NOT_IN_FEATURED_POST_SLUGS }),
   ]);
   const homeProjects = projects.slice(0, 2);
 
@@ -95,7 +98,6 @@ export default async function HomePage() {
       <JsonLd data={jsonLd} />
       <HomeView
       initial={{
-        services,
         projects: homeProjects,
         posts: featured.posts.slice(0, 6).map((p) => ({
           slug: p.slug,

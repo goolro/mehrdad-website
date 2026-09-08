@@ -8,6 +8,49 @@ import { sanitizePostHtml } from '@/lib/sanitize';
  * the API responses and the first-paint HTML never drift apart.
  */
 
+/**
+ * Content kill-switch (owner decision, 2026-01): these posts are hidden from
+ * EVERY public surface — blog list, article page (404), sitemap, RSS feed,
+ * llms.txt — while the underlying DB rows are KEPT (nothing is deleted).
+ *   - iran-ousted-from-trade-corridors: geopolitical commentary, not
+ *     product/build content — must not represent "what Mehrdad builds"
+ *   - the two legacy WP posts render broken (raw src="/media/…" markup in
+ *     the body) — unpublished until someone rewrites them properly.
+ * To republish a rewritten post: remove its slug here (or flip `published`
+ * on the row) and rebuild.
+ */
+const UNPUBLISHED_POST_SLUGS: string[] = [
+  'iran-ousted-from-trade-corridors',
+  'مسله-هاستینگ-دو-فروشگاه',
+  'logo',
+];
+
+/** Startup-pitch posts (BIZPAL / rail-corridor series): real history, so they
+ * stay in the blog archive — but they are never surfaced in the homepage
+ * Featured Articles preview (same fabricated-metric problem the homepage
+ * cards had; owner decision 2026-01). */
+export const NOT_IN_FEATURED_POST_SLUGS: string[] = [
+  'bizpal-digital-sales-marketing-and-advertising-startup',
+  'the-second-phases-of-the-iranian-revolutionary',
+  'iran-railway-technology-startup',
+];
+
+// every comparable form (raw / decoded / percent-encoded both cases) of the
+// hidden slugs — DB rows store the original WP form, route params arrive
+// decoded, so matching must cover all shapes (same logic as slugCandidates)
+const UNPUBLISHED_POST_SLUG_SET: ReadonlySet<string> = new Set(
+  UNPUBLISHED_POST_SLUGS.flatMap((s) => slugCandidates(s))
+);
+
+export function isUnpublishedPostSlug(slug: string): boolean {
+  if (UNPUBLISHED_POST_SLUG_SET.has(slug)) return true;
+  try {
+    return slugCandidates(slug).some((c) => UNPUBLISHED_POST_SLUG_SET.has(c));
+  } catch {
+    return false;
+  }
+}
+
 export type ListPostsParams = {
   page?: number;
   perPage?: number;
@@ -15,6 +58,9 @@ export type ListPostsParams = {
   tag?: string;
   search?: string;
   featured?: boolean;
+  /** extra slugs to hide from THIS list only (e.g. startup-pitch posts on
+   * the homepage preview) — the global kill-switch always applies too */
+  excludeSlugs?: string[];
 };
 
 export async function listPosts(params: ListPostsParams) {
@@ -26,6 +72,8 @@ export async function listPosts(params: ListPostsParams) {
 
   const where: Record<string, unknown> = { published: true };
   if (params.featured) where.featured = true;
+  const slugNotIn = [...UNPUBLISHED_POST_SLUG_SET, ...(params.excludeSlugs || [])];
+  if (slugNotIn.length > 0) where.slug = { notIn: slugNotIn };
   if (category) {
     where.categories = { some: { slug: category } };
   }
@@ -105,7 +153,9 @@ export async function getPostDetail(rawSlug: string) {
     post = await findPost(candidate);
     if (post) break;
   }
-  if (!post || !post.published) return null;
+  // hidden kill-switch posts 404 exactly like missing/unpublished ones —
+  // "a missing post is fine, a visibly broken one is not"
+  if (!post || !post.published || isUnpublishedPostSlug(post.slug)) return null;
 
   const tags = post.tags.map((pt) => pt.tag);
   const catIds = post.categories.map((c) => c.id);
