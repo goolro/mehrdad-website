@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
 import { useApp, pick, formatDate } from './store';
 import { ui } from './i18n';
 import { Button } from '@/components/ui/button';
@@ -193,11 +194,11 @@ export function BlogView({ initial }: { initial?: BlogInitialData }) {
 }
 
 export function BlogCard({ post }: { post: PostItem }) {
-  const { lang, openPost } = useApp();
+  const { lang } = useApp();
   return (
-    <button
-      onClick={() => openPost(post.slug)}
-      className="group overflow-hidden rounded-2xl border border-border bg-card text-start transition-all hover:-translate-y-1 hover:border-violet-500/50 hover:shadow-lg"
+    <Link
+      href={`/blog/${post.slug}`}
+      className="group block overflow-hidden rounded-2xl border border-border bg-card text-start transition-all hover:-translate-y-1 hover:border-violet-500/50 hover:shadow-lg"
     >
       <div className="aspect-video w-full overflow-hidden bg-muted">
         {post.cover ? (
@@ -249,7 +250,7 @@ export function BlogCard({ post }: { post: PostItem }) {
           </div>
         )}
       </div>
-    </button>
+    </Link>
   );
 }
 
@@ -269,7 +270,7 @@ interface FullPost {
  * `curl /blog/<slug>` returns real content without any JS execution.
  */
 export function PostDetail({ post, related, shareUrl }: { post: FullPost; related: PostItem[]; shareUrl?: string }) {
-  const { lang, closePost, openPost } = useApp();
+  const { lang, closePost } = useApp();
   const t = ui[lang];
 
   const title = pick(lang, post.titleEn, post.titleFa);
@@ -332,16 +333,16 @@ export function PostDetail({ post, related, shareUrl }: { post: FullPost; relate
           <h2 className="text-xl font-bold">{t.blog.relatedTitle}</h2>
           <div className="mt-5 grid gap-4 sm:grid-cols-3">
             {related.map((r) => (
-              <button
+              <Link
                 key={r.slug}
-                onClick={() => openPost(r.slug)}
-                className="group rounded-xl border border-border bg-card p-3 text-start transition-colors hover:border-violet-500/50"
+                href={`/blog/${r.slug}`}
+                className="group block rounded-xl border border-border bg-card p-3 text-start transition-colors hover:border-violet-500/50"
               >
                 <div className="text-xs text-muted-foreground">{formatDate(lang, r.date)}</div>
                 <div className="mt-1 line-clamp-2 text-sm font-semibold transition-colors group-hover:text-violet-600 dark:group-hover:text-violet-400">
                   {pick(lang, r.titleEn, r.titleFa)}
                 </div>
-              </button>
+              </Link>
             ))}
           </div>
         </div>

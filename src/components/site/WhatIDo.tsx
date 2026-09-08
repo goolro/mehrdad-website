@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useApp } from './store';
 import { ui } from './i18n';
 import { PenTool, Hammer, Share2, ChevronRight, Workflow, ArrowRight } from 'lucide-react';
@@ -12,7 +13,7 @@ import { PenTool, Hammer, Share2, ChevronRight, Workflow, ArrowRight } from 'luc
  * 8-card service grid (2026-01).
  */
 export function WhatIDo({ headingLevel = 'h2' }: { headingLevel?: 'h1' | 'h2' }) {
-  const { lang, setView } = useApp();
+  const { lang } = useApp();
   const t = ui[lang];
   const Heading = headingLevel;
 
@@ -69,19 +70,19 @@ export function WhatIDo({ headingLevel = 'h2' }: { headingLevel?: 'h1' | 'h2' })
           <h3 className="mt-4 text-lg font-bold">{t.whatIDo.share.title}</h3>
           <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
             {t.whatIDo.share.before}
-            <button
-              onClick={() => setView('projects')}
+            <Link
+              href="/work"
               className="inline font-semibold text-violet-600 underline-offset-4 hover:underline dark:text-violet-400"
             >
               {t.whatIDo.share.linkWork}
-            </button>
+            </Link>
             {t.whatIDo.share.mid}
-            <button
-              onClick={() => setView('blog')}
+            <Link
+              href="/blog"
               className="inline font-semibold text-violet-600 underline-offset-4 hover:underline dark:text-violet-400"
             >
               {t.whatIDo.share.linkWriting}
-            </button>
+            </Link>
             {t.whatIDo.share.after}
           </p>
         </div>
@@ -92,8 +93,8 @@ export function WhatIDo({ headingLevel = 'h2' }: { headingLevel?: 'h1' | 'h2' })
           Deliberately distinctive (owner request 2026-09-08): animated
           gradient border beam (.fde-beam in globals.css) + gradient icon
           + glow hover — it must read as "something else", not card #4. */}
-      <button
-        onClick={() => setView('fde')}
+      <Link
+        href="/fde"
         className="fde-beam group mt-6 flex w-full items-center justify-between gap-4 rounded-2xl border border-violet-500/30 bg-gradient-to-r from-violet-600/10 via-fuchsia-600/[0.06] to-transparent px-5 py-4 text-start transition-all hover:-translate-y-0.5 hover:border-violet-500/60 hover:shadow-lg hover:shadow-violet-600/20"
       >
         <span className="flex min-w-0 items-center gap-3">
@@ -115,7 +116,7 @@ export function WhatIDo({ headingLevel = 'h2' }: { headingLevel?: 'h1' | 'h2' })
         <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-violet-500/40 bg-background/60 text-violet-600 transition-colors group-hover:border-violet-500/70 group-hover:bg-violet-600/10 dark:text-violet-400">
           <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 rtl:rotate-180" aria-hidden />
         </span>
-      </button>
+      </Link>
     </div>
   );
 }

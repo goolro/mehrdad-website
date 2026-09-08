@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useApp, pick } from './store';
 import { ui } from './i18n';
 import { Button } from '@/components/ui/button';
@@ -33,7 +34,10 @@ export interface HomeInitialData {
  * for crawlers (real-routes SEO migration).
  */
 export function HomeView({ initial }: { initial: HomeInitialData }) {
-  const { lang, setView, openPost, openProject, setChatOpen } = useApp();
+  // navigation is real <Link>s now (structural audit 2026-09-08) — cards and
+  // CTAs render as anchors: crawlable, middle-clickable, keyboard-link
+  // semantics. Only genuine ACTIONS (AI chat) stay buttons.
+  const { lang, setChatOpen } = useApp();
   const t = ui[lang];
 
   const projects = initial.projects;
@@ -61,11 +65,13 @@ export function HomeView({ initial }: { initial: HomeInitialData }) {
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
             <Button
               size="lg"
-              onClick={() => setView('services')}
+              asChild
               className="bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white hover:from-violet-700 hover:to-fuchsia-700"
             >
-              {t.hero.cta1}
-              <ArrowRight className="ms-2 h-4 w-4 rtl:rotate-180" />
+              <Link href="/services">
+                {t.hero.cta1}
+                <ArrowRight className="ms-2 h-4 w-4 rtl:rotate-180" />
+              </Link>
             </Button>
             <Button size="lg" variant="outline" onClick={() => setChatOpen(true)}>
               <Sparkles className="me-2 h-4 w-4" />
@@ -132,15 +138,15 @@ export function HomeView({ initial }: { initial: HomeInitialData }) {
             title={t.sections.projectsTitle}
             sub={t.sections.projectsSub}
             subClassName="text-foreground/70"
-            action={{ label: t.projects.seeAllWork, onClick: () => setView('projects') }}
+            action={{ label: t.projects.seeAllWork, href: '/work' }}
           />
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {(projects || []).map((p) => {
               const st = normalizeStatus(p.status);
               return (
-              <button
+              <Link
                 key={p.id}
-                onClick={() => openProject(p.slug)}
+                href={`/work/${p.slug}`}
                 className="group flex flex-col rounded-2xl border border-border bg-card p-5 text-start transition-all hover:-translate-y-1 hover:border-violet-500/50 hover:shadow-lg hover:shadow-violet-600/10"
               >
                 <div className="flex items-center gap-2 text-xs font-semibold text-violet-600 dark:text-violet-400">
@@ -165,17 +171,17 @@ export function HomeView({ initial }: { initial: HomeInitialData }) {
                   {t.sections.readMore}
                   <ChevronRight className="h-4 w-4 rtl:rotate-180" />
                 </span>
-              </button>
+              </Link>
               );
             })}
-            <button
-              onClick={() => setView('contact')}
+            <Link
+              href="/contact"
               className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-violet-500/40 bg-violet-600/5 p-5 text-center transition-colors hover:bg-violet-600/10"
             >
               <div className="text-2xl">👋</div>
               <h3 className="mt-2 font-bold text-violet-700 dark:text-violet-300">{t.projects.ctaTitle}</h3>
               <p className="mt-1 text-sm text-foreground/80">{t.projects.ctaSub}</p>
-            </button>
+            </Link>
           </div>
         </div>
       </section>
@@ -184,14 +190,14 @@ export function HomeView({ initial }: { initial: HomeInitialData }) {
       <section id="blog" className="mx-auto w-full max-w-7xl scroll-mt-24 px-4 py-14 sm:px-6">
         <SectionHeader title={t.sections.featuredTitle} sub={t.sections.featuredSub} action={{
           label: t.sections.viewAll,
-          onClick: () => setView('blog'),
+          href: '/blog',
         }} />
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {posts.map((p) => (
-            <button
+            <Link
               key={p.slug}
-              onClick={() => openPost(p.slug)}
-              className="group overflow-hidden rounded-2xl border border-border bg-card text-start transition-all hover:-translate-y-1 hover:shadow-lg"
+              href={`/blog/${p.slug}`}
+              className="group block overflow-hidden rounded-2xl border border-border bg-card text-start transition-all hover:-translate-y-1 hover:shadow-lg"
             >
               <div className="aspect-video w-full overflow-hidden bg-muted">
                 {p.cover ? (
@@ -210,7 +216,7 @@ export function HomeView({ initial }: { initial: HomeInitialData }) {
                 <h3 className="mt-2 line-clamp-2 font-bold leading-snug">{pick(lang, p.titleEn, p.titleFa)}</h3>
                 <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">{pick(lang, p.excerptEn, p.excerptFa)}</p>
               </div>
-            </button>
+            </Link>
           ))}
         </div>
       </section>
@@ -236,7 +242,7 @@ export function HomeView({ initial }: { initial: HomeInitialData }) {
   );
 }
 
-function SectionHeader({ title, sub, subClassName, action }: { title: string; sub: string; subClassName?: string; action?: { label: string; onClick: () => void } }) {
+function SectionHeader({ title, sub, subClassName, action }: { title: string; sub: string; subClassName?: string; action?: { label: string; href: string } }) {
   return (
     <div className="mb-8 flex items-end justify-between gap-4">
       <div>
@@ -244,9 +250,11 @@ function SectionHeader({ title, sub, subClassName, action }: { title: string; su
         <p className={`mt-1 text-sm sm:text-base ${subClassName || 'text-muted-foreground'}`}>{sub}</p>
       </div>
       {action && (
-        <Button variant="ghost" size="sm" onClick={action.onClick} className="whitespace-nowrap text-violet-600 dark:text-violet-400">
-          {action.label}
-          <ChevronRight className="ms-1 h-4 w-4 rtl:rotate-180" />
+        <Button variant="ghost" size="sm" asChild className="whitespace-nowrap text-violet-600 dark:text-violet-400">
+          <Link href={action.href}>
+            {action.label}
+            <ChevronRight className="ms-1 h-4 w-4 rtl:rotate-180" />
+          </Link>
         </Button>
       )}
     </div>

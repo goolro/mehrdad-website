@@ -96,3 +96,21 @@ export function sanitizePlainText(input: string | null | undefined, maxLength = 
   const text = sanitizeHtml(input, { allowedTags: [], allowedAttributes: {} });
   return text.replace(/\s+/g, ' ').trim().slice(0, maxLength);
 }
+
+/**
+ * WP-migration artifact scrub for EXCERPTS (plain-text teaser fields).
+ * The 2021-era WordPress excerpts were tag-stripped at migration, but
+ * attribute fragments survived as literal text — e.g. a post teaser on
+ * the homepage read `… on October 30, 2021 src="/media/Screenshot_…jpg"Clubho…`.
+ * Strip orphaned `attr="value"` / `attr='value'` fragments and collapse
+ * the leftover whitespace. Safe on clean input.
+ */
+export function sanitizeExcerpt(input: string | null | undefined, maxLength = 400): string {
+  if (!input) return '';
+  const text = input
+    .replace(/\b(src|href|alt|title|class|width|height|loading|rel)\s*=\s*(["'])[^"']*\2/gi, ' ')
+    .replace(/(^|\s)(src|href)=\S*/gi, '$1')
+    .replace(/\s+/g, ' ')
+    .trim();
+  return text.slice(0, maxLength);
+}

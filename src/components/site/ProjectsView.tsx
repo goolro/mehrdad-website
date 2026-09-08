@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { useApp, pick } from './store';
 import { ui } from './i18n';
 import { Badge } from '@/components/ui/badge';
@@ -124,7 +125,7 @@ export function ProgressBar({ value, barCls }: { value: number; barCls: string }
 }
 
 export function ProjectsView({ initialProjects }: { initialProjects: ProjectItem[] }) {
-  const { lang, openProject } = useApp();
+  const { lang } = useApp();
   const t = ui[lang];
   const projects = initialProjects;
   const [animate, setAnimate] = useState(false);
@@ -182,10 +183,10 @@ export function ProjectsView({ initialProjects }: { initialProjects: ProjectItem
             const st = normalizeStatus(p.status);
             const cfg = STATUS_STYLE[st];
             return (
-              <button
+              <Link
                 key={p.id}
-                onClick={() => openProject(p.slug)}
-                className="group overflow-hidden rounded-2xl border border-border bg-card text-start transition-all hover:-translate-y-1 hover:border-violet-500/50 hover:shadow-lg hover:shadow-violet-600/10"
+                href={`/work/${p.slug}`}
+                className="group block overflow-hidden rounded-2xl border border-border bg-card text-start transition-all hover:-translate-y-1 hover:border-violet-500/50 hover:shadow-lg hover:shadow-violet-600/10"
               >
                 <div className="flex items-start gap-4 p-6">
                   <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-violet-600/15 to-fuchsia-600/15 text-xl font-extrabold text-violet-600 dark:text-violet-400">
@@ -217,7 +218,7 @@ export function ProjectsView({ initialProjects }: { initialProjects: ProjectItem
                     </span>
                   </div>
                 </div>
-              </button>
+              </Link>
             );
           })}
         </div>
@@ -235,12 +236,12 @@ export function ProjectsView({ initialProjects }: { initialProjects: ProjectItem
                 </div>
                 <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-90" aria-hidden />
               </summary>
-              <button
-                onClick={() => openProject(p.slug)}
+              <Link
+                href={`/work/${p.slug}`}
                 className="block w-full px-4 pb-1 text-start text-xs font-medium text-violet-600 dark:text-violet-400"
               >
                 {t.sections.readMore} →
-              </button>
+              </Link>
               <div className="px-4 pb-4 pt-1 text-sm leading-relaxed text-muted-foreground">
                 {pick(lang, p.summaryEn, p.summaryFa)}
               </div>

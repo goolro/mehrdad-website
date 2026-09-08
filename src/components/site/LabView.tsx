@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useApp, pick } from './store';
 import { ui } from './i18n';
 import { FlaskConical, ChevronRight, Wrench } from 'lucide-react';
@@ -19,7 +20,7 @@ interface ProjectItem {
  * or revenue language. They are explicitly NOT products.
  */
 export function LabView({ initialProjects }: { initialProjects: ProjectItem[] }) {
-  const { lang, openProject } = useApp();
+  const { lang } = useApp();
   const t = ui[lang];
 
   return (
@@ -36,9 +37,9 @@ export function LabView({ initialProjects }: { initialProjects: ProjectItem[] })
         {initialProjects.map((p) => {
           const st = normalizeStatus(p.status);
           return (
-            <button
+            <Link
               key={p.id}
-              onClick={() => openProject(p.slug)}
+              href={`/work/${p.slug}`}
               className="group flex flex-col rounded-2xl border border-border bg-card p-5 text-start transition-all hover:-translate-y-1 hover:border-violet-500/50 hover:shadow-lg hover:shadow-violet-600/10"
             >
               <div className="flex items-center gap-2">
@@ -64,7 +65,7 @@ export function LabView({ initialProjects }: { initialProjects: ProjectItem[] })
                 {t.sections.readMore}
                 <ChevronRight className="h-4 w-4 rtl:rotate-180" />
               </span>
-            </button>
+            </Link>
           );
         })}
         {initialProjects.length === 0 && (

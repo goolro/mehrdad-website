@@ -1,6 +1,6 @@
 import { db } from '@/lib/db';
 import { slugCandidates } from '@/lib/slug-lookup';
-import { sanitizePostHtml } from '@/lib/sanitize';
+import { sanitizePostHtml, sanitizeExcerpt } from '@/lib/sanitize';
 
 /**
  * Server-side data layer shared by the API routes and the server-rendered
@@ -123,6 +123,10 @@ export async function listPosts(params: ListPostsParams) {
       ...p,
       // XSS guard on read: legacy WP content may contain unsafe HTML
       contentEn: sanitizePostHtml(p.contentEn),
+      // WP-migration scrub: kill orphaned attr fragments (src="…") that
+      // survived tag-stripping and were leaking into visible teasers
+      excerptEn: sanitizeExcerpt(p.excerptEn),
+      excerptFa: sanitizeExcerpt(p.excerptFa),
       hasEn: Boolean(p.contentEn),
       commentCount: p._count.comments,
       tags: p.tags.map((pt) => pt.tag),
@@ -186,7 +190,12 @@ export async function getPostDetail(rawSlug: string) {
       contentFa: sanitizePostHtml(post.contentFa),
       tags,
     },
-    related,
+    related: related.map((r) => ({
+      ...r,
+      // same WP-migration attr-fragment scrub as listPosts teasers
+      excerptEn: sanitizeExcerpt(r.excerptEn),
+      excerptFa: sanitizeExcerpt(r.excerptFa),
+    })),
   };
 }
 
