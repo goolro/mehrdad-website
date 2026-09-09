@@ -28,8 +28,22 @@ const AI_CRAWLERS = [
   'Applebot-Extended',
   // Meta, Amazon, Common Crawl (AI datasets)
   'meta-externalagent',
+  'FacebookBot',
   'Amazonbot',
   'CCBot',
+  // second-generation AI surfaces (2025+): Duck.ai, Le Chat, you.com,
+  // Vertex grounding, Cohere, Diffbot KG, TikTok AI search, Hive image
+  // search, Allen AI datasets — all verified fetching the live site 200
+  'DuckAssistBot',
+  'MistralAI-User',
+  'YouBot',
+  'Google-CloudVertexBot',
+  'cohere-ai',
+  'Diffbot',
+  'Bytespider',
+  'ImagesiftBot',
+  'AI2Bot',
+  'Ai2Bot-Dolma',
 ];
 
 // PRERENDERED AT BUILD (2026-09-08, SEO-growth): nothing here depends on
