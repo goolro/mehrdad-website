@@ -1742,3 +1742,22 @@ Work Log:
 
 Stage Summary:
 - Verdict: access layer is 100% open to every major AI system (20/20 bots verified live); remaining thinness is engine-side indexation, accelerated by IndexNow (in place) + owner submitting sitemap in Google Search Console & Bing Webmaster Tools (human-only steps)
+
+---
+Task ID: indexing-program-1
+Agent: Z.ai Code (main)
+Task: Owner ask — confirm Google verification file exists; build an automatic indexing program
+
+Work Log:
+- Confirmed GSC verification file google9cf1b138dcf9f74b.html is committed AND served live (200) — Google property is verified
+- Built the indexing program (daily automatic push):
+  - src/lib/indexnow.ts: added awaitable submitIndexNow() returning HTTP result (cron wants delivery status, admin mutations stay fire-and-forget)
+  - NEW src/lib/google-indexing.ts: dependency-free Google Indexing API client (RS256 JWT via node:crypto, 1h token cache, batch URL_UPDATED, 429 quota stop) — strictly env-gated no-op until GOOGLE_INDEXING_SA_JSON is set
+  - NEW /api/cron/index-ping: daily job — home/blog/work + posts modified in last 72h every run; full ~100-URL sweep on Sundays or ?full=1; kill-switch slugs never pushed; auth = CRON_SECRET bearer OR IndexNow key; rate-limited when no secret configured
+  - vercel.json: crons added (0 3 * * * = 06:30 Tehran) while preserving the custom buildCommand
+- Local E2E: full and incremental modes both return JSON summary; IndexNow accepted real batches with 200; Google correctly reports enabled:false without env; lint clean
+
+Stage Summary:
+- Site now has an always-on indexing push: fresh content reaches Bing/ChatGPT-search side within ~24h automatically
+- Google direct push activates the moment the owner creates a service account (GCP → Indexing API → JSON key → GSC owner) and sets GOOGLE_INDEXING_SA_JSON
+- Remaining human steps (reported to owner): set CRON_SECRET in Vercel; GSC URL-inspection "request indexing" for top pages while engine indexes deepen

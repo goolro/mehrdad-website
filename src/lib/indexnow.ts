@@ -63,3 +63,28 @@ export function notifyIndexNow(urls: string[]): void {
 export function notifyIndexNowUrl(url: string): void {
   notifyIndexNow([url]);
 }
+
+/**
+ * Awaitable variant for the daily cron (index-ping): the scheduled job wants
+ * to KNOW the delivery result and log it, unlike the admin-mutation wrapper
+ * which is fire-and-forget by design.
+ */
+export async function submitIndexNow(
+  urls: string[],
+): Promise<{ ok: boolean; count: number; status: number }> {
+  const clean = [...new Set(urls.filter((u) => /^https?:\/\//.test(u)))].slice(0, 100);
+  if (clean.length === 0) return { ok: false, count: 0, status: 0 };
+  const { host, keyLocation } = hostAndKeyLocation();
+  try {
+    const res = await fetch(ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json; charset=utf-8' },
+      body: JSON.stringify({ host, key: indexNowKey(), keyLocation, urlList: clean }),
+      signal: AbortSignal.timeout(8_000),
+    });
+    // 200/202 = accepted; 4XX = bad key/payload; 5XX = partner-side trouble
+    return { ok: res.ok, count: clean.length, status: res.status };
+  } catch {
+    return { ok: false, count: clean.length, status: 0 };
+  }
+}
