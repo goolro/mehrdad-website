@@ -1761,3 +1761,17 @@ Stage Summary:
 - Site now has an always-on indexing push: fresh content reaches Bing/ChatGPT-search side within ~24h automatically
 - Google direct push activates the moment the owner creates a service account (GCP → Indexing API → JSON key → GSC owner) and sets GOOGLE_INDEXING_SA_JSON
 - Remaining human steps (reported to owner): set CRON_SECRET in Vercel; GSC URL-inspection "request indexing" for top pages while engine indexes deepen
+
+---
+Task ID: indexing-program-2
+Agent: Z.ai Code (main)
+Task: Owner concern — «پینگ موتورها باعث مشکل نشه؟» (won't the daily ping cause trouble?)
+
+Work Log:
+- Answered: IndexNow is a notification protocol, not a command — engines still decide crawl behavior; own-URL pings at 1 request/day are far under limits (10k/request); Google batch stops at 429 quota; kill-switch 404s never pushed
+- Tightened cadence per IndexNow usage guidance (repeatedly notifying unchanged URLs dampens future pings): daily run now pings only home + /blog + posts modified in last 72h; rarely-changing pages (/services /fde /lab /about /contact, project details) ride the weekly Sunday full sweep
+- Local E2E: incremental run = 2 URLs (local DB has no fresh posts), IndexNow 200; lint clean
+
+Stage Summary:
+- Daily ping volume: typically 3-10 URLs (was 8 statics + fresh) — maximally polite per spec
+- No penalty mechanism exists for notifying your own fresh content; worst case is engines ignoring redundant pings

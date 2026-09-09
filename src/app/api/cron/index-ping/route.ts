@@ -33,6 +33,11 @@ const BASE = (process.env.SITE_ORIGIN || 'https://mehrdad.ir').replace(/\/+$/, '
 
 const STATICS = ['/', '/blog', '/work', '/services', '/fde', '/lab', '/about', '/contact'];
 
+// daily set — only pages that plausibly change day-to-day. IndexNow's own
+// usage guidance says repeatedly notifying UNCHANGED URLs makes them dampen
+// your pings, so the rarely-changing pages ride the weekly Sunday sweep
+// instead of being pinged every morning (owner asked: «باعث مشکل نشه؟»).
+
 export async function GET(req: NextRequest) {
   // auth: Vercel cron bearer, manual indexnow key, or open-if-unset
   const secret = process.env.CRON_SECRET;
@@ -53,7 +58,9 @@ export async function GET(req: NextRequest) {
 
   try {
     // ── collect URL set ─────────────────────────────────────────────
-    const urls = new Set<string>(STATICS.map((p) => `${BASE}${p}`));
+    const urls = new Set<string>(
+      (full ? STATICS : ['/', '/blog']).map((p) => `${BASE}${p}`),
+    );
 
     const posts = await db.post.findMany({
       where: { published: true },
