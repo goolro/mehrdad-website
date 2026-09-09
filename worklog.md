@@ -1726,3 +1726,19 @@ Stage Summary:
 - Bare greetings/thanks = instant one-liner, 0 AI cost, 0 wait
 - Real questions: max ~25 words (was ~40) → noticeably faster completions end-to-end
 - Note: remaining first-token wait is provider-side (admin-configured free-tier model); streaming + short answers are the mitigations in our control
+
+---
+Task ID: geo-ai-visibility-1
+Agent: Z.ai Code (main)
+Task: Owner ask — test whether mehrdad.ir is really reachable/visible across all AIs (GEO audit)
+
+Work Log:
+- Access matrix: fetched production homepage with 20 AI-crawler user agents — 13 primary (GPTBot, OAI-SearchBot, ChatGPT-User, ClaudeBot, Claude-Web, anthropic-ai, PerplexityBot, Perplexity-User, Google-Extended, Applebot, meta-externalagent, Amazonbot, CCBot) + 7 secondary (DuckAssistBot, MistralAI-User, YouBot, Google-CloudVertexBot, cohere-ai, Diffbot, Bytespider): ALL 200 with full 71KB HTML, no firewall challenge, no geo-block, no 451
+- No-JS test (AI crawlers don't execute JS): blog post body fully present in raw HTML (4392 visible chars via GPTBot UA) — SSR default-EN render serves crawlers correctly
+- Headers/meta: no X-Robots-Tag anywhere, meta robots "index, follow" on all public pages, /admin noindex + robots Disallow intact
+- llms.txt 117 lines, bilingual, all pages+projects; sitemap 96 URLs with fresh lastmod; RSS feed live; IndexNow already implemented (key file serves 200, lib + admin hooks in place)
+- Index-depth probe via web-search: homepage indexed; deep pages (blog posts, projects) thin in engine indexes — discovery is time/backlinks/submission-bound, not an access defect
+- Fixed: robots.ts explicit-allow list extended with the 10 second-generation crawlers (incl. FacebookBot) so the documented list matches verified reality; robots.txt is force-static → regenerates on deploy
+
+Stage Summary:
+- Verdict: access layer is 100% open to every major AI system (20/20 bots verified live); remaining thinness is engine-side indexation, accelerated by IndexNow (in place) + owner submitting sitemap in Google Search Console & Bing Webmaster Tools (human-only steps)
