@@ -43,13 +43,19 @@ const PERSIAN_RE = /[\u0600-\u06FF\u0750-\u077F\uFB50-\uFDFF\uFE70-\uFEFF]/;
 
 // Pure greetings ("سلام", "hi!", "درود") get an instant canned reply — no
 // AI round-trip, so the very first impression never waits on a free-tier
-// queue. Anything beyond a bare greeting goes to the model as usual.
+// queue. Owner asked for a bare one-liner: a greeting deserves a greeting,
+// not a paragraph. Anything beyond a bare greeting goes to the model as usual.
 const GREETING_RE =
   /^(سلام|درود|هی|هیلو|هلو|salam|salaam|slam|hi|hey|hello|yo|hiya|greetings|good\s?(morning|afternoon|evening)|صبح\s?بخیر|عصر\s?بخیر|شب\s?بخیر|وقت\s?بخیر)[\s!.,\u061F?ـ]*$/i;
-const GREETING_FA =
-  'سلام! خوش آمدید — من دستیار هوش مصنوعی مهرداد هستم. دربارهٔ خدمات، پروژه‌ها، مقاله‌ها یا همکاری با مهرداد هر سؤالی دارید بپرسید.';
-const GREETING_EN =
-  "Hello! Welcome — I'm Mehrdad's AI assistant. Ask me anything about Mehrdad's services, projects, articles, or working with him.";
+const GREETING_FA = 'سلام! به وب‌سایت مهرداد خوش آمدید.';
+const GREETING_EN = "Hello! Welcome to Mehrdad's website.";
+
+// Same idea for bare thanks ("مرسی", "ممنون", "thanks") — politeness gets a
+// one-liner instantly instead of burning an AI call on a thank-you note.
+const THANKS_RE =
+  /^(مرسی|ممنون|ممنونم|تشکر|تشکرها|دست شما درد نکند|لطفا|thanks|thank\s?you|thx|ty|cheers|much\s?appreciated)[\s!.,\u061F?ـ]*$/i;
+const THANKS_FA = 'خواهش می‌کنم! سؤال دیگری بود، در خدمتم.';
+const THANKS_EN = "You're welcome! Ask me anything else.";
 
 export async function POST(req: NextRequest) {
   purgeOldChats();
@@ -91,12 +97,22 @@ export async function POST(req: NextRequest) {
       sessionId = s.id;
     }
 
-    // greeting fast-path: create the session, log both turns, answer now
-    if (message.length <= 40 && GREETING_RE.test(message)) {
-      const reply = lang === 'fa' ? GREETING_FA : GREETING_EN;
+    // greeting/thanks fast-path: create the session, log both turns, answer
+    // now — zero AI cost, zero wait for the shortest (and most common) pings
+    const quick =
+      message.length <= 40 && GREETING_RE.test(message)
+        ? lang === 'fa'
+          ? GREETING_FA
+          : GREETING_EN
+        : message.length <= 40 && THANKS_RE.test(message)
+          ? lang === 'fa'
+            ? THANKS_FA
+            : THANKS_EN
+          : null;
+    if (quick) {
       await db.chatMessage.create({ data: { sessionId, role: 'user', content: message, lang } });
-      await db.chatMessage.create({ data: { sessionId, role: 'assistant', content: reply, lang } });
-      return NextResponse.json({ reply, sessionId, sources: [], aiUnavailable: false });
+      await db.chatMessage.create({ data: { sessionId, role: 'assistant', content: quick, lang } });
+      return NextResponse.json({ reply: quick, sessionId, sources: [], aiUnavailable: false });
     }
 
     // history — the LAST 6 messages (asc+take was silently sending the
@@ -135,7 +151,7 @@ PAGE CONTEXT (important): The user is RIGHT NOW on the "Forward Deployed Enginee
 
 Use ONLY the following site knowledge to answer. If the answer is not in the knowledge, say you don't have that info and suggest using the contact form at mehrdad.ir/contact.
 
-Be helpful and VERY concise: 2–3 short sentences, at most ~40 words. Plain text only — NEVER use bullet lists, headings or markdown. If more detail is truly needed, invite them to ask a follow-up. Answer in English.
+Be helpful and EXTREMELY concise: 1–2 short sentences, at most ~25 words. Short answers also load faster for the visitor. Plain text only — NEVER use bullet lists, headings or markdown. If more detail is truly needed, invite them to ask a follow-up. Answer in English.
 
 SITE KNOWLEDGE:
 ${context || '(no specific knowledge found — rely only on the general info above)'}${pageCtxEn}`;
@@ -144,7 +160,7 @@ ${context || '(no specific knowledge found — rely only on the general info abo
 
 فقط از دانش سایت زیر برای پاسخ استفاده کن. اگر پاسخ در دانش موجود نبود، بگو اطلاعاتی نداری و فرم تماس در mehrdad.ir/contact را پیشنهاد بده.
 
-کوتاه و مفید پاسخ بده: فقط ۲–۳ جملهٔ کوتاه (حداکثر ~۴۰ کلمه). متن ساده — هرگز از لیست گلوله‌ای، تیتر یا مارک‌داون استفاده نکن. اگر جزئیات بیشتر واقعاً لازم بود، دعوت کن سؤال بعدی بپرسد. به فارسی روان پاسخ بده.
+خیلی کوتاه و مفید پاسخ بده: فقط ۱–۲ جملهٔ کوتاه (حداکثر ~۲۵ کلمه). پاسخ کوتاه‌تر برای مخاطب سریع‌تر هم بارگذاری می‌شود. متن ساده — هرگز از لیست گلوله‌ای، تیتر یا مارک‌داون استفاده نکن. اگر جزئیات بیشتر واقعاً لازم بود، دعوت کن سؤال بعدی بپرسد. به فارسی روان پاسخ بده.
 
 دانش سایت:
 ${context || '(دانش خاصی یافت نشد — فقط از اطلاعات کلی بالا استفاده کن)'}${pageCtxFa}`;
@@ -184,7 +200,7 @@ ${context || '(دانش خاصی یافت نشد — فقط از اطلاعات 
               for (const [waitMs, tmo] of attempts) {
                 if (waitMs) await sleep(waitMs);
                 try {
-                  for await (const piece of chatCompletionStream(provider, turns, { timeoutMs: tmo, maxTokens: 400 })) {
+                  for await (const piece of chatCompletionStream(provider, turns, { timeoutMs: tmo, maxTokens: 220 })) {
                     full += piece;
                     if (!started) {
                       started = true;
@@ -196,7 +212,7 @@ ${context || '(دانش خاصی یافت نشد — فقط از اطلاعات 
                   // the budget on reasoning): one non-stream retry — its
                   // extractText() can surface the reasoning tail
                   if (!started) {
-                    full = await chatCompletion(provider, turns, { timeoutMs: 8_000, maxTokens: 400 });
+                    full = await chatCompletion(provider, turns, { timeoutMs: 8_000, maxTokens: 220 });
                     if (full) {
                       started = true;
                       send({ delta: full });
@@ -256,7 +272,7 @@ ${context || '(دانش خاصی یافت نشد — فقط از اطلاعات 
       for (const waitMs of [0, 1_500]) {
         if (waitMs) await new Promise((r) => setTimeout(r, waitMs));
         try {
-          reply = await chatCompletion(provider, turns, { timeoutMs: 45_000, maxTokens: 400 });
+          reply = await chatCompletion(provider, turns, { timeoutMs: 45_000, maxTokens: 220 });
           if (reply) break;
         } catch (err) {
           lastErr = err;
