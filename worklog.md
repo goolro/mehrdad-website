@@ -1708,3 +1708,21 @@ Stage Summary:
 - Production was already healthy at the SEO/page level; the two real structural defects (button-only internal linking, teaser artifacts) are fixed and deployed
 - Internal linking now exposes ~20+ crawlable anchors per page (was effectively zero besides canonicals)
 - Note for future agents: local db/custom.db gets wiped on sandbox reset — reseed via prisma/seed.ts or ad-hoc inserts when local E2E needs data
+
+---
+Task ID: chat-greeting-short-1
+Agent: Z.ai Code (main)
+Task: Owner report — bare "سلام" reply too long + AI answers still slow; make greeting a one-liner and cut AI answer latency
+
+Work Log:
+- Greeting fast-path already existed (instant canned reply) but the canned text was a 3-sentence paragraph — shortened to the owner's exact ask: FA «سلام! به وب‌سایت مهرداد خوش آمدید.» / EN "Hello! Welcome to Mehrdad's website."
+- Added same instant fast-path for bare thanks (مرسی/ممنون/تشکر/thanks/ty…): «خواهش می‌کنم! سؤال دیگری بود، در خدمتم.» — politeness no longer burns an AI call
+- Latency lever 1: system prompt word budget tightened 2–3 sentences/~40 words → 1–2 sentences/~25 words (EN+FA) — fewer generated tokens = faster completion
+- Latency lever 2: maxTokens 400 → 220 on all three call sites (stream, stream fallback, legacy JSON)
+- Verified locally: سلام → 53ms canned reply (was full model round-trip before fast-path era); real question bypasses quick-path and returned a 1-sentence AI answer under new budget; lint clean
+- Committed and pushed to main (Vercel auto-deploy)
+
+Stage Summary:
+- Bare greetings/thanks = instant one-liner, 0 AI cost, 0 wait
+- Real questions: max ~25 words (was ~40) → noticeably faster completions end-to-end
+- Note: remaining first-token wait is provider-side (admin-configured free-tier model); streaming + short answers are the mitigations in our control
