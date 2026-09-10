@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { checkAdmin } from '@/lib/admin';
 import { db } from '@/lib/db';
+import { ensureSocialDraftTable } from '@/lib/social-drafts';
 
 export const dynamic = 'force-dynamic';
 
@@ -9,6 +10,7 @@ export const dynamic = 'force-dynamic';
 export async function GET(req: NextRequest) {
   const denied = checkAdmin(req);
   if (denied) return denied;
+  await ensureSocialDraftTable();
   const drafts = await db.socialDraft.findMany({ orderBy: { createdAt: 'desc' }, take: 100 });
   return NextResponse.json({ ok: true, drafts });
 }
@@ -17,6 +19,7 @@ export async function POST(req: NextRequest) {
   const denied = checkAdmin(req);
   if (denied) return denied;
   try {
+    await ensureSocialDraftTable();
     const b = await req.json();
     const platform = typeof b.platform === 'string' ? b.platform : '';
     const lang = b.lang === 'en' ? 'en' : 'fa';

@@ -224,3 +224,16 @@ model AiJob {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+// ───────────────────────── Social Media Studio ─────────────────────────
+
+model SocialDraft {
+  id         String   @id @default(cuid())
+  platform   String   // linkedin | instagram | x | telegram
+  lang       String   // en | fa
+  topic      String?
+  sourceSlug String?
+  content    String
+  posted     Boolean  @default(false)
+  createdAt  DateTime @default(now())
+}
