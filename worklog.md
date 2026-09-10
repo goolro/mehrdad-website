@@ -1807,3 +1807,40 @@ Work Log:
 Stage Summary:
 - Credit exhaustion on the active provider no longer breaks the chat — the next configured provider (OpenAI row, Z.ai row) takes over automatically within one failed request
 - Thinking suppression on OrcaRouter should cut visible first-token from ~13.5s to ~2-4s (verify on production post-deploy)
+
+---
+Task ID: social-studio-1
+Agent: Z.ai Code (main)
+Task: Owner approved building the social-media-skills-style content system connected to the website («اره اینکارو بکنیم و خودمون به وب سایت وصلش کنیم»)
+
+Work Log:
+- Researched charlie947/social-media-skills (17-skill voice→platform system) and ported the applicable core into the site's own stack — no external install needed
+- Prisma: new SocialDraft model (platform/lang/topic/sourceSlug/content/posted), db:push OK
+- NEW /api/admin/social/generate: source = blog post (loaded from Post table, HTML stripped, 2200-char clamp) or topic (RAG retrieveContext); per-platform format specs (LinkedIn hook-first 600-1300 chars, Instagram emoji-casual 300-1500 + 8-12 hashtags, X hard 280 cap enforced, Telegram informative 500-2000); VOICE block matches the site writer prompt (Mehrdad = independent product builder, lessons not ads, CTA mehrdad.ir); lang fa/en/both; generation walks the provider failover chain then ZAI sandbox
+- NEW /api/admin/social/drafts: GET list (100) / POST save / DELETE ?id= — admin-gated
+- NEW src/components/site/SocialStudio.tsx: source toggle (blog post dropdown from /api/admin/posts | custom topic), platform chips, language select, per-card inline editing + live char counter vs limit (red when over), copy (clipboard), save-to-drafts, saved drafts list (ScrollArea max-h-96, copy/delete); RTL-aware textarea direction (auto-detects Persian); bilingual labels via pick()
+- AdminView: added "Social Studio" tab (Share2 icon) + i18n tabs keys (en: Social Studio / fa: استودیو شبکه‌ها); fixed react-hooks/set-state-in-effect lint error by keeping loadDrafts promise-based
+- E2E local (had to append a temp ADMIN_PASSWORD to gitignored local .env — local-e2e-test-7x2k, dev-only, production creds untouched): login → generate (topic «درس‌های ساخت اولین محصول دیجیتال», x+linkedin, fa) → 2 posts in 11s (X 178/280 ✓ hook+hashtag+link, LinkedIn 877 chars ✓ storytelling) → save → list → delete all 200
+- Browser E2E (agent-browser, logged in): tab renders both languages, topic mode → generated X (231/280) + Telegram (631/4096) posts visible with counters, saved draft appears with badge count, desktop + 390px mobile screenshots clean; dev.log zero errors
+- Committed bcad531, pushed to main (x-access-token fallback path), Vercel auto-deploy
+
+Stage Summary:
+- Owner now has a one-stop social content studio inside /admin: blog post or idea in → publishable Persian/English posts for LinkedIn/Instagram/X/Telegram out, in his own voice, drafts persisted
+- In production it runs on the configured OrcaRouter provider (orcarouter/free) with automatic failover; local test used the ZAI sandbox
+- The «from blog post» dropdown is empty on local dev DB by design — real posts live in production DB; flow verified at API-contract level + code review
+
+---
+Task ID: social-studio-2
+Agent: Z.ai Code (main)
+Task: Ship fix — first deploy of Social Studio 404'd on production
+
+Work Log:
+- Root cause: Vercel build generates the Prisma client from prisma/schema.postgres.prisma (postgres mirror), NOT the sqlite schema.prisma that was edited — next build type-checked db.socialDraft against a client without the model → build failed → old deployment kept serving → all /api/admin/social/* 404
+- Mirrored the SocialDraft model into schema.postgres.prisma (per the schema header's own sync instructions)
+- Added src/lib/social-drafts.ts ensureSocialDraftTable(): idempotent CREATE TABLE IF NOT EXISTS (Prisma-identical columns/constraints), module-promise-collapsed, retry-on-error — production Supabase needs no manual DDL; first drafts call after deploy self-creates the table
+- Local re-verified (lint clean, drafts route still 200 with cookie); committed 27a1457, pushed
+- Production verified: /api/admin/social/generate 401 (auth gate, was 404), /api/admin/social/drafts 401, home 200, shipped JS chunks contain استودیو/social-generate strings
+
+Stage Summary:
+- Rule reinforced for ALL future model changes: edit BOTH prisma/schema.prisma (sqlite) AND prisma/schema.postgres.prisma (Vercel mirror) — a generate-only mismatch silently breaks the next Vercel build
+- Social Studio live on production; owner sees the new tab after a hard refresh of /admin
