@@ -186,6 +186,7 @@ ${context || '(دانش خاصی یافت نشد — فقط از اطلاعات 
           const send = (obj: unknown) => ctrl.enqueue(encoder.encode(`data: ${JSON.stringify(obj)}\n\n`));
           let full = '';
           let started = false; // any delta already sent → no retries (would duplicate)
+          let servedBy = ''; // which provider answered (debug/observability)
           try {
             send({ sessionId }); // bind the session before first token
             const chain = await getProviderChain();
@@ -216,7 +217,10 @@ ${context || '(دانش خاصی یافت نشد — فقط از اطلاعات 
                     }
                     send({ delta: piece });
                   }
-                  if (full) break outer;
+                  if (full) {
+                    servedBy = provider.name;
+                    break outer;
+                  }
                   // stream ended but produced nothing (thinking-model burned
                   // the budget on reasoning): one non-stream retry — its
                   // extractText() can surface the reasoning tail
@@ -224,6 +228,7 @@ ${context || '(دانش خاصی یافت نشد — فقط از اطلاعات 
                     full = await chatCompletion(provider, turns, { timeoutMs: 8_000, maxTokens: 300 });
                     if (full) {
                       started = true;
+                      servedBy = provider.name;
                       send({ delta: full });
                       break outer;
                     }
@@ -247,17 +252,24 @@ ${context || '(دانش خاصی یافت نشد — فقط از اطلاعات 
             if (!full) {
               // sandbox/dev fallback (no-op '' on Vercel), then honest message
               full = await zaiComplete(turns, { timeoutMs: 8_000 });
-              if (!full) {
-                full = lang === 'fa' ? UNCONFIGURED_FA : UNCONFIGURED_EN;
-                send({ delta: full });
-                send({ aiUnavailable: true });
-              } else {
-                send({ delta: full });
-              }
+              if (full) servedBy = 'zai-fallback';
+            }
+            if (!full) {
+              full = lang === 'fa' ? UNCONFIGURED_FA : UNCONFIGURED_EN;
+              send({ delta: full });
+              send({ aiUnavailable: true });
+            } else if (!started) {
+              // answered outside the stream loop (fallback path): push at once
+              send({ delta: full });
             }
             await db.chatMessage.create({ data: { sessionId, role: 'assistant', content: full, lang } });
             const sources = [...new Set(chunks.map((c) => c.refSlug).filter(Boolean))].slice(0, 4);
-            send({ done: true, sources, aiUnavailable: full === (lang === 'fa' ? UNCONFIGURED_FA : UNCONFIGURED_EN) });
+            send({
+              done: true,
+              sources,
+              servedBy,
+              aiUnavailable: full === (lang === 'fa' ? UNCONFIGURED_FA : UNCONFIGURED_EN),
+            });
             ctrl.close();
           } catch (e) {
             console.error('chat stream error:', e);
