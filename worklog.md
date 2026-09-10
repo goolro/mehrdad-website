@@ -1775,3 +1775,20 @@ Work Log:
 Stage Summary:
 - Daily ping volume: typically 3-10 URLs (was 8 statics + fresh) — maximally polite per spec
 - No penalty mechanism exists for notifying your own fresh content; worst case is engines ignoring redundant pings
+
+---
+Task ID: orcarouter-connect-1
+Agent: Z.ai Code (main)
+Task: Owner shared OrcaRouter API key — verify it works for the site chat and hand over exact admin settings
+
+Work Log:
+- Live-tested the key against api.orcarouter.ai (OpenAI-compatible confirmed earlier):
+  - orcarouter/free: WORKS without credit — 1.3–1.7s full round-trips, good Persian answers, backed by deepseek-v4-flash (a thinking model)
+  - orcarouter/auto, deepseek/deepseek-v4-flash, z-ai/glm-5.3-flash: blocked by credit gate ("Add credit" activation step incomplete) — costs are tiny ($0.00005–0.0002/request)
+  - SSE streaming: standard OpenAI chunk format, reasoning_content deltas separate from content (our stream parser already skips reasoning)
+- Safety tweak: thinking models burn reasoning tokens against max_tokens — raised chat-route cap 220 → 300 (no latency cost for short answers, prevents mid-sentence truncation); lint clean, pushed
+
+Stage Summary:
+- Verdict: key is valid; plug-and-play with the admin panel's provider fields
+- Handover settings given to owner: Base URL https://api.orcarouter.ai/v1 (WITH /v1 — bare host is Anthropic-protocol only), model orcarouter/free now; switch to deepseek/deepseek-v4-flash or orcarouter/auto after adding credit (~sub-second answers)
+- Provider row lives in production DB — only the owner can enter it via /admin (no admin credentials held by agents, by design)

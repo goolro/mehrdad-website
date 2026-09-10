@@ -200,7 +200,7 @@ ${context || '(دانش خاصی یافت نشد — فقط از اطلاعات 
               for (const [waitMs, tmo] of attempts) {
                 if (waitMs) await sleep(waitMs);
                 try {
-                  for await (const piece of chatCompletionStream(provider, turns, { timeoutMs: tmo, maxTokens: 220 })) {
+                  for await (const piece of chatCompletionStream(provider, turns, { timeoutMs: tmo, maxTokens: 300 })) {
                     full += piece;
                     if (!started) {
                       started = true;
@@ -212,7 +212,7 @@ ${context || '(دانش خاصی یافت نشد — فقط از اطلاعات 
                   // the budget on reasoning): one non-stream retry — its
                   // extractText() can surface the reasoning tail
                   if (!started) {
-                    full = await chatCompletion(provider, turns, { timeoutMs: 8_000, maxTokens: 220 });
+                    full = await chatCompletion(provider, turns, { timeoutMs: 8_000, maxTokens: 300 });
                     if (full) {
                       started = true;
                       send({ delta: full });
@@ -272,7 +272,7 @@ ${context || '(دانش خاصی یافت نشد — فقط از اطلاعات 
       for (const waitMs of [0, 1_500]) {
         if (waitMs) await new Promise((r) => setTimeout(r, waitMs));
         try {
-          reply = await chatCompletion(provider, turns, { timeoutMs: 45_000, maxTokens: 220 });
+          reply = await chatCompletion(provider, turns, { timeoutMs: 45_000, maxTokens: 300 });
           if (reply) break;
         } catch (err) {
           lastErr = err;
