@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { retrieveContext, buildContextBlock } from '@/lib/rag';
-import { chatCompletion, chatCompletionStream, getActiveProvider, zaiComplete, type ChatTurn } from '@/lib/ai-provider';
+import { chatCompletion, chatCompletionStream, getProviderChain, zaiComplete, type ChatTurn } from '@/lib/ai-provider';
 import { clientIp, readJsonBody, jsonBodyError, rateLimit, tooManyRequests } from '@/lib/rate-limit';
 
 export const dynamic = 'force-dynamic';
@@ -188,26 +188,35 @@ ${context || '(دانش خاصی یافت نشد — فقط از اطلاعات 
           let started = false; // any delta already sent → no retries (would duplicate)
           try {
             send({ sessionId }); // bind the session before first token
-            const provider = await getActiveProvider();
-            if (provider) {
-              // attempt 1: generous budget; attempt 2 (transient 429/5xx):
-              // short — the visitor is already waiting. Tight overall so the
-              // 60s serverless ceiling can never cut mid-fallback.
-              const attempts: [number, number][] = [
-                [0, 40_000],
-                [1_500, 10_000],
-              ];
+            const chain = await getProviderChain();
+            // attempt 1: generous budget; attempt 2 (transient 429/5xx):
+            // short — the visitor is already waiting. When several providers
+            // are configured the per-provider budget shrinks so the failover
+            // walk can never exceed the 60s serverless ceiling.
+            const attempts: [number, number][] =
+              chain.length > 1
+                ? [
+                    [0, 25_000],
+                    [1_500, 8_000],
+                  ]
+                : [
+                    [0, 40_000],
+                    [1_500, 10_000],
+                  ];
+            outer: for (const provider of chain) {
               for (const [waitMs, tmo] of attempts) {
                 if (waitMs) await sleep(waitMs);
                 try {
-                  for await (const piece of chatCompletionStream(provider, turns, { timeoutMs: tmo, maxTokens: 300 })) {
+                  for await (
+                    const piece of chatCompletionStream(provider, turns, { timeoutMs: tmo, maxTokens: 300 })
+                  ) {
                     full += piece;
                     if (!started) {
                       started = true;
                     }
                     send({ delta: piece });
                   }
-                  if (full) break;
+                  if (full) break outer;
                   // stream ended but produced nothing (thinking-model burned
                   // the budget on reasoning): one non-stream retry — its
                   // extractText() can surface the reasoning tail
@@ -216,15 +225,23 @@ ${context || '(دانش خاصی یافت نشد — فقط از اطلاعات 
                     if (full) {
                       started = true;
                       send({ delta: full });
+                      break outer;
                     }
                   }
-                  if (full) break;
                 } catch (err) {
-                  if (started) break; // mid-stream: end gracefully with what we have
+                  if (started) break outer; // mid-stream: end gracefully with what we have
                   const msg = String((err as Error)?.message || err);
-                  if (!/429|5\d\d/.test(msg)) break; // non-transient
-                  console.error('chat stream provider error:', msg.slice(0, 200));
+                  console.error(
+                    `chat stream provider ${provider.name} failed:`,
+                    msg.slice(0, 200),
+                  );
+                  // transient (429/5xx): retry same provider once; anything
+                  // else (bad key, credit gate, …): fail over to the next one
+                  if (!/429|5\d\d/.test(msg)) break;
                 }
+              }
+              if (chain.length > 1 && provider !== chain[chain.length - 1]) {
+                console.warn(`chat failover: ${provider.name} exhausted, trying next provider`);
               }
             }
             if (!full) {
@@ -263,24 +280,27 @@ ${context || '(دانش خاصی یافت نشد — فقط از اطلاعات 
     }
 
     // ── legacy JSON mode (non-streaming callers) ──────────────────────
-    // 1) admin-configured OpenAI-compatible provider (works everywhere,
-    //    including Vercel production)
-    const provider = await getActiveProvider();
-    if (provider) {
-      // resilience: short retries for transient 429/5xx storms, then graceful
+    // walk the provider chain: active first, then every other configured
+    // provider — a dead provider (empty credit, revoked key, outage) costs
+    // one fast failed request, not the whole conversation
+    const chain = await getProviderChain();
+    for (const provider of chain) {
       let lastErr: unknown = null;
+      const legacyTmo = chain.length > 1 ? 25_000 : 45_000;
       for (const waitMs of [0, 1_500]) {
         if (waitMs) await new Promise((r) => setTimeout(r, waitMs));
         try {
-          reply = await chatCompletion(provider, turns, { timeoutMs: 45_000, maxTokens: 300 });
+          reply = await chatCompletion(provider, turns, { timeoutMs: legacyTmo, maxTokens: 300 });
           if (reply) break;
         } catch (err) {
           lastErr = err;
           const msg = String((err as Error)?.message || err);
-          if (!/429|5\d\d/.test(msg)) break; // non-transient: no point retrying
+          // transient (429/5xx): retry same provider; else fail over now
+          if (!/429|5\d\d/.test(msg)) break;
         }
       }
-      if (!reply && lastErr) console.error('chat provider error:', lastErr);
+      if (reply) break;
+      if (lastErr) console.error(`chat provider ${provider.name} failed:`, lastErr);
     }
 
     // 2) sandbox/dev fallback (z-ai-web-dev-sdk) — a no-op '' on hosting

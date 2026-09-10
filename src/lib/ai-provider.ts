@@ -38,6 +38,7 @@ let providerCache: { at: number; value: ProviderConfig | null } | null = null;
 /** Drop the cached provider (called after any admin provider write). */
 export function invalidateProviderCache(): void {
   providerCache = null;
+  chainCache = null;
 }
 
 export async function getActiveProvider(): Promise<ProviderConfig | null> {
@@ -52,15 +53,48 @@ export async function getActiveProvider(): Promise<ProviderConfig | null> {
   return value;
 }
 
+let chainCache: { at: number; value: ProviderConfig[] } | null = null;
+
+/**
+ * Ordered failover chain (owner ask: «اگر اعتبارش تمام شد خودش تغییر میده؟» —
+ * now: yes). Active provider first, then every other configured provider
+ * (oldest first). The chat route walks this list when the current provider
+ * hard-fails (exhausted credit, bad key, outage) instead of giving up.
+ */
+export async function getProviderChain(): Promise<ProviderConfig[]> {
+  if (chainCache && Date.now() - chainCache.at < PROVIDER_CACHE_TTL_MS) {
+    return chainCache.value;
+  }
+  const rows = await db.aiProvider.findMany({
+    orderBy: [{ active: 'desc' }, { createdAt: 'asc' }],
+  });
+  const value = rows.map((row) => ({
+    id: row.id,
+    name: row.name,
+    baseUrl: row.baseUrl,
+    apiKey: row.apiKey,
+    model: row.model,
+  }));
+  chainCache = { at: Date.now(), value };
+  return value;
+}
+
 function endpointOf(baseUrl: string): string {
   return `${baseUrl.replace(/\/+$/, '')}/chat/completions`;
 }
 
-/** Z.ai / BigModel gateways accept a `thinking` switch that strict OpenAI-compatible APIs reject. */
-function isZaiHost(baseUrl: string): boolean {
+/**
+ * Gateways known to accept the z.ai-style `thinking:{type:'disabled'}`
+ * switch. OrcaRouter verified live (2026-09): with it, reasoning_content
+ * disappears and content starts ~10s sooner on its free thinking model.
+ * Other hosts simply never receive the field.
+ */
+function acceptsThinkingSwitch(baseUrl: string): boolean {
   try {
     const h = new URL(baseUrl).hostname;
-    return h === 'z.ai' || h.endsWith('.z.ai') || h.endsWith('bigmodel.cn');
+    return (
+      h === 'z.ai' || h.endsWith('.z.ai') || h.endsWith('bigmodel.cn') || h.endsWith('orcarouter.ai')
+    );
   } catch {
     return false;
   }
@@ -122,7 +156,7 @@ export async function chatCompletion(
     // On Z.ai gateways first try with the thinking switch (fast + cheap for
     // a chatbot); if the gateway/model rejects it with 400, retry once
     // without it (e.g. always-on-thinking flagships).
-    for (const withThinking of isZaiHost(provider.baseUrl) ? [true, false] : [false]) {
+    for (const withThinking of acceptsThinkingSwitch(provider.baseUrl) ? [true, false] : [false]) {
       const payload = withThinking ? { ...base, thinking: { type: 'disabled' } } : base;
       const res = await fetch(endpointOf(provider.baseUrl), {
         method: 'POST',
@@ -175,7 +209,7 @@ export async function* chatCompletionStream(
     temperature: opts.temperature ?? 0.6,
   };
   try {
-    for (const withThinking of isZaiHost(provider.baseUrl) ? [true, false] : [false]) {
+    for (const withThinking of acceptsThinkingSwitch(provider.baseUrl) ? [true, false] : [false]) {
       const payload = withThinking ? { ...base, thinking: { type: 'disabled' } } : base;
       const res = await fetch(endpointOf(provider.baseUrl), {
         method: 'POST',
