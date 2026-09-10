@@ -1792,3 +1792,18 @@ Stage Summary:
 - Verdict: key is valid; plug-and-play with the admin panel's provider fields
 - Handover settings given to owner: Base URL https://api.orcarouter.ai/v1 (WITH /v1 — bare host is Anthropic-protocol only), model orcarouter/free now; switch to deepseek/deepseek-v4-flash or orcarouter/auto after adding credit (~sub-second answers)
 - Provider row lives in production DB — only the owner can enter it via /admin (no admin credentials held by agents, by design)
+
+---
+Task ID: orca-failover-thinking-1
+Agent: Z.ai Code (main)
+Task: Owner — retest after key fix; «اگر اعتبارش تمام شد خودش تغییر میده؟» (auto-switch on credit exhaustion?)
+
+Work Log:
+- Production retest after owner fixed the key: found real problems — legacy JSON path 33s/51s, stream first-CONTENT-delta 13.5s (session bind 2.9s). Root cause: orcarouter/free is a THINKING model (deepseek-v4-flash) burning ~10s reasoning before visible content
+- Verified live that OrcaRouter accepts the z.ai-style thinking:{type:'disabled'} switch (reasoning_content → 0 chars); extended the acceptsThinkingSwitch gate (was isZaiHost) to include orcarouter.ai — retry-without-on-400 semantics unchanged
+- Implemented automatic provider failover (answer to owner question = now YES): new getProviderChain() (active first, then other configured providers, TTL-cached, invalidated with provider cache); chat route walks the chain in BOTH stream and legacy modes — hard failure (credit gate, bad key, outage) moves to next provider, transient 429/5xx retries same provider once; mid-stream failures still end gracefully without duplication; per-provider budgets shrink when chain > 1 (25s/8s) to respect the 60s serverless ceiling
+- Local E2E: lint clean; chat answers normally with the new chain walk
+
+Stage Summary:
+- Credit exhaustion on the active provider no longer breaks the chat — the next configured provider (OpenAI row, Z.ai row) takes over automatically within one failed request
+- Thinking suppression on OrcaRouter should cut visible first-token from ~13.5s to ~2-4s (verify on production post-deploy)
