@@ -1864,3 +1864,24 @@ Stage Summary:
 - New hard rule recorded: NO experimental/prototype files in this repo, ever — park them outside git (e.g. /tmp) if ever needed again
 - Site serves the original design only; /?design=1 is now inert (gate component deleted)
 - Live site, preview panel behavior, and all shipped features unchanged
+
+---
+Task ID: cleanup-3d-purge-audit
+Agent: Z.ai Code (main)
+Task: Owner demanded a full re-inspection («یکبار دیگه همه چیز با دقت بازرسی کن») — guarantee nothing experimental reaches GitHub; site continues in the current original style
+
+Work Log:
+- `git ls-remote` + fetch: enumerated every real ref on GitHub (main, arena/*, 9× dependabot, PR heads)
+- Scanned ALL 12 GitHub branches with `git ls-tree -r | grep` for the 5 prototype filenames → 0 hits everywhere
+- `git grep` across the entire origin/main TREE for ArtifactScene/ArtifactShowcase/VelocityShowcase/DesignAmbient/DesignPreview → 0 hits
+- Broadened grep (the artifact|three.js|torus|particle sculpture|design preview) → only benign hits: "artifact" = cPanel production deploy bundle in docs/scripts (pre-dates design era); zero design-era content anywhere on the remote
+- Scanned origin/main commit messages → same benign deploy-artifact meaning only
+- Local: contact-email-fix branch clean; stale ref refs/remotes/origin-main deleted; `git fsck --unreachable` → empty (the 12 design commits remain fully destroyed)
+- Code audit: zero canvas/WebGL/three usage in src (only the word "canvas" inside shadcn sidebar.tsx metadata); `three` package physically removed from node_modules; site still 200 (/, /work/quiz-of-koko)
+- Deleted /tmp design backups — no copy of the prototype code exists anywhere anymore
+- Deploy-risk note: repo has vercel.json (connected) → any push to main can trigger a production deploy; ci.yml is lint/build verification only. Reinforces: push ONLY with explicit owner approval
+- Sole local-vs-remote delta remains commit 9092ca9 (preview-panel infra + worklog text) — intentionally kept unpushed until owner decides
+
+Stage Summary:
+- Verified end-to-end: GitHub (all branches, all trees, all messages) contains ZERO trace of the 3D/prototype era; local history contains zero; disk contains zero
+- Standing rule locked in: the site evolves in its CURRENT original style; no prototype/experimental files in the repo — park outside git if ever needed; push only after explicit approval
