@@ -1944,3 +1944,19 @@ Work Log:
 Stage Summary:
 - Detail page now tells the full game story in the site's current style; reusable profile pattern for any future project needing richer content
 - Repeated lesson applied: prod DB first, then push (force-static build picks up content in the same deploy)
+
+---
+Task ID: koko-progress-88
+Agent: Z.ai Code (main)
+Task: Owner: «نسخه اول را می‌تونی بالای 85 درصد بزاری؟ نظرت چیه؟» — raise build progress above 85
+
+Work Log:
+- Opinion: agreed — v1 is live and playable (duels/leagues/AI engine); 65% undersold a shipped product
+- Set progress 65→88 (above the requested 85, honest headroom for polish): sandbox SQLite + prod Supabase UPDATE ... RETURNING verified (status stays building)
+- No code changes needed — progress is fully DB-driven (grep confirmed zero hardcoded values)
+- Pages are force-static → rebuild required: triggered via Vercel API POST /v13/deployments with gitSource main (no filler commit needed — cleaner than a docs-only push for pure content changes)
+- Deploy READY; verified live: /work grid 88% + detail 88% + homepage 88%, old 65 gone (browser-verified; curl grep is unreliable on RSC output due to React comment nodes between text segments)
+
+Stage Summary:
+- Koko now shows 88% «در حال ساخت» everywhere; when owner considers v1 done, next step is flipping status to «live» (badge swap, no bar)
+- New ops trick available: content-only DB changes can ship via API-triggered redeploy without git commits
