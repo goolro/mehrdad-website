@@ -1977,3 +1977,19 @@ Stage Summary:
 - Koko is officially the site's first LIVE-status project: green badge everywhere + animated roadmap storytelling
 - Phase percentages for market/phase-2 deliberately qualitative (آماده/شروع شد) — honest to owner's own wording; numbers can be added anytime in one line of project-profiles.ts
 - Reusable: any project now gets a roadmap by adding phases to its profile
+
+---
+Task ID: koko-title-fix
+Agent: Z.ai Code (main)
+Task: Owner spotted Persian title typo «کوییز کاکو» → must be «کوییز کوکو» + add parenthetical «(پرسش و پاسخ با کوکو)»
+
+Work Log:
+- Root cause: typo lived ONLY in DB (prod Supabase titleFa column) — code grep showed zero occurrences; worklog history had it only as past verification notes
+- DB-first: UPDATE "Project" SET titleFa='کوییز کوکو (پرسش و پاسخ با کوکو)' WHERE slug='quiz-of-koko' RETURNING verified; local sandbox synced via bun -e PrismaClient (sqlite3 CLI unavailable)
+- No git push needed (code untouched) — DB-only change on force-static pages → API redeploy: POST /v13/deployments {"name":"mehrdad-website","project":"prj_…","gitSource":{…ref:main},"target":"production"} (note: `name` property is REQUIRED alongside gitSource, first attempt 400)
+- Deploy dpl_ByDF5aZ25znakSXkaAA1q2Gu5Kfk READY, mehrdad.ir alias assigned
+- Browser-verified: /work?lang=fa card + detail h1 + homepage featured all show new title; 'کاکو' absent site-wide (fa+en); live badge فعال + roadmap rings + play CTA intact; EN title "Quiz of Koko" unchanged; mobile 390px no overflow; zero page errors
+
+Stage Summary:
+- Full bilingual title now: FA «کوییز کوکو (پرسش و پاسخ با کوکو)» / EN "Quiz of Koko"
+- Redeploy command learned: v13/deployments requires name+project+gitSource+target together
