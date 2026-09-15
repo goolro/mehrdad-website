@@ -1926,3 +1926,21 @@ Stage Summary:
 - Quiz of Koko is LIVE on mehrdad.ir: /work first card + homepage featured + detail page with working Play CTA — data (Supabase) and code (GitHub→Vercel) both in sync
 - Incident lesson locked: never leave main unsynced — «اینجا نیست» happened precisely because of unpushed local commits + DB-only sandbox content
 - Security follow-up for owner: rotate ALL three shared tokens (GitHub PAT has push access; Vercel; Supabase management) — they were pasted in chat; GitHub also reports 2 high dependabot vulnerabilities on main (separate cleanup task)
+
+---
+Task ID: koko-content-expand
+Agent: Z.ai Code (main)
+Task: Owner feedback: «تصویر/ایکن خیلی بزرگ است — کوچکتر کن؛ توضیحات خیلی کم است — بیشتر کن؛ تکنولوژی و هر چیز درباره بازی بنویس»
+
+Work Log:
+- Shrunk detail cover: full-width → compact centered (max-w 240px mobile / 300px desktop, shadow-md) — measured live: 300px on 1280 viewport, 240px on 390 mobile, zero horizontal overflow
+- Studied the product's own site (quizofkoko.com) for honest copy: adaptive AI learning (age + knowledge-gap calibration), real-time 1v1 duels, weekly leagues Bronze→Champion, spaced repetition, continuous semantic diagnosis, v4.0.1, "Design by Mehrdad.ir"
+- New src/lib/project-profiles.ts — per-slug typed profile (features + tech), same zero-migration pattern as project-links.ts; graduates to DB columns only if many projects need it
+- ProjectDetail renders «قابلیت‌های بازی» 5-card grid (Brain/Swords/Trophy/Repeat/ScanSearch amber icons) + «تکنولوژی‌های بازی» chip row (Next.js+React, real-time multiplayer engine, AI adaptive question engine, spaced-repetition scheduler, Vercel) — bilingual via i18n (featuresTitle/techTitle)
+- Extended summaries (sandbox SQLite + prod Supabase) — cards stay clean via existing line-clamp-3
+- Ops note: Supabase was in scheduled maintenance (503, ETA 21:45 GMT) — held the push until it recovered (21:48) to avoid a build-time DB outage breaking prerender; prod UPDATE landed first, then code push b9f67c7 → deploy READY
+- Live verified (browser, fa + en + cookies-cleared EN): cover 300px, all sections/chips/CTA present, zero page errors
+
+Stage Summary:
+- Detail page now tells the full game story in the site's current style; reusable profile pattern for any future project needing richer content
+- Repeated lesson applied: prod DB first, then push (force-static build picks up content in the same deploy)
