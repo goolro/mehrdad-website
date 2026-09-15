@@ -10,11 +10,14 @@ import {
   ChevronRight,
   CirclePause,
   Compass,
+  ExternalLink,
   FlaskConical,
+  Gamepad2,
   HardHat,
   Lightbulb,
   Rocket,
 } from 'lucide-react';
+import { getProjectLink, getProjectLinkHost } from '@/lib/project-links';
 import { ShareBar } from './ShareBar';
 import { ContactCta } from './ContactCta';
 import {
@@ -271,6 +274,12 @@ export function ProjectDetail({ project, shareUrl }: { project: ProjectDetailRow
   const rtl = lang === 'fa';
   const title = pick(lang, project.titleEn, project.titleFa);
   const summary = pick(lang, project.summaryEn, project.summaryFa);
+  // live external build (e.g. playable game) — only when the slug is
+  // registered in src/lib/project-links.ts; warm amber styling echoes the
+  // «building» status so the honest in-progress badge and the CTA read as
+  // one system
+  const playLink = getProjectLink(project.slug);
+  const playHost = getProjectLinkHost(project.slug);
 
   return (
     <article className="mx-auto w-full max-w-4xl px-4 py-12 sm:px-6">
@@ -301,6 +310,26 @@ export function ProjectDetail({ project, shareUrl }: { project: ProjectDetailRow
       <div className="prose-blog mt-8" dir={rtl ? 'rtl' : 'ltr'}>
         <p>{summary}</p>
       </div>
+
+      {playLink && (
+        <div className="mt-8 rounded-2xl border border-amber-500/30 bg-gradient-to-br from-amber-500/10 to-orange-500/10 p-5 sm:p-6">
+          <a
+            href={playLink}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 px-6 font-bold text-white shadow-lg shadow-amber-500/25 transition-all hover:-translate-y-0.5 hover:shadow-xl hover:shadow-amber-500/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+          >
+            <Gamepad2 className="h-5 w-5" aria-hidden />
+            {t.projects.playCta}
+            <ExternalLink className="h-4 w-4 opacity-80" aria-hidden />
+          </a>
+          {playHost && (
+            <p className="mt-2.5 text-xs text-muted-foreground">
+              {playHost} — {t.projects.playNote}
+            </p>
+          )}
+        </div>
+      )}
 
       {showsProgress(st) && (
         <div className="mt-8 rounded-2xl border border-amber-500/30 bg-amber-500/5 p-5">
