@@ -227,6 +227,7 @@ export const ui = {
       // rich story sections (per-slug profile in src/lib/project-profiles.ts)
       featuresTitle: 'Game highlights',
       techTitle: 'Tech behind it',
+      roadmapTitle: 'Project roadmap',
       // project detail CTA → /contact (per-language, was hardcoded EN)
       interestedCta: "I'm interested in this project",
     },
@@ -629,6 +630,7 @@ export const ui = {
       // بخش‌های توضیحات کامل (پروفایل هر اسلاگ در src/lib/project-profiles.ts)
       featuresTitle: 'قابلیت‌های بازی',
       techTitle: 'تکنولوژی‌های بازی',
+      roadmapTitle: 'نقشهٔ راه پروژه',
       interestedCta: 'من به این طرح علاقه‌مندم',
     },
     lab: {

@@ -24,9 +24,27 @@ export interface ProfileTechItem {
   labelFa: string;
 }
 
+export type RoadmapTone = 'done' | 'ready' | 'active';
+
+export interface ProfilePhase {
+  key: string;
+  icon: 'check' | 'store' | 'hammer';
+  titleEn: string;
+  titleFa: string;
+  stateEn: string;
+  stateFa: string;
+  /** ring fill 0-100 — purely visual; the state text carries the honest meaning */
+  ring: number;
+  tone: RoadmapTone;
+  /** short badge (not a fake-precise %) — e.g. «100٪» / «آماده» / «شروع شد» */
+  badgeEn: string;
+  badgeFa: string;
+}
+
 export interface ProjectProfile {
   features: ProfileFeature[];
   tech: ProfileTechItem[];
+  phases: ProfilePhase[];
 }
 
 export const PROJECT_PROFILES: Record<string, ProjectProfile> = {
@@ -84,6 +102,44 @@ export const PROJECT_PROFILES: Record<string, ProjectProfile> = {
       { labelEn: 'AI adaptive question engine', labelFa: 'موتور سوالِ تطبیقی با هوش مصنوعی' },
       { labelEn: 'Spaced-repetition scheduler', labelFa: 'زمان‌بند مرور فاصله‌دار' },
       { labelEn: 'Hosted on Vercel', labelFa: 'میزبانی روی Vercel' },
+    ],
+    phases: [
+      {
+        key: 'phase-1',
+        icon: 'check',
+        titleEn: 'Phase 1 — First playable version',
+        titleFa: 'فاز ۱ — نسخهٔ اول بازی',
+        stateEn: 'Complete — live and playable today',
+        stateFa: 'کامل شد — همین حالا زنده و قابل بازی است',
+        ring: 100,
+        tone: 'done',
+        badgeEn: '100%',
+        badgeFa: '۱۰۰٪',
+      },
+      {
+        key: 'market-entry',
+        icon: 'store',
+        titleEn: 'Market entry',
+        titleFa: 'ورود به مارکت',
+        stateEn: 'Cleared — initial tests passed, rollout in progress',
+        stateFa: 'اوکی شده — تست‌های اولیه انجام شد، در حال پیگیری انتشار',
+        ring: 100,
+        tone: 'ready',
+        badgeEn: 'Ready',
+        badgeFa: 'آماده',
+      },
+      {
+        key: 'phase-2',
+        icon: 'hammer',
+        titleEn: 'Phase 2 — Next development cycle',
+        titleFa: 'فاز ۲ — فاز بعدی برنامه‌نویسی',
+        stateEn: 'Kicked off — in progress',
+        stateFa: 'استارت خورده — در جریان',
+        ring: 14,
+        tone: 'active',
+        badgeEn: 'Started',
+        badgeFa: 'شروع شد',
+      },
     ],
   },
 };
