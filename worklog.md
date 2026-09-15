@@ -1906,3 +1906,23 @@ Stage Summary:
 - Game now fully on the site: homepage featured card → /work/quiz-of-koko → one-click Play on quizofkoko.com
 - Reusable pattern: any future live project gets a Play/Visit CTA by adding one line to PROJECT_LINKS
 - Follow-up for owner: production cover via /admin (or handled at next approved deploy)
+
+---
+Task ID: koko-live-deploy
+Agent: Z.ai Code (main)
+Task: Owner: «mehrdad.ir/work اینجا نیست» + provided GitHub/Vercel/Supabase tokens → ship Quiz of Koko to PRODUCTION
+
+Work Log:
+- Diagnosed the gap: feature commit 373d362 existed locally only (origin/main stuck at b0be3d4); Vercel project is GitHub-linked (productionBranch=main) → push = auto production deploy; mehrdad.ir + quizofkoko.com both confirmed on Vercel
+- Key data-layer discovery: /work pages are DB-driven and DB content does not travel with git — production Supabase (ref gcaksemjwkhqkyhaseui) had NO quiz-of-koko row (live detail page was 404)
+- Production DB insert via Supabase Management API SQL (order 0 → first card, featured=true → homepage slot, status=building/65%, cover=/media/quiz-of-koko-cover.png) — inserted BEFORE push so the new build prerenders the card; row verified back (HTTP 201)
+- ORDER MATTERED: data first, then push, so the force-static /work build picked up the row in the same deploy
+- Pushed 3 pending commits b0be3d4..373d362 → Vercel deployment READY (~2 min)
+- Live verification (agent-browser, real browser): /work grid shows کوییز کاکو as FIRST card (building badge + 65% + mascot cover); /work/quiz-of-koko?lang=fa renders full Persian (h1 کوییز کاکو, بازی کن CTA, «در تب جدید باز می‌شود», cover from /media); REAL CLICK on بازی کن opened quizofkoko.com in a new tab (t3 confirmed); EN page shows "Play now"; homepage featured card present; mobile 390px layout clean; zero page errors
+- Note: quizofkoko.com sends X-Frame-Options: DENY + frame-ancestors 'none' → external-tab CTA (not iframe) remains the correct integration pattern
+- Docs-only follow-up commit → keeps main synced (the incident root cause was unpushed local state)
+
+Stage Summary:
+- Quiz of Koko is LIVE on mehrdad.ir: /work first card + homepage featured + detail page with working Play CTA — data (Supabase) and code (GitHub→Vercel) both in sync
+- Incident lesson locked: never leave main unsynced — «اینجا نیست» happened precisely because of unpushed local commits + DB-only sandbox content
+- Security follow-up for owner: rotate ALL three shared tokens (GitHub PAT has push access; Vercel; Supabase management) — they were pasted in chat; GitHub also reports 2 high dependabot vulnerabilities on main (separate cleanup task)
