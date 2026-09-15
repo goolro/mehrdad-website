@@ -1993,3 +1993,21 @@ Work Log:
 Stage Summary:
 - Full bilingual title now: FA «کوییز کوکو (پرسش و پاسخ با کوکو)» / EN "Quiz of Koko"
 - Redeploy command learned: v13/deployments requires name+project+gitSource+target together
+
+---
+Task ID: dependabot-sharp-fix
+Agent: Z.ai Code (main)
+Task: Owner approved fixing GitHub Dependabot high vulnerabilities
+
+Work Log:
+- Alert #8 (high): sharp < 0.35.4 — libheif advisories GHSA-g89c-p67h-r497 + GHSA-2jg2-4ch7-h545 (bundled GHSA-rgj7-g3m4-5g8c); manifest package-lock.json; the «2 high» = both libheif CVEs inside one alert
+- sharp is a direct dep (pinned 0.35.0, unused in source — present for Next image optimization); npm lock also had next-bundled sharp, bun.lock had next/sharp pin 0.34.5
+- Fix: package.json sharp → 0.35.4 + override "sharp": "0.35.4" (dedupes next's pinned copy in bun.lock); npm install --package-lock-only + bun install regen both lockfiles; final scan: zero sharp < 0.35.4 entries in either lockfile
+- Sandbox: dev server restarted (setsid, single logical instance), /work 200×3, lint clean, then push 541d047 → Vercel auto-deploy dpl_6yWkXSivhH2oRbxDghbHUv6h8szp READY (~2min)
+- Live verified via browser: /work + detail + cover image loaded (sharp path OK), roadmap intact, zero errors
+- Dependabot: open alerts 0 — alert #8 auto-resolved to fixed right after push
+
+Stage Summary:
+- Repo now has ZERO open security alerts; both lockfiles (npm+bun) kept in sync via the override
+- npm v11 note: `npm install --package-lock-only` shows allow-scripts warning — harmless for lockfile-only updates
+- Transient dev-server connection-refused during restart was a false alarm (one logical instance confirmed via pgrep)
