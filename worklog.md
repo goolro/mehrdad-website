@@ -1885,3 +1885,24 @@ Work Log:
 Stage Summary:
 - Verified end-to-end: GitHub (all branches, all trees, all messages) contains ZERO trace of the 3D/prototype era; local history contains zero; disk contains zero
 - Standing rule locked in: the site evolves in its CURRENT original style; no prototype/experimental files in the repo — park outside git if ever needed; push only after explicit approval
+
+---
+Task ID: koko-game-on-site
+Agent: Z.ai Code (main)
+Task: Owner: «بازی Quiz Of Koko را روی سایت بگذاریم» — surface the Quiz of Koko game on mehrdad.ir in the current style
+
+Work Log:
+- Field research: quizofkoko.com is LIVE (Vercel, owl mascot «Koko», warm amber/orange branding, word-quiz with 1v1 duels + weekly leagues); response headers carry X-Frame-Options: DENY + frame-ancestors 'none' → iframe embedding impossible → scenario = in-progress project presentation + direct Play CTA, not an embed
+- Discovery: project infrastructure already existed — Project DB model with honest lifecycle statuses (project-status.ts), /work/quiz-of-koko record (status=building, progress=65, featured=1) and ProjectDetail page. Real gaps: no clickable Play CTA (domain only inside summary text), cover=null
+- Implemented (all in current style, zero DB-schema changes):
+  - src/lib/project-links.ts — slug→external-link map (quiz-of-koko → https://quizofkoko.com), URL-validated; graduates to a DB column only if many projects ever need it (avoids production Postgres migration risk)
+  - ProjectDetail (ProjectsView.tsx) — prominent amber→orange «بازی کن / Play now» CTA block (Gamepad2 + ExternalLink icons, target=_blank rel=noopener, focus ring, h-12 touch target) + «{host} — در تب جدید باز می‌شود» microcopy; amber intentionally mirrors the building-status system
+  - i18n.ts — playCta/playNote added for en+fa
+  - Generated mascot-faithful cover via image-generation skill → public/media/quiz-of-koko-cover.png (owl + round glasses + red book + letter tiles, 1344×768); sandbox DB cover=/media/quiz-of-koko-cover.png (NOTE: DB content does not travel with git — on production set the same path via /admin Projects editor)
+- Verified with agent-browser: EN+FA detail pages (badge Building/در حال ساخت, 65%, cover, CTA), REAL click opens new tab to quizofkoko.com, homepage shows koko featured card with 65%, mobile 390px clean, lint clean, dev.log all 200
+- NOT pushed (standing rule). Local commit only.
+
+Stage Summary:
+- Game now fully on the site: homepage featured card → /work/quiz-of-koko → one-click Play on quizofkoko.com
+- Reusable pattern: any future live project gets a Play/Visit CTA by adding one line to PROJECT_LINKS
+- Follow-up for owner: production cover via /admin (or handled at next approved deploy)

@@ -220,6 +220,10 @@ export const ui = {
       ctaTitle: 'Have a question or want to work together?',
       ctaSub: 'One form — it goes straight to me.',
       fundingAsk: 'Funding ask',
+      // live external-link CTA (e.g. playable game) — rendered when the slug
+      // has an entry in src/lib/project-links.ts
+      playCta: 'Play now',
+      playNote: 'Opens in a new tab',
       // project detail CTA → /contact (per-language, was hardcoded EN)
       interestedCta: "I'm interested in this project",
     },
@@ -615,6 +619,10 @@ export const ui = {
       ctaTitle: 'سوالی دارید یا می‌خواهید با هم کار کنیم؟',
       ctaSub: 'یک فرم — مستقیم به خودم می‌رسد.',
       fundingAsk: 'درخواست سرمایه',
+      // دکمهٔ لینک بیرونی زنده (مثل بازیِ قابل انجام) — فقط وقتی اسلاگ در
+      // src/lib/project-links.ts ثبت باشد رندر می‌شود
+      playCta: 'بازی کن',
+      playNote: 'در تب جدید باز می‌شود',
       interestedCta: 'من به این طرح علاقه‌مندم',
     },
     lab: {
