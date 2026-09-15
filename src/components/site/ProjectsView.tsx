@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import {
   Archive,
   Brain,
+  CheckCircle2,
   ChevronRight,
   CirclePause,
   Compass,
@@ -15,17 +16,24 @@ import {
   ExternalLink,
   FlaskConical,
   Gamepad2,
+  Hammer,
   HardHat,
   Lightbulb,
   Repeat,
   Rocket,
+  Route,
   ScanSearch,
   Sparkles,
+  Store,
   Swords,
   Trophy,
 } from 'lucide-react';
 import { getProjectLink, getProjectLinkHost } from '@/lib/project-links';
-import { getProjectProfile, type ProfileFeatureIcon } from '@/lib/project-profiles';
+import {
+  getProjectProfile,
+  type ProfileFeatureIcon,
+  type RoadmapTone,
+} from '@/lib/project-profiles';
 import { ShareBar } from './ShareBar';
 import { ContactCta } from './ContactCta';
 import {
@@ -282,6 +290,63 @@ const FEATURE_ICONS: Record<ProfileFeatureIcon, typeof Brain> = {
   scan: ScanSearch,
 };
 
+const PHASE_ICONS: Record<string, typeof Route> = {
+  check: CheckCircle2,
+  store: Store,
+  hammer: Hammer,
+};
+
+const PHASE_TONE: Record<RoadmapTone, { ring: string; icon: string; badge: string }> = {
+  done: {
+    ring: 'stroke-emerald-500',
+    icon: 'text-emerald-500',
+    badge: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
+  },
+  ready: {
+    ring: 'stroke-amber-500',
+    icon: 'text-amber-500',
+    badge: 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
+  },
+  active: {
+    ring: 'stroke-violet-500',
+    icon: 'text-violet-500',
+    badge: 'bg-violet-500/10 text-violet-600 dark:text-violet-400',
+  },
+};
+
+/**
+ * Compact SVG progress ring for a roadmap phase — draws in from 0 on mount
+ * (stroke-dashoffset transition). Pure SVG + CSS, no chart dependency.
+ */
+function PhaseRing({ fill, tone }: { fill: number; tone: RoadmapTone }) {
+  const C = 2 * Math.PI * 26;
+  const clamped = Math.max(0, Math.min(100, fill));
+  const target = C * (1 - clamped / 100);
+  const [offset, setOffset] = useState(C);
+
+  useEffect(() => {
+    const t = setTimeout(() => setOffset(target), 150);
+    return () => clearTimeout(t);
+  }, [target]);
+
+  return (
+    <svg viewBox="0 0 64 64" className="h-16 w-16 -rotate-90" aria-hidden>
+      <circle cx="32" cy="32" r="26" fill="none" strokeWidth="6" className="stroke-border" />
+      <circle
+        cx="32"
+        cy="32"
+        r="26"
+        fill="none"
+        strokeWidth="6"
+        strokeLinecap="round"
+        className={`${PHASE_TONE[tone].ring} transition-[stroke-dashoffset] duration-1000 ease-out`}
+        strokeDasharray={C}
+        strokeDashoffset={offset}
+      />
+    </svg>
+  );
+}
+
 export function ProjectDetail({ project, shareUrl }: { project: ProjectDetailRow; shareUrl: string }) {
   const { lang } = useApp();
   const t = ui[lang];
@@ -349,6 +414,46 @@ export function ProjectDetail({ project, shareUrl }: { project: ProjectDetailRow
             </p>
           )}
         </div>
+      )}
+
+      {profile && profile.phases.length > 0 && (
+        <section className="mt-8" aria-labelledby="project-roadmap-title">
+          <h2 id="project-roadmap-title" className="flex items-center gap-2 text-lg font-bold">
+            <Route className="h-5 w-5 text-amber-500" aria-hidden />
+            {t.projects.roadmapTitle}
+          </h2>
+          <ol className="mt-4 grid gap-3 sm:grid-cols-3">
+            {profile.phases.map((ph) => {
+              const PhaseIcon = PHASE_ICONS[ph.icon] ?? Route;
+              const tone = PHASE_TONE[ph.tone];
+              return (
+                <li
+                  key={ph.key}
+                  className="flex flex-col items-center gap-3 rounded-2xl border border-border bg-card p-5 text-center"
+                >
+                  <div className="relative">
+                    <PhaseRing fill={ph.ring} tone={ph.tone} />
+                    <PhaseIcon
+                      className={`absolute inset-0 m-auto h-6 w-6 ${tone.icon}`}
+                      aria-hidden
+                    />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold leading-snug">{pick(lang, ph.titleEn, ph.titleFa)}</p>
+                    <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                      {pick(lang, ph.stateEn, ph.stateFa)}
+                    </p>
+                  </div>
+                  <span
+                    className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold ${tone.badge}`}
+                  >
+                    {pick(lang, ph.badgeEn, ph.badgeFa)}
+                  </span>
+                </li>
+              );
+            })}
+          </ol>
+        </section>
       )}
 
       {profile && profile.features.length > 0 && (
