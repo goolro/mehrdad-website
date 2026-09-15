@@ -1844,3 +1844,23 @@ Work Log:
 Stage Summary:
 - Rule reinforced for ALL future model changes: edit BOTH prisma/schema.prisma (sqlite) AND prisma/schema.postgres.prisma (Vercel mirror) — a generate-only mismatch silently breaks the next Vercel build
 - Social Studio live on production; owner sees the new tab after a hard refresh of /admin
+
+---
+Task ID: cleanup-3d-purge
+Agent: Z.ai Code (main)
+Task: Owner demand — remove ALL newly-built 3D/prototype code and files; they must never appear on GitHub («این چیزهایی که جدید ساختی و فایل و چیزهایی سه بعدی اصلا نمی خواهم روی گیت هاب بیاد»)
+
+Work Log:
+- Verified via `git ls-tree origin/main` that NONE of the design files (ArtifactScene/ArtifactShowcase/VelocityShowcase/DesignAmbient/DesignPreview) were ever pushed — they existed only in 12 unpushed local commits
+- Inspected net diff origin/main..main: entire range = design saga + research screenshots; only legit change hidden inside = sandbox PREVIEW_EMBED infra (next.config.ts + package.json dev script) that keeps the Z.ai preview panel renderable
+- Backed up worklog + next.config to /tmp, then `git reset --hard origin/main` (b0be3d4) — deleted from disk: 5 prototype components, artifact-scenario.md, ~70 research/prototype screenshots (v4*/v5*/fs*/ms*/sc*/koko*/shot-artifact*/debug-*)
+- Re-applied ONLY the PREVIEW_EMBED infra (next.config.ts + dev script); `three` dependency dropped automatically with the reset
+- bun install: lockfile consistent, no changes; grep across src/ = zero references to 3D/prototype code (i18n hits are the English word "Three" in normal copy)
+- Purged local git history: reflog expire + gc --prune=now — the 12 design commits no longer exist anywhere; a future push CANNOT leak them
+- To-do per this rule: design-saga worklog entries intentionally removed with the reset; this entry documents the purge itself
+
+Stage Summary:
+- Repo = exactly GitHub state + preview-panel infra; the Artifact/3D era is erased from disk, index and history
+- New hard rule recorded: NO experimental/prototype files in this repo, ever — park them outside git (e.g. /tmp) if ever needed again
+- Site serves the original design only; /?design=1 is now inert (gate component deleted)
+- Live site, preview panel behavior, and all shipped features unchanged
