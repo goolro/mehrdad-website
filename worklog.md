@@ -1960,3 +1960,20 @@ Work Log:
 Stage Summary:
 - Koko now shows 88% «در حال ساخت» everywhere; when owner considers v1 done, next step is flipping status to «live» (badge swap, no bar)
 - New ops trick available: content-only DB changes can ship via API-triggered redeploy without git commits
+
+---
+Task ID: koko-live-roadmap
+Agent: Z.ai Code (main)
+Task: Owner approved proposal: flip status to live + phase-based roadmap; «نمودار هم بکش یا صفحه را جالب‌تر کن»
+
+Work Log:
+- Status flip building→live (progress 88→100 for coherence) in prod Supabase + sandbox SQLite; showsProgress=false removes bars everywhere automatically (verified STATUS_STYLE has live: Rocket/emerald)
+- Extended project-profiles.ts with phases (tone: done|ready|active, icon, ring 0-100, honest badge text instead of fake-precise %): Phase 1 100% done / Market entry ready (initial tests passed) / Phase 2 started (ring 14)
+- New PhaseRing component — pure SVG + CSS draw-in animation (stroke-dashoffset transition on mount), zero chart dependencies; violet/amber/emerald tones match the site system; icon centered inside each ring; 3-col grid desktop, stacked mobile
+- i18n: roadmapTitle «نقشهٔ راه پروژه» / 'Project roadmap'
+- Push d424d64 → deploy READY; live verified: detail (live badge + 3 rings + badges + features + tech + CTA), /work grid (زنده, no bar), homepage (زنده, no bar), zero errors
+
+Stage Summary:
+- Koko is officially the site's first LIVE-status project: green badge everywhere + animated roadmap storytelling
+- Phase percentages for market/phase-2 deliberately qualitative (آماده/شروع شد) — honest to owner's own wording; numbers can be added anytime in one line of project-profiles.ts
+- Reusable: any project now gets a roadmap by adding phases to its profile
