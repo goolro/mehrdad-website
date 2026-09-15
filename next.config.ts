@@ -1,5 +1,14 @@
 import type { NextConfig } from "next";
 
+// SANDBOX PREVIEW EMBED: the space-z.ai preview panel shows the site inside
+// an iframe — X-Frame-Options: DENY / frame-ancestors 'none' make the panel
+// render "refused to connect" instead of the site. PREVIEW_EMBED=1 comes
+// ONLY from the `dev` script (sandbox + local dev). Every production build
+// (Vercel AND the cPanel standalone artifact) runs without it and keeps the
+// strict clickjacking denial — audited by scripts/security-checks.mts and
+// scripts/pentest-local.sh, which always run against production-like boots.
+const PREVIEW_EMBED = process.env.PREVIEW_EMBED === "1";
+
 const securityHeaders = [
   // Content-Security-Policy is intentionally NOT set here anymore: it is
   // issued per-request with a fresh nonce by src/proxy.ts (Next 16's name
@@ -7,8 +16,10 @@ const securityHeaders = [
   // 'nonce-…' + 'strict-dynamic', no 'unsafe-inline' for scripts in
   // production). A second static CSP here would AND-restrict the nonce
   // policy back to 'unsafe-inline' semantics and break every page.
-  // clickjacking protection
-  { key: "X-Frame-Options", value: "DENY" },
+  // clickjacking protection (relaxed only for the sandbox preview embed —
+  // see PREVIEW_EMBED above; frame-ancestors below is the modern control
+  // and takes precedence in browsers that support CSP)
+  ...(PREVIEW_EMBED ? [] : [{ key: "X-Frame-Options", value: "DENY" }]),
   // prevent MIME-type sniffing
   { key: "X-Content-Type-Options", value: "nosniff" },
   // don't leak full referrer URLs to third parties
@@ -40,7 +51,7 @@ const securityHeaders = [
       "object-src 'none'",
       "base-uri 'self'",
       "form-action 'self'",
-      "frame-ancestors 'none'",
+      PREVIEW_EMBED ? "frame-ancestors *" : "frame-ancestors 'none'",
       "upgrade-insecure-requests",
     ].join('; '),
   },

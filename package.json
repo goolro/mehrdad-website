@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "next dev -p 3000 2>&1 | tee dev.log",
+    "dev": "PREVIEW_EMBED=1 next dev -p 3000 2>&1 | tee dev.log",
     "build": "prisma generate && next build && node scripts/postbuild.mjs",
     "start": "NODE_ENV=production node .next/standalone/server.js",
     "lint": "eslint .",
