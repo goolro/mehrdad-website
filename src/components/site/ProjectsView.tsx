@@ -7,17 +7,25 @@ import { ui } from './i18n';
 import { Badge } from '@/components/ui/badge';
 import {
   Archive,
+  Brain,
   ChevronRight,
   CirclePause,
   Compass,
+  Cpu,
   ExternalLink,
   FlaskConical,
   Gamepad2,
   HardHat,
   Lightbulb,
+  Repeat,
   Rocket,
+  ScanSearch,
+  Sparkles,
+  Swords,
+  Trophy,
 } from 'lucide-react';
 import { getProjectLink, getProjectLinkHost } from '@/lib/project-links';
+import { getProjectProfile, type ProfileFeatureIcon } from '@/lib/project-profiles';
 import { ShareBar } from './ShareBar';
 import { ContactCta } from './ContactCta';
 import {
@@ -266,6 +274,14 @@ export function ProjectsView({ initialProjects }: { initialProjects: ProjectItem
  * SSR first paint renders EN (store default), FA swaps in after rehydrate —
  * identical to blog detail pages. SEO: JSON-LD keeps both languages.
  */
+const FEATURE_ICONS: Record<ProfileFeatureIcon, typeof Brain> = {
+  brain: Brain,
+  swords: Swords,
+  trophy: Trophy,
+  repeat: Repeat,
+  scan: ScanSearch,
+};
+
 export function ProjectDetail({ project, shareUrl }: { project: ProjectDetailRow; shareUrl: string }) {
   const { lang } = useApp();
   const t = ui[lang];
@@ -280,6 +296,10 @@ export function ProjectDetail({ project, shareUrl }: { project: ProjectDetailRow
   // one system
   const playLink = getProjectLink(project.slug);
   const playHost = getProjectLinkHost(project.slug);
+  // fuller story (features + tech) — only when the slug has a profile in
+  // src/lib/project-profiles.ts; amber accents echo the building-status
+  // system so the whole detail page reads as one
+  const profile = getProjectProfile(project.slug);
 
   return (
     <article className="mx-auto w-full max-w-4xl px-4 py-12 sm:px-6">
@@ -303,7 +323,7 @@ export function ProjectDetail({ project, shareUrl }: { project: ProjectDetailRow
         <img
           src={project.cover}
           alt={title}
-          className="mt-7 w-full rounded-2xl object-cover shadow-lg"
+          className="mx-auto mt-7 w-full max-w-[240px] rounded-2xl object-cover shadow-md sm:max-w-[300px]"
         />
       )}
 
@@ -329,6 +349,50 @@ export function ProjectDetail({ project, shareUrl }: { project: ProjectDetailRow
             </p>
           )}
         </div>
+      )}
+
+      {profile && profile.features.length > 0 && (
+        <section className="mt-8" aria-labelledby="project-features-title">
+          <h2 id="project-features-title" className="flex items-center gap-2 text-lg font-bold">
+            <Sparkles className="h-5 w-5 text-amber-500" aria-hidden />
+            {t.projects.featuresTitle}
+          </h2>
+          <ul className="mt-4 grid gap-3 sm:grid-cols-2">
+            {profile.features.map((f) => {
+              const FeatureIcon = FEATURE_ICONS[f.icon] ?? Sparkles;
+              return (
+                <li key={f.titleEn} className="rounded-2xl border border-border bg-card p-4">
+                  <div className="flex items-center gap-2 text-sm font-semibold">
+                    <FeatureIcon className="h-4 w-4 shrink-0 text-amber-500" aria-hidden />
+                    {pick(lang, f.titleEn, f.titleFa)}
+                  </div>
+                  <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
+                    {pick(lang, f.descEn, f.descFa)}
+                  </p>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      )}
+
+      {profile && profile.tech.length > 0 && (
+        <section className="mt-8" aria-labelledby="project-tech-title">
+          <h2 id="project-tech-title" className="flex items-center gap-2 text-lg font-bold">
+            <Cpu className="h-5 w-5 text-amber-500" aria-hidden />
+            {t.projects.techTitle}
+          </h2>
+          <ul className="mt-4 flex flex-wrap gap-2">
+            {profile.tech.map((item) => (
+              <li
+                key={item.labelEn}
+                className="rounded-full border border-border bg-muted/40 px-3.5 py-1.5 text-sm font-medium"
+              >
+                {pick(lang, item.labelEn, item.labelFa)}
+              </li>
+            ))}
+          </ul>
+        </section>
       )}
 
       {showsProgress(st) && (

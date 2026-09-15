@@ -224,6 +224,9 @@ export const ui = {
       // has an entry in src/lib/project-links.ts
       playCta: 'Play now',
       playNote: 'Opens in a new tab',
+      // rich story sections (per-slug profile in src/lib/project-profiles.ts)
+      featuresTitle: 'Game highlights',
+      techTitle: 'Tech behind it',
       // project detail CTA → /contact (per-language, was hardcoded EN)
       interestedCta: "I'm interested in this project",
     },
@@ -623,6 +626,9 @@ export const ui = {
       // src/lib/project-links.ts ثبت باشد رندر می‌شود
       playCta: 'بازی کن',
       playNote: 'در تب جدید باز می‌شود',
+      // بخش‌های توضیحات کامل (پروفایل هر اسلاگ در src/lib/project-profiles.ts)
+      featuresTitle: 'قابلیت‌های بازی',
+      techTitle: 'تکنولوژی‌های بازی',
       interestedCta: 'من به این طرح علاقه‌مندم',
     },
     lab: {
