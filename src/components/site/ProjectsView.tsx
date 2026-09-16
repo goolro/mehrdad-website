@@ -248,22 +248,27 @@ export function ProjectsView({ initialProjects }: { initialProjects: ProjectItem
           <p className="text-sm text-muted-foreground">{t.projects.ideasNote}</p>
           {ideas.map((p) => (
             <details key={p.id} className="group rounded-2xl border border-border bg-card">
-              <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-4 [&::-webkit-details-marker]:hidden">
-                <div className="flex min-w-0 items-center gap-2.5">
-                  <StatusBadge status={p.status} statusEn={p.statusEn} statusFa={p.statusFa} lang={lang} />
-                  <span className="truncate text-sm font-semibold">{pick(lang, p.titleEn, p.titleFa)}</span>
+              {/* summary line is ALWAYS visible (owner feedback: collapsed
+                  archive items looked «empty» / like missing data) — expanding
+                  only reveals the Read-more link */}
+              <summary className="flex cursor-pointer list-none items-start justify-between gap-3 p-4 [&::-webkit-details-marker]:hidden">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2.5">
+                    <StatusBadge status={p.status} statusEn={p.statusEn} statusFa={p.statusFa} lang={lang} />
+                    <span className="truncate text-sm font-semibold">{pick(lang, p.titleEn, p.titleFa)}</span>
+                  </div>
+                  <span className="mt-1.5 block text-xs leading-relaxed text-muted-foreground">
+                    {pick(lang, p.summaryEn, p.summaryFa)}
+                  </span>
                 </div>
-                <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-90" aria-hidden />
+                <ChevronRight className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-90" aria-hidden />
               </summary>
               <Link
                 href={`/work/${p.slug}`}
-                className="block w-full px-4 pb-1 text-start text-xs font-medium text-violet-600 dark:text-violet-400"
+                className="block w-full px-4 pb-4 text-start text-xs font-medium text-violet-600 dark:text-violet-400"
               >
                 {t.sections.readMore} →
               </Link>
-              <div className="px-4 pb-4 pt-1 text-sm leading-relaxed text-muted-foreground">
-                {pick(lang, p.summaryEn, p.summaryFa)}
-              </div>
             </details>
           ))}
         </div>
