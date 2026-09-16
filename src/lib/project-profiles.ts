@@ -41,10 +41,18 @@ export interface ProfilePhase {
   badgeFa: string;
 }
 
+export interface RelatedPost {
+  slug: string;
+  titleEn: string;
+  titleFa: string;
+}
+
 export interface ProjectProfile {
   features: ProfileFeature[];
   tech: ProfileTechItem[];
   phases: ProfilePhase[];
+  /** optional link to the owner's own published research/pitch post for this idea */
+  relatedPost?: RelatedPost;
 }
 
 export const PROJECT_PROFILES: Record<string, ProjectProfile> = {
@@ -141,6 +149,32 @@ export const PROJECT_PROFILES: Record<string, ProjectProfile> = {
         badgeFa: 'شروع شد',
       },
     ],
+  },
+
+  /**
+   * Early-idea profiles — no features/tech/roadmap (those render only when
+   * non-empty); they just link the idea page to Mehrdad's own published
+   * research so an exploratory page has real depth instead of a bare title.
+   */
+  bizpal: {
+    features: [],
+    tech: [],
+    phases: [],
+    relatedPost: {
+      slug: 'bizpal-digital-sales-marketing-and-advertising-startup',
+      titleEn: 'BIZPAL Startup for Sales, Marketing, and Digital Advertising',
+      titleFa: 'استارتاپ فروش، بازاریابی و تبلیغات دیجیتال BIZPAL',
+    },
+  },
+  'iran-rail-revolution': {
+    features: [],
+    tech: [],
+    phases: [],
+    relatedPost: {
+      slug: 'iran-railway-technology-startup',
+      titleEn: 'Plan to Create a Railway Revolution — Advanced Transportation Corridor',
+      titleFa: 'طرح ایجاد کریدور حمل‌ونقل ریلی پیشرفته ایران',
+    },
   },
 };
 
