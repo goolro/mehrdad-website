@@ -7,6 +7,7 @@ import { ui } from './i18n';
 import { Badge } from '@/components/ui/badge';
 import {
   Archive,
+  BookOpen,
   Brain,
   CheckCircle2,
   ChevronRight,
@@ -400,6 +401,32 @@ export function ProjectDetail({ project, shareUrl }: { project: ProjectDetailRow
       <div className="prose-blog mt-8" dir={rtl ? 'rtl' : 'ltr'}>
         <p>{summary}</p>
       </div>
+
+      {/* early-idea context — an exploratory page must never read like a
+          finished product (owner feedback on /work/bizpal) */}
+      {!isActiveStatus(st) && (
+        <div className="mt-6 rounded-2xl border border-slate-500/30 bg-muted/40 p-4 text-sm leading-relaxed text-muted-foreground">
+          {t.projects.ideaPageNote}
+        </div>
+      )}
+
+      {profile?.relatedPost && (
+        <Link
+          href={`/blog/${profile.relatedPost.slug}`}
+          className="mt-6 flex items-center justify-between gap-3 rounded-2xl border border-border bg-card p-4 transition-colors hover:border-violet-500/50"
+        >
+          <span className="min-w-0">
+            <span className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+              <BookOpen className="h-3.5 w-3.5 text-amber-500" aria-hidden />
+              {t.projects.relatedResearch}
+            </span>
+            <span className="mt-1 block truncate text-sm font-semibold">
+              {pick(lang, profile.relatedPost.titleEn, profile.relatedPost.titleFa)}
+            </span>
+          </span>
+          <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground rtl:rotate-180" aria-hidden />
+        </Link>
+      )}
 
       {playLink && (
         <div className="mt-8 rounded-2xl border border-amber-500/30 bg-gradient-to-br from-amber-500/10 to-orange-500/10 p-5 sm:p-6">
