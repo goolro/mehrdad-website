@@ -2043,3 +2043,20 @@ Work Log:
 Stage Summary:
 - Ideas archive can never look «empty» again — every card self-describes when collapsed
 - For the owner: one hard refresh (or one visit → SW auto-updates to v4 → old caches wiped) delivers both fixes
+
+---
+Task ID: idea-pages-real-content
+Agent: Z.ai Code (main)
+Task: Owner: «/work/bizpal نگاه کن چی هست؟ چرا فکر می‌کنی انجام شده؟ بقیه صفحات هم همینطور» — bare idea detail pages
+
+Work Log:
+- Diagnosed: idea detail pages rendered only title + generic one-liner + share/contact CTA → looked like finished-product shells (root cause of «چرا فکر می‌کنی انجام شده»)
+- Found owner's real content: pitch posts in prod DB (Post table) — BIZPAL (published) + iran-railway-technology-startup (published), smart-waste draft; old venture context from git history/worklog (BIZPAL=AI marketing startup, KLIKA=banking fintech, invest=trilingual concept page)
+- DB-first: 5 idea rows updated with real bilingual summaries (honest early-idea framing, no venture/funding language, derived from owner's own posts/history) — RETURNING verified; local sandbox skipped (no idea rows there, prod is source of truth)
+- Code (a8065ea): ProjectProfile.relatedPost (optional) + profiles for bizpal/iran-rail-revolution linking their published posts; ProjectDetail renders (1) idea-context note box for non-active statuses (ideaPageNote i18n) and (2) related-research card → /blog/<slug> (relatedResearch i18n, BookOpen icon); i18n en+fa
+- Deploy READY; verified: BIZPAL EN+FA (new summary + note + working blog link), rail link present, kilika new summary, health-app (building) unaffected — no idea-note leak, progress intact; zero errors
+- Test traps hit again: (1) lang persisted in localStorage (not only cookies) — `agent-browser storage local clear` errors, use eval localStorage.clear(); (2) «false» assertions were FA pages rendered with EN substring checks — always dump actual paragraph text
+
+Stage Summary:
+- Idea pages now read as documented early ideas: real concept summary + explicit «not in active development» note + (where available) link to the owner's published research
+- No invented facts: every sentence traces to owner's posts/history or the idea's title itself
