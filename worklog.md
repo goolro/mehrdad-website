@@ -2011,3 +2011,19 @@ Stage Summary:
 - Repo now has ZERO open security alerts; both lockfiles (npm+bun) kept in sync via the override
 - npm v11 note: `npm install --package-lock-only` shows allow-scripts warning — harmless for lockfile-only updates
 - Transient dev-server connection-refused during restart was a false alarm (one logical instance confirmed via pgrep)
+
+---
+Task ID: work-tab-empty-investigation
+Agent: Z.ai Code (main)
+Task: Owner reported /work «Work tab empty» — demanded investigation of previous data («باید اطلاعات قبلی را بررسی کنید»)
+
+Work Log:
+- Prod DB audit: ALL 10 rows intact — 4 active work (quiz-of-koko live, health-app/personal-finance-tool/car-super-app building) + 5 ideas + 1 lab; nothing lost, counts match owner's own paste (Work4/Ideas5)
+- All 6 deploys of the day READY; SSR HTML of /work contains all 4 card links; fresh-browser check renders 4 cards, tab clicks work both ways, zero errors → NOT reproducible for a fresh visitor
+- Root cause hypothesis: owner's browser held stale state via PWA service worker (network-first pages, but old caches persisted across today's rapid deploys; /work was DB-first-updated several times today: 65→88→live+roadmap→title)
+- Fix: CACHE_VERSION mehrdad-v3 → v4 (activate handler wipes all old caches, self-heals on next visit); pushed d08b182, READY, live sw.js confirmed v4
+- Homepage SSR also verified: both featured projects present
+
+Stage Summary:
+- NO DATA WAS LOST — DB + SSR + fresh-browser all complete; stale-cache class of issues closed via SW version bump
+- Ops note: after multiple same-day deploys, owner's own browser may lag one SW cycle behind — hard refresh (Ctrl+Shift+R) is the instant fix; SW v4 makes this self-healing going forward
