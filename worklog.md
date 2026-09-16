@@ -2027,3 +2027,19 @@ Work Log:
 Stage Summary:
 - NO DATA WAS LOST — DB + SSR + fresh-browser all complete; stale-cache class of issues closed via SW version bump
 - Ops note: after multiple same-day deploys, owner's own browser may lag one SW cycle behind — hard refresh (Ctrl+Shift+R) is the instant fix; SW v4 makes this self-healing going forward
+
+---
+Task ID: ideas-ux-always-visible
+Agent: Z.ai Code (main)
+Task: Owner pasted Ideas tab with 2 items looking info-less («شاید باید روی گیت هاب را بررسی کنی») — audit GitHub + fix
+
+Work Log:
+- GitHub audit: origin/main == local (d463d55), latest deploy READY on same sha; today's commits touching projects UI were koko-additions only (nothing removed); DB audit: all 5 idea summaries exist bilingually — NOTHING missing anywhere
+- Root cause of «empty-looking» items: <details> collapsed state hides Read-more+summary until clicked; owner had clicked 3 of 5 open, BIZPAL + Smart Waste stayed collapsed → looked like lost data (proven via real click: BIZPAL expands with full content)
+- UX fix (f52a070): summary text moved into the always-visible summary row (span.block under badge+title); expanding now only reveals Read-more link; lint clean
+- Deploy READY; first verification showed old markup — test browser's own stale SW v3 cache (proves the owner-facing stale-cache class); after SW unregister + caches.delete, live page shows all 5 summaries visible while collapsed
+- Bonus proof: same stale-SW mechanism as owner's original «Work tab empty» report
+
+Stage Summary:
+- Ideas archive can never look «empty» again — every card self-describes when collapsed
+- For the owner: one hard refresh (or one visit → SW auto-updates to v4 → old caches wiped) delivers both fixes
