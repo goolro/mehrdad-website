@@ -20,12 +20,16 @@ interface PostItem {
   categories: CategoryItem[]; tags?: TagItem[];
 }
 
+interface ArchiveItem { slug: string; titleEn: string | null; titleFa: string | null; date: string | Date }
+
 /** server-fetched first page (real-routes SEO migration) */
 export interface BlogInitialData {
   posts: PostItem[];
   totalPages: number;
   cats: CategoryItem[];
   tags: TagItem[];
+  /** full crawlable archive — every published post as a real <a> in the initial HTML */
+  archive?: ArchiveItem[];
 }
 
 export function BlogView({ initial }: { initial?: BlogInitialData }) {
@@ -188,6 +192,34 @@ export function BlogView({ initial }: { initial?: BlogInitialData }) {
             <ChevronRight className="h-4 w-4 rtl:rotate-180" />
           </Button>
         </div>
+      )}
+
+      {/* crawlable full archive (SEO): every published post as a real link
+          in the initial HTML — JS pagination is invisible to crawlers, so
+          this guarantees discovery of all articles */}
+      {initial?.archive && initial.archive.length > 0 && (
+        <details className="mt-10 rounded-2xl border border-border bg-card/40">
+          <summary className="cursor-pointer select-none list-none px-5 py-4 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground">
+            <span className="inline-flex items-center gap-2">
+              <FileText className="h-4 w-4" />
+              {lang === 'fa' ? 'آرشیو کامل مقالات' : 'Full archive'} · {initial.archive.length}
+            </span>
+          </summary>
+          <div className="max-h-96 overflow-y-auto border-t border-border px-5 py-3">
+            <ul className="columns-1 gap-8 sm:columns-2">
+              {initial.archive.map((a) => (
+                <li key={a.slug} className="block break-inside-avoid py-1.5 text-sm">
+                  <Link
+                    href={`/blog/${a.slug}`}
+                    className="text-muted-foreground transition-colors hover:text-violet-600 dark:hover:text-violet-400"
+                  >
+                    {pick(lang, a.titleEn, a.titleFa) || a.slug}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </details>
       )}
     </div>
   );
