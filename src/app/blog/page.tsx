@@ -24,7 +24,7 @@ export default async function BlogPage() {
   // server-rendered first page + filter data → real content in the
   // initial HTML (crawlers and no-JS visitors see the article cards)
   // fail-loud at build time (see page.tsx) — never bake empty pages
-  const [firstPage, categories, tags] = await Promise.all([
+  const [firstPage, categories, tags, archive] = await Promise.all([
     listPosts({ page: 1, perPage: 12 }),
     db.category.findMany({
       where: { posts: { some: {} } },
@@ -35,6 +35,14 @@ export default async function BlogPage() {
       where: { posts: { some: { post: { published: true } } } },
       orderBy: { nameEn: 'asc' },
       include: { _count: { select: { posts: { where: { post: { published: true } } } } } },
+    }),
+    // crawlable full archive: every published post as a real <a> in the
+    // initial HTML — JS-only pagination leaves ~85% of posts discoverable
+    // through the sitemap alone ("Discovered — currently not indexed")
+    db.post.findMany({
+      where: { published: true },
+      select: { slug: true, titleEn: true, titleFa: true, date: true },
+      orderBy: { date: 'desc' },
     }),
   ]);
 
@@ -48,6 +56,9 @@ export default async function BlogPage() {
         })),
         tags: tags.map((tg) => ({
           id: tg.id, slug: tg.slug, nameEn: tg.nameEn, nameFa: tg.nameFa, count: tg._count.posts,
+        })),
+        archive: archive.map((p) => ({
+          slug: p.slug, titleEn: p.titleEn, titleFa: p.titleFa, date: p.date,
         })),
       }}
     />

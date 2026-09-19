@@ -76,3 +76,6 @@ alt_run.log
 # temp HTTP delivery folder for artifacts — never publish
 /public/download/
 tool-results/
+
+# internal session notes — local only, never publish
+worklog.md
