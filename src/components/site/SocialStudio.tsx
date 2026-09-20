@@ -18,7 +18,7 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Share2, Loader2, Sparkles, Copy, Save, Trash2, Check, RefreshCw } from 'lucide-react';
+import { Share2, Loader2, Sparkles, Copy, Save, Trash2, Check, RefreshCw, Zap, Send, Globe } from 'lucide-react';
 
 interface PostOption {
   slug: string;
@@ -40,7 +40,13 @@ interface DraftItem {
   topic: string | null;
   sourceSlug: string | null;
   content: string;
+  posted: boolean;
   createdAt: string;
+}
+interface AutopilotResult {
+  created: { slug: string; title: string; lang: string }[];
+  skipped: { slug: string; reason: string }[];
+  failed: { slug: string; error: string }[];
 }
 
 const PLATFORMS = [
@@ -75,6 +81,11 @@ export function SocialStudio() {
   const [saving, setSaving] = useState('');
   const [drafts, setDrafts] = useState<DraftItem[]>([]);
   const [loadingDrafts, setLoadingDrafts] = useState(false);
+  const [autopilotRunning, setAutopilotRunning] = useState(false);
+  const [autopilotCount, setAutopilotCount] = useState('3');
+  const [platformFilter, setPlatformFilter] = useState<string>('all');
+  const [publishingId, setPublishingId] = useState('');
+  const [linkedinSetup, setLinkedinSetup] = useState<string[] | null>(null);
 
   const L = (fa: string, en: string) => pick(lang, fa, en);
   // Persian copy is primary on this site; keep textarea direction honest.
@@ -172,6 +183,67 @@ export function SocialStudio() {
     loadDrafts();
   }
 
+  /** Auto-pilot: fill missing LinkedIn drafts from the latest posts (idempotent). */
+  async function runAutopilot() {
+    setAutopilotRunning(true);
+    setLinkedinSetup(null);
+    try {
+      const res = await fetch('/api/admin/social/autopilot', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ count: Number(autopilotCount) || 3, lang: postLang }),
+      });
+      const d = (await res.json()) as (AutopilotResult & { ok?: boolean; error?: string }) | { error?: string };
+      if ('created' in d) {
+        const r = d as AutopilotResult;
+        const n = r.created.length;
+        toast({
+          title:
+            n > 0
+              ? L(`${n} پیش‌نویس جدید ساخته شد و منتظر بازبینی است ✓`, `${n} new draft(s) created and queued for review ✓`)
+              : L('چیزی برای ساختن نبود — همه مقالات جدید پیش‌نویس دارند.', 'Nothing to create — recent posts already have drafts.'),
+          variant: n > 0 ? 'default' : 'secondary',
+        });
+        if (r.failed.length > 0) {
+          toast({ title: L(`${r.failed.length} خطا — جزئیات در لاگ سرور`, `${r.failed.length} failed — see server log`), variant: 'destructive' });
+        }
+        loadDrafts();
+      } else {
+        toast({ title: d.error || 'Failed', variant: 'destructive' });
+      }
+    } catch {
+      toast({ title: L('اتوماتیک‌پایلوت خطا داد', 'Auto-pilot failed'), variant: 'destructive' });
+    } finally {
+      setAutopilotRunning(false);
+    }
+  }
+
+  /** Publish a saved LinkedIn draft via the LinkedIn API (needs env config). */
+  async function publishDraft(id: string) {
+    setPublishingId(id);
+    setLinkedinSetup(null);
+    try {
+      const res = await fetch('/api/admin/social/publish', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id }),
+      });
+      const d = await res.json();
+      if (d.ok) {
+        toast({ title: L('در لینکدین منتشر شد ✓', 'Published to LinkedIn ✓') });
+        loadDrafts();
+      } else if (res.status === 503 && Array.isArray(d.setup)) {
+        setLinkedinSetup(d.setup as string[]);
+      } else {
+        toast({ title: d.error || 'Failed', variant: 'destructive' });
+      }
+    } catch {
+      toast({ title: L('انتشار ناموفق', 'Publish failed'), variant: 'destructive' });
+    } finally {
+      setPublishingId('');
+    }
+  }
+
   function editResult(idx: number, content: string) {
     setResults((prev) => prev.map((r, i) => (i === idx ? { ...r, content } : r)));
   }
@@ -180,6 +252,71 @@ export function SocialStudio() {
 
   return (
     <div className="space-y-6">
+      {/* ── auto-pilot ── */}
+      <div className="rounded-2xl border border-violet-500/30 bg-gradient-to-br from-violet-600/10 to-fuchsia-600/5 p-5">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-violet-600/15">
+            <Zap className="h-5 w-5 text-violet-600 dark:text-violet-400" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <h3 className="font-bold">{L('اتوماتیک‌پایلوت لینکدین', 'LinkedIn Auto-pilot')}</h3>
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              {L(
+                'از جدیدترین مقالات، برای هرکدام که پیش‌نویس لینکدین ندارد پست می‌سازد و در صف بازبینی می‌گذارد. اجرای دوباره چیزی را تکرار نمی‌کند.',
+                'Scans the latest posts and creates LinkedIn drafts for the ones missing one — queued for your review. Re-running never duplicates.',
+              )}
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Select value={autopilotCount} onValueChange={setAutopilotCount}>
+              <SelectTrigger className="h-9 w-[110px]" aria-label={L('تعداد مقالات', 'Batch size')}>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {[1, 2, 3, 4, 5, 6].map((n) => (
+                  <SelectItem key={n} value={String(n)}>
+                    {L(`${n} مقاله`, `${n} posts`)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button
+              onClick={runAutopilot}
+              disabled={autopilotRunning}
+              className="bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white hover:from-violet-700 hover:to-fuchsia-700"
+            >
+              {autopilotRunning ? (
+                <>
+                  <Loader2 className="me-2 h-4 w-4 animate-spin" />
+                  {L('در حال ساخت...', 'Working...')}
+                </>
+              ) : (
+                <>
+                  <Zap className="me-2 h-4 w-4" />
+                  {L('ساخت خودکار', 'Auto-fill')}
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
+        {linkedinSetup && (
+          <div className="mt-4 rounded-xl border border-amber-500/40 bg-amber-500/10 p-4 text-sm">
+            <div className="mb-2 flex items-center gap-2 font-bold text-amber-700 dark:text-amber-400">
+              <Globe className="h-4 w-4" />
+              {L('انتشار مستقیم لینکدین هنوز فعال نشده — یک‌بار این مراحل را طی کن:', 'Direct LinkedIn publishing is not configured yet — one-time setup:')}
+            </div>
+            <ol className="list-inside list-decimal space-y-1 text-xs text-muted-foreground" dir="ltr">
+              {linkedinSetup.map((s, i) => (
+                <li key={i}>{s}</li>
+              ))}
+            </ol>
+            <p className="mt-2 text-xs text-muted-foreground">
+              {L('تا آن زمان: دکمه کپی همان کار را انجام می‌دهد.', 'Until then: the copy button does the same job manually.')}
+            </p>
+          </div>
+        )}
+      </div>
+
       {/* ── controls ── */}
       <div className="grid gap-4 rounded-2xl border border-border bg-card p-5 lg:grid-cols-2">
         <div className="space-y-4">
@@ -366,6 +503,20 @@ export function SocialStudio() {
           </Button>
         </div>
 
+        {/* platform filter */}
+        <div className="mb-3 flex flex-wrap gap-1.5">
+          {(['all', ...PLATFORMS.map((p) => p.id)] as string[]).map((id) => (
+            <button key={id} type="button" onClick={() => setPlatformFilter(id)} aria-pressed={platformFilter === id}>
+              <Badge
+                variant={platformFilter === id ? 'default' : 'outline'}
+                className={`cursor-pointer px-2.5 py-1 text-xs ${platformFilter === id && id !== 'all' ? 'bg-violet-600 hover:bg-violet-700' : ''}`}
+              >
+                {id === 'all' ? L('همه', 'All') : lang === 'fa' ? PLATFORM_FA[id] || id : id}
+              </Badge>
+            </button>
+          ))}
+        </div>
+
         {!loadingDrafts && drafts.length === 0 ? (
           <p className="py-6 text-center text-sm text-muted-foreground">
             {L('هنوز پستی ذخیره نشده است.', 'No saved posts yet.')}
@@ -373,8 +524,10 @@ export function SocialStudio() {
         ) : (
           <ScrollArea className="max-h-96">
             <div className="space-y-3 pe-3">
-              {drafts.map((d) => (
-                <div key={d.id} className="rounded-xl border border-border/60 bg-background/50 p-3">
+              {drafts
+                .filter((d) => platformFilter === 'all' || d.platform === platformFilter)
+                .map((d) => (
+                <div key={d.id} className={`rounded-xl border p-3 ${d.posted ? 'border-emerald-500/30 bg-emerald-500/5' : 'border-border/60 bg-background/50'}`}>
                   <div className="mb-2 flex flex-wrap items-center gap-2">
                     <Badge className="bg-violet-600/15 text-violet-600 dark:text-violet-400" variant="secondary">
                       {lang === 'fa' ? PLATFORM_FA[d.platform] || d.platform : d.platform}
@@ -382,8 +535,30 @@ export function SocialStudio() {
                     <Badge variant="secondary" className="uppercase">
                       {d.lang}
                     </Badge>
+                    {d.posted && (
+                      <Badge variant="secondary" className="bg-emerald-600/15 text-emerald-600">
+                        <Check className="me-1 h-3 w-3" />
+                        {L('منتشر شد', 'Published')}
+                      </Badge>
+                    )}
                     <span className="text-xs text-muted-foreground">{new Date(d.createdAt).toLocaleDateString()}</span>
                     <div className="ms-auto flex gap-1">
+                      {d.platform === 'linkedin' && !d.posted && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-7 gap-1 text-xs"
+                          disabled={publishingId === d.id}
+                          onClick={() => publishDraft(d.id)}
+                        >
+                          {publishingId === d.id ? (
+                            <Loader2 className="h-3 w-3 animate-spin" />
+                          ) : (
+                            <Send className="h-3 w-3" />
+                          )}
+                          {L('انتشار', 'Publish')}
+                        </Button>
+                      )}
                       <Button
                         size="sm"
                         variant="ghost"
