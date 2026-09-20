@@ -1,8 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse, after } from 'next/server';
 import { checkAdmin } from '@/lib/admin';
 import { retrieveContext, buildContextBlock } from '@/lib/rag';
 import { textCompleteStrict } from '@/lib/ai-provider';
 import { sanitizePostHtml } from '@/lib/sanitize';
+import { trackServerEvent } from '@/lib/server-analytics';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 120;
@@ -52,6 +53,15 @@ Respond with ONLY valid JSON (no markdown fences) in this exact shape:
     // XSS guard: AI output is rendered as HTML in the admin preview and blog
     parsed.contentEn = sanitizePostHtml(parsed.contentEn);
     parsed.contentFa = sanitizePostHtml(parsed.contentFa);
+
+    // PostHog: pipeline throughput is visible next to site traffic
+    after(() =>
+      trackServerEvent('ai_article_generated', 'admin', {
+        topic,
+        keywords,
+        titleEn: parsed.titleEn || null,
+      })
+    );
 
     return NextResponse.json({ ok: true, article: parsed });
   } catch (e) {

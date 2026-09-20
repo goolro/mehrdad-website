@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { CommentsSection } from './CommentsSection';
 import { ShareBar } from './ShareBar';
+import { trackArticleViewed } from '@/lib/analytics';
 import { Search, FileText, ChevronLeft, ChevronRight, Clock, Info, MessageSquare } from 'lucide-react';
 
 interface CategoryItem { id: string; slug: string; nameEn: string; nameFa: string; count?: number }
@@ -307,6 +308,12 @@ export function PostDetail({ post, related, shareUrl }: { post: FullPost; relate
 
   const title = pick(lang, post.titleEn, post.titleFa);
   const isEnMissing = lang === 'en' && !post.contentEn;
+
+  // PostHog (2026-02): the north-star engagement metric — which articles
+  // actually get read, per language. Fires once per mounted article.
+  useEffect(() => {
+    trackArticleViewed({ slug: post.slug, title, lang });
+  }, [post.slug, title, lang]);
 
   return (
     <article className="mx-auto w-full max-w-4xl px-4 py-10 sm:px-6">

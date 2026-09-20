@@ -74,11 +74,13 @@ for (const file of files) {
 
 const csp = [
   "default-src 'self'",
-  `script-src 'self' ${[...hashes].join(' ')}`,
+  // PostHog US cloud (2026-02): must stay in sync with next.config.ts —
+  // ingest XHRs (us.i.posthog.com) + remote features JS (us-assets).
+  `script-src 'self' https://us.i.posthog.com https://us-assets.i.posthog.com ${[...hashes].join(' ')}`,
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https:",
   "font-src 'self' data:",
-  "connect-src 'self'",
+  "connect-src 'self' https://us.i.posthog.com",
   "media-src 'self'",
   "object-src 'none'",
   "base-uri 'self'",
