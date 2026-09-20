@@ -17,12 +17,13 @@ import {
   LayoutDashboard, FileText, Sparkles, Mail, Lock, Trash2, Languages,
   RefreshCw, ImageIcon, Eye, Loader2, LogOut, Globe, MessageSquare, Check, X, Palette,
   Bot, MessagesSquare, Phone, KeyRound, PlayCircle, Pencil, BadgeCheck, UserCheck,
-  FolderKanban, Share2,
+  FolderKanban, Share2, Workflow,
 } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { PROJECT_STATUSES, normalizeStatus } from '@/lib/project-status';
 import { THEMES } from '@/lib/themes';
 import { SocialStudio } from './SocialStudio';
+import { ContentPipeline } from './ContentPipeline';
 
 interface CategoryItem { id: string; slug: string; nameEn: string; nameFa: string; count: number }
 interface AdminPost {
@@ -170,6 +171,7 @@ export function AdminView() {
           <TabsTrigger value="ai" className="gap-1.5"><Bot className="h-4 w-4" />{t.admin.tabs.ai}</TabsTrigger>
           <TabsTrigger value="chats" className="gap-1.5"><MessagesSquare className="h-4 w-4" />{t.admin.tabs.chats}</TabsTrigger>
           <TabsTrigger value="social" className="gap-1.5"><Share2 className="h-4 w-4" />{t.admin.tabs.social}</TabsTrigger>
+          <TabsTrigger value="pipeline" className="gap-1.5"><Workflow className="h-4 w-4" />{t.admin.tabs.pipeline}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="dashboard"><Dashboard t={t} lang={lang} /></TabsContent>
@@ -182,6 +184,7 @@ export function AdminView() {
         <TabsContent value="ai"><AiProvidersTab t={t} lang={lang} /></TabsContent>
         <TabsContent value="chats"><ChatsTab t={t} lang={lang} /></TabsContent>
         <TabsContent value="social"><SocialStudio /></TabsContent>
+        <TabsContent value="pipeline"><ContentPipeline /></TabsContent>
       </Tabs>
     </div>
   );

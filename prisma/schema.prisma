@@ -229,3 +229,41 @@ model SocialDraft {
   posted     Boolean  @default(false)
   createdAt  DateTime @default(now())
 }
+
+// ───────────────────────── AI Content Pipeline (3-agent) ─────────────────────────
+
+/// One AI-generated content piece moving through the multi-agent pipeline:
+///   AI 1 writer → AI 2 SEO auditor + AI 3 editor (parallel) → auto-revise
+///   loop → human approval → website Post | Social Studio (LinkedIn) queue.
+/// Scalar lists are not supported by the sqlite provider, so JSON payloads
+/// live in TEXT columns (same pattern as the rest of this schema).
+model AiArticle {
+  id              String   @id @default(cuid())
+  target          String   @default("website") // website | linkedin
+  lang            String   @default("fa") // fa | en
+  topic           String
+  keyword         String?
+  status          String   @default("draft") // draft | needs_revision | approved | published | failed
+  titleFa         String?
+  titleEn         String?
+  slugIdea        String? // writer's slug suggestion (publish re-uniquifies)
+  excerptFa       String?
+  excerptEn       String?
+  metaTitle       String?
+  metaDescription String?
+  keywords        String? // JSON string[]
+  internalLinks   String? // JSON [{slug,title,anchor}] actually extracted from content
+  hashtags        String? // JSON string[] (linkedin target)
+  contentFa       String? // HTML (website) | post text (linkedin)
+  contentEn       String?
+  reviews         String? // JSON [{agent,score,verdict,issues[],must_fix[],notes,at}]
+  seoScore        Int?
+  editorScore     Int?
+  revision        Int      @default(1)
+  lastError       String?
+  publishedSlug   String? // Post.slug after website publish
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([status, createdAt])
+}
