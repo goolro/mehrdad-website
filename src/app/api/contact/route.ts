@@ -1,7 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse, after } from 'next/server';
 import nodemailer from 'nodemailer';
 import { db } from '@/lib/db';
 import { clientIp, readJsonBody, jsonBodyError, rateLimit, tooManyRequests } from '@/lib/rate-limit';
+import { trackServerEvent } from '@/lib/server-analytics';
 
 export const dynamic = 'force-dynamic';
 
@@ -94,6 +95,17 @@ export async function POST(req: NextRequest) {
 
     await db.contactMessage.create({ data: { name, email, subject, body: message } });
     const emailed = await forwardByEmail({ name, email, subject, message });
+    // PostHog lead event — the validated submission is the source of truth,
+    // so this fires server-side; the submitter's email becomes the PostHog
+    // person id (lets the owner trace a lead back to their visit history).
+    after(() =>
+      trackServerEvent('contact_form_submitted', email, {
+        name,
+        subject,
+        emailed,
+        $set: { name, email },
+      })
+    );
     return NextResponse.json({ ok: true, emailed });
   } catch (e) {
     console.error('contact api error:', e);

@@ -1,7 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse, after } from 'next/server';
 import { checkAdmin } from '@/lib/admin';
 import { db } from '@/lib/db';
 import { ensureSocialDraftTable } from '@/lib/social-drafts';
+import { trackServerEvent } from '@/lib/server-analytics';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -89,6 +90,17 @@ export async function POST(req: NextRequest) {
 
     const data = (await res.json().catch(() => ({}))) as { id?: string };
     await db.socialDraft.update({ where: { id }, data: { posted: true } });
+
+    // PostHog: distribution loop end-to-end (article → draft → published)
+    after(() =>
+      trackServerEvent('linkedin_post_published', 'admin', {
+        draftId: id,
+        lang: draft.lang,
+        topic: draft.topic,
+        sourceSlug: draft.sourceSlug,
+        linkedInPostId: data.id || null,
+      })
+    );
 
     return NextResponse.json({ ok: true, linkedInPostId: data.id || null });
   } catch (e) {

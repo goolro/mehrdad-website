@@ -7,6 +7,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Analytics } from "@vercel/analytics/react";
 import { PwaClient } from "@/components/site/PwaClient";
 import { SiteChrome } from "@/components/site/SiteChrome";
+import PostHogProvider from "@/components/site/PostHogProvider";
 
 // Fonts are SELF-HOSTED (2026-09-07): next/font/google fetched CSS from
 // fonts.googleapis.com at build time — an external dependency that broke
@@ -129,7 +130,9 @@ export default function RootLayout({
           suppressHydrationWarning
           dangerouslySetInnerHTML={{ __html: bootScript }}
         />
-        <SiteChrome>{children}</SiteChrome>
+        <PostHogProvider>
+          <SiteChrome>{children}</SiteChrome>
+        </PostHogProvider>
         <Toaster />
         <PwaClient />
         <Analytics />

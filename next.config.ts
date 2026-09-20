@@ -42,11 +42,16 @@ const securityHeaders = [
     key: "Content-Security-Policy",
     value: [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline'",
+      // PostHog US cloud (2026-02): the posthog-js module is bundled locally
+      // ('self') but the /decide+/e ingest XHRs go to us.i.posthog.com and
+      // remote config/features JS is fetched from us-assets.i.posthog.com.
+      // EU hosts are NOT allowed on purpose — the project is pinned to US
+      // cloud; widening here must stay in sync with scripts/inject-csp.mjs.
+      "script-src 'self' 'unsafe-inline' https://us.i.posthog.com https://us-assets.i.posthog.com",
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: blob: https:",
       "font-src 'self' data:",
-      "connect-src 'self'",
+      "connect-src 'self' https://us.i.posthog.com",
       "media-src 'self'",
       "object-src 'none'",
       "base-uri 'self'",
