@@ -237,3 +237,40 @@ model SocialDraft {
   posted     Boolean  @default(false)
   createdAt  DateTime @default(now())
 }
+
+// ───────────────────────── AI Content Pipeline (3-agent) ─────────────────────────
+
+/// One AI-generated content piece moving through the multi-agent pipeline:
+///   AI 1 writer → AI 2 SEO auditor + AI 3 editor (parallel) → auto-revise
+///   loop → human approval → website Post | Social Studio (LinkedIn) queue.
+/// JSON payloads live in TEXT columns (mirror of prisma/schema.prisma).
+model AiArticle {
+  id              String   @id @default(cuid())
+  target          String   @default("website") // website | linkedin
+  lang            String   @default("fa") // fa | en
+  topic           String
+  keyword         String?
+  status          String   @default("draft") // draft | needs_revision | approved | published | failed
+  titleFa         String?
+  titleEn         String?
+  slugIdea        String?
+  excerptFa       String?
+  excerptEn       String?
+  metaTitle       String?
+  metaDescription String?
+  keywords        String?
+  internalLinks   String?
+  hashtags        String?
+  contentFa       String?
+  contentEn       String?
+  reviews         String?
+  seoScore        Int?
+  editorScore     Int?
+  revision        Int      @default(1)
+  lastError       String?
+  publishedSlug   String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([status, createdAt])
+}
