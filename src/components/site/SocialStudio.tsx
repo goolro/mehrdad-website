@@ -202,7 +202,6 @@ export function SocialStudio() {
             n > 0
               ? L(`${n} پیش‌نویس جدید ساخته شد و منتظر بازبینی است ✓`, `${n} new draft(s) created and queued for review ✓`)
               : L('چیزی برای ساختن نبود — همه مقالات جدید پیش‌نویس دارند.', 'Nothing to create — recent posts already have drafts.'),
-          variant: n > 0 ? 'default' : 'secondary',
         });
         if (r.failed.length > 0) {
           toast({ title: L(`${r.failed.length} خطا — جزئیات در لاگ سرور`, `${r.failed.length} failed — see server log`), variant: 'destructive' });
