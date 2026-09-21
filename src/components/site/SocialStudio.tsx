@@ -8,7 +8,7 @@
  * copy / save.
  */
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useApp, pick } from './store';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -83,6 +83,14 @@ export function SocialStudio() {
   const [loadingDrafts, setLoadingDrafts] = useState(false);
   const [autopilotRunning, setAutopilotRunning] = useState(false);
   const [autopilotCount, setAutopilotCount] = useState('3');
+  // Owner-requested visibility: autopilot used to report only via transient
+  // toasts (and hid failure details in server logs the owner cannot see),
+  // so a failed run looked like «هیچ چیزی نشان نمی‌دهد». Everything now
+  // lands in a persistent, inline result card.
+  const [autopilotResult, setAutopilotResult] = useState<AutopilotResult | null>(null);
+  const [autopilotError, setAutopilotError] = useState('');
+  const [autopilotElapsed, setAutopilotElapsed] = useState(0);
+  const autopilotTimer = useRef<ReturnType<typeof setInterval> | null>(null);
   const [platformFilter, setPlatformFilter] = useState<string>('all');
   const [publishingId, setPublishingId] = useState('');
   const [linkedinSetup, setLinkedinSetup] = useState<string[] | null>(null);
@@ -187,6 +195,11 @@ export function SocialStudio() {
   async function runAutopilot() {
     setAutopilotRunning(true);
     setLinkedinSetup(null);
+    setAutopilotResult(null);
+    setAutopilotError('');
+    setAutopilotElapsed(0);
+    if (autopilotTimer.current) clearInterval(autopilotTimer.current);
+    autopilotTimer.current = setInterval(() => setAutopilotElapsed((s) => s + 1), 1000);
     try {
       const res = await fetch('/api/admin/social/autopilot', {
         method: 'POST',
@@ -196,26 +209,39 @@ export function SocialStudio() {
       const d = (await res.json()) as (AutopilotResult & { ok?: boolean; error?: string }) | { error?: string };
       if ('created' in d) {
         const r = d as AutopilotResult;
-        const n = r.created.length;
-        toast({
-          title:
-            n > 0
-              ? L(`${n} پیش‌نویس جدید ساخته شد و منتظر بازبینی است ✓`, `${n} new draft(s) created and queued for review ✓`)
-              : L('چیزی برای ساختن نبود — همه مقالات جدید پیش‌نویس دارند.', 'Nothing to create — recent posts already have drafts.'),
-        });
-        if (r.failed.length > 0) {
-          toast({ title: L(`${r.failed.length} خطا — جزئیات در لاگ سرور`, `${r.failed.length} failed — see server log`), variant: 'destructive' });
+        setAutopilotResult(r);
+        if (r.created.length > 0) {
+          toast({
+            title: L(
+              `${r.created.length} پیش‌نویس ساخته شد — جزئیات پایین همین کارت ✓`,
+              `${r.created.length} draft(s) created — details in the card below ✓`
+            ),
+          });
         }
         loadDrafts();
       } else {
-        toast({ title: d.error || 'Failed', variant: 'destructive' });
+        setAutopilotError((d as { error?: string }).error || 'Failed');
       }
     } catch {
-      toast({ title: L('اتوماتیک‌پایلوت خطا داد', 'Auto-pilot failed'), variant: 'destructive' });
+      setAutopilotError(
+        L(
+          'اتصال قطع شد یا سرور به سقف زمانی میزبان خورد. دوباره «ساخت خودکار» را بزن — اجرای مجدد چیزی را تکرار نمی‌کند و فقط جاهای خالی را پر می‌کند.',
+          'Connection dropped or the server hit its hosting time cap. Press Auto-fill again — re-running never duplicates, it only fills the gaps.'
+        )
+      );
     } finally {
+      if (autopilotTimer.current) clearInterval(autopilotTimer.current);
+      autopilotTimer.current = null;
       setAutopilotRunning(false);
     }
   }
+
+  useEffect(
+    () => () => {
+      if (autopilotTimer.current) clearInterval(autopilotTimer.current);
+    },
+    []
+  );
 
   /** Publish a saved LinkedIn draft via the LinkedIn API (needs env config). */
   async function publishDraft(id: string) {
@@ -287,7 +313,7 @@ export function SocialStudio() {
               {autopilotRunning ? (
                 <>
                   <Loader2 className="me-2 h-4 w-4 animate-spin" />
-                  {L('در حال ساخت...', 'Working...')}
+                  {L('در حال ساخت...', 'Working...')} ({autopilotElapsed}s)
                 </>
               ) : (
                 <>
@@ -298,6 +324,62 @@ export function SocialStudio() {
             </Button>
           </div>
         </div>
+        {autopilotRunning && (
+          <p className="mt-3 text-xs text-muted-foreground">
+            {L(
+              'هر پست حدود ۳۰ تا ۶۰ ثانیه طول می‌کشد — صفحه را نبند؛ نتیجه در همین کارت و در «پیش‌نویس‌های ذخیره‌شده» ظاهر می‌شود.',
+              'Each post takes ~30-60s — keep this page open; the result appears in this card and under “Saved drafts”.'
+            )}
+          </p>
+        )}
+        {autopilotError && (
+          <div className="mt-4 rounded-xl border border-red-500/40 bg-red-500/10 p-4 text-sm text-red-700 dark:text-red-400">
+            {autopilotError}
+          </div>
+        )}
+        {autopilotResult && (
+          <div className="mt-4 space-y-2 rounded-xl border border-border bg-background/60 p-4 text-sm">
+            <p className="font-bold">
+              {autopilotResult.created.length > 0
+                ? L(
+                    `${autopilotResult.created.length} پیش‌نویس لینکدین ساخته شد — در «پیش‌نویس‌های ذخیره‌شده» پایین صفحه است ✓`,
+                    `${autopilotResult.created.length} LinkedIn draft(s) created — see “Saved drafts” below ✓`
+                  )
+                : autopilotResult.failed.length > 0
+                  ? L('پیش‌نویس جدیدی ساخته نشد — خطاها را پایین ببین.', 'No new drafts were created — see the failures below.')
+                  : L('چیزی برای ساختن نبود — همه مقالات جدید پیش‌نویس دارند.', 'Nothing to create — recent posts already have drafts.')}
+            </p>
+            {autopilotResult.created.length > 0 && (
+              <ul className="list-inside list-disc space-y-0.5 text-emerald-700 dark:text-emerald-400">
+                {autopilotResult.created.map((c, i) => (
+                  <li key={`${c.slug}:${c.lang}:${i}`}>
+                    {c.title || c.slug} ({c.lang})
+                  </li>
+                ))}
+              </ul>
+            )}
+            {autopilotResult.failed.length > 0 && (
+              <div>
+                <p className="font-semibold text-red-700 dark:text-red-400">{L('ناموفق:', 'Failed:')}</p>
+                <ul className="list-inside list-disc space-y-0.5 text-red-700 dark:text-red-400">
+                  {autopilotResult.failed.map((f, i) => (
+                    <li key={`${f.slug}:${i}`} className="break-words">
+                      {f.slug} — {f.error}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {autopilotResult.skipped.length > 0 && (
+              <p className="text-xs text-muted-foreground">
+                {L(
+                  `${autopilotResult.skipped.length} مورد از قبل پیش‌نویس داشتند و رد شدند.`,
+                  `${autopilotResult.skipped.length} item(s) skipped — already had drafts.`
+                )}
+              </p>
+            )}
+          </div>
+        )}
         {linkedinSetup && (
           <div className="mt-4 rounded-xl border border-amber-500/40 bg-amber-500/10 p-4 text-sm">
             <div className="mb-2 flex items-center gap-2 font-bold text-amber-700 dark:text-amber-400">
@@ -518,7 +600,10 @@ export function SocialStudio() {
 
         {!loadingDrafts && drafts.length === 0 ? (
           <p className="py-6 text-center text-sm text-muted-foreground">
-            {L('هنوز پستی ذخیره نشده است.', 'No saved posts yet.')}
+            {L(
+              'هنوز پستی ذخیره نشده — با «ساخت خودکار» بالا یا «تولید پست‌ها» اولین را بساز؛ اینجا ظاهر می‌شود.',
+              'No saved posts yet — create the first one with Auto-fill or Generate above; it will appear here.'
+            )}
           </p>
         ) : (
           <ScrollArea className="max-h-96">
