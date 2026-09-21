@@ -1,7 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { checkAdmin } from '@/lib/admin';
-import { invalidateProviderCache, isValidBaseUrl, maskKey } from '@/lib/ai-provider';
+import {
+  invalidateProviderCache,
+  isValidBaseUrl,
+  maskKey,
+  sanitizeBaseUrl,
+  sanitizeSecret,
+} from '@/lib/ai-provider';
 import { readJsonBody, jsonBodyError } from '@/lib/rate-limit';
 
 export const dynamic = 'force-dynamic';
@@ -49,10 +55,13 @@ export async function POST(req: NextRequest) {
 
   try {
     const b = parsed.data || {};
+    // sanitizeSecret heals smart-dash/zero-width corruption from copy/paste
+    // (an em-dash inside an apiKey used to abort every request at header
+    // serialization with "Cannot convert argument to a ByteString").
     const name = String(b.name ?? '').trim().slice(0, 80);
-    const baseUrl = String(b.baseUrl ?? '').trim().slice(0, 300).replace(/\/+$/, '');
-    const apiKey = String(b.apiKey ?? '').trim().slice(0, 400);
-    const model = String(b.model ?? '').trim().slice(0, 120);
+    const baseUrl = sanitizeBaseUrl(String(b.baseUrl ?? ''));
+    const apiKey = sanitizeSecret(String(b.apiKey ?? ''));
+    const model = sanitizeSecret(String(b.model ?? ''));
 
     if (!name || !baseUrl || !apiKey || !model) {
       return NextResponse.json({ error: 'All fields are required' }, { status: 400 });
@@ -103,17 +112,17 @@ export async function PATCH(req: NextRequest) {
       data.name = name;
     }
     if (b.baseUrl !== undefined) {
-      const baseUrl = String(b.baseUrl).trim().slice(0, 300).replace(/\/+$/, '');
+      const baseUrl = sanitizeBaseUrl(String(b.baseUrl));
       if (!isValidBaseUrl(baseUrl)) return NextResponse.json({ error: 'Invalid base URL' }, { status: 400 });
       data.baseUrl = baseUrl;
     }
     if (b.model !== undefined) {
-      const model = String(b.model).trim().slice(0, 120);
+      const model = sanitizeSecret(String(b.model));
       if (!model) return NextResponse.json({ error: 'Invalid model' }, { status: 400 });
       data.model = model;
     }
     if (b.apiKey !== undefined && String(b.apiKey).trim()) {
-      data.apiKey = String(b.apiKey).trim().slice(0, 400);
+      data.apiKey = sanitizeSecret(String(b.apiKey));
     }
 
     const updated = await db.aiProvider.update({ where: { id }, data });

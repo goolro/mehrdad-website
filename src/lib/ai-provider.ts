@@ -101,6 +101,19 @@ function acceptsThinkingSwitch(baseUrl: string): boolean {
 }
 
 /**
+ * HTTP header values must be ByteStrings (bytes 0–255). Undici enforces this
+ * strictly: a single em-dash ("—", U+2014, decimal 8212) anywhere in a value
+ * aborts the request with "Cannot convert argument to a ByteString". We
+ * shipped exactly that bug once (X-Title 'Mehrdad — Product Builder') and it
+ * silently killed every OpenRouter call while provider failover masked it.
+ * Rules now: header literals stay ASCII-only AND every dynamic value passes
+ * through safeHeaderValue() as defense in depth.
+ */
+function safeHeaderValue(value: string): string {
+  return value.replace(/[^\x20-\x7E]/g, '').trim();
+}
+
+/**
  * Attribution headers for OpenRouter (recommended by their docs): the app
  * URL/title attach to the owner's OpenRouter usage dashboard. Optional —
  * requests succeed without them — but they make spend/routing visible per
@@ -111,14 +124,41 @@ function attributionHeaders(baseUrl: string): Record<string, string> {
     const h = new URL(baseUrl).hostname;
     if (h === 'openrouter.ai' || h.endsWith('.openrouter.ai')) {
       return {
-        'HTTP-Referer': process.env.SITE_ORIGIN || 'https://mehrdad.ir',
-        'X-Title': 'Mehrdad — Product Builder',
+        'HTTP-Referer': safeHeaderValue(process.env.SITE_ORIGIN || 'https://mehrdad.ir'),
+        // ASCII hyphen ONLY — see safeHeaderValue() comment above
+        'X-Title': 'Mehrdad - Product Builder',
       };
     }
   } catch {
     // malformed baseUrl — the request itself will fail loudly anyway
   }
   return {};
+}
+
+const INVISIBLE_CHARS_RE = /[\u00AD\u061C\u180E\u200B-\u200F\u202A-\u202E\u2060-\u2064\uFEFF\uFFA0]/g;
+const UNICODE_DASHES_RE = /[\u058A\u05BE\u1400\u1806\u2010-\u2015\u2043\u2212\u2E3A\u2E3B\u301C\u3030\u30A0\uFE31\uFE32\uFE58\uFE63\uFF0D]/g;
+
+/**
+ * Heals copy/paste corruption before it reaches the DB or a request header:
+ * smart-dash autocorrect (– — − → '-'), invisible/bidi characters stripped,
+ * all whitespace removed (API keys & model ids never contain spaces).
+ * Applied by the admin API on every provider save.
+ */
+export function sanitizeSecret(input: string): string {
+  return input
+    .replace(INVISIBLE_CHARS_RE, '')
+    .replace(UNICODE_DASHES_RE, '-')
+    .replace(/\s+/g, '')
+    .slice(0, 400);
+}
+
+/** baseUrl variant: keep internal structure, strip invisibles + trailing slashes. */
+export function sanitizeBaseUrl(input: string): string {
+  return input
+    .replace(INVISIBLE_CHARS_RE, '')
+    .trim()
+    .replace(/\/+$/, '')
+    .slice(0, 300);
 }
 
 interface RawCompletionResponse {
@@ -179,16 +219,28 @@ export async function chatCompletion(
     // without it (e.g. always-on-thinking flagships).
     for (const withThinking of acceptsThinkingSwitch(provider.baseUrl) ? [true, false] : [false]) {
       const payload = withThinking ? { ...base, thinking: { type: 'disabled' } } : base;
-      const res = await fetch(endpointOf(provider.baseUrl), {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${provider.apiKey}`,
-          ...attributionHeaders(provider.baseUrl),
-        },
-        body: JSON.stringify(payload),
-        signal: ctrl.signal,
-      });
+      let res: Response;
+      try {
+        res = await fetch(endpointOf(provider.baseUrl), {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${provider.apiKey}`,
+            ...attributionHeaders(provider.baseUrl),
+          },
+          body: JSON.stringify(payload),
+          signal: ctrl.signal,
+        });
+      } catch (err) {
+        // Undici rejects non-ASCII header values before the request leaves —
+        // surface the real cause instead of a cryptic ByteString TypeError.
+        if (err instanceof TypeError && String((err as Error)?.message || '').includes('ByteString')) {
+          throw new Error(
+            'malformed provider config: a stored key/model contains a character that is not allowed in an HTTP header (usually a smart-dash from copy/paste) — re-save the provider'
+          );
+        }
+        throw err;
+      }
       if (!res.ok) {
         const detail = await res.text().catch(() => '');
         if (res.status === 400 && withThinking) continue;
@@ -233,16 +285,26 @@ export async function* chatCompletionStream(
   try {
     for (const withThinking of acceptsThinkingSwitch(provider.baseUrl) ? [true, false] : [false]) {
       const payload = withThinking ? { ...base, thinking: { type: 'disabled' } } : base;
-      const res = await fetch(endpointOf(provider.baseUrl), {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${provider.apiKey}`,
-          ...attributionHeaders(provider.baseUrl),
-        },
-        body: JSON.stringify(payload),
-        signal: ctrl.signal,
-      });
+      let res: Response;
+      try {
+        res = await fetch(endpointOf(provider.baseUrl), {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${provider.apiKey}`,
+            ...attributionHeaders(provider.baseUrl),
+          },
+          body: JSON.stringify(payload),
+          signal: ctrl.signal,
+        });
+      } catch (err) {
+        if (err instanceof TypeError && String((err as Error)?.message || '').includes('ByteString')) {
+          throw new Error(
+            'malformed provider config: a stored key/model contains a character that is not allowed in an HTTP header (usually a smart-dash from copy/paste) — re-save the provider'
+          );
+        }
+        throw err;
+      }
       if (!res.ok) {
         const detail = await res.text().catch(() => '');
         if (res.status === 400 && withThinking) continue;
