@@ -100,6 +100,27 @@ function acceptsThinkingSwitch(baseUrl: string): boolean {
   }
 }
 
+/**
+ * Attribution headers for OpenRouter (recommended by their docs): the app
+ * URL/title attach to the owner's OpenRouter usage dashboard. Optional —
+ * requests succeed without them — but they make spend/routing visible per
+ * app. No-op for every other gateway.
+ */
+function attributionHeaders(baseUrl: string): Record<string, string> {
+  try {
+    const h = new URL(baseUrl).hostname;
+    if (h === 'openrouter.ai' || h.endsWith('.openrouter.ai')) {
+      return {
+        'HTTP-Referer': process.env.SITE_ORIGIN || 'https://mehrdad.ir',
+        'X-Title': 'Mehrdad — Product Builder',
+      };
+    }
+  } catch {
+    // malformed baseUrl — the request itself will fail loudly anyway
+  }
+  return {};
+}
+
 interface RawCompletionResponse {
   choices?: {
     message?: {
@@ -163,6 +184,7 @@ export async function chatCompletion(
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${provider.apiKey}`,
+          ...attributionHeaders(provider.baseUrl),
         },
         body: JSON.stringify(payload),
         signal: ctrl.signal,
@@ -216,6 +238,7 @@ export async function* chatCompletionStream(
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${provider.apiKey}`,
+          ...attributionHeaders(provider.baseUrl),
         },
         body: JSON.stringify(payload),
         signal: ctrl.signal,
