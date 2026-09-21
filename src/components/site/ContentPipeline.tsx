@@ -19,12 +19,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import {
   PenLine, SearchCheck, UserCheck, Loader2, CheckCircle2, XCircle, AlertTriangle,
   Sparkles, Send, Trash2, RefreshCw, Wrench, Globe, Linkedin, ChevronDown, Eye, FileText,
+  Clock, LayoutGrid,
 } from 'lucide-react';
 
 interface ReviewVerdict {
@@ -125,6 +125,84 @@ function AgentRow({
   );
 }
 
+/** colored accent strip on top of every queue card, by status */
+const STATUS_BAR: Record<Article['status'], string> = {
+  draft: 'bg-muted-foreground/30',
+  needs_revision: 'bg-amber-400 dark:bg-amber-500',
+  approved: 'bg-emerald-500',
+  published: 'bg-primary',
+  failed: 'bg-red-500',
+};
+
+function ArticleCard({
+  a, lang, L, busyId, onOpen, onPublish, onDelete,
+}: {
+  a: Article;
+  lang: 'fa' | 'en';
+  L: (fa: string, en: string) => string;
+  busyId: string;
+  onOpen: () => void;
+  onPublish: (id: string) => void;
+  onDelete: (id: string) => void;
+}) {
+  const title = a.lang === 'fa' ? a.titleFa || a.titleEn : a.titleEn || a.titleFa || a.topic;
+  const raw = (a.lang === 'fa' ? a.contentFa : a.contentEn) || a.contentFa || a.contentEn || '';
+  const snippet = raw.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+  const busy = busyId !== '';
+  return (
+    <div className="flex flex-col overflow-hidden rounded-2xl border border-border bg-card transition-all hover:border-primary/40 hover:shadow-md"
+      onClick={onOpen}>
+      <div className={`h-1.5 w-full shrink-0 ${STATUS_BAR[a.status] || 'bg-muted'}`} />
+      <div className="flex flex-1 flex-col gap-3 p-4">
+        <div className="flex items-center justify-between gap-2">
+          <StatusBadge status={a.status} L={L} />
+          <span className="flex shrink-0 items-center gap-1.5 text-xs text-muted-foreground">
+            {a.target === 'website' ? <Globe className="h-3.5 w-3.5" /> : <Linkedin className="h-3.5 w-3.5" />}
+            {a.lang.toUpperCase()} · {new Date(a.createdAt).toLocaleDateString(lang === 'fa' ? 'fa-IR' : 'en-US')}
+          </span>
+        </div>
+        <button type="button" onClick={onOpen} className="text-start" dir={a.lang === 'fa' ? 'rtl' : 'ltr'}>
+          <h4 className="line-clamp-2 text-sm font-bold leading-6 transition-colors hover:text-primary">{title}</h4>
+        </button>
+        {snippet && (
+          <p className="line-clamp-3 text-xs leading-5 text-muted-foreground" dir={a.lang === 'fa' ? 'rtl' : 'ltr'}>
+            {snippet.slice(0, 200)}{snippet.length > 200 ? '…' : ''}
+          </p>
+        )}
+        <div className="flex flex-wrap items-center gap-1.5">
+          <ScoreBadge score={a.seoScore} label="SEO" />
+          <ScoreBadge score={a.editorScore} label={L('سردبیر', 'Ed.')} />
+          {a.revision > 1 && <Badge variant="outline" className="text-xs">×{a.revision}</Badge>}
+        </div>
+        <div className="mt-auto flex items-center justify-between gap-2 border-t border-border pt-3"
+          onClick={(e) => e.stopPropagation()}>
+          {a.status === 'published' ? (
+            a.publishedSlug ? (
+              <Button size="sm" variant="outline" className="gap-1.5" asChild>
+                <a href={`/blog/${a.publishedSlug}`} target="_blank" rel="noreferrer">
+                  <Eye className="h-3.5 w-3.5" />{L('مشاهده در سایت', 'View on site')}
+                </a>
+              </Button>
+            ) : (
+              <span className="text-xs text-muted-foreground">{L('در صف استودیو شبکه‌های اجتماعی', 'In the Social Studio queue')}</span>
+            )
+          ) : (
+            <Button size="sm" className="gap-1.5" disabled={busy} onClick={() => onPublish(a.id)}>
+              {busyId === a.id + 'publish' ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
+              {a.target === 'website' ? L('انتشار در وب‌سایت', 'Publish') : L('به صف لینکدین', 'To queue')}
+            </Button>
+          )}
+          <Button size="sm" variant="ghost"
+            className="text-red-600 hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-950/40"
+            disabled={busy} onClick={() => onDelete(a.id)} aria-label="delete">
+            {busyId === a.id + 'del' ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function ContentPipeline() {
   const { lang } = useApp();
   const { toast } = useToast();
@@ -149,6 +227,7 @@ export function ContentPipeline() {
   const [queue, setQueue] = useState<Article[]>([]);
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [busyId, setBusyId] = useState('');
+  const detailRef = useRef<HTMLElement | null>(null);
 
   const startTimer = () => {
     setElapsed(0);
@@ -285,6 +364,23 @@ export function ContentPipeline() {
     : 0;
   const lastReviews = detail ? detail.reviews.filter((r) => (r.revision ?? 1) === lastRound) : [];
 
+  /** open a card in the detail panel and scroll to it */
+  function openArticle(a: Article) {
+    setCurrent(a);
+    setShowDetail(true);
+    window.setTimeout(() => detailRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80);
+  }
+
+  const countBy = (s: string) => queue.filter((a) => a.status === s).length;
+  const tiles = [
+    { id: 'all', icon: LayoutGrid, count: queue.length, label: L('همه', 'All'), tone: 'text-foreground' },
+    { id: 'draft', icon: Clock, count: countBy('draft'), label: L('در انتظار بازبینی', 'Awaiting'), tone: 'text-muted-foreground' },
+    { id: 'needs_revision', icon: AlertTriangle, count: countBy('needs_revision'), label: L('نیاز به اصلاح', 'Needs fix'), tone: 'text-amber-600 dark:text-amber-400' },
+    { id: 'approved', icon: CheckCircle2, count: countBy('approved'), label: L('تایید شده', 'Approved'), tone: 'text-emerald-600 dark:text-emerald-400' },
+    { id: 'published', icon: Send, count: countBy('published'), label: L('منتشر شده', 'Published'), tone: 'text-primary' },
+    { id: 'failed', icon: XCircle, count: countBy('failed'), label: L('خطا', 'Failed'), tone: 'text-red-600 dark:text-red-400' },
+  ];
+
   return (
     <div className="space-y-6" dir={pick(lang, 'rtl', 'ltr')}>
       {/* ── new piece ── */}
@@ -369,7 +465,7 @@ export function ContentPipeline() {
 
       {/* ── result / detail ── */}
       {detail && (
-        <section className="rounded-2xl border border-border bg-card/40">
+        <section ref={detailRef} className="scroll-mt-24 rounded-2xl border border-border bg-card/40">
           <button type="button" onClick={() => setShowDetail((v) => !v)}
             className="flex w-full items-center justify-between gap-2 p-4 text-start sm:p-6">
             <div className="min-w-0">
@@ -512,67 +608,67 @@ export function ContentPipeline() {
 
       {/* ── queue ── */}
       <section className="rounded-2xl border border-border bg-card/40 p-4 sm:p-6">
-        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
           <h3 className="flex items-center gap-2 text-base font-bold">
             <FileText className="h-4 w-4 text-primary" />{L('صف بررسی و انتشار', 'Review & publish queue')}
+            <Badge variant="secondary" className="tabular-nums">{queue.length}</Badge>
           </h3>
-          <div className="flex flex-wrap gap-1.5">
-            {[
-              { id: 'all', label: L('همه', 'All') },
-              { id: 'draft', label: L('در انتظار بازبینی', 'Awaiting') },
-              { id: 'needs_revision', label: L('نیاز به اصلاح', 'Needs fix') },
-              { id: 'approved', label: L('تایید شده', 'Approved') },
-              { id: 'published', label: L('منتشر شده', 'Published') },
-            ].map((f) => (
-              <button key={f.id} type="button" onClick={() => setStatusFilter(f.id)}
-                className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
-                  statusFilter === f.id ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:text-foreground'}`}>
-                {f.label}
+          <Button variant="ghost" size="icon" className="h-9 w-9" onClick={loadQueue} aria-label="refresh queue">
+            <RefreshCw className="h-4 w-4" />
+          </Button>
+        </div>
+
+        {/* status tiles — the graphical overview, click any tile to filter */}
+        <div className="mb-5 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
+          {tiles.map((t) => {
+            const active = statusFilter === t.id;
+            return (
+              <button key={t.id} type="button" onClick={() => setStatusFilter(t.id)} aria-pressed={active}
+                className={`flex flex-col items-start gap-2 rounded-xl border p-3 text-start transition-all ${
+                  active
+                    ? 'border-primary/60 bg-primary/5 ring-1 ring-primary/40'
+                    : 'border-border bg-card/60 hover:border-primary/40 hover:shadow-sm'}`}>
+                <span className="flex w-full items-center justify-between">
+                  <span className={`flex h-8 w-8 items-center justify-center rounded-lg bg-muted ${t.tone}`}>
+                    <t.icon className="h-4 w-4" />
+                  </span>
+                  <span className={`text-xl font-extrabold tabular-nums ${active ? 'text-primary' : ''}`}>{t.count}</span>
+                </span>
+                <span className="w-full truncate text-xs font-medium text-muted-foreground">{t.label}</span>
               </button>
-            ))}
-          </div>
+            );
+          })}
         </div>
 
         {filtered.length === 0 ? (
-          <p className="py-8 text-center text-sm text-muted-foreground">{L('هنوز چیزی در خط تولید نیست.', 'Nothing in the pipeline yet.')}</p>
+          <div className="flex flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-border py-12 text-center">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-muted">
+              <FileText className="h-6 w-6 text-muted-foreground" />
+            </div>
+            <p className="text-sm font-semibold">
+              {queue.length === 0
+                ? L('هنوز مقاله‌ای در خط تولید نیست', 'Nothing in the pipeline yet')
+                : L('با این فیلتر موردی پیدا نشد', 'No items match this filter')}
+            </p>
+            <p className="max-w-md text-xs leading-5 text-muted-foreground">
+              {queue.length === 0
+                ? L('موضوع را در فرم بالا وارد کنید و «اجرای خط کامل» را بزنید — هر مقاله به‌صورت کارت همین‌جا ظاهر می‌شود.', 'Enter a topic above and run the full pipeline — every article appears here as a card.')
+                : L('یکی از کاشی‌های وضعیت بالا را انتخاب کنید.', 'Pick another status tile above.')}
+            </p>
+          </div>
         ) : (
-          <ScrollArea className="max-h-96">
-            <ul className="space-y-2 pe-2">
+          <div className="chat-scroll max-h-[44rem] overflow-y-auto pe-1">
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
               {filtered.map((a) => (
-                <li key={a.id} className="rounded-xl border border-border bg-card/60 p-3">
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <button type="button" className="min-w-0 flex-1 text-start" onClick={() => { setCurrent(a); setShowDetail(true); }}>
-                      <p className="truncate text-sm font-semibold">
-                        {a.lang === 'fa' ? a.titleFa || a.titleEn : a.titleEn || a.titleFa || a.topic}
-                      </p>
-                      <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-                        <StatusBadge status={a.status} L={L} />
-                        <ScoreBadge score={a.seoScore} label="SEO" />
-                        <ScoreBadge score={a.editorScore} label={L('سردبیر', 'Ed.')} />
-                        <span className="text-xs text-muted-foreground">
-                          {a.target === 'website' ? <Globe className="inline h-3 w-3" /> : <Linkedin className="inline h-3 w-3" />}
-                          {' '}· {new Date(a.createdAt).toLocaleDateString(lang === 'fa' ? 'fa-IR' : 'en-US')}
-                        </span>
-                      </div>
-                    </button>
-                    <div className="flex shrink-0 items-center gap-1.5">
-                      {a.status === 'approved' && (
-                        <Button size="sm" variant="outline" className="gap-1.5" disabled={busyId !== ''}
-                          onClick={() => { setCurrent(a); act(a.id, 'publish'); }}>
-                          {busyId === a.id + 'publish' ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
-                          {a.target === 'website' ? L('انتشار', 'Publish') : L('به صف لینکدین', 'To queue')}
-                        </Button>
-                      )}
-                      <Button size="sm" variant="ghost" className="text-red-600 hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-950/40"
-                        disabled={busyId !== ''} onClick={() => remove(a.id)} aria-label="delete">
-                        {busyId === a.id + 'del' ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
-                      </Button>
-                    </div>
-                  </div>
-                </li>
+                <ArticleCard
+                  key={a.id} a={a} lang={lang} L={L} busyId={busyId}
+                  onOpen={() => openArticle(a)}
+                  onPublish={(id) => act(id, 'publish')}
+                  onDelete={(id) => remove(id)}
+                />
               ))}
-            </ul>
-          </ScrollArea>
+            </div>
+          </div>
         )}
       </section>
     </div>
