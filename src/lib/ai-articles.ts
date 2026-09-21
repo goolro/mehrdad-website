@@ -38,6 +38,26 @@ His world: startups, smart city technology, AI, inventions, product design, digi
 Site: https://mehrdad.ir — portfolio, services and blog live there.
 Voice: confident but not boastful, practical, forward-looking, concrete examples over vague hype.`;
 
+/**
+ * HUMAN-STYLE ALGORITHM (owner requirement: «کاملاً انسانی، بدون ردپای AI»).
+ * Language-model prose carries statistical fingerprints: even sentence
+ * rhythm, symmetric section lengths, cliché transitions, stacked hedging,
+ * empty superlatives. Each rule below attacks one fingerprint — and the
+ * EDITOR agent re-enforces the same list by acting as an AI-pattern
+ * detector before anything can reach `approved`.
+ */
+const HUMAN_STYLE_RULES = `HUMAN-VOICE ALGORITHM (every rule mandatory — the goal is prose a human editor would sign without suspecting machine assistance):
+1. RHYTHM BURST: alternate 3-8 word sentences with 20-30 word ones. Never write three consecutive sentences with similar length or shape. Mechanical evenness is the #1 machine fingerprint.
+2. BANNED PHRASES — never write: «در دنیای امروز»، «در عصر دیجیتال»، «در دنیای پرسرعت امروز»، «شایان ذکر است»، «لازم به ذکر است»، «بدون شک»، «بر هیچ‌کس پوشیده نیست»، «در نهایت می‌توان گفت»، «همان‌طور که می‌دانید»، «در این مقاله قصد دارم»، "in today's fast-paced world"، "it's important to note"، "delve"، "unlock"، "moreover"، "in conclusion". If a sentence could open a Wikipedia article, delete it.
+3. OPEN CONCRETE: the first paragraph is a specific moment — a real situation, a question a client actually asked, a number from your own work, a mistake you made. Never a definition of the topic.
+4. FIRST PERSON, OPINIONATED: «به نظرم»، «اشتباه من این بود که»، «دیگر انجامش نمی‌دهم». Take sides: say what most people get wrong and what you refuse to do. Zero neutral-encyclopedia tone.
+5. SPECIFIC OR DELETE: every section carries one concrete artifact — a number, duration, price, tool name, version, before/after. Ban vague intensity words («بی‌نظیر»، «شگفت‌انگیز»، «فوق‌العاده») unless attached to a concrete fact.
+6. NO FAKE RESEARCH: never invent statistics, surveys, university studies, or named reports. Numbers only as rough first-person experience («حدود سه برابر»، «در یکی از پروژه‌ها به این نتیجه رسیدم»).
+7. ASYMMETRY: sections must be visibly different lengths — one can be just two sentences. At most ONE bullet list in the whole article; humans argue in prose. Never start two consecutive sentences with the same word.
+8. WARM CONNECTORS, SPARINGLY: «راستش»، «ببینید»، «حالا»، «مشکل اینجاست که» — 3-5 across the whole piece, not one per paragraph.
+9. LIGHT IMPERFECTION: up to two rhetorical questions, one parenthetical aside, a couple of one-sentence paragraphs. Do not close every section with a tidy summary — humans just move on. No exclamation-mark spam.
+10. PERSIAN CRAFT: native fluent Persian — correct نیم‌فاصله («می‌شود»، «بی‌نظیر»)، Persian digits (۱۲۳) inside Persian text, no translationese («از آنجایی که... لذا» is lawyer-language, humans say «چون».`;
+
 // ───────────────────────── runtime table bootstrap ─────────────────────────
 
 let ensured: Promise<void> | null = null;
@@ -91,10 +111,17 @@ export function ensureAiArticleTable(): Promise<void> {
 
 async function agentComplete(
   messages: ChatTurn[],
-  opts: { maxTokens?: number; temperature?: number; timeoutMs?: number } = {}
+  opts: { maxTokens?: number; temperature?: number; timeoutMs?: number; agentSlot?: number } = {}
 ): Promise<string> {
   const chain = await getProviderChain();
-  for (const provider of chain) {
+  // Multi-AI by design (owner ask: «سه هوش مصنوعی روی هر مقاله کار کنند»):
+  // slot 0 = WRITER, slot 1 = SEO auditor, slot 2 = editor. Each agent
+  // prefers its OWN provider from the chain and rotates to the others only
+  // as failover — so with ≥3 providers configured every agent literally is
+  // a different model, and with one provider everything still works.
+  const slot = chain.length ? (opts.agentSlot ?? 0) % chain.length : 0;
+  const ordered = chain.length > 1 ? [...chain.slice(slot), ...chain.slice(0, slot)] : chain;
+  for (const provider of ordered) {
     try {
       const out = await chatCompletion(provider, messages, {
         timeoutMs: opts.timeoutMs ?? 100_000,
@@ -353,7 +380,9 @@ async function writeArticle(input: PipelineInput, feedback?: string): Promise<Wr
   if (input.target === 'website') {
     sys = `You are AI WRITER (agent 1 of 3) in the content pipeline for ${BRAND}
 
-TASK: write a complete, publication-ready, fully SEO-optimized blog article.
+TASK: write a complete, publication-ready, fully SEO-optimized blog article that reads 100% human.
+
+${HUMAN_STYLE_RULES}
 
 ${WEBSITE_SEO_RULES}
 
@@ -383,6 +412,8 @@ FORMAT RULES:
 - 3-5 relevant hashtags at the very end
 - Length: 600-1300 characters — never exceed
 
+HUMAN-VOICE RULES (mandatory): first person with one real scene from work (a client call, a launch, a bug); alternate short punchy and long sentences; no «در دنیای امروز»-style openers and no clichés («شایان ذکر است»، «بدون شک»، «همان‌طور که می‌دانید»); never invent statistics — only rough first-person experience; no perfectly parallel lines, no empty superlatives («بی‌نظیر»، «شگفت‌انگیز»); sound like a builder sharing what happened, not a brand page announcing.
+
 EXISTING SITE KNOWLEDGE (may inform the post, never copy verbatim):
 ${context || '(none)'}
 
@@ -400,7 +431,7 @@ Fill contentFa and contentEn both; hashtags apply to both versions.`;
       { role: 'system', content: sys },
       { role: 'user', content: user },
     ],
-    { maxTokens: 6000, temperature: feedback ? 0.65 : 0.75, timeoutMs: 110_000 }
+    { maxTokens: 6000, temperature: feedback ? 0.65 : 0.75, timeoutMs: 110_000, agentSlot: 0 }
   );
   return raw;
 }
@@ -446,15 +477,17 @@ function salvageVerdict(raw: string): Partial<ReviewVerdict> | null {
  * nothing parseable at all.
  */
 async function reviewJson(agent: 'seo' | 'editor', messages: ChatTurn[], revision: number): Promise<Partial<ReviewVerdict>> {
+  const agentSlot = agent === 'seo' ? 1 : 2; // SEO = provider #2, editor = provider #3
   try {
     return await completeJson<Partial<ReviewVerdict>>(messages, {
       maxTokens: 1600,
       temperature: 0.4,
       timeoutMs: 90_000,
+      agentSlot,
     });
   } catch (e) {
     console.error(`${agent} reviewer: JSON retry exhausted — salvaging raw reply`);
-    const raw = await agentComplete(messages, { maxTokens: 1600, temperature: 0.3, timeoutMs: 90_000 });
+    const raw = await agentComplete(messages, { maxTokens: 1600, temperature: 0.3, timeoutMs: 90_000, agentSlot });
     const salvaged = salvageVerdict(raw);
     if (salvaged) return salvaged;
     throw e;
@@ -494,15 +527,25 @@ async function seoReviewer(article: {
 
   const sys = `You are AI SEO AUDITOR (agent 2 of 3) — a ruthless but fair technical SEO reviewer for ${BRAND}
 You review revision #${article.revision}. Target: ${article.target === 'linkedin' ? 'LinkedIn post' : 'blog article (website)'}.
-
-CHECKLIST (score 0-100, be strict — a 90+ must deserve publication):
+${
+  article.target === 'linkedin'
+    ? `LINKEDIN CHECKLIST (score 0-100, be strict — a 90+ must deserve publishing):
+1. Hook: first 2 lines must earn the "see more" tap — curiosity, bold specific insight, or a concrete scene
+2. Content depth: one practical, usable takeaway (steps/numbers/concrete example); 600-1300 characters total
+3. Platform-native tone: reads like a person, not a brand page; short paragraphs with blank lines between them
+4. CTA: soft, honest, points to https://mehrdad.ir — and ZERO fake/pretend links inside the text (LinkedIn posts cannot carry hyperlinks)
+5. Hashtags: 3-5 relevant ones at the very end, no spam
+6. HUMAN-LIKENESS: no AI clichés («در دنیای امروز»، «شایان ذکر است»، «بدون شک»), no invented statistics, no uniform parallel lines
+   NOTE: meta title/description/internal links DO NOT APPLY to LinkedIn — never flag their absence.`
+    : `WEBSITE CHECKLIST (score 0-100, be strict — a 90+ must deserve publication):
 1. Focus keyword usage: title, first paragraph, headings — natural, not stuffed
-2. Meta title ≤ 60 chars; meta description ≤ 155 chars and click-worthy (blog target only)
+2. Meta title ≤ 60 chars; meta description ≤ 155 chars and click-worthy
 3. Heading hierarchy: semantic <h2>/<h3>, no keyword-stuffed headings
-4. Internal links: 3-6 contextual links with descriptive anchors (blog target). LinkedIn: zero fake links
-5. Content depth: concrete examples/steps, scannable paragraphs, ${article.target === 'website' ? '900-1300 words' : '600-1300 chars'}
-6. FAQ section present (blog target only)
-7. Link integrity: every internal link slug must exist in the ALLOWED LIST${hallucinated.length ? `\n\nDETECTED HALLUCINATED LINKS (automatic must_fix): ${hallucinated.map((l) => l.slug).join(', ')}` : ''}
+4. Internal links: 3-6 contextual links with descriptive anchors. LinkedIn: zero fake links
+5. Content depth: concrete examples/steps, scannable paragraphs, 900-1300 words
+6. FAQ section present
+7. Link integrity: every internal link slug must exist in the ALLOWED LIST${hallucinated.length ? `\n\nDETECTED HALLUCINATED LINKS (automatic must_fix): ${hallucinated.map((l) => l.slug).join(', ')}` : ''}`
+}
 
 ALLOWED INTERNAL LINK SLUGS:
 ${article.linkPool.map((p) => p.slug).join('\n') || '(none)'}
@@ -511,9 +554,10 @@ ${reviewShapeLine()}`;
 
   const user = `Topic: ${article.topic}
 Focus keyword: ${article.keyword || '(writer chose)'}
-Meta title: ${article.metaTitle || '(missing)'}
-Meta description: ${article.metaDescription || '(missing)'}
-Internal links used: ${JSON.stringify(article.internalLinks)}
+Meta title (${(article.metaTitle || '').length} chars, limit 60): ${article.metaTitle || '(missing)'}
+Meta description (${(article.metaDescription || '').length} chars, limit 155): ${article.metaDescription || '(missing)'}
+Internal links used (${article.internalLinks.length}): ${JSON.stringify(article.internalLinks)}
+NOTE: the lengths/counts above are pre-measured by code — they are exact. Do NOT flag a length or count violation unless the measured number actually exceeds the limit.
 Review-language content:
 ${clamp(htmlToText(content || ''), 3500)}
 (The other-language version exists but is not under review this round: ${other ? `${htmlToText(other).length} chars` : 'missing'})`;
@@ -546,11 +590,12 @@ You review revision #${article.revision} INDEPENDENTLY (you cannot see the SEO a
 
 CHECKLIST (score 0-100, be strict):
 1. Accuracy & honesty: no invented statistics, fake claims, or facts about Mehrdad that are not given. Flag anything that sounds fabricated
-2. Voice: confident but not boastful, practical, concrete examples over hype. Reads like Mehrdad, not like a generic AI
-3. Language quality: native-level ${article.lang === 'fa' ? 'Persian (no translationese)' : 'English'}
-4. Structure & flow: logical progression, no repeated sentences, no filler phrases ("in today's fast-paced world", "unlock the power of")
-5. Value: the reader finishes knowing something they can actually use
-6. CTA: present and honest${article.target === 'linkedin' ? '; hook must work in the first 2 lines' : ''}
+2. HUMAN-LIKENESS (act as an AI-pattern detector): the piece must read like a sharp human practitioner wrote it in one sitting. Flag every sentence a careful reader would label machine-written: uniform sentence rhythm, symmetric section lengths, generic encyclopedia openings, cliché transitions («در دنیای امروز»، «شایان ذکر است»، "moreover")، stacked hedging, empty superlatives («بی‌نظیر»، «شگفت‌انگیز»), tidy summary closings on every section. If YOU would guess "AI-generated", score below ${APPROVE_THRESHOLD} and put the exact offending sentences in must_fix with a concrete rewrite direction
+3. Voice: confident but not boastful, practical, concrete examples over hype. Reads like Mehrdad, not like a generic AI
+4. Language quality: native-level ${article.lang === 'fa' ? 'Persian (no translationese)' : 'English'}
+5. Structure & flow: logical progression, no repeated sentences, no filler phrases
+6. Value: the reader finishes knowing something they can actually use
+7. CTA: present and honest${article.target === 'linkedin' ? '; hook must work in the first 2 lines' : ''}
 
 ${reviewShapeLine()}`;
 
@@ -574,10 +619,29 @@ ${clamp(htmlToText(content || ''), 3500)}`;
 
 // ───────────────────────── pipeline steps ─────────────────────────
 
+/**
+ * Deterministic meta-length guarantee: LLMs are unreliable at counting
+ * characters (deepseek kept overshooting 60/155 and the SEO auditor kept
+ * blocking on it). Truncate cleanly at a word boundary — no model needed.
+ */
+function truncateOnBoundary(s: string, max: number): string {
+  const t = s.trim();
+  if (t.length <= max) return t;
+  const cut = t.slice(0, max);
+  const lastSpace = cut.lastIndexOf(' ');
+  return `${(lastSpace > max * 0.6 ? cut.slice(0, lastSpace) : cut).trim()}…`;
+}
+
+function enforceMetaLimits(a: WriterArticle): WriterArticle {
+  if (a.metaTitle) a.metaTitle = truncateOnBoundary(a.metaTitle, 60);
+  if (a.metaDescription) a.metaDescription = truncateOnBoundary(a.metaDescription, 155);
+  return a;
+}
+
 function sanitizeWriterOutput(a: WriterArticle): WriterArticle {
   if (a.contentFa) a.contentFa = sanitizePostHtml(a.contentFa);
   if (a.contentEn) a.contentEn = sanitizePostHtml(a.contentEn);
-  return a;
+  return enforceMetaLimits(a);
 }
 
 /** Step 1 — AI writer produces revision 1. Returns the created row id. */
