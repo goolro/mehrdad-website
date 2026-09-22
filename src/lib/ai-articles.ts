@@ -6,6 +6,7 @@ import {
   type ChatTurn,
 } from '@/lib/ai-provider';
 import { retrieveContext, buildContextBlock } from '@/lib/rag';
+import { isUnpublishedPostSlug } from '@/lib/queries';
 import { sanitizePostHtml } from '@/lib/sanitize';
 import { htmlToText } from '@/lib/social-studio';
 
@@ -247,27 +248,53 @@ async function getInternalLinkPool(): Promise<LinkPoolItem[]> {
     take: 40,
     select: { slug: true, titleEn: true, titleFa: true },
   });
-  return posts.map((p) => ({
-    slug: p.slug,
-    title: (p.titleFa || p.titleEn || p.slug).trim(),
-  }));
+  // kill-switched posts 404 on the public site — the AI must never link
+  // readers to them (same rule the blog routes enforce)
+  return posts
+    .filter((p) => !isUnpublishedPostSlug(p.slug))
+    .map((p) => ({
+      slug: p.slug,
+      title: (p.titleFa || p.titleEn || p.slug).trim(),
+    }));
 }
 
 function renderLinkPool(pool: LinkPoolItem[]): string {
   return pool.map((p) => `- /blog/${p.slug} → ${p.title}`).join('\n');
 }
 
+/** All decode forms of a slug (raw → single → double decoded) — the WP import
+ * stores slugs percent-encoded, and writer hrefs sometimes arrive double-encoded. */
+function decodeChain(s: string): string[] {
+  const forms = [s];
+  let cur = s;
+  for (let i = 0; i < 3; i++) {
+    let next: string;
+    try {
+      next = decodeURIComponent(cur);
+    } catch {
+      break;
+    }
+    if (next === cur) break;
+    forms.push(next);
+    cur = next;
+  }
+  return forms;
+}
+
 /** Extract the internal links a writer actually used from its HTML. */
 export function extractInternalLinks(html: string): { slug: string; anchor: string }[] {
   const out: { slug: string; anchor: string }[] = [];
   const seen = new Set<string>();
-  const re = /<a\s[^>]*href="(\/blog\/[a-z0-9-]+)"[^>]*>([\s\S]*?)<\/a>/gi;
+  // slugs may be ASCII or percent-encoded (the WP import stores them encoded) —
+  // capture any non-quote href body and keep the RAW form so results always
+  // match the internal-link pool and resolve as-is on the public site
+  const re = /<a\s[^>]*href="(\/blog\/([^"]+))"[^>]*>([\s\S]*?)<\/a>/gi;
   let m: RegExpExecArray | null;
   while ((m = re.exec(html))) {
-    const slug = m[1].replace('/blog/', '');
+    const slug = m[2];
     if (seen.has(slug)) continue;
     seen.add(slug);
-    out.push({ slug, anchor: m[2].replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 80) });
+    out.push({ slug, anchor: m[3].replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 80) });
   }
   return out;
 }
@@ -292,8 +319,37 @@ function pickRelated(topic: string, keyword: string | undefined, pool: LinkPoolI
 
 function relatedBlock(lang: 'fa' | 'en', picks: LinkPoolItem[]): string {
   const heading = lang === 'fa' ? 'مطالب مرتبط' : 'Related posts';
+  // pool slugs are stored exactly as the site serves them — use them raw
   const items = picks.map((p) => `<li><a href="/blog/${p.slug}">${p.title}</a></li>`).join('');
   return `<h2>${heading}</h2><ul>${items}</ul>`;
+}
+
+/**
+ * Kill-switch/truncation safety for writer-authored hrefs:
+ *  - slug exists in the pool          → keep as-is
+ *  - exactly one pool slug ends with it (LLM dropped a prefix) → repaired to the real slug
+ *  - anything else (hallucinated / kill-switched) → the <a> is unwrapped,
+ *    anchor text survives, the dead href is gone. Deterministic — no 404
+ *    links can ever reach storage or publication.
+ */
+function repairInternalHrefs(html: string, pool: LinkPoolItem[]): string {
+  return html.replace(
+    /<a\s[^>]*href="\/blog\/([^"]+)"[^>]*>([\s\S]*?)<\/a>/gi,
+    (full, rawSlug: string, anchor: string) => {
+      // any decode form matching the pool (raw / single / double encoded) → keep
+      const forms = decodeChain(rawSlug);
+      if (pool.some((p) => forms.includes(p.slug))) return full;
+      // truncated-slug repair: exactly one pool slug whose decode form ends
+      // with the writer's decode form (LLM dropped a prefix like welcome-to-)
+      const candidates = pool.filter((p) => {
+        const pForms = decodeChain(p.slug);
+        return forms.some((d) => d.length > 3 && pForms.some((pd) => pd.endsWith(d)));
+      });
+      if (candidates.length === 1) return `<a href="/blog/${candidates[0].slug}">${anchor}</a>`;
+      // hallucinated / kill-switched → unwrap the <a>, keep the anchor text
+      return anchor;
+    }
+  );
 }
 
 /**
@@ -311,6 +367,9 @@ function ensureInternalLinks(
   let fa = contentFa;
   let en = contentEn;
   if (input.target !== 'website') return { contentFa: fa, contentEn: en, links: [] };
+  // repair writer-authored hrefs first (truncated / kill-switched slugs)
+  fa = fa ? repairInternalHrefs(fa, pool) : fa;
+  en = en ? repairInternalHrefs(en, pool) : en;
   // per-language audit: the writer often concentrates links in one language,
   // so each version must independently reach the 3-link minimum
   const foundFa = extractInternalLinks(fa || '');
@@ -326,9 +385,15 @@ function ensureInternalLinks(
   const merged: { slug: string; anchor: string }[] = [];
   const seen = new Set<string>();
   for (const l of [...extractInternalLinks(fa || ''), ...extractInternalLinks(en || '')]) {
-    if (seen.has(l.slug)) continue;
-    seen.add(l.slug);
-    merged.push(l);
+    // normalize every link to the pool's canonical slug form (the DB may store
+    // slugs percent-encoded while writer hrefs arrive single/double encoded) —
+    // only pool-validated links are tracked, ever
+    const forms = decodeChain(l.slug);
+    const hit = pool.find((p) => forms.includes(p.slug));
+    if (!hit) continue;
+    if (seen.has(hit.slug)) continue;
+    seen.add(hit.slug);
+    merged.push({ slug: hit.slug, anchor: l.anchor });
   }
   return { contentFa: fa, contentEn: en, links: merged };
 }
