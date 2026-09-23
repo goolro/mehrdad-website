@@ -16,6 +16,7 @@
 // ═══════════════════════════════════════════════════════════════════════
 import { register } from 'node:module';
 import { createHash, createHmac } from 'node:crypto';
+import { readFileSync } from 'node:fs';
 register('./security-checks-loader.mjs', import.meta.url);
 
 process.env.NODE_ENV = 'production';
@@ -46,24 +47,30 @@ const req = (url: string, headers: Record<string, string> = {}, method = 'GET', 
 const json = (r: Response) => r.json() as Promise<any>;
 
 // ── 1. Content-Security-Policy ─────────────────────────────────────────
-section('1. Content-Security-Policy (src/proxy.ts)');
-const nonceOf = (c: string) => (c.match(/nonce-([^']+)/) || [])[1] || '';
-const r1 = proxy(req('https://mehrdad.ir/'));
-const csp = r1.headers.get('content-security-policy') || '';
-const nonce = nonceOf(csp);
-check('CSP header present on document routes', csp.length > 0);
-const scriptSrc = csp.split(';').map((s) => s.trim()).find((s) => s.startsWith('script-src')) || '';
-check("script-src = nonce + strict-dynamic, no 'unsafe-inline'",
-  /nonce-/.test(scriptSrc) && /strict-dynamic/.test(scriptSrc) && !/unsafe-inline/.test(scriptSrc), scriptSrc);
-check('frame-ancestors none', /frame-ancestors 'none'/.test(csp));
-check('connect-src restricted to self', /connect-src 'self'/.test(csp));
+// Since 2026-09-07 the CSP ships in TWO cooperating layers (the old
+// per-request nonce in src/proxy.ts is retired — a per-request nonce can
+// never match a cached HTML body and forced dynamic rendering, ~2.6s TTFB):
+//   a) static "floor" header in next.config.ts headers() — blocks foreign
+//      scripts, framing, object embeds and hijack vectors everywhere
+//   b) per-page hash-based <meta CSP> injected by scripts/inject-csp.mjs on
+//      self-hosted builds (strict nonce + strict-dynamic; CSPs intersect)
+section('1. Content-Security-Policy (floor in next.config.ts + build-time <meta>)');
+const cfg = readFileSync(new URL('../next.config.ts', import.meta.url), 'utf8');
+const cspFloor = (cfg.match(/key: "Content-Security-Policy",\s*value: \[([\s\S]*?)\]\.join/) || [])[1] || '';
+check('CSP floor declared in next.config.ts headers()', cspFloor.includes('default-src'), 'floor policy block found');
+const scriptSrc = (cspFloor.match(/"script-src([^"]*)"/) || [])[1] || '';
+const httpsHosts = scriptSrc.match(/https:\/\/[^\s'"]+/g) || [];
+check('script-src: only self + PostHog US cloud, no foreign script hosts',
+  scriptSrc.includes("'self'") && httpsHosts.length > 0 && httpsHosts.every((h) => /^https:\/\/(us\.i|us-assets\.i)\.posthog\.com$/.test(h)), scriptSrc);
+check('frame-ancestors none in production (non-preview)', cspFloor.includes("frame-ancestors 'none'"));
+check('connect-src restricted to self + PostHog US',
+  /connect-src 'self' https:\/\/us\.i\.posthog\.com/.test(cspFloor));
 check('object-src none + base-uri self + form-action self',
-  /object-src 'none'/.test(csp) && /base-uri 'self'/.test(csp) && /form-action 'self'/.test(csp));
-check('upgrade-insecure-requests present', /upgrade-insecure-requests/.test(csp));
-check('nonce is unique per request', nonce.length > 10 && nonce !== nonceOf(proxy(req('https://mehrdad.ir/')).headers.get('content-security-policy') || ''));
-check('nonce is published to the app on the request headers (layout.tsx reads x-nonce)',
-  (r1.headers.get('x-middleware-request-x-nonce') || '') === nonce);
-check("dev-only 'unsafe-eval' is absent in production", !/unsafe-eval/.test(csp));
+  /object-src 'none'/.test(cspFloor) && /base-uri 'self'/.test(cspFloor) && /form-action 'self'/.test(cspFloor));
+check('upgrade-insecure-requests present', /upgrade-insecure-requests/.test(cspFloor));
+check("dev-only 'unsafe-eval' is absent", !/unsafe-eval/.test(cspFloor));
+check('proxy no longer emits a per-request CSP (nonce can never match cached HTML)',
+  (proxy(req('https://mehrdad.ir/')).headers.get('content-security-policy') || '') === '');
 
 // ── 2. Legacy redirects / Host header ──────────────────────────────────
 section('2. SEO 301 redirects / Host handling (src/proxy.ts)');
