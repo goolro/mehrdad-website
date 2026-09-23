@@ -80,6 +80,16 @@ const nextConfig: NextConfig = {
   serverExternalPackages: ["@prisma/adapter-libsql", "@libsql/client", "@libsql/engine"],
   // don't advertise the framework version in production responses
   poweredByHeader: false,
+  async rewrites() {
+    return [
+      // Traffic Tempo (Android app) privacy policy — required by Google Play.
+      // Clean URL without the .html extension; the real file lives in public/.
+      {
+        source: "/traffic-tempo-privacy-policy",
+        destination: "/traffic-tempo-privacy-policy.html",
+      },
+    ];
+  },
   async headers() {
     return [
       {
