@@ -201,6 +201,7 @@ interface AgentOpts {
   maxTokens?: number;
   temperature?: number;
   timeoutMs?: number;
+  agentSlot?: number; // multi-model chain: 0-based provider slot (writer=0, seo=1, editor=2)
 }
 
 /**
