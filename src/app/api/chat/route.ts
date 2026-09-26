@@ -58,18 +58,43 @@ const THANKS_FA = 'خواهش می‌کنم! سؤال دیگری بود، در �
 const THANKS_EN = "You're welcome! Ask me anything else.";
 
 // ── lead-capture intents (owner-requested, 2026-09-26) ──────────────────
-// The chat offers quick-action chips (order a project / send phone / get a
-// quote). When one of these intents shows up in a user message the session
-// is flagged as an UNREAD LEAD — the admin bell + dashboard card notify the
-// owner — and a targeted instruction keeps the AI reply relevant.
+// The chat offers exactly two real next-step chips: «سفارش انجام پروژه» and
+// «درخواست همکاری و سرمایه‌گذاری». Either intent flags the session as an
+// UNREAD LEAD — the admin bell + dashboard card notify the owner. The phone
+// number is NOT a chip (owner feedback, same day): the flow itself asks for
+// it — after the order brief, or after the visitor explains the partnership.
 const ORDER_RE =
   /(سفارش\s*(انجام\s*)?(پروژه|سایت|اپلیکیشن|اپ\b|بازی))|((پروژه|سایت|اپلیکیشن|بازی)[^.\n]{0,20}سفارش)|((order|hire|get)[^.\n]{0,24}(project|website|app|game\b))|((project|website|app|game)[^.\n]{0,24}order)/i;
+// partnership / investment request — chip label or explicit free wording
+// («همکاری» alone is deliberately NOT matched: informational questions must
+// reach the AI, only explicit partnership/investment intents script the flow)
+const PARTNER_RE =
+  /(درخواست\s*همکاری)|(همکاری\s*و\s*سرمایه)|(سرمایه\s*گذاری)|(partnership)|(invest)|(collaborat)/i;
 // phone WITH country code (+989123456789 / 00989…, separators tolerated)
 const PHONE_INTL_RE = /(?:\+|00)(\d{1,3})[\s\-()]*(?:\d[\s\-()]*){7,13}\d/;
 // fallback: local Iranian mobile 09xxxxxxxxx
 const PHONE_LOCAL_RE = /\b09\d{9}\b/;
-// visitor announcing a phone send (chip text or free wording)
+// visitor announcing a phone send (free wording — the chip no longer exists)
 const PHONE_INTENT_RE = /(ارسال\s*شماره|شماره\s*تماس(\s*با\s*کد)?|phone\s*number)/i;
+
+// ── ready-made scripts («متن آماده», owner request) ─────────────────────
+// Action-chip turns are answered with these FIXED texts — zero AI cost,
+// zero wait, and the wording is always exactly what the owner approved.
+// Persian copy carries no ویرگول (owner style rule).
+const ORDER_REPLY_FA =
+  'عالیه! در یک یا دو خط بگو چه می‌خواهی بسازیم و شماره تماست را با کد کشور بفرست (مثل +989123456789) تا مهرداد خودش با تو تماس بگیرد. هزینه و زمان انجام هم بعد از بررسی ایده اعلام می‌شود.';
+const ORDER_REPLY_EN =
+  'Great! Describe what you want built in a line or two and send your phone number with country code (like +989123456789) so Mehrdad can call you directly. Cost and timeline are shared after we review the idea.';
+const PARTNER_ASK_FA =
+  'چه نوع همکاری یا سرمایه‌گذاری مد نظرت است؟ کمی توضیح بده تا بهترین مسیر را با هم پیدا کنیم.';
+const PARTNER_ASK_EN =
+  'What kind of partnership or investment do you have in mind? Tell me a bit more so we can find the best path together.';
+const PARTNER_PHONE_FA =
+  'ممنون از توضیحت! شماره تماست را با کد کشور بفرست (مثل +989123456789) تا مهرداد در اولین فرصت خودش با تو حرف بزند.';
+const PARTNER_PHONE_EN =
+  'Thanks for explaining! Send your phone number with country code (like +989123456789) and Mehrdad will personally get back to you as soon as possible.';
+const PHONE_CONFIRM_FA = 'شماره تماس ثبت شد — مهرداد در اولین فرصت خودش با تو تماس می‌گیرد.';
+const PHONE_CONFIRM_EN = 'Your phone number is saved — Mehrdad will personally contact you as soon as possible.';
 
 export async function POST(req: NextRequest) {
   purgeOldChats();
@@ -143,14 +168,21 @@ export async function POST(req: NextRequest) {
       data: { sessionId, role: 'user', content: message, lang },
     });
 
-    // ── lead capture: order intent / phone number ────────────────────
+    // ── lead capture + ready-made scripts (owner-requested) ────────────
     // Runs BEFORE the AI call so the lead is registered even if every
     // provider then fails. Phone numbers are normalized (separators
-    // stripped) and stored on the session; both flags surface as an
+    // stripped) and stored on the session; the flags surface as an
     // unread conversation in the admin panel.
-    const orderIntent = ORDER_RE.test(message);
+    const msgNorm = message.replace(/\u200c/g, ' '); // ZWNJ-tolerant matching
+    const orderIntent = ORDER_RE.test(msgNorm);
+    const partnerIntent = PARTNER_RE.test(msgNorm);
     const phoneRaw = message.match(PHONE_INTL_RE)?.[0] ?? message.match(PHONE_LOCAL_RE)?.[0] ?? null;
     let phoneCaptured = false;
+    // one session read gates everything: phone presence (never re-ask) and
+    // note presence (never overwrite a note the lead form set)
+    const sess = await db.chatSession
+      .findUnique({ where: { id: sessionId }, select: { contactPhone: true, contactNote: true } })
+      .catch(() => null);
     try {
       if (phoneRaw) {
         const normalized = phoneRaw.replace(/(?!^\+)[\s\-()]/g, '').slice(0, 40);
@@ -162,18 +194,18 @@ export async function POST(req: NextRequest) {
           phoneCaptured = true;
         }
       }
-      if (orderIntent && !phoneCaptured) {
-        // flag as a fresh lead; never overwrite a note the lead form set
-        const row = await db.chatSession.findUnique({
-          where: { id: sessionId },
-          select: { contactNote: true },
-        });
+      const intentNote = orderIntent
+        ? 'سفارش پروژه از چت'
+        : partnerIntent
+          ? 'درخواست همکاری از چت'
+          : null;
+      if (intentNote && !phoneCaptured) {
         await db.chatSession.update({
           where: { id: sessionId },
           data: {
             lead: true,
             read: false,
-            ...(row?.contactNote ? {} : { contactNote: 'سفارش پروژه از چت' }),
+            ...(sess?.contactNote ? {} : { contactNote: intentNote }),
           },
         });
       }
@@ -181,24 +213,60 @@ export async function POST(req: NextRequest) {
       console.error('chat lead capture failed:', e);
     }
 
-    // targeted instruction so the AI reply stays RELEVANT to the action
-    // (owner requirement: the assistant must respond to the chip context)
+    // ── ready-made reply («متن آماده»): the two action flows and the phone
+    // confirmation are answered with the owner's fixed texts — the AI is
+    // never called, so no long improvised answers and no provider wait
+    const lastUserMsg =
+      [...history].reverse().find((h) => h.role === 'user')?.content.replace(/\u200c/g, ' ') ?? '';
+    // the explanation AFTER the partnership question outranks a fresh partner
+    // intent — the explanation itself usually contains همکاری/سرمایه and must
+    // move to the phone step, never loop the same question (owner flow)
+    const partnerFollowUp =
+      !phoneCaptured &&
+      !sess?.contactPhone &&
+      !orderIntent &&
+      PARTNER_RE.test(lastUserMsg);
+    const canned = phoneCaptured
+      ? lang === 'fa'
+        ? PHONE_CONFIRM_FA
+        : PHONE_CONFIRM_EN
+      : partnerFollowUp
+        ? lang === 'fa'
+          ? PARTNER_PHONE_FA
+          : PARTNER_PHONE_EN
+        : partnerIntent
+          ? lang === 'fa'
+            ? PARTNER_ASK_FA
+            : PARTNER_ASK_EN
+          : orderIntent
+            ? lang === 'fa'
+              ? ORDER_REPLY_FA
+              : ORDER_REPLY_EN
+            : null;
+    if (canned) {
+      await db.chatMessage.create({ data: { sessionId, role: 'assistant', content: canned, lang } });
+      return NextResponse.json({ reply: canned, sessionId, sources: [], aiUnavailable: false });
+    }
+
+    // owner rule (2026-09-26 feedback): the phone number is requested by the
+    // FLOW itself — once a visitor has actually conversed, invite them once
+    // to leave a number so Mehrdad can follow up personally (no chip, no nag)
+    const priorUserCount = history.filter((h) => h.role === 'user').length;
+    const invitePhone = !phoneCaptured && !sess?.contactPhone && priorUserCount === 2;
+
+    // targeted instruction for the free-form path only — the chip flows and
+    // the phone confirmation above are fully scripted now
     let intentBlock = '';
-    if (phoneCaptured) {
-      intentBlock =
-        lang === 'fa'
-          ? '\n\nوضعیت مهم: شماره تماس بازدیدکننده همین حالا دریافت و برای مهرداد ثبت شد. در یک جملهٔ کوتاه تأیید کن که شماره ثبت شد و خود مهرداد شخصاً تماس می‌گیرد. دوباره شماره نخواه.'
-          : "\n\nIMPORTANT STATE: The visitor's phone number has just been received and saved for Mehrdad. Confirm in one short sentence that the number is registered and Mehrdad will personally contact them. Do NOT ask for the number again.";
-    } else if (orderIntent) {
-      intentBlock =
-        lang === 'fa'
-          ? '\n\nوضعیت مهم: بازدیدکننده می‌خواهد یک پروژه سفارش دهد (برچسب اقدام «سفارش انجام پروژه» را زده یا همین منظور را نوشته است). او را یک قدم جلو ببر: از او بخواه ایدهٔ پروژه‌اش را در یک خط توضیح دهد و شماره تماسش را با کد کشور بفرستد (مثال: +989123456789) تا خود مهرداد پیگیری کند. خیلی کوتاه بمان.'
-          : "\n\nIMPORTANT STATE: The visitor wants to ORDER a project (tapped the order-a-project action or wrote the same intent). Move them one step forward: ask them to describe their idea in one line AND to send their phone number WITH country code (example: +989123456789) so Mehrdad can follow up personally. Stay brief.";
-    } else if (PHONE_INTENT_RE.test(message)) {
+    if (PHONE_INTENT_RE.test(message)) {
       intentBlock =
         lang === 'fa'
           ? '\n\nوضعیت مهم: بازدیدکننده می‌خواهد شماره تماسش را بفرستد. از او بخواه شماره‌اش را با کد کشور بنویسد (مثال: +989123456789). یک جملهٔ کوتاه.'
           : '\n\nIMPORTANT STATE: The visitor wants to send their phone number. Ask them to type it WITH the country code (example: +989123456789). One short sentence.';
+    } else if (invitePhone) {
+      intentBlock =
+        lang === 'fa'
+          ? '\n\nوضعیت مهم: بازدیدکننده چند پیام با ما حرف زده است و هنوز شماره تماسش را نداریم. اگر طبیعی بود در پایان پاسخت از او بخواه شماره تماسش را با کد کشور بفرستد (مثل +989123456789) تا مهرداد شخصاً پیگیری کند. فقط همین یک بار و خیلی کوتاه.'
+          : "\n\nIMPORTANT STATE: The visitor has exchanged a few messages and we still don't have their phone number. If it feels natural, end your reply by inviting them to send their phone number WITH country code (like +989123456789) so Mehrdad can follow up personally. Only this once — keep it very short.";
     }
 
     // RAG retrieval (3 chunks: fewer prompt tokens → faster first token)
