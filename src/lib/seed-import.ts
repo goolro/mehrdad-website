@@ -31,15 +31,15 @@ interface SeedProject {
   order: number;
 }
 
-// cache-busting repair map (2026-09-26): the traffic-tempo cover was
-// REPLACED in place (official app icon) while keeping the same URL —
-// visitors whose browser/ISP proxy had cached the old bytes kept seeing
-// the old icon forever. The fix ships the new bytes under a NEW filename
-// and this map repairs the seeded row: it fires ONLY while the row still
-// holds the exact previously-seeded value, so a real admin edit (any
-// other cover) is never overwritten. INSERT-IF-MISSING stays the default.
-const PREV_SEED_COVERS: Record<string, string> = {
-  'traffic-tempo': '/media/traffic-tempo-icon.webp',
+// cache-busting repair (2026-09-26): the traffic-tempo cover bytes were
+// REPLACED (official app icon) while keeping the same URL — visitors whose
+// browser/ISP proxy had cached the old bytes kept seeing the old icon.
+// Fix: keep ONE file at the stable path and bust caches via a version query
+// (?v=2) in the cover URL. The repair fires ONLY while the row still holds
+// one of the previously-seeded raw values — a real admin edit (anything
+// else) is never overwritten. INSERT-IF-MISSING stays the default.
+const PREV_SEED_COVERS: Record<string, string[]> = {
+  'traffic-tempo': ['/media/traffic-tempo-icon.webp', '/media/traffic-tempo-icon-2.webp'],
 };
 
 const SEED_PROJECTS: SeedProject[] = [
@@ -51,7 +51,7 @@ const SEED_PROJECTS: SeedProject[] = [
       'A traffic intersection puzzle for Android — 50 handcrafted levels across 3 difficulties, a global daily challenge and a live leaderboard. Every level is verified by an algorithmic solver.',
     summaryFa:
       'بازی پازل تقاطع برای اندروید با ۵۰ مرحله دست‌ساز در سه سختی و چالش روزانه جهانی و لیدربورد زنده. هر مرحله با حل‌کننده الگوریتمی تأیید شده است.',
-    cover: '/media/traffic-tempo-icon-2.webp',
+    cover: '/media/traffic-tempo-icon.webp?v=2',
     section: 'work',
     status: 'live',
     featured: false,
@@ -76,8 +76,8 @@ export async function importContentSeed(): Promise<void> {
       // file and still holds the exact previously-seeded cover URL, while the
       // bytes under that URL have changed — repair it so visitors see the
       // current asset. Any other (admin-authored) value is left untouched.
-      const prevCover = PREV_SEED_COVERS[row.slug];
-      if (prevCover && existing.cover === prevCover && row.cover !== prevCover) {
+      const prevCovers = PREV_SEED_COVERS[row.slug];
+      if (prevCovers && prevCovers.includes(existing.cover) && !prevCovers.includes(row.cover)) {
         await db.project.update({ where: { slug: row.slug }, data: { cover: row.cover } });
         console.log(`[seed] project "${row.slug}" cover repaired → ${row.cover}`);
       }
