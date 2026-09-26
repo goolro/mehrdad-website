@@ -179,8 +179,8 @@ export function HomeView({ initial }: { initial: HomeInitialData }) {
               className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-violet-500/40 bg-violet-600/5 p-5 text-center transition-colors hover:bg-violet-600/10"
             >
               <div className="text-2xl">👋</div>
-              <h3 className="mt-2 font-bold text-violet-700 dark:text-violet-300">{t.projects.ctaTitle}</h3>
-              <p className="mt-1 text-sm text-foreground/80">{t.projects.ctaSub}</p>
+              <h3 className="mt-2 font-bold text-violet-700 dark:text-violet-300">{t.projects.buildLikeTitle}</h3>
+              <p className="mt-1 text-sm text-foreground/80">{t.projects.buildLikeSub}</p>
             </Link>
           </div>
         </div>
