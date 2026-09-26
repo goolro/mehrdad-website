@@ -55,10 +55,18 @@ export interface RelatedPost {
   titleFa: string;
 }
 
+export interface ProfileShot {
+  src: string;
+  altEn: string;
+  altFa: string;
+}
+
 export interface ProjectProfile {
   features: ProfileFeature[];
   tech: ProfileTechItem[];
   phases: ProfilePhase[];
+  /** optional gallery of official store artwork / screenshots (Cafe Bazaar etc.) */
+  media?: ProfileShot[];
   /** optional link to the owner's own published research/pitch post for this idea */
   relatedPost?: RelatedPost;
 }
@@ -218,6 +226,19 @@ export const PROJECT_PROFILES: Record<string, ProjectProfile> = {
       { labelEn: 'Android · Cafe Bazaar', labelFa: 'اندروید · کافه‌بازار' },
       { labelEn: 'Firebase Firestore + FCM', labelFa: 'فایربیس Firestore و FCM' },
       { labelEn: 'Algorithmic level solver', labelFa: 'حل‌کننده الگوریتمی مراحل' },
+    ],
+    /** official Cafe Bazaar store artwork — owner-supplied originals (Sep 2026) */
+    media: [
+      {
+        src: '/media/traffic-tempo-store-1.webp',
+        altEn: 'Cafe Bazaar store art — 50 handcrafted levels plus an endless solver-verified stage machine',
+        altFa: 'پوستر کافه‌بازار — ۵۰ مرحله دست‌ساز و موتور مراحل بی‌نهایت تأییدشده با حل‌کننده',
+      },
+      {
+        src: '/media/traffic-tempo-store-2.webp',
+        altEn: 'Cafe Bazaar store art — fully offline and lightweight with no forced mid-game ads',
+        altFa: 'پوستر کافه‌بازار — کاملاً آفلاین و کم‌حجم و بدون تبلیغ اجباری وسط بازی',
+      },
     ],
     phases: [
       {
