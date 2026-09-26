@@ -9,6 +9,8 @@ import {
   Archive,
   BookOpen,
   Brain,
+  CalendarCheck,
+  CarFront,
   CheckCircle2,
   ChevronRight,
   CirclePause,
@@ -20,6 +22,7 @@ import {
   Hammer,
   HardHat,
   Lightbulb,
+  Puzzle,
   Repeat,
   Rocket,
   Route,
@@ -294,6 +297,9 @@ const FEATURE_ICONS: Record<ProfileFeatureIcon, typeof Brain> = {
   trophy: Trophy,
   repeat: Repeat,
   scan: ScanSearch,
+  puzzle: Puzzle,
+  calendar: CalendarCheck,
+  car: CarFront,
 };
 
 const PHASE_ICONS: Record<string, typeof Route> = {

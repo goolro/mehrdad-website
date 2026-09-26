@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { ProjectsView } from '@/components/site/ProjectsView';
 import { getProjects } from '@/lib/queries';
+import { importContentSeed } from '@/lib/seed-import';
 
 // Fully static: rendered once per BUILD (the build-time CSP meta can
 // only be injected then) and served from the edge until the next deploy.
@@ -20,6 +21,9 @@ export const metadata: Metadata = {
 };
 
 export default async function WorkPage() {
+  // build-time prerender must see git-shipped content rows — the importer
+  // is insert-if-missing, idempotent and fail-safe (see seed-import.ts)
+  await importContentSeed();
   const projects = await getProjects({ section: 'work' });
   return <ProjectsView initialProjects={projects} />;
 }

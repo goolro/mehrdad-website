@@ -9,7 +9,15 @@
  * (quizofkoko.com): adaptive AI learning, real-time 1v1 duels, weekly
  * leagues Bronze→Champion, spaced repetition, continuous diagnosis.
  */
-export type ProfileFeatureIcon = 'brain' | 'swords' | 'trophy' | 'repeat' | 'scan';
+export type ProfileFeatureIcon =
+  | 'brain'
+  | 'swords'
+  | 'trophy'
+  | 'repeat'
+  | 'scan'
+  | 'puzzle'
+  | 'calendar'
+  | 'car';
 
 export interface ProfileFeature {
   icon: ProfileFeatureIcon;
@@ -144,6 +152,94 @@ export const PROJECT_PROFILES: Record<string, ProjectProfile> = {
         stateEn: 'Kicked off — in progress',
         stateFa: 'استارت خورده — در جریان',
         ring: 14,
+        tone: 'active',
+        badgeEn: 'Started',
+        badgeFa: 'شروع شد',
+      },
+    ],
+  },
+
+  /**
+   * Traffic Tempo — live Android puzzle game (Cafe Bazaar, Sep 2026).
+   * Feature copy is grounded in the store listing: 50 handcrafted campaign
+   * levels ×3 difficulties, global daily challenge, live leaderboard,
+   * five boosters + impatient VIP cars, algorithmic solver guarantee,
+   * no forced ads mid-game.
+   */
+  'traffic-tempo': {
+    features: [
+      {
+        icon: 'puzzle',
+        titleEn: '50 handcrafted levels',
+        titleFa: '۵۰ مرحله دست‌ساز',
+        descEn:
+          'A hand-designed campaign across 3 difficulty tiers — no filler levels, no luck-based layouts.',
+        descFa:
+          'کمپین دست‌طراحی‌شده در سه سطح سختی — بدون مرحله پرکننده و بدون چیدمان شانسی.',
+      },
+      {
+        icon: 'calendar',
+        titleEn: 'Global daily challenge',
+        titleFa: 'چالش روزانهٔ جهانی',
+        descEn:
+          'Every day the whole world gets the same intersection — one shared puzzle, one fair shot.',
+        descFa:
+          'هر روز کل جهان یک تقاطع یکسان می‌گیرد — یک پازل مشترک برای همه.',
+      },
+      {
+        icon: 'trophy',
+        titleEn: 'Live leaderboard',
+        titleFa: 'لیدربورد زنده',
+        descEn:
+          'Daily-challenge scores land on the worldwide board the moment you finish.',
+        descFa:
+          'امتیاز چالش روزانه همین لحظه روی جدول جهانی می‌نشیند.',
+      },
+      {
+        icon: 'scan',
+        titleEn: 'Solver-verified puzzles',
+        titleFa: 'پازل‌های تأییدشده با حل‌کننده',
+        descEn:
+          'Every level is checked by an algorithmic solver — provably solvable, never a dead end.',
+        descFa:
+          'هر مرحله با حل‌کننده الگوریتمی بررسی می‌شود — قطعاً قابل حل است.',
+      },
+      {
+        icon: 'car',
+        titleEn: 'Boosters & impatient VIPs',
+        titleFa: 'بوسترها و خودروهای ویژه',
+        descEn:
+          'Five boosters (undo, +3 moves, pulse, smart hint, shuffle) plus VIP cars with limited patience.',
+        descFa:
+          'پنج بوستر (واگرد و ۳+ حرکت و پالس و راهنمای هوشمند و بُر) به‌همراه خودروهای VIP کم‌حوصله.',
+      },
+    ],
+    tech: [
+      { labelEn: 'Android · Cafe Bazaar', labelFa: 'اندروید · کافه‌بازار' },
+      { labelEn: 'Firebase Firestore + FCM', labelFa: 'فایربیس Firestore و FCM' },
+      { labelEn: 'Algorithmic level solver', labelFa: 'حل‌کننده الگوریتمی مراحل' },
+    ],
+    phases: [
+      {
+        key: 'bazaar',
+        icon: 'store',
+        titleEn: 'Cafe Bazaar release',
+        titleFa: 'انتشار در کافه‌بازار',
+        stateEn: 'Live — published',
+        stateFa: 'لایو — منتشر شد',
+        ring: 100,
+        tone: 'done',
+        badgeEn: '100%',
+        badgeFa: '۱۰۰٪',
+      },
+      {
+        key: 'google-play',
+        icon: 'hammer',
+        titleEn: 'Google Play release',
+        titleFa: 'انتشار در گوگل‌پلی',
+        stateEn: 'In preparation — privacy policy page is already live',
+        stateFa: 'در آماده‌سازی — صفحه سیاست حریم خصوصی از قبل لایو است',
+        ring: 15,
         tone: 'active',
         badgeEn: 'Started',
         badgeFa: 'شروع شد',
