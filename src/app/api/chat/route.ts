@@ -57,6 +57,20 @@ const THANKS_RE =
 const THANKS_FA = 'خواهش می‌کنم! سؤال دیگری بود، در خدمتم.';
 const THANKS_EN = "You're welcome! Ask me anything else.";
 
+// ── lead-capture intents (owner-requested, 2026-09-26) ──────────────────
+// The chat offers quick-action chips (order a project / send phone / get a
+// quote). When one of these intents shows up in a user message the session
+// is flagged as an UNREAD LEAD — the admin bell + dashboard card notify the
+// owner — and a targeted instruction keeps the AI reply relevant.
+const ORDER_RE =
+  /(سفارش\s*(انجام\s*)?(پروژه|سایت|اپلیکیشن|اپ\b|بازی))|((پروژه|سایت|اپلیکیشن|بازی)[^.\n]{0,20}سفارش)|((order|hire|get)[^.\n]{0,24}(project|website|app|game\b))|((project|website|app|game)[^.\n]{0,24}order)/i;
+// phone WITH country code (+989123456789 / 00989…, separators tolerated)
+const PHONE_INTL_RE = /(?:\+|00)(\d{1,3})[\s\-()]*(?:\d[\s\-()]*){7,13}\d/;
+// fallback: local Iranian mobile 09xxxxxxxxx
+const PHONE_LOCAL_RE = /\b09\d{9}\b/;
+// visitor announcing a phone send (chip text or free wording)
+const PHONE_INTENT_RE = /(ارسال\s*شماره|شماره\s*تماس(\s*با\s*کد)?|phone\s*number)/i;
+
 export async function POST(req: NextRequest) {
   purgeOldChats();
 
@@ -129,6 +143,64 @@ export async function POST(req: NextRequest) {
       data: { sessionId, role: 'user', content: message, lang },
     });
 
+    // ── lead capture: order intent / phone number ────────────────────
+    // Runs BEFORE the AI call so the lead is registered even if every
+    // provider then fails. Phone numbers are normalized (separators
+    // stripped) and stored on the session; both flags surface as an
+    // unread conversation in the admin panel.
+    const orderIntent = ORDER_RE.test(message);
+    const phoneRaw = message.match(PHONE_INTL_RE)?.[0] ?? message.match(PHONE_LOCAL_RE)?.[0] ?? null;
+    let phoneCaptured = false;
+    try {
+      if (phoneRaw) {
+        const normalized = phoneRaw.replace(/(?!^\+)[\s\-()]/g, '').slice(0, 40);
+        if (normalized.replace(/\D/g, '').length >= 9) {
+          await db.chatSession.update({
+            where: { id: sessionId },
+            data: { contactPhone: normalized, lead: true, read: false },
+          });
+          phoneCaptured = true;
+        }
+      }
+      if (orderIntent && !phoneCaptured) {
+        // flag as a fresh lead; never overwrite a note the lead form set
+        const row = await db.chatSession.findUnique({
+          where: { id: sessionId },
+          select: { contactNote: true },
+        });
+        await db.chatSession.update({
+          where: { id: sessionId },
+          data: {
+            lead: true,
+            read: false,
+            ...(row?.contactNote ? {} : { contactNote: 'سفارش پروژه از چت' }),
+          },
+        });
+      }
+    } catch (e) {
+      console.error('chat lead capture failed:', e);
+    }
+
+    // targeted instruction so the AI reply stays RELEVANT to the action
+    // (owner requirement: the assistant must respond to the chip context)
+    let intentBlock = '';
+    if (phoneCaptured) {
+      intentBlock =
+        lang === 'fa'
+          ? '\n\nوضعیت مهم: شماره تماس بازدیدکننده همین حالا دریافت و برای مهرداد ثبت شد. در یک جملهٔ کوتاه تأیید کن که شماره ثبت شد و خود مهرداد شخصاً تماس می‌گیرد. دوباره شماره نخواه.'
+          : "\n\nIMPORTANT STATE: The visitor's phone number has just been received and saved for Mehrdad. Confirm in one short sentence that the number is registered and Mehrdad will personally contact them. Do NOT ask for the number again.";
+    } else if (orderIntent) {
+      intentBlock =
+        lang === 'fa'
+          ? '\n\nوضعیت مهم: بازدیدکننده می‌خواهد یک پروژه سفارش دهد (برچسب اقدام «سفارش انجام پروژه» را زده یا همین منظور را نوشته است). او را یک قدم جلو ببر: از او بخواه ایدهٔ پروژه‌اش را در یک خط توضیح دهد و شماره تماسش را با کد کشور بفرستد (مثال: +989123456789) تا خود مهرداد پیگیری کند. خیلی کوتاه بمان.'
+          : "\n\nIMPORTANT STATE: The visitor wants to ORDER a project (tapped the order-a-project action or wrote the same intent). Move them one step forward: ask them to describe their idea in one line AND to send their phone number WITH country code (example: +989123456789) so Mehrdad can follow up personally. Stay brief.";
+    } else if (PHONE_INTENT_RE.test(message)) {
+      intentBlock =
+        lang === 'fa'
+          ? '\n\nوضعیت مهم: بازدیدکننده می‌خواهد شماره تماسش را بفرستد. از او بخواه شماره‌اش را با کد کشور بنویسد (مثال: +989123456789). یک جملهٔ کوتاه.'
+          : '\n\nIMPORTANT STATE: The visitor wants to send their phone number. Ask them to type it WITH the country code (example: +989123456789). One short sentence.';
+    }
+
     // RAG retrieval (3 chunks: fewer prompt tokens → faster first token)
     const chunks = await retrieveContext(message, 3);
     const context = buildContextBlock(chunks);
@@ -166,7 +238,7 @@ ${context || '(no specific knowledge found — rely only on the general info abo
 ${context || '(دانش خاصی یافت نشد — فقط از اطلاعات کلی بالا استفاده کن)'}${pageCtxFa}`;
 
     const turns: ChatTurn[] = [
-      { role: 'system', content: lang === 'fa' ? sysFa : sysEn },
+      { role: 'system', content: (lang === 'fa' ? sysFa : sysEn) + intentBlock },
       ...history.map((h) => ({ role: h.role as 'user' | 'assistant', content: h.content })),
       { role: 'user', content: message },
     ];

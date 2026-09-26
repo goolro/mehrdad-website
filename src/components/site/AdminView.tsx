@@ -17,7 +17,7 @@ import {
   LayoutDashboard, FileText, Sparkles, Mail, Lock, Trash2, Languages,
   RefreshCw, ImageIcon, Eye, Loader2, LogOut, Globe, MessageSquare, Check, X, Palette,
   Bot, MessagesSquare, Phone, KeyRound, PlayCircle, Pencil, BadgeCheck, UserCheck,
-  FolderKanban, Share2, Workflow,
+  FolderKanban, Share2, Workflow, Bell,
 } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { PROJECT_STATUSES, normalizeStatus } from '@/lib/project-status';
@@ -62,6 +62,24 @@ export function AdminView() {
   const [totp, setTotp] = useState('');
   const [needTotp, setNeedTotp] = useState(false);
   const [loginErr, setLoginErr] = useState(false);
+  // controlled tabs — the lead-notification bell and the dashboard banner
+  // jump straight to the conversations tab
+  const [tab, setTab] = useState('dashboard');
+  // unread chat leads (project orders / phone numbers) — polled so the owner
+  // sees new leads without leaving the panel
+  const [newLeads, setNewLeads] = useState(0);
+
+  useEffect(() => {
+    if (!authed) return;
+    const loadLeads = () =>
+      fetch('/api/admin/stats')
+        .then((r) => r.json())
+        .then((d) => setNewLeads(Number(d?.newLeads ?? 0)))
+        .catch(() => {});
+    loadLeads();
+    const iv = setInterval(loadLeads, 60_000);
+    return () => clearInterval(iv);
+  }, [authed]);
 
   // session restore: the HttpOnly session cookie survives page reloads, so
   // the admin doesn't have to re-type the password on every visit; the
@@ -154,12 +172,28 @@ export function AdminView() {
     <div className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-extrabold">{t.admin.title}</h1>
-        <Button variant="outline" size="sm" onClick={logout}>
-          <LogOut className="me-1 h-4 w-4" /> {t.admin.logout}
-        </Button>
+        <div className="flex items-center gap-2">
+          {/* lead notification bell (owner rule: orders/phone numbers must be
+              impossible to miss) — badge shows unread chat leads */}
+          <button
+            onClick={() => setTab('chats')}
+            className="relative rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            aria-label={newLeads > 0 ? `${t.admin.openChats} (${newLeads})` : t.admin.openChats}
+          >
+            <Bell className="h-4 w-4" />
+            {newLeads > 0 && (
+              <span className="absolute -top-0.5 -end-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[9px] font-bold text-white">
+                {newLeads > 9 ? '9+' : newLeads}
+              </span>
+            )}
+          </button>
+          <Button variant="outline" size="sm" onClick={logout}>
+            <LogOut className="me-1 h-4 w-4" /> {t.admin.logout}
+          </Button>
+        </div>
       </div>
 
-      <Tabs defaultValue="dashboard" className="mt-6">
+      <Tabs value={tab} onValueChange={setTab} className="mt-6">
         <TabsList className="flex w-full justify-start overflow-x-auto sm:w-auto">
           <TabsTrigger value="dashboard" className="gap-1.5"><LayoutDashboard className="h-4 w-4" />{t.admin.tabs.dashboard}</TabsTrigger>
           <TabsTrigger value="posts" className="gap-1.5"><FileText className="h-4 w-4" />{t.admin.tabs.posts}</TabsTrigger>
@@ -174,7 +208,7 @@ export function AdminView() {
           <TabsTrigger value="pipeline" className="gap-1.5"><Workflow className="h-4 w-4" />{t.admin.tabs.pipeline}</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="dashboard"><Dashboard t={t} lang={lang} /></TabsContent>
+        <TabsContent value="dashboard"><Dashboard t={t} lang={lang} onOpenChats={() => setTab('chats')} /></TabsContent>
         <TabsContent value="posts"><PostsTab t={t} /></TabsContent>
         <TabsContent value="projects"><ProjectsTab lang={lang} /></TabsContent>
         <TabsContent value="writer"><WriterTab t={t} lang={lang} /></TabsContent>
@@ -194,8 +228,8 @@ type T = typeof ui.en;
 
 // ─────────── Dashboard ───────────
 
-function Dashboard({ t, lang }: { t: T; lang: 'en' | 'fa' }) {
-  const [stats, setStats] = useState<{ posts: number; translated: number; kbChunks: number; messages: number; unread: number } | null>(null);
+function Dashboard({ t, onOpenChats }: { t: T; lang: 'en' | 'fa'; onOpenChats: () => void }) {
+  const [stats, setStats] = useState<{ posts: number; translated: number; kbChunks: number; messages: number; unread: number; newLeads: number } | null>(null);
   const [rebuilding, setRebuilding] = useState(false);
   const { toast } = useToast();
 
@@ -219,12 +253,27 @@ function Dashboard({ t, lang }: { t: T; lang: 'en' | 'fa' }) {
 
   return (
     <div>
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+      {/* lead notification banner (owner rule, 2026-09-26): project orders and
+          phone numbers captured in the AI chat must be impossible to miss */}
+      {stats && stats.newLeads > 0 && (
+        <div className="mb-4 flex flex-col gap-2 rounded-2xl border border-amber-500/40 bg-amber-500/10 p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-2 text-sm font-semibold text-amber-700 dark:text-amber-400">
+            <Bell className="h-4 w-4 shrink-0" aria-hidden />
+            {t.admin.newLeadsBanner.replace('{n}', String(stats.newLeads))}
+          </div>
+          <Button size="sm" onClick={onOpenChats} className="shrink-0 bg-amber-500 text-white hover:bg-amber-600">
+            {t.admin.openChats}
+          </Button>
+        </div>
+      )}
+
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
         {[
           { label: t.admin.totalPosts, value: stats?.posts ?? '—', icon: FileText },
           { label: t.admin.translated, value: stats?.translated ?? '—', icon: Globe },
           { label: t.admin.kbChunks, value: stats?.kbChunks ?? '—', icon: Sparkles },
           { label: t.admin.messages, value: stats ? `${stats.messages} (${stats.unread} ${t.admin.unread})` : '—', icon: Mail },
+          { label: t.admin.newLeads, value: stats ? stats.newLeads : '—', icon: MessagesSquare },
         ].map((c) => (
           <div key={c.label} className="rounded-2xl border border-border bg-card p-5">
             <c.icon className="h-5 w-5 text-violet-600 dark:text-violet-400" />
