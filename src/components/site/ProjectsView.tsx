@@ -39,7 +39,7 @@ import {
   type RoadmapTone,
 } from '@/lib/project-profiles';
 import { ShareBar } from './ShareBar';
-import { ContactCta } from './ContactCta';
+import { BuildLikeCta } from './BuildLikeCta';
 import {
   isActiveStatus,
   normalizeStatus,
@@ -277,6 +277,10 @@ export function ProjectsView({ initialProjects }: { initialProjects: ProjectItem
           ))}
         </div>
       )}
+
+      {/* action invite — closes the list under BOTH tabs (owner rule:
+          every project/idea placement ends with a next step) */}
+      <BuildLikeCta className="mt-10" />
 
     </div>
   );
@@ -563,7 +567,7 @@ export function ProjectDetail({ project, shareUrl }: { project: ProjectDetailRow
         <ShareBar url={shareUrl} title={title} label={t.common.shareProject} />
       </div>
 
-      <ContactCta label={t.projects.interestedCta} />
+      <BuildLikeCta className="mt-10" />
     </article>
   );
 }

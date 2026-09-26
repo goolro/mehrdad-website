@@ -217,8 +217,6 @@ export const ui = {
       ideasNote: 'Early ideas and archived projects — kept for the record. None of these are in active development.',
       // homepage Work section
       seeAllWork: 'See all work',
-      ctaTitle: 'Have a question or want to work together?',
-      ctaSub: 'One form — it goes straight to me.',
       fundingAsk: 'Funding ask',
       // live external-link CTA (e.g. playable game) — rendered when the slug
       // has an entry in src/lib/project-links.ts
@@ -231,8 +229,11 @@ export const ui = {
       // early-idea detail pages: context so an exploratory page never reads like a finished product
       ideaPageNote: 'This page documents an early idea — exploratory notes kept for the record. It is not in active development.',
       relatedResearch: 'Read the original research',
-      // project detail CTA → /contact (per-language, was hardcoded EN)
-      interestedCta: "I'm interested in this project",
+      // action CTA wherever a project/work/idea is placed (owner rule,
+      // 2026-09-26): every placement invites the next step → /contact
+      buildLikeTitle: 'Want us to build one like this for you?',
+      buildLikeSub: "Tell me about your idea and I'll take it from first sketch to a live product.",
+      buildLikeBtn: "Let's talk",
     },
     lab: {
       title: 'The Lab',
@@ -623,8 +624,6 @@ export const ui = {
       ideasNote: 'ایده‌های اولیه و پروژه‌های بایگانی‌شده — صرفاً برای ثبت. هیچ‌کدام در حال توسعهٔ فعال نیستند.',
       // بخش کارها در صفحهٔ اصلی
       seeAllWork: 'مشاهدهٔ همهٔ کارها',
-      ctaTitle: 'سوالی دارید یا می‌خواهید با هم کار کنیم؟',
-      ctaSub: 'یک فرم — مستقیم به خودم می‌رسد.',
       fundingAsk: 'درخواست سرمایه',
       // دکمهٔ لینک بیرونی زنده (مثل بازیِ قابل انجام) — فقط وقتی اسلاگ در
       // src/lib/project-links.ts ثبت باشد رندر می‌شود
@@ -637,7 +636,10 @@ export const ui = {
       // early-idea detail pages: context so an exploratory page never reads like a finished product
       ideaPageNote: 'این صفحه سند یک ایدهٔ اولیه است — یادداشت‌های اکتشافی که برای ثبت نگه داشته شده‌اند و در حال توسعهٔ فعال نیستند.',
       relatedResearch: 'مطالعهٔ اصلی را بخوانید',
-      interestedCta: 'من به این طرح علاقه‌مندم',
+      // دعوت به اقدام — هر جا پروژه یا ایده‌ای روی سایت قرار می‌گیرد باید گام بعدی را پیشنهاد بدهد (قانون مالک، ۲۰۲۶-۰۹-۲۶) → /contact
+      buildLikeTitle: 'می‌خواهی مثل این را برایت بسازیم؟',
+      buildLikeSub: 'ایده‌ات را بگو — از اولین طرح تا محصول زنده مسیر را با هم می‌رویم.',
+      buildLikeBtn: 'بیا حرف بزنیم',
     },
     lab: {
       title: 'آزمایشگاه',
