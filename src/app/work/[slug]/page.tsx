@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { ProjectDetail } from '@/components/site/ProjectsView';
 import { getProjectBySlug, getProjects } from '@/lib/queries';
+import { importContentSeed } from '@/lib/seed-import';
 import { JsonLd } from '@/components/site/JsonLd';
 
 // Fully static: rendered once per BUILD (the build-time CSP meta can
@@ -12,8 +13,12 @@ import { JsonLd } from '@/components/site/JsonLd';
 // on demand (dynamicParams) and are cached until the next deploy.
 export const dynamic = 'force-static';
 
-// prerender all project pages at build; [] → render on demand at runtime
+// prerender all project pages at build; [] → render on demand at runtime.
+// The seed import runs here too (idempotent, no-op after first call) so the
+// cache-busting cover repair is ALWAYS applied before the pages read the DB
+// — regardless of which route prerenders first during the build.
 export async function generateStaticParams() {
+  await importContentSeed();
   try {
     const projects = await getProjects();
     return projects.map((p) => ({ slug: p.slug }));
