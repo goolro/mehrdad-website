@@ -31,6 +31,17 @@ interface SeedProject {
   order: number;
 }
 
+// cache-busting repair map (2026-09-26): the traffic-tempo cover was
+// REPLACED in place (official app icon) while keeping the same URL —
+// visitors whose browser/ISP proxy had cached the old bytes kept seeing
+// the old icon forever. The fix ships the new bytes under a NEW filename
+// and this map repairs the seeded row: it fires ONLY while the row still
+// holds the exact previously-seeded value, so a real admin edit (any
+// other cover) is never overwritten. INSERT-IF-MISSING stays the default.
+const PREV_SEED_COVERS: Record<string, string> = {
+  'traffic-tempo': '/media/traffic-tempo-icon.webp',
+};
+
 const SEED_PROJECTS: SeedProject[] = [
   {
     slug: 'traffic-tempo',
@@ -40,7 +51,7 @@ const SEED_PROJECTS: SeedProject[] = [
       'A traffic intersection puzzle for Android — 50 handcrafted levels across 3 difficulties, a global daily challenge and a live leaderboard. Every level is verified by an algorithmic solver.',
     summaryFa:
       'بازی پازل تقاطع برای اندروید با ۵۰ مرحله دست‌ساز در سه سختی و چالش روزانه جهانی و لیدربورد زنده. هر مرحله با حل‌کننده الگوریتمی تأیید شده است.',
-    cover: '/media/traffic-tempo-icon.webp',
+    cover: '/media/traffic-tempo-icon-2.webp',
     section: 'work',
     status: 'live',
     featured: false,
@@ -56,9 +67,20 @@ export async function importContentSeed(): Promise<void> {
   try {
     for (const row of SEED_PROJECTS) {
       const existing = await db.project.findUnique({ where: { slug: row.slug } });
-      if (existing) continue;
-      await db.project.create({ data: { ...row } });
-      console.log(`[seed] project "${row.slug}" created`);
+      if (!existing) {
+        await db.project.create({ data: { ...row } });
+        console.log(`[seed] project "${row.slug}" created`);
+        continue;
+      }
+      // cache-busting repair: the row was seeded by an OLDER version of this
+      // file and still holds the exact previously-seeded cover URL, while the
+      // bytes under that URL have changed — repair it so visitors see the
+      // current asset. Any other (admin-authored) value is left untouched.
+      const prevCover = PREV_SEED_COVERS[row.slug];
+      if (prevCover && existing.cover === prevCover && row.cover !== prevCover) {
+        await db.project.update({ where: { slug: row.slug }, data: { cover: row.cover } });
+        console.log(`[seed] project "${row.slug}" cover repaired → ${row.cover}`);
+      }
     }
   } catch (err) {
     console.warn('[seed] import skipped:', err instanceof Error ? err.message : err);
