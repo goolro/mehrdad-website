@@ -226,6 +226,7 @@ export const ui = {
       featuresTitle: 'Game highlights',
       techTitle: 'Tech behind it',
       roadmapTitle: 'Project roadmap',
+      galleryTitle: 'From the Cafe Bazaar store',
       // early-idea detail pages: context so an exploratory page never reads like a finished product
       ideaPageNote: 'This page documents an early idea — exploratory notes kept for the record. It is not in active development.',
       relatedResearch: 'Read the original research',
@@ -643,6 +644,7 @@ export const ui = {
       featuresTitle: 'قابلیت‌های بازی',
       techTitle: 'تکنولوژی‌های بازی',
       roadmapTitle: 'نقشهٔ راه پروژه',
+      galleryTitle: 'گالری کافه‌بازار',
       // early-idea detail pages: context so an exploratory page never reads like a finished product
       ideaPageNote: 'این صفحه سند یک ایدهٔ اولیه است — یادداشت‌های اکتشافی که برای ثبت نگه داشته شده‌اند و در حال توسعهٔ فعال نیستند.',
       relatedResearch: 'مطالعهٔ اصلی را بخوانید',

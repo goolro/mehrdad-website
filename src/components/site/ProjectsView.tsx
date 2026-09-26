@@ -21,6 +21,7 @@ import {
   Gamepad2,
   Hammer,
   HardHat,
+  Images,
   Lightbulb,
   Puzzle,
   Repeat,
@@ -519,6 +520,27 @@ export function ProjectDetail({ project, shareUrl }: { project: ProjectDetailRow
                 </li>
               );
             })}
+          </ul>
+        </section>
+      )}
+
+      {profile && profile.media && profile.media.length > 0 && (
+        <section className="mt-8" aria-labelledby="project-gallery-title">
+          <h2 id="project-gallery-title" className="flex items-center gap-2 text-lg font-bold">
+            <Images className="h-5 w-5 text-amber-500" aria-hidden />
+            {t.projects.galleryTitle}
+          </h2>
+          <ul className="mt-4 grid grid-cols-2 gap-3 sm:gap-4">
+            {profile.media.map((shot) => (
+              <li key={shot.src}>
+                <img
+                  src={shot.src}
+                  alt={pick(lang, shot.altEn, shot.altFa)}
+                  loading="lazy"
+                  className="w-full rounded-2xl border border-border bg-card shadow-sm"
+                />
+              </li>
+            ))}
           </ul>
         </section>
       )}
