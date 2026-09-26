@@ -77,7 +77,13 @@ export async function importContentSeed(): Promise<void> {
       // bytes under that URL have changed — repair it so visitors see the
       // current asset. Any other (admin-authored) value is left untouched.
       const prevCovers = PREV_SEED_COVERS[row.slug];
-      if (prevCovers && prevCovers.includes(existing.cover) && !prevCovers.includes(row.cover)) {
+      if (
+        prevCovers &&
+        existing.cover !== null &&
+        row.cover !== null &&
+        prevCovers.includes(existing.cover) &&
+        !prevCovers.includes(row.cover)
+      ) {
         await db.project.update({ where: { slug: row.slug }, data: { cover: row.cover } });
         console.log(`[seed] project "${row.slug}" cover repaired → ${row.cover}`);
       }
