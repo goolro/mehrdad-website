@@ -5,7 +5,7 @@ import { useApp } from './store';
 import { ui } from './i18n';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ArrowDown, X, Send, Sparkles, Trash2, UserCheck, Hammer, Phone, Calculator } from 'lucide-react';
+import { ArrowDown, X, Send, Sparkles, Trash2, UserCheck, Hammer, Handshake } from 'lucide-react';
 
 interface Msg {
   role: 'user' | 'assistant';
@@ -202,13 +202,14 @@ export function ChatWidget() {
   const showSuggestions = chatOpen && view === 'fde' && !loading && !messages.some((m) => m.role === 'user');
   // the personal-reply entry point appears once a real exchange has happened
   const showLeadCta = lead === 'idle' && hasSession && messages.some((m) => m.role === 'user');
-  // quick-action chips (owner rule): always reachable — a visitor may order a
-  // project or drop a phone number at ANY point of the conversation
+  // quick-action chips (owner rule, reworked 2026-09-26): only the two real
+  // next-steps. Both are answered with the owner's ready-made scripts — and
+  // the phone number is requested by the FLOW itself once a real exchange
+  // has happened — never as a chip and never as a long AI improvisation
   const showActions = chatOpen && lead !== 'form' && lead !== 'sent';
   const ACTION_CHIPS = [
     { icon: Hammer, label: t.chat.actionOrder },
-    { icon: Phone, label: t.chat.actionPhone },
-    { icon: Calculator, label: t.chat.actionQuote },
+    { icon: Handshake, label: t.chat.actionPartner },
   ];
 
   if (!chatOpen) {

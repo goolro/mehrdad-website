@@ -319,12 +319,11 @@ export const ui = {
       requestSent: '✓ Sent! Mehrdad will reach out to you.',
       requestError: 'Could not send — please try again or use the contact form.',
       // quick-action chips (owner rule, 2026-09-26): tapping a chip sends its
-      // text as a chat message — the AI answers relevantly AND the backend
-      // flags the session as a lead so the owner is notified in the admin panel
+      // text as a chat message — the backend answers with the owner's
+      // ready-made script and flags the session as a lead for the admin panel
       actionsLabel: 'Quick actions',
       actionOrder: 'I want to order a project',
-      actionPhone: 'Send my phone number with country code',
-      actionQuote: 'Get cost and timeline',
+      actionPartner: 'Partnership & investment request',
     },
     footer: {
       role: 'Product builder',
@@ -736,11 +735,10 @@ export const ui = {
       requestSent: '✓ ثبت شد! مهرداد با شما تماس می‌گیرد.',
       requestError: 'ارسال نشد — دوباره تلاش کنید یا از فرم تماس استفاده کنید.',
       // برچسب‌های اقدام سریع (قانون مالک): کلیک روی هر برچسب متنش در چت ارسال
-      // می‌شود — هوش مصنوعی مرتبط پاسخ می‌دهد و جلسه به‌عنوان سرنخ برای مدیر ثبت می‌شود
+      // می‌شود — بک‌اند با متن آمادهٔ تأییدشده پاسخ می‌دهد و جلسه به‌عنوان سرنخ ثبت می‌شود
       actionsLabel: 'اقدام‌ها',
       actionOrder: 'سفارش انجام پروژه',
-      actionPhone: 'ارسال شماره تماس با کد کشور',
-      actionQuote: 'دریافت هزینه و زمان انجام',
+      actionPartner: 'درخواست همکاری و سرمایه‌گذاری',
     },
     footer: {
       role: 'سازنده محصول',
