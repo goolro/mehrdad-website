@@ -233,7 +233,7 @@ export const ui = {
       // 2026-09-26): every placement invites the next step → /contact
       buildLikeTitle: 'Want us to build one like this for you?',
       buildLikeSub: "Tell me about your idea and I'll take it from first sketch to a live product.",
-      buildLikeBtn: "Let's talk",
+      buildLikeBtn: "Let's get it done",
     },
     lab: {
       title: 'The Lab',
@@ -317,6 +317,13 @@ export const ui = {
       sending: 'Sending...',
       requestSent: '✓ Sent! Mehrdad will reach out to you.',
       requestError: 'Could not send — please try again or use the contact form.',
+      // quick-action chips (owner rule, 2026-09-26): tapping a chip sends its
+      // text as a chat message — the AI answers relevantly AND the backend
+      // flags the session as a lead so the owner is notified in the admin panel
+      actionsLabel: 'Quick actions',
+      actionOrder: 'I want to order a project',
+      actionPhone: 'Send my phone number with country code',
+      actionQuote: 'Get cost and timeline',
     },
     footer: {
       role: 'Product builder',
@@ -343,6 +350,9 @@ export const ui = {
       kbChunks: 'Knowledge chunks',
       messages: 'Contact messages',
       unread: 'Unread',
+      newLeads: 'New chat leads',
+      newLeadsBanner: '{n} new chat lead(s) — a project order or a phone number is waiting for you.',
+      openChats: 'Open conversations',
       pendingComments: 'Pending comments',
       approve: 'Approve',
       unapprove: 'Unapprove',
@@ -639,7 +649,7 @@ export const ui = {
       // دعوت به اقدام — هر جا پروژه یا ایده‌ای روی سایت قرار می‌گیرد باید گام بعدی را پیشنهاد بدهد (قانون مالک، ۲۰۲۶-۰۹-۲۶) → /contact
       buildLikeTitle: 'می‌خواهی مثل این را برایت بسازیم؟',
       buildLikeSub: 'ایده‌ات را بگو — از اولین طرح تا محصول زنده مسیر را با هم می‌رویم.',
-      buildLikeBtn: 'بیا حرف بزنیم',
+      buildLikeBtn: 'بیا تا انجامش بدیم',
     },
     lab: {
       title: 'آزمایشگاه',
@@ -723,6 +733,12 @@ export const ui = {
       sending: 'در حال ارسال...',
       requestSent: '✓ ثبت شد! مهرداد با شما تماس می‌گیرد.',
       requestError: 'ارسال نشد — دوباره تلاش کنید یا از فرم تماس استفاده کنید.',
+      // برچسب‌های اقدام سریع (قانون مالک): کلیک روی هر برچسب متنش در چت ارسال
+      // می‌شود — هوش مصنوعی مرتبط پاسخ می‌دهد و جلسه به‌عنوان سرنخ برای مدیر ثبت می‌شود
+      actionsLabel: 'اقدام‌ها',
+      actionOrder: 'سفارش انجام پروژه',
+      actionPhone: 'ارسال شماره تماس با کد کشور',
+      actionQuote: 'دریافت هزینه و زمان انجام',
     },
     footer: {
       role: 'سازنده محصول',
@@ -749,6 +765,9 @@ export const ui = {
       kbChunks: 'قطعات دانش',
       messages: 'پیام‌های تماس',
       unread: 'خوانده‌نشده',
+      newLeads: 'سرنخ‌های جدید چت',
+      newLeadsBanner: '{n} سرنخ جدید در چت داری — سفارش پروژه یا شماره تماس در انتظار توست.',
+      openChats: 'مشاهدهٔ گفتگوها',
       pendingComments: 'دیدگاه‌های در انتظار تایید',
       approve: 'تایید',
       unapprove: 'لغو تایید',

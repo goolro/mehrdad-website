@@ -5,7 +5,7 @@ import { useApp } from './store';
 import { ui } from './i18n';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ArrowDown, X, Send, Sparkles, Trash2, UserCheck } from 'lucide-react';
+import { ArrowDown, X, Send, Sparkles, Trash2, UserCheck, Hammer, Phone, Calculator } from 'lucide-react';
 
 interface Msg {
   role: 'user' | 'assistant';
@@ -202,6 +202,14 @@ export function ChatWidget() {
   const showSuggestions = chatOpen && view === 'fde' && !loading && !messages.some((m) => m.role === 'user');
   // the personal-reply entry point appears once a real exchange has happened
   const showLeadCta = lead === 'idle' && hasSession && messages.some((m) => m.role === 'user');
+  // quick-action chips (owner rule): always reachable — a visitor may order a
+  // project or drop a phone number at ANY point of the conversation
+  const showActions = chatOpen && lead !== 'form' && lead !== 'sent';
+  const ACTION_CHIPS = [
+    { icon: Hammer, label: t.chat.actionOrder },
+    { icon: Phone, label: t.chat.actionPhone },
+    { icon: Calculator, label: t.chat.actionQuote },
+  ];
 
   if (!chatOpen) {
     return (
@@ -401,6 +409,25 @@ export function ChatWidget() {
                 className="rounded-full border border-violet-500/40 bg-violet-600/5 px-2.5 py-1 text-xs text-violet-700 transition-colors hover:bg-violet-600/15 dark:text-violet-300"
               >
                 {q}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {showActions && (
+        <div className="border-t border-border px-3 pt-2 pb-1" aria-label={t.chat.actionsLabel}>
+          <div className="flex gap-1.5 overflow-x-auto pb-1">
+            {ACTION_CHIPS.map(({ icon: ChipIcon, label }) => (
+              <button
+                key={label}
+                onClick={() => send(label)}
+                disabled={loading}
+                dir="auto"
+                className="flex shrink-0 items-center gap-1 rounded-full border border-emerald-600/40 bg-emerald-600/10 px-2.5 py-1 text-xs font-medium text-emerald-700 transition-colors hover:bg-emerald-600/20 disabled:opacity-50 dark:text-emerald-400"
+              >
+                <ChipIcon className="h-3 w-3" aria-hidden />
+                {label}
               </button>
             ))}
           </div>
