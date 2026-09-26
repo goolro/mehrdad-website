@@ -81,20 +81,39 @@ const PHONE_INTENT_RE = /(ارسال\s*شماره|شماره\s*تماس(\s*با\
 // Action-chip turns are answered with these FIXED texts — zero AI cost,
 // zero wait, and the wording is always exactly what the owner approved.
 // Persian copy carries no ویرگول (owner style rule).
-const ORDER_REPLY_FA =
-  'عالیه! در یک یا دو خط بگو چه می‌خواهی بسازیم و شماره تماست را با کد کشور بفرست (مثل +989123456789) تا مهرداد خودش با تو تماس بگیرد. هزینه و زمان انجام هم بعد از بررسی ایده اعلام می‌شود.';
-const ORDER_REPLY_EN =
-  'Great! Describe what you want built in a line or two and send your phone number with country code (like +989123456789) so Mehrdad can call you directly. Cost and timeline are shared after we review the idea.';
+// Owner feedback (latest round): the FIRST message of the order flow is ONE
+// short line asking for the idea — sent instantly by the widget itself.
+// The phone request is the SECOND message (after the visitor explained) and
+// calls are always «با هماهنگی» (arranged at a mutually agreed time) — never
+// "Mehrdad himself will call you" which reads like his time is free.
+const ORDER_INTRO_FA = 'عالیه! در یک یا دو خط بگو چه می‌خواهی بسازیم.';
+const ORDER_INTRO_EN = 'Great! Tell me in one or two lines what you want to build.';
+const ORDER_ASK_PHONE_FA =
+  'ایده‌ات ثبت شد! حالا شماره تماست را با کد کشور بفرست (مثل +989123456789) تا با هماهنگی با تو تماس بگیریم. هزینه و زمان انجام هم بعد از بررسی ایده اعلام می‌شود.';
+const ORDER_ASK_PHONE_EN =
+  'Idea noted! Now send your phone number with country code (like +989123456789) and we will arrange a call at a time that suits you. Cost and timeline are shared after we review the idea.';
+const ORDER_REMIND_FA =
+  'هنوز شماره تماست را با کد کشور دریافت نکردم (مثل +989123456789) — همین‌جا بفرست تا با هماهنگی با تو تماس بگیریم.';
+const ORDER_REMIND_EN =
+  "I still don't have your phone number with country code (like +989123456789) — send it here and we will arrange a call.";
 const PARTNER_ASK_FA =
   'چه نوع همکاری یا سرمایه‌گذاری مد نظرت است؟ کمی توضیح بده تا بهترین مسیر را با هم پیدا کنیم.';
 const PARTNER_ASK_EN =
   'What kind of partnership or investment do you have in mind? Tell me a bit more so we can find the best path together.';
-const PARTNER_PHONE_FA =
-  'ممنون از توضیحت! شماره تماست را با کد کشور بفرست (مثل +989123456789) تا مهرداد در اولین فرصت خودش با تو حرف بزند.';
-const PARTNER_PHONE_EN =
-  'Thanks for explaining! Send your phone number with country code (like +989123456789) and Mehrdad will personally get back to you as soon as possible.';
-const PHONE_CONFIRM_FA = 'شماره تماس ثبت شد — مهرداد در اولین فرصت خودش با تو تماس می‌گیرد.';
-const PHONE_CONFIRM_EN = 'Your phone number is saved — Mehrdad will personally contact you as soon as possible.';
+const PARTNER_ASK_PHONE_FA =
+  'ممنون از توضیحت! شماره تماست را با کد کشور بفرست (مثل +989123456789) تا با هماهنگی با تو تماس بگیریم و جزئیات همکاری را بررسی کنیم.';
+const PARTNER_ASK_PHONE_EN =
+  'Thanks for explaining! Send your phone number with country code (like +989123456789) and we will arrange a call to discuss the details together.';
+const PARTNER_REMIND_FA =
+  'شماره تماست را با کد کشور بفرست (مثل +989123456789) تا با هماهنگی با تو تماس بگیریم.';
+const PARTNER_REMIND_EN =
+  'Send your phone number with country code (like +989123456789) and we will arrange a call.';
+const PHONE_CONFIRM_FA = 'شماره تماس ثبت شد! به‌زودی برای هماهنگی با تو تماس می‌گیریم.';
+const PHONE_CONFIRM_EN = 'Your phone number is saved! We will contact you shortly to arrange the call.';
+// the scripted phone-ask markers — lets the server detect (from the last
+// assistant reply) that the ask-phone step already ran, so a visitor who
+// keeps explaining gets the SHORT reminder instead of a robotic repeat
+const PHONE_ASK_MARK_RE = /شماره تماس|phone number with country code/i;
 
 export async function POST(req: NextRequest) {
   purgeOldChats();
@@ -121,6 +140,11 @@ export async function POST(req: NextRequest) {
     const message = String(body.message ?? '').trim().slice(0, 2000);
     const lang: 'en' | 'fa' = PERSIAN_RE.test(message) ? 'fa' : body.lang === 'fa' ? 'fa' : 'en';
     let sessionId = String(body.sessionId ?? '').trim();
+    // conversational flow (owner rule): the widget sends which scripted flow
+    // the visitor is in ('order' | 'partner') — the chip tap itself never
+    // reaches the API (the intro line is instant client-side) so this body
+    // flag is how the server knows the NEXT message is the idea/brief
+    const flowIn = body.flow === 'order' || body.flow === 'partner' ? body.flow : null;
 
     if (!message) {
       return NextResponse.json({ error: 'Message required' }, { status: 400 });
@@ -183,6 +207,20 @@ export async function POST(req: NextRequest) {
     const sess = await db.chatSession
       .findUnique({ where: { id: sessionId }, select: { contactPhone: true, contactNote: true } })
       .catch(() => null);
+    // flow memory for the FREE-TYPED path: if the visitor typed an order or
+    // partnership intent earlier (without using the chips) the intent note on
+    // the session keeps the scripted flow alive — otherwise their idea reply
+    // would fall through to the AI and the flow would stall
+    const sessFlow =
+      sess?.contactNote === 'سفارش پروژه از چت'
+        ? 'order'
+        : sess?.contactNote === 'درخواست همکاری از چت'
+          ? 'partner'
+          : null;
+    const activeFlow = flowIn ?? sessFlow;
+    // a captured phone ends the scripted flow — afterwards the visitor talks
+    // to the AI again (or leaves); never re-ask for the number
+    const flowActive = !phoneCaptured && !sess?.contactPhone ? activeFlow : null;
     try {
       if (phoneRaw) {
         const normalized = phoneRaw.replace(/(?!^\+)[\s\-()]/g, '').slice(0, 40);
@@ -194,12 +232,13 @@ export async function POST(req: NextRequest) {
           phoneCaptured = true;
         }
       }
-      const intentNote = orderIntent
-        ? 'سفارش پروژه از چت'
-        : partnerIntent
-          ? 'درخواست همکاری از چت'
-          : null;
-      if (intentNote && !phoneCaptured) {
+      const intentNote =
+        activeFlow === 'order' || (!activeFlow && orderIntent)
+          ? 'سفارش پروژه از چت'
+          : activeFlow === 'partner' || (!activeFlow && partnerIntent)
+            ? 'درخواست همکاری از چت'
+            : null;
+      if (intentNote) {
         await db.chatSession.update({
           where: { id: sessionId },
           data: {
@@ -216,36 +255,61 @@ export async function POST(req: NextRequest) {
     // ── ready-made reply («متن آماده»): the two action flows and the phone
     // confirmation are answered with the owner's fixed texts — the AI is
     // never called, so no long improvised answers and no provider wait
+    // (the chip tap intro is even faster — the widget answers that one itself)
     const lastUserMsg =
       [...history].reverse().find((h) => h.role === 'user')?.content.replace(/\u200c/g, ' ') ?? '';
+    const prevAssistant =
+      [...history].reverse().find((h) => h.role === 'assistant')?.content ?? '';
     // the explanation AFTER the partnership question outranks a fresh partner
     // intent — the explanation itself usually contains همکاری/سرمایه and must
     // move to the phone step, never loop the same question (owner flow)
     const partnerFollowUp =
-      !phoneCaptured &&
-      !sess?.contactPhone &&
-      !orderIntent &&
-      PARTNER_RE.test(lastUserMsg);
+      !phoneCaptured && !sess?.contactPhone && !orderIntent && PARTNER_RE.test(lastUserMsg);
+    // the phone-ask step already ran once? → SHORT reminder, not a repeat of
+    // the full script (a visitor who keeps typing must not get the same wall)
+    const alreadyAskedPhone = PHONE_ASK_MARK_RE.test(prevAssistant);
     const canned = phoneCaptured
       ? lang === 'fa'
         ? PHONE_CONFIRM_FA
         : PHONE_CONFIRM_EN
-      : partnerFollowUp
+      : flowActive === 'order'
         ? lang === 'fa'
-          ? PARTNER_PHONE_FA
-          : PARTNER_PHONE_EN
-        : partnerIntent
+          ? alreadyAskedPhone
+            ? ORDER_REMIND_FA
+            : ORDER_ASK_PHONE_FA
+          : alreadyAskedPhone
+            ? ORDER_REMIND_EN
+            : ORDER_ASK_PHONE_EN
+        : flowActive === 'partner'
           ? lang === 'fa'
-            ? PARTNER_ASK_FA
-            : PARTNER_ASK_EN
-          : orderIntent
+            ? alreadyAskedPhone
+              ? PARTNER_REMIND_FA
+              : PARTNER_ASK_PHONE_FA
+            : alreadyAskedPhone
+              ? PARTNER_REMIND_EN
+              : PARTNER_ASK_PHONE_EN
+          : partnerFollowUp
             ? lang === 'fa'
-              ? ORDER_REPLY_FA
-              : ORDER_REPLY_EN
-            : null;
+              ? PARTNER_ASK_PHONE_FA
+              : PARTNER_ASK_PHONE_EN
+            : partnerIntent
+              ? lang === 'fa'
+                ? PARTNER_ASK_FA
+                : PARTNER_ASK_EN
+              : orderIntent
+                ? lang === 'fa'
+                  ? ORDER_INTRO_FA
+                  : ORDER_INTRO_EN
+                : null;
     if (canned) {
       await db.chatMessage.create({ data: { sessionId, role: 'assistant', content: canned, lang } });
-      return NextResponse.json({ reply: canned, sessionId, sources: [], aiUnavailable: false });
+      return NextResponse.json({
+        reply: canned,
+        sessionId,
+        sources: [],
+        aiUnavailable: false,
+        phoneCaptured,
+      });
     }
 
     // owner rule (2026-09-26 feedback): the phone number is requested by the
@@ -265,8 +329,8 @@ export async function POST(req: NextRequest) {
     } else if (invitePhone) {
       intentBlock =
         lang === 'fa'
-          ? '\n\nوضعیت مهم: بازدیدکننده چند پیام با ما حرف زده است و هنوز شماره تماسش را نداریم. اگر طبیعی بود در پایان پاسخت از او بخواه شماره تماسش را با کد کشور بفرستد (مثل +989123456789) تا مهرداد شخصاً پیگیری کند. فقط همین یک بار و خیلی کوتاه.'
-          : "\n\nIMPORTANT STATE: The visitor has exchanged a few messages and we still don't have their phone number. If it feels natural, end your reply by inviting them to send their phone number WITH country code (like +989123456789) so Mehrdad can follow up personally. Only this once — keep it very short.";
+          ? '\n\nوضعیت مهم: بازدیدکننده چند پیام با ما حرف زده است و هنوز شماره تماسش را نداریم. اگر طبیعی بود در پایان پاسخت از او بخواه شماره تماسش را با کد کشور بفرستد (مثل +989123456789) تا برای هماهنگی تماس پیگیری شود. فقط همین یک بار و خیلی کوتاه.'
+          : "\n\nIMPORTANT STATE: The visitor has exchanged a few messages and we still don't have their phone number. If it feels natural, end your reply by inviting them to send their phone number WITH country code (like +989123456789) so a call can be arranged. Only this once — keep it very short.";
     }
 
     // RAG retrieval (3 chunks: fewer prompt tokens → faster first token)
@@ -287,23 +351,43 @@ PAGE CONTEXT (important): The user is RIGHT NOW on the "Forward Deployed Enginee
 بافت صفحه (مهم): کاربر همین حالا در صفحه خدمت «مهندسی در خط مقدم حل مسئله» (Forward Deployed Engineering) است — خدمت اصلی مهرداد. خلاصه: حل مسئله‌های واقعی کسب‌وکار و محصول از ابتدا تا انتها — روند: Discover → Define → Design → Build → Test → Deploy → Learn → Iterate — با ترکیب تفکر محصول، مهندسی و هوش مصنوعی. سه نقش در یک نفر: Product Builder، Forward Deployed Engineer، AI-Native Engineering. مناسب برای: ایده بدون نقطه شروع؛ محصول موجود پرمشکل؛ کسب‌وکارهایی که AI می‌خواهند؛ MVP سریع؛ سیستم‌های پیچیده؛ تیم‌های فنی با مسئله سخت. خروجی‌ها: Problem→Strategy، Strategy→Prototype، Prototype→MVP، Existing Product→Audit & Fix، Business→AI Solution، Complex Problem→Custom Solution (فقط گزارش نیست — می‌تواند تحلیل، طراحی، کد، Prototype، MVP، Integration، راهکار AI، تست و Deployment باشد). AI نیروی تقویت‌کننده است و تصمیم با تفکر مهندسی انسانی است. وقتی کاربر می‌گوید «این سرویس»، منظورش همین صفحه است — درباره همین خدمت پاسخ بده و او را دعوت کن مسئله‌اش را همین‌جا یا از طریق فرم تماس توضیح دهد.`
         : '';
 
-    const sysEn = `You are "Mehrdad AI", the official AI assistant on Mehrdad's personal website (mehrdad.ir). Mehrdad is an independent product builder: he designs businesses and products with care, and builds them fast with AI. His work: BUILD (AI-powered products, software, tools, experiments — e.g. BIZPAL, KLIKA, smart city & rail corridor research, smart waste startup), HELP (businesses using AI for measurable value: sales, marketing, product design, invention commercialization), SHARE (83+ articles of real research, decisions and lessons).
+    // owner-requested (2026-09-26): a always-on base knowledge block — the
+    // RAG chunks alone left the bot feeling like it "knew nothing" when the
+    // retrieval missed. These facts are permanent and verified by the owner.
+    const baseEn = `BASE FACTS (always true — even when the knowledge below is empty):
+- Services: Forward Deployed Engineering (FDE) — solving real business/product problems end to end with product thinking + engineering + AI; fast MVP building; AI adoption for businesses.
+- Games: Traffic Tempo — a traffic-puzzle Android game on Cafe Bazaar: 50 handcrafted levels, endless solver-verified stage machine, fully offline, lightweight (~20MB), no forced mid-game ads. Plus a quiz game project.
+- Startups and experiments: BIZPAL, KLIKA, smart city and rail corridor research, smart waste startup; 83+ articles of real research and lessons on the site.
+- Ordering rule: to order a project the visitor first describes the idea in 1–2 lines; THEN the flow asks for a phone number WITH country code; calls are always ARRANGED at a mutually agreed time — never promise an immediate call. Cost and timeline are announced only AFTER the idea is reviewed — NEVER invent prices or deadlines. If asked about cost, say exactly that.
+- Partnership/investment rule: ask what kind of cooperation or investment they have in mind; after they explain, collect their phone number with country code.`;
+    const baseFa = `حقایق پایه (همیشه درست است حتی وقتی دانش زیر خالی است):
+- خدمات: مهندسی در خط مقدم حل مسئله (FDE) — حل مسئله‌های واقعی کسب‌وکار و محصول از ابتدا تا انتها با تفکر محصول و مهندسی و AI؛ ساخت MVP سریع؛ به‌کارگیری AI در کسب‌وکار.
+- بازی‌ها: ترافیک تمپو — بازی پازل ترافیک اندروید در کافه‌بازار: ۵۰ مرحله دست‌ساز و موتور مراحل بی‌نهایت تأییدشده با حل‌کننده و کاملاً آفلاین و کم‌حجم (~۲۰ مگابایت) و بدون تبلیغ اجباری وسط بازی. به‌علاوه یک پروژه بازی کوییز.
+- استارتاپ‌ها و آزمایش‌ها: BIZPAL و کلیکا و پژوهش شهر هوشمند و کریدور ریلی و استارتاپ مدیریت زباله هوشمند؛ بیش از ۸۳ مقاله از پژوهش‌ها و درس‌های واقعی در سایت.
+- قاعدهٔ سفارش: برای سفارش پروژه بازدیدکننده اول ایده را در ۱–۲ خط توضیح می‌دهد؛ بعد از آن شماره تماس با کد کشور خواسته می‌شود؛ تماس همیشه «با هماهنگی» و در زمانی که هر دو راحت باشیم انجام می‌شود — هرگز تماس فوری وعده نده. هزینه و زمان فقط بعد از بررسی ایده اعلام می‌شود — هرگز قیمت یا زمان حدسی نگو. اگر پرسیدند دقیقاً همین را بگو.
+- قاعدهٔ همکاری و سرمایه‌گذاری: بپرس چه نوع همکاری یا سرمایه‌گذاری در نظر دارد؛ بعد از توضیح او شماره تماس با کد کشور را بخواه.`;
 
-Use ONLY the following site knowledge to answer. If the answer is not in the knowledge, say you don't have that info and suggest using the contact form at mehrdad.ir/contact.
+    const sysEn = `You are "Mehrdad AI", the official AI assistant on Mehrdad's personal website (mehrdad.ir). Mehrdad is an independent product builder: he designs businesses and products with care, and builds them fast with AI. His work: BUILD (AI-powered products, software, tools, experiments), HELP (businesses using AI for measurable value: sales, marketing, product design, invention commercialization), SHARE (83+ articles of real research, decisions and lessons).
+
+${baseEn}
+
+Use the site knowledge below together with the base facts to answer. If the answer is nowhere, say you don't have that info and suggest the contact form at mehrdad.ir/contact.
 
 Be helpful and EXTREMELY concise: 1–2 short sentences, at most ~25 words. Short answers also load faster for the visitor. Plain text only — NEVER use bullet lists, headings or markdown. If more detail is truly needed, invite them to ask a follow-up. Answer in English.
 
 SITE KNOWLEDGE:
-${context || '(no specific knowledge found — rely only on the general info above)'}${pageCtxEn}`;
+${context || '(no specific knowledge found — rely only on the base facts above)'}${pageCtxEn}`;
 
-    const sysFa = `تو «هوش مصنوعی مهرداد» هستی، دستیار رسمی وب‌سایت شخصی مهرداد (mehrdad.ir). مهرداد سازنده مستقل محصول است: کسب‌وکارها و محصولات را با دقت طراحی می‌کند و با هوش مصنوعی سریع می‌سازد. کار او: ساخت (محصولات و ابزارهای AI مثل BIZPAL، کلیکا، پژوهش شهر هوشمند و کریدور ریلی، استارتاپ مدیریت زباله هوشمند)، همراهی (به‌کارگیری AI با نتیجه قابل اندازه‌گیری: فروش، بازاریابی، طراحی محصول، تجاری‌سازی اختراع)، و به‌اشتراک‌گذاری (بیش از ۸۳ مقاله از پژوهش‌ها و درس‌های واقعی).
+    const sysFa = `تو «هوش مصنوعی مهرداد» هستی، دستیار رسمی وب‌سایت شخصی مهرداد (mehrdad.ir). مهرداد سازنده مستقل محصول است: کسب‌وکارها و محصولات را با دقت طراحی می‌کند و با هوش مصنوعی سریع می‌سازد. کار او: ساخت (محصولات و ابزارهای AI)، همراهی (به‌کارگیری AI با نتیجه قابل اندازه‌گیری: فروش، بازاریابی، طراحی محصول، تجاری‌سازی اختراع)، و به‌اشتراک‌گذاری (بیش از ۸۳ مقاله از پژوهش‌ها و درس‌های واقعی).
 
-فقط از دانش سایت زیر برای پاسخ استفاده کن. اگر پاسخ در دانش موجود نبود، بگو اطلاعاتی نداری و فرم تماس در mehrdad.ir/contact را پیشنهاد بده.
+${baseFa}
 
-خیلی کوتاه و مفید پاسخ بده: فقط ۱–۲ جملهٔ کوتاه (حداکثر ~۲۵ کلمه). پاسخ کوتاه‌تر برای مخاطب سریع‌تر هم بارگذاری می‌شود. متن ساده — هرگز از لیست گلوله‌ای، تیتر یا مارک‌داون استفاده نکن. اگر جزئیات بیشتر واقعاً لازم بود، دعوت کن سؤال بعدی بپرسد. به فارسی روان پاسخ بده.
+از دانش سایت زیر همراه با حقایق پایه برای پاسخ استفاده کن. اگر پاسخ هیچ‌جا نبود بگو اطلاعاتی نداری و فرم تماس در mehrdad.ir/contact را پیشنهاد بده.
+
+خیلی کوتاه و مفید پاسخ بده: فقط ۱–۲ جملهٔ کوتاه (حداکثر ~۲۵ کلمه). پاسخ کوتاه‌تر برای مخاطب سریع‌تر هم بارگذاری می‌شود. متن ساده — هرگز از لیست گلوله‌ای، تیتر یا مارک‌داون استفاده نکن. اگر جزئیات بیشتر واقعاً لازم بود دعوت کن سؤال بعدی بپرسد. به فارسی روان و بدون ویرگول پاسخ بده.
 
 دانش سایت:
-${context || '(دانش خاصی یافت نشد — فقط از اطلاعات کلی بالا استفاده کن)'}${pageCtxFa}`;
+${context || '(دانش خاصی یافت نشد — فقط از حقایق پایه بالا استفاده کن)'}${pageCtxFa}`;
 
     const turns: ChatTurn[] = [
       { role: 'system', content: (lang === 'fa' ? sysFa : sysEn) + intentBlock },

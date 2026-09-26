@@ -318,12 +318,16 @@ export const ui = {
       sending: 'Sending...',
       requestSent: '✓ Sent! Mehrdad will reach out to you.',
       requestError: 'Could not send — please try again or use the contact form.',
-      // quick-action chips (owner rule, 2026-09-26): tapping a chip sends its
-      // text as a chat message — the backend answers with the owner's
-      // ready-made script and flags the session as a lead for the admin panel
+      // quick-action chips (owner rule, 2026-09-26): tapping a chip shows the
+      // FIRST scripted line instantly (client-side — zero API wait) and the
+      // server continues the scripted flow (idea brief → phone ask → arranged
+      // call) flagging the session as a lead for the admin panel
       actionsLabel: 'Quick actions',
       actionOrder: 'I want to order a project',
       actionPartner: 'Partnership & investment request',
+      // the instant first line of each scripted flow (owner-approved wording)
+      orderIntro: 'Great! Tell me in one or two lines what you want to build.',
+      collabIntro: 'What kind of partnership or investment do you have in mind? Tell me a bit.',
     },
     footer: {
       role: 'Product builder',
@@ -734,11 +738,15 @@ export const ui = {
       sending: 'در حال ارسال...',
       requestSent: '✓ ثبت شد! مهرداد با شما تماس می‌گیرد.',
       requestError: 'ارسال نشد — دوباره تلاش کنید یا از فرم تماس استفاده کنید.',
-      // برچسب‌های اقدام سریع (قانون مالک): کلیک روی هر برچسب متنش در چت ارسال
-      // می‌شود — بک‌اند با متن آمادهٔ تأییدشده پاسخ می‌دهد و جلسه به‌عنوان سرنخ ثبت می‌شود
+      // برچسب‌های اقدام سریع (قانون مالک): کلیک روی هر برچسب متن اول آماده را
+      // همان لحظه نشان می‌دهد (بدون انتظار سرور) و بعد جریان از سمت سرور ادامه
+      // می‌یابد: توضیح ایده → درخواست شماره → تماس با هماهنگی و ثبت سرنخ
       actionsLabel: 'اقدام‌ها',
       actionOrder: 'سفارش انجام پروژه',
       actionPartner: 'درخواست همکاری و سرمایه‌گذاری',
+      // متن اول فوری هر جریان (واژه‌های تأییدشده توسط مالک)
+      orderIntro: 'عالیه! در یک یا دو خط بگو چه می‌خواهی بسازیم',
+      collabIntro: 'چه نوع همکاری یا سرمایه‌گذاری مد نظرت است؟ کمی توضیح بده',
     },
     footer: {
       role: 'سازنده محصول',

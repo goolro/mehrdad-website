@@ -40,6 +40,10 @@ export function ChatWidget() {
   const [leadError, setLeadError] = useState(false);
   // mirror of sessionIdRef for render-time decisions (refs must not be read during render)
   const [hasSession, setHasSession] = useState(false);
+  // scripted conversational flow (owner rule, latest feedback): chip tap →
+  // INSTANT canned intro (no API wait) → visitor explains → the scripted
+  // phone-ask arrives from the server → phone → lead captured → flow ends
+  const [flow, setFlow] = useState<'order' | 'partner' | null>(null);
 
   // reset conversation when the UI language switches — deliberate one-shot
   // reset (new session per language), not an accidental cascading render
@@ -49,6 +53,7 @@ export function ChatWidget() {
     sessionIdRef.current = '';
     setHasSession(false);
     setLead('idle');
+    setFlow(null);
   }, [lang]);
 
   const scrollToBottom = useCallback((smooth = false) => {
@@ -86,6 +91,21 @@ export function ChatWidget() {
     if (pinned) setUnseen(false);
   }
 
+  // tap an action chip → the FIRST scripted line appears instantly (owner:
+  // «متن ابتدای را باید سریع بفرسته») — no API round-trip. The next user
+  // message carries the flow tag so the server continues the scripted
+  // conversation: idea brief → phone ask → arranged call
+  function startFlow(kind: 'order' | 'partner') {
+    if (loading) return;
+    setFlow(kind);
+    setMessages((m) => [
+      ...m,
+      { role: 'user', content: kind === 'order' ? t.chat.actionOrder : t.chat.actionPartner },
+      { role: 'assistant', content: kind === 'order' ? t.chat.orderIntro : t.chat.collabIntro },
+    ]);
+    scrollToBottom(true);
+  }
+
   async function send(text?: string) {
     const msg = (text ?? input).trim();
     if (!msg || loading) return;
@@ -104,6 +124,7 @@ export function ChatWidget() {
           sessionId: sessionIdRef.current,
           stream: true,
           context: view === 'fde' ? 'fde' : undefined,
+          flow,
         }),
       });
       if (res.status === 429) {
@@ -113,11 +134,18 @@ export function ChatWidget() {
       const ct = res.headers.get('content-type') || '';
       // legacy JSON (or error) response — render the whole reply at once
       if (!res.ok || !res.body || !ct.includes('text/event-stream')) {
-        const data = (await res.json().catch(() => null)) as { reply?: string; sessionId?: string } | null;
+        const data = (await res.json().catch(() => null)) as {
+          reply?: string;
+          sessionId?: string;
+          phoneCaptured?: boolean;
+        } | null;
         if (data?.sessionId) {
           sessionIdRef.current = data.sessionId;
           setHasSession(true);
         }
+        // the phone step completes the scripted flow — the visitor is now a
+        // captured lead and further messages go back to normal AI chat
+        if (data?.phoneCaptured) setFlow(null);
         setMessages((m) => [...m, { role: 'assistant', content: data?.reply || t.common.error }]);
         return;
       }
@@ -143,6 +171,7 @@ export function ChatWidget() {
           sessionIdRef.current = ev.sessionId;
           setHasSession(true);
         }
+        if (ev.phoneCaptured === true) setFlow(null);
         if (typeof ev.delta === 'string' && ev.delta) {
           if (open) {
             open = false; // first delta replaces the typing indicator
@@ -208,8 +237,8 @@ export function ChatWidget() {
   // has happened — never as a chip and never as a long AI improvisation
   const showActions = chatOpen && lead !== 'form' && lead !== 'sent';
   const ACTION_CHIPS = [
-    { icon: Hammer, label: t.chat.actionOrder },
-    { icon: Handshake, label: t.chat.actionPartner },
+    { icon: Hammer, label: t.chat.actionOrder, run: () => startFlow('order') },
+    { icon: Handshake, label: t.chat.actionPartner, run: () => startFlow('partner') },
   ];
 
   if (!chatOpen) {
@@ -259,6 +288,7 @@ export function ChatWidget() {
               setMessages([{ role: 'assistant', content: t.chat.welcome }]);
               setHasSession(false);
               setLead('idle');
+              setFlow(null);
             }}
             className="rounded-lg p-1.5 hover:bg-white/20"
             aria-label={t.chat.clear}
@@ -420,10 +450,10 @@ export function ChatWidget() {
         <div className="border-t border-border px-3 pt-2 pb-1" aria-label={t.chat.actionsLabel}>
           {/* owner rule: chips stack vertically (زیر هم) — no horizontal scroll */}
           <div className="flex flex-col gap-1">
-            {ACTION_CHIPS.map(({ icon: ChipIcon, label }) => (
+            {ACTION_CHIPS.map(({ icon: ChipIcon, label, run }) => (
               <button
                 key={label}
-                onClick={() => send(label)}
+                onClick={run}
                 disabled={loading}
                 dir="auto"
                 className="flex w-full items-center gap-1.5 rounded-lg border border-emerald-600/40 bg-emerald-600/10 px-2.5 py-1.5 text-start text-xs font-medium text-emerald-700 transition-colors hover:bg-emerald-600/20 disabled:opacity-50 dark:text-emerald-400"
