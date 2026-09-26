@@ -10,6 +10,7 @@
  */
 export const PROJECT_LINKS: Record<string, string> = {
   'quiz-of-koko': 'https://quizofkoko.com',
+  'traffic-tempo': 'https://cafebazaar.ir/app/com.traffictempo.game',
 };
 
 /** validated external link for a slug, or null when the project has none */
