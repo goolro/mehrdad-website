@@ -417,17 +417,18 @@ export function ChatWidget() {
 
       {showActions && (
         <div className="border-t border-border px-3 pt-2 pb-1" aria-label={t.chat.actionsLabel}>
-          <div className="flex gap-1.5 overflow-x-auto pb-1">
+          {/* owner rule: chips stack vertically (زیر هم) — no horizontal scroll */}
+          <div className="flex flex-col gap-1">
             {ACTION_CHIPS.map(({ icon: ChipIcon, label }) => (
               <button
                 key={label}
                 onClick={() => send(label)}
                 disabled={loading}
                 dir="auto"
-                className="flex shrink-0 items-center gap-1 rounded-full border border-emerald-600/40 bg-emerald-600/10 px-2.5 py-1 text-xs font-medium text-emerald-700 transition-colors hover:bg-emerald-600/20 disabled:opacity-50 dark:text-emerald-400"
+                className="flex w-full items-center gap-1.5 rounded-lg border border-emerald-600/40 bg-emerald-600/10 px-2.5 py-1.5 text-start text-xs font-medium text-emerald-700 transition-colors hover:bg-emerald-600/20 disabled:opacity-50 dark:text-emerald-400"
               >
-                <ChipIcon className="h-3 w-3" aria-hidden />
-                {label}
+                <ChipIcon className="h-3 w-3 shrink-0" aria-hidden />
+                <span className="min-w-0 leading-snug">{label}</span>
               </button>
             ))}
           </div>
