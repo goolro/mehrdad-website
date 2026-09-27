@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { DailyView, type DailyArticleCard } from '@/components/site/DailyView';
 import { db } from '@/lib/db';
 import { dailyVisibleWhere } from '@/lib/daily';
+import { importContentSeed } from '@/lib/seed-import';
 
 // ISR (staggered publishing contract): the index re-renders every 15 minutes,
 // so an article whose scheduled slot (publishAt) crosses its moment appears
@@ -29,6 +30,10 @@ function tagsOf(v: string | null): string[] {
 }
 
 export default async function DailyPage() {
+  // idempotent seed/bootstrap — guarantees the DailyArticle table carries the
+  // category column (and rows exist) BEFORE any prerender query runs,
+  // whichever page the builder renders first (self-healing first deploy).
+  await importContentSeed();
   // The table exists in every environment that ran `prisma db push`
   // (sandbox/cPanel) or one postgres boot (boot-time IF NOT EXISTS
   // bootstrap in seed-import.ts). EXACTLY on the very first postgres
