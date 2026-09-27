@@ -22,11 +22,12 @@ export function Header() {
     setLang(l);
   };
 
-  const navItems: { key: 'home' | 'services' | 'projects' | 'blog' | 'about' | 'contact'; label: string }[] = [
+  const navItems: { key: 'home' | 'services' | 'projects' | 'blog' | 'daily' | 'about' | 'contact'; label: string }[] = [
     { key: 'home', label: t.nav.home },
     { key: 'services', label: t.nav.services },
     { key: 'projects', label: t.nav.projects },
     { key: 'blog', label: t.nav.blog },
+    { key: 'daily', label: t.nav.daily },
     { key: 'about', label: t.nav.about },
     { key: 'contact', label: t.nav.contact },
   ];

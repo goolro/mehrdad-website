@@ -5,6 +5,10 @@
     {
       "path": "/api/cron/index-ping",
       "schedule": "0 3 * * *"
+    },
+    {
+      "path": "/api/cron/daily-import",
+      "schedule": "30 6 * * *"
     }
   ]
 }

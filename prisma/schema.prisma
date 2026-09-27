@@ -267,3 +267,25 @@ model AiArticle {
 
   @@index([status, createdAt])
 }
+
+// ───────────────────────── Daily Digest (Product Hunt) ─────────────────────────
+
+/// One short bilingual card in the daily Product Hunt digest (/daily):
+/// a successful launch distilled to a single line — EN + FA. Items arrive
+/// via the daily feed import (Vercel cron or the admin button) or the
+/// manual admin form. url is the dedupe key so re-imports never duplicate.
+model DailyProduct {
+  id        String   @id @default(cuid())
+  day       String // digest day 'YYYY-MM-DD' (Tehran calendar) — groups the page
+  name      String
+  taglineEn String
+  taglineFa String?
+  url       String   @unique // producthunt.com product link
+  logo      String? // icon URL (PH CDN or /media path)
+  votes     Int      @default(0) // upvotes snapshot at import time (0 = unknown)
+  order     Int      @default(0) // position inside the day
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([day, order])
+}
