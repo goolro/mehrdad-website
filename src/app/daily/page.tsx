@@ -1,11 +1,13 @@
 import type { Metadata } from 'next';
 import { DailyView, type DailyArticleCard } from '@/components/site/DailyView';
 import { db } from '@/lib/db';
+import { dailyVisibleWhere } from '@/lib/daily';
 
-// Fully static: rendered once per BUILD (same contract as /blog). Content
-// updates publish via the VERCEL_DEPLOY_HOOK_URL fired by the admin panel,
-// so the article index is rebuilt with fresh content after every publish.
-export const dynamic = 'force-static';
+// ISR (staggered publishing contract): the index re-renders every 15 minutes,
+// so an article whose scheduled slot (publishAt) crosses its moment appears
+// WITHOUT a redeploy — within one revalidation window. The admin deploy hook
+// still rebuilds everything instantly on an explicit publish.
+export const revalidate = 900;
 
 export const metadata: Metadata = {
   title: 'Daily product analysis — short bilingual editorials | Mehrdad',
@@ -40,7 +42,7 @@ export default async function DailyPage() {
   let rows: Awaited<ReturnType<typeof db.dailyArticle.findMany>> = [];
   try {
     rows = await db.dailyArticle.findMany({
-      where: { published: true },
+      where: dailyVisibleWhere(),
       orderBy: [{ day: 'desc' }, { createdAt: 'desc' }],
       take: 120,
     });

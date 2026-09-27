@@ -20,7 +20,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Plus, Pencil, Trash2 } from 'lucide-react';
+import { Loader2, Plus, Pencil, Trash2, CalendarClock } from 'lucide-react';
 
 interface Article {
   id: string;
@@ -37,6 +37,7 @@ interface Article {
   tagsEn: string | null;
   tagsFa: string | null;
   published: boolean;
+  publishAt: string | null;
 }
 
 interface FormState {
@@ -54,6 +55,7 @@ interface FormState {
   tagsEn: string;
   tagsFa: string;
   published: boolean;
+  publishAt: string; // datetime-local value — '' = live now
 }
 
 const EMPTY_FORM = (): FormState => ({
@@ -71,7 +73,43 @@ const EMPTY_FORM = (): FormState => ({
   tagsEn: '',
   tagsFa: '',
   published: true,
+  publishAt: '',
 });
+
+/** ISO → the browser-local value a datetime-local input expects */
+function isoToLocalInput(iso: string | null): string {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function localInputToIso(v: string): string | null {
+  if (!v) return null;
+  const d = new Date(v);
+  return Number.isNaN(d.getTime()) ? null : d.toISOString();
+}
+
+function formatSlot(lang: 'en' | 'fa', iso: string | null): string {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  return d.toLocaleString(lang === 'fa' ? 'fa-IR' : 'en-US', {
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
+
+type PubStatus = 'draft' | 'scheduled' | 'live';
+
+function statusOf(a: Article): PubStatus {
+  if (!a.published) return 'draft';
+  if (a.publishAt && new Date(a.publishAt).getTime() > Date.now()) return 'scheduled';
+  return 'live';
+}
 
 function parseTagsJson(v: string | null): string {
   try {
@@ -88,6 +126,7 @@ export function DailyStudio() {
   const { toast } = useToast();
   const [items, setItems] = useState<Article[] | null>(null);
   const [saving, setSaving] = useState(false);
+  const [autoBusy, setAutoBusy] = useState(false);
   const [form, setForm] = useState<FormState | null>(null);
 
   const load = useCallback(() => {
@@ -117,6 +156,7 @@ export function DailyStudio() {
         tagsEn: form.tagsEn.split(',').map((s) => s.trim()).filter(Boolean),
         tagsFa: form.tagsFa.split(',').map((s) => s.trim()).filter(Boolean),
         published: form.published,
+        publishAt: localInputToIso(form.publishAt),
       };
       const res = await fetch(form.id ? `/api/admin/daily/${form.id}` : '/api/admin/daily', {
         method: form.id ? 'PATCH' : 'POST',
@@ -143,6 +183,26 @@ export function DailyStudio() {
     load();
   }
 
+  /** staggered publishing: queue every complete draft into the next free slots */
+  async function autoSchedule() {
+    setAutoBusy(true);
+    try {
+      const res = await fetch('/api/admin/daily/schedule', { method: 'POST' });
+      const d = await res.json();
+      if (!res.ok || !d.ok) {
+        toast({ title: d.error || 'Scheduling failed', variant: 'destructive' });
+      } else if (d.scheduled > 0) {
+        toast({ title: t.autoScheduleDone.replace('{n}', String(d.scheduled)) });
+        load();
+      } else {
+        toast({ title: t.autoScheduleNone });
+      }
+    } catch {
+      toast({ title: 'Scheduling failed', variant: 'destructive' });
+    }
+    setAutoBusy(false);
+  }
+
   function editItem(a: Article) {
     setForm({
       id: a.id,
@@ -159,6 +219,7 @@ export function DailyStudio() {
       tagsEn: parseTagsJson(a.tagsEn),
       tagsFa: parseTagsJson(a.tagsFa),
       published: a.published,
+      publishAt: isoToLocalInput(a.publishAt),
     });
   }
 
@@ -180,12 +241,17 @@ export function DailyStudio() {
         <p className="mt-1 text-sm text-muted-foreground">{t.desc}</p>
       </div>
 
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         <Button onClick={() => setForm(EMPTY_FORM())} className="gap-1.5">
           <Plus className="h-4 w-4" />
           {t.add}
         </Button>
+        <Button onClick={autoSchedule} disabled={autoBusy} variant="outline" className="gap-1.5">
+          {autoBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <CalendarClock className="h-4 w-4" />}
+          {autoBusy ? t.autoScheduling : t.autoSchedule}
+        </Button>
       </div>
+      <p className="text-xs text-muted-foreground">{t.slotsNote}</p>
 
       {items && items.length === 0 && (
         <div className="rounded-xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
@@ -214,9 +280,20 @@ export function DailyStudio() {
                       <div className="min-w-0 flex-1">
                         <div className="flex flex-wrap items-center gap-2">
                           <span className="truncate text-sm font-semibold">{a.titleEn}</span>
-                          {!a.published && (
+                          {statusOf(a) === 'draft' && (
                             <Badge variant="outline" className="shrink-0 text-[10px] text-amber-600">
                               DRAFT
+                            </Badge>
+                          )}
+                          {statusOf(a) === 'scheduled' && (
+                            <Badge variant="outline" className="shrink-0 gap-1 border-violet-500/40 text-[10px] text-violet-600">
+                              <CalendarClock className="h-3 w-3" />
+                              {t.scheduled} · {formatSlot(lang, a.publishAt)}
+                            </Badge>
+                          )}
+                          {statusOf(a) === 'live' && (
+                            <Badge variant="outline" className="shrink-0 text-[10px] text-emerald-600">
+                              {t.live}
                             </Badge>
                           )}
                         </div>
@@ -328,6 +405,18 @@ export function DailyStudio() {
                   onCheckedChange={(v) => setForm((f) => (f ? { ...f, published: !!v } : f))}
                 />
                 <Label htmlFor="daily-published" className="cursor-pointer">{t.published}</Label>
+              </div>
+
+              <div className="space-y-1.5 rounded-xl border border-violet-500/30 bg-violet-500/5 p-3">
+                <Label htmlFor="daily-publishat">{t.publishAt}</Label>
+                <Input
+                  id="daily-publishat"
+                  type="datetime-local"
+                  value={form.publishAt}
+                  onChange={set('publishAt')}
+                  dir="ltr"
+                />
+                <p className="text-xs text-muted-foreground">{t.publishAtHint}</p>
               </div>
 
               <div className="flex justify-end gap-2 pt-1">

@@ -297,6 +297,7 @@ model DailyArticle {
   tagsEn    String? // JSON string[]
   tagsFa    String? // JSON string[]
   published Boolean @default(true)
+  publishAt DateTime? // scheduled go-live moment (UTC). NULL = already live; future = hidden until the slot (staggered publishing)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

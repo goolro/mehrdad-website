@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { isUnpublishedPostSlug } from '@/lib/queries';
+import { dailyVisibleWhere } from '@/lib/daily';
 import { submitIndexNow, indexNowKey } from '@/lib/indexnow';
 import { googleIndexingEnabled, notifyGoogleBatch } from '@/lib/google-indexing';
 import { clientIp, rateLimit, tooManyRequests } from '@/lib/rate-limit';
@@ -86,7 +87,7 @@ export async function GET(req: NextRequest) {
     // that must never fail the whole ping run.
     try {
       const articles = await db.dailyArticle.findMany({
-        where: { published: true },
+        where: dailyVisibleWhere(), // never ping a URL whose slot has not passed yet
         select: { slug: true, updatedAt: true },
       });
       for (const a of articles) {
