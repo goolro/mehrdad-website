@@ -79,6 +79,24 @@ export async function GET(req: NextRequest) {
       for (const url of fresh) urls.add(url);
     }
 
+    // daily articles (/daily/<slug>) — original bilingual editorials.
+    // Full sweep gets every article; the daily incremental set gets only
+    // those touched in the last 72h so a fresh editorial reaches Bing
+    // within a day. The table can be missing in the first-deploy window —
+    // that must never fail the whole ping run.
+    try {
+      const articles = await db.dailyArticle.findMany({
+        where: { published: true },
+        select: { slug: true, updatedAt: true },
+      });
+      for (const a of articles) {
+        const url = `${BASE}/daily/${a.slug}`;
+        if (full || a.updatedAt.getTime() >= cutoff) urls.add(url);
+      }
+    } catch {
+      /* table missing — skip silently */
+    }
+
     if (full) {
       // project detail pages render under /work/<slug> for BOTH sections
       // (work + lab); the /lab page itself is in STATICS. Full sweep only.

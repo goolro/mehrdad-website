@@ -47,7 +47,7 @@ export async function GET() {
     `- [Projects / Work](${BASE}/work) — real builds with honest status`,
     `- [The Lab](${BASE}/lab) — experiments built for curiosity; no business model attached`,
     `- [Blog](${BASE}/blog) — essays on AI, startups, smart city, investment`,
-    `- [Daily](${BASE}/daily) — a daily one-line bilingual (EN+FA) digest of successful Product Hunt launches`,
+    `- [Daily](${BASE}/daily) — short ORIGINAL bilingual (EN+FA) editorials about successful products: summary + full article + an expert verdict. No external links — every article lives at /daily/<slug>`,
     `- [About](${BASE}/about)`,
     `- [Contact](${BASE}/contact)`,
     `- [RSS feed](${BASE}/feed.xml)`,

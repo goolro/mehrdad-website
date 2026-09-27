@@ -60,123 +60,283 @@ const SEED_PROJECTS: SeedProject[] = [
 ];
 
 /**
- * First real digest content (2026-09-27): eight Product Hunt launches from
- * the public feed — distilled one-liners in EN + FA (no Persian comma per
- * the editorial rule). INSERT-IF-MISSING on the unique url, so future
- * imports and admin edits always win over these rows.
+ * Daily articles (2026-09-27 redesign): REAL original editorials about
+ * successful products — summary + full article + expert verdict in EN and
+ * FA. No external links and no feed imports: the owner explicitly rejected
+ * the old link-dump format («مگه ما تبلیغ کننده اون سایت هستیم؟»). The
+ * Persian text follows the project-wide editorial rule: NO Persian comma
+ * (،) anywhere.
  */
-interface SeedDaily {
+interface SeedArticle {
+  slug: string;
   day: string;
-  name: string;
-  taglineEn: string;
-  taglineFa: string;
-  url: string;
+  titleEn: string;
+  titleFa: string;
+  summaryEn: string;
+  summaryFa: string;
+  bodyEn: string;
+  bodyFa: string;
+  verdictEn: string;
+  verdictFa: string;
+  tagsEn: string[];
+  tagsFa: string[];
 }
 
-const SEED_DAILY: SeedDaily[] = [
+const SEED_ARTICLES: SeedArticle[] = [
   {
+    slug: 'gpt-6-sol-luna',
     day: '2026-09-27',
-    name: 'GPT-6 Sol & Luna',
-    taglineEn: 'Frontier AI intelligence, now at half the price',
-    taglineFa: 'هوش مصنوعی مرزی OpenAI حالا با نصف قیمت',
-    url: 'https://www.producthunt.com/products/openai',
+    titleEn: 'GPT-6 Sol and Luna: frontier AI at half the price changes the math for small teams',
+    titleFa: 'GPT-6 سول و لونا — هوش مصنوعی مرزی با نصف قیمت و معادلهٔ تازهٔ تیم‌های کوچک',
+    summaryEn:
+      "GPT-6 ships as two tuned variants — Sol for deep reasoning and Luna for speed. The bigger story is the price: frontier capability at roughly half of last year's cost puts serious AI inside reach of one-person studios.",
+    summaryFa:
+      'GPT-6 در دو حالت عرضه شده — سول برای استدلال عمیق و لونا برای سرعت. اما داستان اصلی قیمت است: توان مرزی با حدود نصف هزینهٔ سال گذشته کارهای جدی هوش مصنوعی را به دست استودیوهای یک‌نفره می‌رساند.',
+    bodyEn: `<p>On the surface this looks like a routine model announcement — a new name and a leaderboard bump. The interesting part is the packaging. GPT-6 arrives as two variants tuned for opposite trade-offs: <strong>Sol</strong> leans into slow and careful reasoning for hard problems while <strong>Luna</strong> is optimized for latency and cost on everyday work. One model family with two gears instead of a single model pretending to fit every job.</p>
+<h2>Why the price cut matters more than the benchmark</h2>
+<p>Benchmarks move the conversation but pricing moves behavior. When frontier capability costs half of what it did last year the math changes for anyone building on top of it. A feature that was too expensive to serve at scale yesterday becomes a default capability tomorrow. That is not a small step — it reopens product roadmaps that were quietly closed for cost reasons.</p>
+<h3>The one-person studio wins first</h3>
+<p>The clearest winners are small teams. An independent developer or a two-person studio can now prototype against the strongest model instead of settling for the cheap one and hoping the idea survives the downgrade. In my own workflow the model bill had quietly become a design constraint — it now reads like a bill I can afford again. I document exactly how I build products this way on the <a href="/fde">FDE page</a>.</p>
+<h2>How to use two models without overthinking it</h2>
+<ul>
+<li><strong>Draft and plan with Sol.</strong> Architecture decisions and tricky bugs deserve the slow gear.</li>
+<li><strong>Ship with Luna.</strong> Chat replies and classification and summaries should feel instant.</li>
+<li><strong>Re-evaluate monthly.</strong> The frontier moves and yesterday's split may already be stale.</li>
+</ul>
+<p>The tooling you wrap around the model matters as much as the model itself — the same principle behind the <a href="/services">product services</a> I offer.</p>`,
+    bodyFa: `<p>در نگاه اول این یک اعلام مدل معمولی است — یک نام تازه و رشدی روی لیدربورد. اما نکتهٔ مهم در بسته‌بندی است. GPT-6 با دو حالت تیون‌شده برای دو نیاز متضاد می‌آید. <strong>سول</strong> برای استدلال عمیق و کندتر روی مسائل سخت ساخته شده و <strong>لونا</strong> برای پاسخ سریع و ارزان روی کارهای روزمره. یک خانوادهٔ مدل با دو دنده به‌جای یک مدل که ادعا می‌کند برای هر کاری مناسب است.</p>
+<h2>چرا کاهش قیمت مهم‌تر از بنچمارک است</h2>
+<p>بنچمارک گفتگوها را جلو می‌برد اما قیمت رفتار را عوض می‌کند. وقتی توان مرزی نصف شود معادلهٔ همهٔ سازنده‌ها تغییر می‌کند. قابلیتی که دیروز به‌خاطر هزینهٔ سرو کردن در مقیاس غیرممکن بود فردا به قابلیت پیش‌فرض محصول تبدیل می‌شود. این یک قدم کوچک نیست — نقشهٔ راه محصولاتی را که به‌خاطر هزینه بسته شده بود دوباره باز می‌کند.</p>
+<h3>اولین برنده‌ها استودیوهای یک‌نفره‌اند</h3>
+<p>سود روشن این تغییر به دست تیم‌های کوچک می‌رسد. یک توسعه‌دهندهٔ مستقل یا استودیوی دونفره حالا می‌تواند نمونهٔ اولیه‌اش را روی قوی‌ترین مدل بسازد نه روی مدل ارزان با امید اینکه ایده از افت کیفیت جان سالم به در ببرد. در روند کاری خودم هزینهٔ مدل داشت بی‌سروصدا به یک محدودیت طراحی تبدیل می‌شد — حالا دوباره به هزینه‌ای قابل مدیریت برگشته است. جزئیات شیوهٔ ساخت من در <a href="/fde">صفحهٔ FDE</a> آمده است.</p>
+<h2>استفاده از دو مدل بدون پیچیدگی</h2>
+<ul>
+<li><strong>برنامه‌ریزی و معماری با سول.</strong> تصمیم‌های سخت لایق دندهٔ کند و دقیق هستند.</li>
+<li><strong>تحویل با لونا.</strong> جواب چت و دسته‌بندی و خلاصه‌سازی باید فوری باشند.</li>
+<li><strong>هر ماه بازبینی کن.</strong> مرز توان مدل‌ها دائم جابه‌جا می‌شود و ترکیب دیروز ممکن است کهنه باشد.</li>
+</ul>
+<p>ابزارهایی که دور مدل می‌سازی به اندازهٔ خود مدل مهم‌اند — همان اصلی که در <a href="/services">خدمات ساخت محصول</a> من می‌بینید.</p>`,
+    verdictEn: `<p>This launch is less about a smarter model and more about a cheaper one — and cheap frontier intelligence is the kind of change that quietly reshapes entire product categories. My take: treat Sol and Luna as two gears in one drivetrain. Think with Sol and ship with Luna. The teams that learn to alternate between the two will out-build teams still paying premium rates for every single token. For me this is the most practical AI release of the year.</p>`,
+    verdictFa: `<p>نظر من این عرضه بیشتر از اینکه دربارهٔ مدل هوشمندتر است دربارهٔ مدل ارزان‌تر است — و ارزان شدن هوش مرزی همان نوع تغییری است که بی‌سروصدا کل دسته‌های محصول را بازتعریف می‌کند. سول و لونا را دو دندهٔ یک موتور بدان: با سول فکر کن و با لونا تحویل بده. تیم‌هایی که یاد می‌گیرند بین این دو جابه‌جا شوند از تیم‌هایی که برای هر توکن قیمت گرانی می‌پردازند جلوتر خواهند ساخت. برای من این عملی‌ترین عرضهٔ هوش مصنوعی امسال است.</p>`,
+    tagsEn: ['AI', 'LLM pricing', 'OpenAI'],
+    tagsFa: ['هوش مصنوعی', 'قیمت‌گذاری مدل‌ها'],
   },
   {
+    slug: 'superhuman-go',
     day: '2026-09-27',
-    name: 'Superhuman Go',
-    taglineEn: 'The AI assistant that works where you do',
-    taglineFa: 'دستیار هوشمندی که همان‌جا که کار می‌کنی کار می‌کند',
-    url: 'https://www.producthunt.com/products/superhuman-go',
+    titleEn: 'Superhuman Go puts the AI assistant where the work actually happens',
+    titleFa: 'Superhuman Go — دستیار هوشمند درست سر جای واقعی کار',
+    summaryEn:
+      'Superhuman Go skips the empty chat box and embeds assistance across the tools you already use — drafting replies and summarizing threads and prepping your next meeting in place. A quiet bet that the future of AI help is contextual and not another tab.',
+    summaryFa:
+      'Superhuman Go به‌جای یک چت خالی لایهٔ هوشمند را روی ابزارهایی می‌گذارد که همین حالا با آن‌ها کار می‌کنید — پاسخ‌نویسی و خلاصه‌سازی و آماده‌سازی جلسه در همان‌جا. شرط‌بندی کم‌سروصدا اما مهم: آیندهٔ کمک هوشمند درهم‌تنیده با متن کار است نه یک تب دیگر.',
+    bodyEn: `<p>The default assistant experience still means copying context into a chat window and pasting the answer back. That round-trip is the hidden tax on every AI-assisted task. Superhuman Go attacks the tax itself: the assistant reads the surface you are already on and acts there — no copying and no context switching.</p>
+<h2>What it looks like in practice</h2>
+<ul>
+<li>An email thread collapses into a three-line brief before you open it.</li>
+<li>A reply is drafted in your own tone while you are still reading.</li>
+<li>The meeting you walk into already has a one-page prep sheet waiting.</li>
+</ul>
+<h2>The trade nobody talks about</h2>
+<p>Embedded assistance only works if it can see your work — and that is a trust decision rather than a feature toggle. Granting an assistant a standing view of your inbox and calendar buys speed with surface area. Every team will draw that line somewhere different and the product is honest enough to make the line visible instead of hiding it in a settings maze.</p>
+<p>I keep the same principle in the products I build: context should be earned per surface instead of granted all at once. It costs more engineering time and it is the only version of this that ages well.</p>`,
+    bodyFa: `<p>تجربهٔ رایج دستیارها هنوز یعنی کپی کردن بافت کار در یک پنجرهٔ چت و برگرداندن جواب به همان‌جا. این رفت‌وبرگشت مالیات پنهان هر کار هوشمند است. Superhuman Go خودِ مالیات را هدف گرفته: دستیار سطحی را که روی آن هستید می‌خواند و در همان سطح عمل می‌کند — نه کپی و نه جابه‌جایی بافت.</p>
+<h2>در عمل چه شکلی دارد</h2>
+<ul>
+<li>رشتهٔ ایمیل پیش از باز کردن به خلاصه‌ای سه‌خطی تبدیل می‌شود.</li>
+<li>پاسخ در حالی که شما مشغول خواندن هستید با لحن خودتان نوشته می‌شود.</li>
+<li>جلسه‌ای که واردش می‌شوید از قبل برگهٔ آمادگی یک‌صفحه‌ای دارد.</li>
+</ul>
+<h2>معامله‌ای که کسی درباره‌اش حرف نمی‌زند</h2>
+<p>دستیار درهم‌تنیده فقط زمانی کار می‌کند که کار شما را ببیند — و این یک تصمیم اعتماد است نه یک کلید قابلیت. دادن دید دائمی به صندوق ایمیل و تقویم سرعت را با سطح نفوذ می‌خرد. هر تیم این مرز را جای متفاوتی می‌کشد و محصول به اندازهٔ کافی صادق است که مرز را پیدا نشان دهد نه اینکه آن را در هزارتو تنظیمات پنهان کند.</p>
+<p>من در محصولاتی که می‌سازم همین اصل را نگه می‌دارم: بافت باید سطح‌به‌سطح به دست بیاید نه یک‌جا اعطا شود. این راه مهندسی گران‌تری است و تنها نسخه‌ای است که با گذر زمان خوب پیر می‌شود.</p>`,
+    verdictEn: `<p>Assistants that come to you will beat assistants you have to visit — of that much I am confident. The open question is whether a cross-tool layer can stay fast and trustworthy as it grows. Superhuman Go is the most serious attempt I have seen at making embedded help feel native instead of bolted on. For anyone whose day is a wall of threads and meetings it is worth a month of honest trial.</p>`,
+    verdictFa: `<p>دستیاری که پیش تو می‌آید از دستیاری که باید سراغش بروی برنده است — در این تردیدی نیست. سؤال باز این است که آیا یک لایهٔ بین‌ابزاری می‌تواند هم‌زمان سریع بماند و قابل اعتماد. Superhuman Go جدی‌ترین تلاشی است که دیده‌ام برای بومی شدن کمکِ درهم‌تنیده به‌جای نصب اضافه روی سیستم. برای کسی که روزش دیواری از پیام و جلسه است یک ماه امتحان صادقانه می‌ارزد.</p>`,
+    tagsEn: ['AI assistants', 'productivity'],
+    tagsFa: ['دستیار هوشمند', 'بهره‌وری'],
   },
   {
-    day: '2026-09-27',
-    name: 'Cuey',
-    taglineEn: 'Compare ChatGPT, Claude & Gemini answers in one tab.',
-    taglineFa: 'مقایسهٔ پاسخ‌های ChatGPT و Claude و Gemini در یک تب',
-    url: 'https://www.producthunt.com/products/cuey-2',
-  },
-  {
-    day: '2026-09-27',
-    name: 'Fewer',
-    taglineEn: 'The launcher that counts how often you pick up your phone',
-    taglineFa: 'لانچری که می‌شمارد چند بار در روز گوشی را برمی‌داری',
-    url: 'https://www.producthunt.com/products/fewer',
-  },
-  {
+    slug: 'cuey',
     day: '2026-09-26',
-    name: 'KiwiDesk',
-    taglineEn: 'Tiling that feels like it shipped with macOS.',
-    taglineFa: 'چیدمان پنجره برای مک که انگار جزو خود سیستم است',
-    url: 'https://www.producthunt.com/products/kiwidesk',
+    titleEn: 'Cuey compares ChatGPT and Claude and Gemini in a single tab',
+    titleFa: 'Cuey — مقایسهٔ ChatGPT و Claude و Gemini در یک تب',
+    summaryEn:
+      'Cuey sends one prompt to the leading AI models and lines the answers up side by side. It turns the hunch every power user already has — that models are good at different things — into a visible and decision-ready habit.',
+    summaryFa:
+      'Cuey یک پرامپت را به مدل‌های اصلی هوش مصنوعی می‌فرستد و پاسخ‌ها را کنار هم می‌چیند. حدس مشترک کاربران حرفه‌ای را که هر مدل در کاری خوب است به یک عادت دیدنی و تصمیم‌پذیر تبدیل می‌کند.',
+    bodyEn: `<p>Type once. Cuey fans the prompt out to the major models and returns the answers in one clean comparison view. No tab juggling and no subscription Tetris — the same question answered several ways with the differences impossible to miss.</p>
+<h2>Why comparing models is now a real workflow</h2>
+<p>The model market has stopped being a one-horse race. Writing quality and reasoning depth and code accuracy all drift apart across providers — and the gap is task-specific rather than general. Experienced users already behave this way by hand. Cuey simply removes the friction of doing it manually.</p>
+<h3>A quiet pricing lesson</h3>
+<p>Seeing answers side by side also makes subscription stacking visible. Most people do not need three premium plans — they need one good default plus a comparison habit for the few tasks where the choice actually matters.</p>
+<p>My own rule after months of daily model use: pick the model per task instead of per brand. The <a href="/services">idea-to-product pipeline</a> I run works exactly the same way.</p>`,
+    bodyFa: `<p>یک بار می‌نویسی. Cuey پرامپت را به مدل‌های اصلی می‌فرستد و پاسخ‌ها را در یک نمای مقایسه‌ای تمیز برمی‌گرداند. نه جابه‌جایی تب لازم است و نه پازل اشتراک‌ها — همان یک سؤال با چند جواب که تفاوت‌ها انکارناپذیرند.</p>
+<h2>چرا مقایسهٔ مدل‌ها حالا یک روند کاری واقعی است</h2>
+<p>بازار مدل‌ها از مسابقهٔ تک‌اسب عبور کرده است. کیفیت نوشتن و عمق استدلال و دقت کدنویسی بین سرویس‌دهنده‌ها فاصله می‌گیرد — و این فاصله وابسته به نوع کار است نه کلی. کاربران باتجربه همین رفتار را به‌صورت دستی دارند. Cuey فقط اصطکاک آن را برداشته است.</p>
+<h3>درسی کم‌سروصدا دربارهٔ هزینه</h3>
+<p>دیدن پاسخ‌ها کنار هم سبد اشتراک‌ها را هم شفاف می‌کند. بیشتر افراد به سه اشتراک گران نیاز ندارند — به یک پیش‌فرض خوب نیاز دارند به‌علاوهٔ یک عادت مقایسه برای کارهای معدودی که انتخاب در آن‌ها واقعا مهم است.</p>
+<p>قانون من بعد از ماه‌ها استفادهٔ روزانه: مدل را بر اساس کار انتخاب کن نه بر اساس برند. <a href="/services">خط تولید ایده تا محصول</a> من هم دقیقا همین‌طور کار می‌کند.</p>`,
+    verdictEn: `<p>Cuey is a small tool in the best sense — it does one job and that job has become strategic. Multi-model comparison is the closest thing to a daily driver for AI power users. If you ever hesitated over which model to trust with a task this is the fastest way to stop guessing. One request for the next version: keep the free tier honest — comparison layers die the moment they turn into ads for one provider.</p>`,
+    verdictFa: `<p>Cuey در بهترین معنای کلمه ابزاری کوچک است — یک کار می‌کند و آن کار حالا راهبردی شده است. مقایسهٔ چندمدلی نزدیک‌ترین چیز به یک ابزار روزمره برای کاربران حرفه‌ای هوش مصنوعی است. اگر جایی مردد بوده‌ای کدام مدل را باور کنی سریع‌ترین راه برای توقف حدس‌زدن همین است. یک درخواست هم از نسخهٔ بعد دارم: پلن رایگان را منصف نگه دار — لایه‌های مقایسه همان لحظه‌ای می‌میرند که به تبلیغ یک سرویس‌دهنده تبدیل می‌شوند.</p>`,
+    tagsEn: ['AI tools', 'model comparison'],
+    tagsFa: ['ابزارهای AI', 'مقایسهٔ مدل‌ها'],
   },
   {
+    slug: 'fewer',
     day: '2026-09-26',
-    name: 'Harmony',
-    taglineEn: 'AI agents that resolve IT/HR tickets inside Slack and Teams',
-    taglineFa: 'ایجنت‌های هوشمندی که تیکت‌های IT و منابع انسانی را در Slack و Teams حل می‌کنند',
-    url: 'https://www.producthunt.com/products/harmony-it',
+    titleEn: 'Fewer is a launcher that counts how often you pick up your phone',
+    titleFa: 'Fewer — لانچری که می‌شمارد چند بار در روز گوشی را برمی‌دارید',
+    summaryEn:
+      'Fewer replaces your home screen with a plain launcher and quietly shows the number most phones hide: how many times a day you pick the device up. Measurement as a design choice — and a rare anti-addiction stance in launch software.',
+    summaryFa:
+      'Fewer صفحهٔ خانه را با یک لانچر ساده عوض می‌کند و عددی را نشان می‌دهد که بیشتر گوشی‌ها پنهانش می‌کنند: در یک روز چند بار دستگاه را برمی‌دارید. سنجش به‌عنوان تصمیم طراحی — و موضعی نادر ضداعتیاد در نرم‌افزار لانچر.',
+    bodyEn: `<p>Pickups are the honest metric of attention. Screen-time totals blur everything together but a count of how many times your hand reached for the phone lands differently. Fewer surfaces that number at every unlock — not as a guilt screen but as a plain fact.</p>
+<h2>A launcher built on subtraction</h2>
+<ul>
+<li>No feeds and no badges shouting for one more swipe.</li>
+<li>Apps are one search away — which turns out to be enough.</li>
+<li>The counter sits quietly and does all the nudging.</li>
+</ul>
+<h2>The business model is both the risk and the point</h2>
+<p>Almost every launcher on the market monetizes attention — that is the business. Fewer sells the opposite and that is exactly why it works. The open question is whether enough people will pay for less. My experience building small utilities says a focused niche will: the same lesson behind every product in <a href="/work">my work section</a>.</p>`,
+    bodyFa: `<p>شمار برمیداشتن گوشی صادقانه‌ترین سنجهٔ توجه است. مجموع ساعت استفاده همه‌چیز را یک‌جور نشان می‌دهد اما شمار دفعاتی که دست به سمت گوشی رفت جور دیگری نشسته می‌شود. Fewer این عدد را در هر باز کردن نشان می‌دهد — نه به‌عنوان صفحهٔ عذاب وجدان بلکه به‌عنوان یک واقعیت ساده.</p>
+<h2>لانچری ساخته‌شده با تفریق</h2>
+<ul>
+<li>نه فیدی دارد و نه نشان‌هایی که برای یک سوایپ دیگر فریاد بزنند.</li>
+<li>اپ‌ها یک جست‌وجو با آن‌ها فاصله دارند — و همین کافی از آب درمی‌آید.</li>
+<li>شمارنده آرام نشسته و همهٔ پیام را همان می‌دهد.</li>
+</ul>
+<h2>مدل درآمدی هم ریسک است هم نکته</h2>
+<p>تقریبا همهٔ لانچرهای بازار از توجه پول درمی‌آورند — این ماهیت کارشان است. Fewer برعکسش را می‌فروشد و دقیقا به همین دلیل کار می‌کند. سؤال باز این است که آیا مردم حاضرند بابت «کمتر» پول بدهند. تجربهٔ من در ساخت ابزارهای کوچک می‌گوید یک جامعهٔ متمرکز خواهد پرداخت: همان درسی که پشت همهٔ <a href="/work">محصولات بخش کار من</a> نشسته است.</p>`,
+    verdictEn: `<p>Fewer is one of those rare products whose success metric is the user leaving. As someone who builds products for a living I respect the discipline that takes. The launcher itself is deliberately plain — the counter is the product. If your pickup count scares you this is the cheapest intervention that actually works. And if it does not scare you yet — the number will.</p>`,
+    verdictFa: `<p>Fewer از آن محصولات نادری است که سنجهٔ موفقیتش بیرون رفتن کاربر است. من که برای معیشت محصول می‌سازم به نظمی که این کار می‌طلبد احترام می‌گذارم. خود لانچر عمدا ساده است — محصول همان شمارنده است. اگر شمار برمیداشتن گوشی‌ات ترسناک است این ارزان‌ترین مداخله‌ای است که واقعا جواب می‌دهد. و اگر هنوز ترسناک نیست — همین عدد ترسناکش می‌کند.</p>`,
+    tagsEn: ['digital wellbeing', 'launchers'],
+    tagsFa: ['سلامت دیجیتال', 'لانچر'],
   },
   {
-    day: '2026-09-26',
-    name: 'Donna',
-    taglineEn: 'Schedule multiple meetings with one link',
-    taglineFa: 'زمان‌بندی چند جلسه با یک لینک',
-    url: 'https://www.producthunt.com/products/donna-4',
+    slug: 'kiwidesk',
+    day: '2026-09-25',
+    titleEn: 'KiwiDesk brings macOS window tiling that feels built into the system',
+    titleFa: 'KiwiDesk — چیدمان پنجره برای مک که انگار جزو خود سیستم است',
+    summaryEn:
+      'KiwiDesk adds keyboard-driven tiling and layouts to macOS that behave like a first-party feature — no overlay UI and no fighting the system. A study in how small utilities earn a permanent home on the dock.',
+    summaryFa:
+      'KiwiDesk چیدمان با کیبورد و چیدمان‌های آماده را به مک اضافه می‌کند به شکلی که مثل قابلیت رسمی سیستم رفتار می‌کند — نه رابط اضافه و نه درگیری با سیستم. نمونه‌ای از اینکه ابزارهای کوچک چطور جای دائمی در داک می‌خرند.',
+    bodyEn: `<p>Window managers live or die by how much they feel like the operating system. The moment you notice an overlay or a permission dance the tool starts paying rent in trust. KiwiDesk takes the opposite path: shortcuts and layout actions that behave exactly the way macOS itself would have shipped them.</p>
+<h2>What daily use looks like</h2>
+<ul>
+<li>Half and quarter tiles through a two-key habit.</li>
+<li>A layout switch that survives display changes.</li>
+<li>Nothing in your menu bar that you did not ask for.</li>
+</ul>
+<h2>Small tools compound</h2>
+<p>A tiling tool saves a few seconds per window move — hundreds of times a day for a developer or a writer. The compounding is the entire value proposition and it only works because the tool never interrupts. My own rule for the <a href="/work">utilities I build</a>: the product must disappear into the motion of work.</p>`,
+    bodyFa: `<p>مدیر پنجره با میزان بومی بودن زندگی و مرگ می‌کند. همان لحظه‌ای که رابط اضافه یا رقص دسترسی‌ها دیده شود ابزار شروع می‌کند از اعتماد کاربر اجاره بگیرد. KiwiDesk راه مقابل را رفته: میانبرها و چیدمان‌ها دقیقا طوری رفتار می‌کنند که اگر اپل خودش عرضه کرده بود.</p>
+<h2>استفادهٔ روزمره چه شکلی دارد</h2>
+<ul>
+<li>کاشی نیم و یک‌چهارم با یک عادت دومنظوره.</li>
+<li>تعویض چیدمان که با تغییر نمایشگر از دست نمی‌رود.</li>
+<li>هیچ چیزی در منوبار نیست که خودت نخواسته باشی.</li>
+</ul>
+<h2>ابزارهای کوچک اثر مرکب دارند</h2>
+<p>ابزار چیدمان در هر جابه‌جایی چند ثانیه صرفه‌جویی می‌کند — برای توسعه‌دهنده یا نویسنده صدها بار در روز. این اثر مرکب تمام ارزش پیشنهادی است و فقط وقتی کار می‌کند که ابزار هیچ‌وقت مزاحم نشود. قانون خودم برای <a href="/work">ابزارهایی که می‌سازم</a>: محصول باید در حرکت کار محو شود.</p>`,
+    verdictEn: `<p>KiwiDesk is the kind of craft product that is easy to underestimate. It does not ask for attention and that is precisely why it keeps it. For anyone on a 13-inch screen or a single-monitor desk this is the fastest path to a calmer desktop. It will be on my essential list for every new Mac this year.</p>`,
+    verdictFa: `<p>KiwiDesk از آن محصولات باصرفه‌گری است که دست‌کم گرفتنش آسان است. تقاضای توجه ندارد و دقیقا به همین دلیل توجه را نگه می‌دارد. برای کسی که با نمایشگر ۱۳ اینچی یا یک مانیتور کار می‌کند سریع‌ترین راه به یک دسکتاپ آرام‌تر همین است. امسال در فهرست ضروری‌های من برای هر مک تازه‌ای خواهد بود.</p>`,
+    tagsEn: ['macOS', 'utilities'],
+    tagsFa: ['مک', 'ابزارها'],
   },
   {
-    day: '2026-09-26',
-    name: 'Paragraph Notes',
-    taglineEn: 'A private Markdown notes app for Mac',
-    taglineFa: 'اپ یادداشت خصوصی با Markdown برای مک',
-    url: 'https://www.producthunt.com/products/paragraph-notes',
+    slug: 'paragraph-notes',
+    day: '2026-09-25',
+    titleEn: 'Paragraph Notes is a private Markdown home for your Mac',
+    titleFa: 'Paragraph Notes — خانهٔ خصوصی Markdown برای مک شما',
+    summaryEn:
+      'Paragraph Notes keeps your notes as plain Markdown files on your own disk — no account and no lock-in and no telemetry drama. Part of a wider local-first swing that treats owning your files as a feature again.',
+    summaryFa:
+      'Paragraph Notes یادداشت‌ها را به‌شکل فایل‌های سادهٔ Markdown روی دیسک خودتان نگه می‌دارد — بدون حساب و بدون قفل‌شدگی و بدون جنجال داده. بخشی از موج بازگشت local-first که مالکیت فایل را دوباره قابلیت حساب می‌کند.',
+    bodyEn: `<p>The pitch is one sentence: your notes live as Markdown files in a folder you control. That single decision answers the questions cloud note apps keep reopening — what happens if the service shuts down and what happens to search inside someone else's database and who can read your drafts.</p>
+<h2>Local-first is having a moment again</h2>
+<p>A few years ago everything had to become a cloud workspace. The pendulum is swinging back as people watch services get acquired and shut down and repriced. Local-first apps like Paragraph Notes sell something older than the cloud: possession. Sync exists where it helps but the source of truth stays on your disk.</p>
+<h2>Where the trade-off lives</h2>
+<ul>
+<li>No web app — your notes are only where your Mac is.</li>
+<li>Sharing means files rather than links.</li>
+<li>Backups are your job — and Time Machine makes that trivial.</li>
+</ul>
+<p>I hold the same view for anything I build that touches writing: the user must be able to walk away with their data in an open format. It is the quiet backbone of <a href="/fde">the way I build</a>.</p>`,
+    bodyFa: `<p>پیشنهادش یک جمله است: یادداشت‌های شما به‌شکل فایل‌های Markdown در پوشه‌ای زیر کنترل خودتان زندگی می‌کنند. همین یک تصمیم به همهٔ سؤال‌هایی جواب می‌دهد که اپ‌های ابری یادداشت مدام بازشان می‌کنند — اگر سرویس تعطیل شود چه می‌شود و جست‌وجو داخل دیتابیس دیگری چه سرنوشتی دارد و چه کسی پیش‌نویس‌های شما را می‌خواند.</p>
+<h2>موج local-first دوباره برگشته</h2>
+<p>چند سال پیش همه‌چیز باید فضای کاری ابری می‌شد. عقربه حالا برمی‌گردد چون مردم دیدند سرویس‌ها خریداری و تعطیل و گران می‌شوند. اپ‌های local-first مثل Paragraph Notes چیزی قدیمی‌تر از ابر می‌فروشند: مالکیت. همگام‌سازی هست اما منبع حقیقت روی دیسک خودت می‌ماند.</p>
+<h2>جای معامله کجاست</h2>
+<ul>
+<li>وب‌اپ ندارد — یادداشت‌ها فقط جایی هستند که مک شماست.</li>
+<li>اشتراک یعنی فایل نه لینک.</li>
+<li>پشتیبان‌گیری کار خودت است — و Time Machine آن را پیش‌پاافتاده می‌کند.</li>
+</ul>
+<p>من هم برای هر چیزی که می‌سازم و به نوشتن دست می‌زند همین نگاه را دارم: کاربر باید بتواند داده‌اش را در قالبی باز با خودش ببرد. این ستون فقرات آرام <a href="/fde">شیوهٔ ساخت من</a> است.</p>`,
+    verdictEn: `<p>Paragraph Notes will not win a feature checklist against the big workspaces — that is not its game. It wins the decade question: will your notes still be yours in ten years. Plain files outlast every company. If you write for a living this deserves a permanent home on your Mac.</p>`,
+    verdictFa: `<p>Paragraph Notes در چک‌لیست قابلیت‌ها بر کارگاه‌های بزرگ نمی‌برد — بازی آن این نیست. او سؤال ده‌ساله را می‌برد: آیا یادداشت‌هایتان ده سال دیگر هنوز مال خودتان خواهد بود. فایل ساده از هر شرکتی ماندگارتر است. اگر برای معیشت می‌نویسید جای دائمی در مک شما را دارد.</p>`,
+    tagsEn: ['local-first', 'notes'],
+    tagsFa: ['local-first', 'یادداشت'],
   },
 ];
 
 let done = false;
 
 /**
- * Schema bootstrap for the DailyProduct table (2026-09-27).
+ * Schema bootstrap for the daily-articles rename (2026-09-27).
  *
- * The daily digest ships its TABLE with git on the same basis as its
- * rows: `prisma db push` against the production URL needs manual access
- * this project deliberately avoids, so the first postgres boot runs an
- * idempotent CREATE TABLE IF NOT EXISTS — non-destructive by
- * construction (it can never alter or drop existing data) and a no-op
- * on every later boot. SQLite environments (sandbox/cPanel) already get
- * the table from `prisma db push`, so the DDL is skipped there.
- * After the table exists and the first rows are seeded, the deploy hook
- * fires once so the static /daily page rebuilds WITH content.
+ * The old `DailyProduct` link-dump table (one-line Product Hunt cards) was
+ * retired by owner decision — the site publishes ORIGINAL bilingual
+ * articles now, never outbound product links. On the first postgres boot
+ * after this deploy we drop that legacy table (it only ever held feed
+ * rows our own pipeline created) and create the new `DailyArticle` table
+ * idempotently. SQLite environments (sandbox/cPanel) already get the new
+ * table from `prisma db push`, so the DDL is skipped there.
  */
 async function bootstrapDailyTable(): Promise<boolean> {
   const url = process.env.DATABASE_URL || '';
   if (url.startsWith('file:')) return false; // sqlite — schema lives in prisma db push
+  let changed = false;
+  try {
+    await db.$executeRawUnsafe(`DROP TABLE IF EXISTS "DailyProduct"`);
+    changed = true;
+  } catch (err) {
+    console.warn('[seed] legacy DailyProduct drop skipped:', err instanceof Error ? err.message : err);
+  }
   try {
     await db.$executeRawUnsafe(`
-      CREATE TABLE IF NOT EXISTS "DailyProduct" (
+      CREATE TABLE IF NOT EXISTS "DailyArticle" (
         "id" TEXT NOT NULL,
+        "slug" TEXT NOT NULL,
         "day" TEXT NOT NULL,
-        "name" TEXT NOT NULL,
-        "taglineEn" TEXT NOT NULL,
-        "taglineFa" TEXT,
-        "url" TEXT NOT NULL,
-        "logo" TEXT,
-        "votes" INTEGER NOT NULL DEFAULT 0,
-        "order" INTEGER NOT NULL DEFAULT 0,
+        "titleEn" TEXT NOT NULL,
+        "titleFa" TEXT NOT NULL,
+        "summaryEn" TEXT NOT NULL,
+        "summaryFa" TEXT NOT NULL,
+        "bodyEn" TEXT NOT NULL,
+        "bodyFa" TEXT NOT NULL,
+        "verdictEn" TEXT NOT NULL,
+        "verdictFa" TEXT NOT NULL,
+        "tagsEn" TEXT,
+        "tagsFa" TEXT,
+        "published" BOOLEAN NOT NULL DEFAULT true,
         "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
         "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        CONSTRAINT "DailyProduct_pkey" PRIMARY KEY ("id")
+        CONSTRAINT "DailyArticle_pkey" PRIMARY KEY ("id")
       )`);
     await db.$executeRawUnsafe(
-      `CREATE UNIQUE INDEX IF NOT EXISTS "DailyProduct_url_key" ON "DailyProduct"("url")`
+      `CREATE UNIQUE INDEX IF NOT EXISTS "DailyArticle_slug_key" ON "DailyArticle"("slug")`
     );
     await db.$executeRawUnsafe(
-      `CREATE INDEX IF NOT EXISTS "DailyProduct_day_order_idx" ON "DailyProduct"("day", "order")`
+      `CREATE INDEX IF NOT EXISTS "DailyArticle_day_idx" ON "DailyArticle"("day")`
     );
-    return true;
+    changed = true;
   } catch (err) {
     console.warn('[seed] daily table bootstrap skipped:', err instanceof Error ? err.message : err);
-    return false;
+    return changed;
   }
+  return changed;
 }
 
 export async function importContentSeed(): Promise<void> {
@@ -209,21 +369,27 @@ export async function importContentSeed(): Promise<void> {
       }
     }
 
-    for (const row of SEED_DAILY) {
-      const existing = await db.dailyProduct.findUnique({ where: { url: row.url } });
+    for (const row of SEED_ARTICLES) {
+      const existing = await db.dailyArticle.findUnique({ where: { slug: row.slug } });
       if (existing) continue;
-      await db.dailyProduct.create({ data: row });
-      console.log(`[seed] daily "${row.name}" created (${row.day})`);
+      await db.dailyArticle.create({
+        data: {
+          ...row,
+          tagsEn: JSON.stringify(row.tagsEn),
+          tagsFa: JSON.stringify(row.tagsFa),
+        },
+      });
+      console.log(`[seed] daily article "${row.slug}" created (${row.day})`);
       dailyChanged = true;
     }
 
-    // the static /daily page is prerendered at BUILD time — when this boot
-    // actually created the table or the first rows, fire the deploy hook
-    // once so the next build bakes the digest in (self-healing first
-    // deploy; the guard below keeps it from looping).
+    // the static /daily pages are prerendered at BUILD time — when this boot
+    // actually changed the schema or seeded the first rows, fire the deploy
+    // hook once so the next build bakes the articles in (self-healing first
+    // deploy; one-shot because the seed pass no-ops afterwards).
     if (dailyChanged && process.env.VERCEL_DEPLOY_HOOK_URL) {
       await fetch(process.env.VERCEL_DEPLOY_HOOK_URL, { method: 'POST' }).catch(() => {});
-      console.log('[seed] deploy hook fired for the daily digest');
+      console.log('[seed] deploy hook fired for the daily articles');
     }
   } catch (err) {
     console.warn('[seed] import skipped:', err instanceof Error ? err.message : err);

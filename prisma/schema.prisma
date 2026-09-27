@@ -268,24 +268,30 @@ model AiArticle {
   @@index([status, createdAt])
 }
 
-// ───────────────────────── Daily Digest (Product Hunt) ─────────────────────────
+// ───────────────────────── Daily Articles ─────────────────────────
 
-/// One short bilingual card in the daily Product Hunt digest (/daily):
-/// a successful launch distilled to a single line — EN + FA. Items arrive
-/// via the daily feed import (Vercel cron or the admin button) or the
-/// manual admin form. url is the dedupe key so re-imports never duplicate.
-model DailyProduct {
-  id        String   @id @default(cuid())
-  day       String // digest day 'YYYY-MM-DD' (Tehran calendar) — groups the page
-  name      String
-  taglineEn String
-  taglineFa String?
-  url       String   @unique // producthunt.com product link
-  logo      String? // icon URL (PH CDN or /media path)
-  votes     Int      @default(0) // upvotes snapshot at import time (0 = unknown)
-  order     Int      @default(0) // position inside the day
+/// One bilingual original article in the daily product-analysis section
+/// (/daily). NOT a link dump and NOT sourced from any external feed — the
+/// owner writes a real editorial: short summary + full article + expert
+/// verdict, in English and Persian, about products that got it right.
+/// slug is the public URL key (/daily/[slug]).
+model DailyArticle {
+  id        String  @id @default(cuid())
+  slug      String  @unique
+  day       String // publication day 'YYYY-MM-DD' (Tehran calendar) — groups the index
+  titleEn   String
+  titleFa   String
+  summaryEn String // short excerpt — doubles as the SEO meta description
+  summaryFa String
+  bodyEn    String // full article HTML (sanitized on save and on read)
+  bodyFa    String
+  verdictEn String // the author's expert take — rendered in its own box
+  verdictFa String
+  tagsEn    String? // JSON string[]
+  tagsFa    String? // JSON string[]
+  published Boolean @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([day, order])
+  @@index([day])
 }
