@@ -59,6 +59,79 @@ const SEED_PROJECTS: SeedProject[] = [
   },
 ];
 
+/**
+ * First real digest content (2026-09-27): eight Product Hunt launches from
+ * the public feed — distilled one-liners in EN + FA (no Persian comma per
+ * the editorial rule). INSERT-IF-MISSING on the unique url, so future
+ * imports and admin edits always win over these rows.
+ */
+interface SeedDaily {
+  day: string;
+  name: string;
+  taglineEn: string;
+  taglineFa: string;
+  url: string;
+}
+
+const SEED_DAILY: SeedDaily[] = [
+  {
+    day: '2026-09-27',
+    name: 'GPT-6 Sol & Luna',
+    taglineEn: 'Frontier AI intelligence, now at half the price',
+    taglineFa: 'هوش مصنوعی مرزی OpenAI حالا با نصف قیمت',
+    url: 'https://www.producthunt.com/products/openai',
+  },
+  {
+    day: '2026-09-27',
+    name: 'Superhuman Go',
+    taglineEn: 'The AI assistant that works where you do',
+    taglineFa: 'دستیار هوشمندی که همان‌جا که کار می‌کنی کار می‌کند',
+    url: 'https://www.producthunt.com/products/superhuman-go',
+  },
+  {
+    day: '2026-09-27',
+    name: 'Cuey',
+    taglineEn: 'Compare ChatGPT, Claude & Gemini answers in one tab.',
+    taglineFa: 'مقایسهٔ پاسخ‌های ChatGPT و Claude و Gemini در یک تب',
+    url: 'https://www.producthunt.com/products/cuey-2',
+  },
+  {
+    day: '2026-09-27',
+    name: 'Fewer',
+    taglineEn: 'The launcher that counts how often you pick up your phone',
+    taglineFa: 'لانچری که می‌شمارد چند بار در روز گوشی را برمی‌داری',
+    url: 'https://www.producthunt.com/products/fewer',
+  },
+  {
+    day: '2026-09-26',
+    name: 'KiwiDesk',
+    taglineEn: 'Tiling that feels like it shipped with macOS.',
+    taglineFa: 'چیدمان پنجره برای مک که انگار جزو خود سیستم است',
+    url: 'https://www.producthunt.com/products/kiwidesk',
+  },
+  {
+    day: '2026-09-26',
+    name: 'Harmony',
+    taglineEn: 'AI agents that resolve IT/HR tickets inside Slack and Teams',
+    taglineFa: 'ایجنت‌های هوشمندی که تیکت‌های IT و منابع انسانی را در Slack و Teams حل می‌کنند',
+    url: 'https://www.producthunt.com/products/harmony-it',
+  },
+  {
+    day: '2026-09-26',
+    name: 'Donna',
+    taglineEn: 'Schedule multiple meetings with one link',
+    taglineFa: 'زمان‌بندی چند جلسه با یک لینک',
+    url: 'https://www.producthunt.com/products/donna-4',
+  },
+  {
+    day: '2026-09-26',
+    name: 'Paragraph Notes',
+    taglineEn: 'A private Markdown notes app for Mac',
+    taglineFa: 'اپ یادداشت خصوصی با Markdown برای مک',
+    url: 'https://www.producthunt.com/products/paragraph-notes',
+  },
+];
+
 let done = false;
 
 export async function importContentSeed(): Promise<void> {
@@ -87,6 +160,13 @@ export async function importContentSeed(): Promise<void> {
         await db.project.update({ where: { slug: row.slug }, data: { cover: row.cover } });
         console.log(`[seed] project "${row.slug}" cover repaired → ${row.cover}`);
       }
+    }
+
+    for (const row of SEED_DAILY) {
+      const existing = await db.dailyProduct.findUnique({ where: { url: row.url } });
+      if (existing) continue;
+      await db.dailyProduct.create({ data: row });
+      console.log(`[seed] daily "${row.name}" created (${row.day})`);
     }
   } catch (err) {
     console.warn('[seed] import skipped:', err instanceof Error ? err.message : err);

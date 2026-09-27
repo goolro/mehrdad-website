@@ -1,4 +1,7 @@
 import { ImageResponse } from 'next/og';
+import sharp from 'sharp';
+import { readFile } from 'node:fs/promises';
+import path from 'node:path';
 import { ogFonts, OG } from '@/lib/og-fonts';
 import { getProjectBySlug } from '@/lib/queries';
 import { normalizeStatus, showsProgress, STATUS_LABELS } from '@/lib/project-status';
@@ -32,18 +35,33 @@ const ACCENT: Record<string, { text: string; bar: string }> = {
   archived: { text: '#a1a1aa', bar: 'linear-gradient(90deg, #a1a1aa, #71717a)' },
 };
 
-/** fetch the cover and inline it as a data URI (3.5s cap — never slow a share) */
+/**
+ * fetch the cover and inline it as a data URI (3.5s cap — never slow a share)
+ * Satori's bundled image decoder only decodes JPEG/PNG — it crashes the whole
+ * OG route on WebP (2026-09-27 live 500 on /work/traffic-tempo shares) and on
+ * extension/bytes mismatches (WordPress-era files named .png but holding JPEG
+ * bytes). So EVERY cover is normalized through sharp to plain PNG before
+ * embedding; any decode failure degrades to the branded background (no img).
+ * Local /media/* covers are read straight from the bundled public/ dir (the
+ * old SITE_ORIGIN round-trip added a flaky network hop inside the lambda);
+ * remote http(s) covers still go through a capped fetch.
+ */
 async function coverDataUri(cover: string): Promise<string | null> {
   try {
-    const origin = (process.env.SITE_ORIGIN || 'https://mehrdad.ir').replace(/\/+$/, '');
-    const url = /^https?:\/\//i.test(cover) ? cover : `${origin}/${cover.replace(/^\/+/, '')}`;
-    const res = await fetch(url, { signal: AbortSignal.timeout(3500) });
-    if (!res.ok) return null;
-    const type = res.headers.get('content-type') || '';
-    if (!type.startsWith('image/')) return null;
-    const buf = Buffer.from(await res.arrayBuffer());
-    if (buf.length < 1024 || buf.length > 8 * 1024 * 1024) return null; // sanity
-    return `data:${type};base64,${buf.toString('base64')}`;
+    let buf: Buffer | null = null;
+    if (/^https?:\/\//i.test(cover)) {
+      const res = await fetch(cover, { signal: AbortSignal.timeout(3500) });
+      if (!res.ok) return null;
+      const type = res.headers.get('content-type') || '';
+      if (!type.startsWith('image/')) return null;
+      buf = Buffer.from(await res.arrayBuffer());
+    } else {
+      const rel = cover.replace(/^\/+/, '').split('?')[0];
+      buf = await readFile(path.join(process.cwd(), 'public', rel));
+    }
+    if (!buf || buf.length < 1024 || buf.length > 8 * 1024 * 1024) return null; // sanity
+    const png = await sharp(buf).resize({ width: 1600, withoutEnlargement: true }).png().toBuffer();
+    return `data:image/png;base64,${png.toString('base64')}`;
   } catch {
     return null;
   }
@@ -95,9 +113,15 @@ export default async function Image({ params }: Props) {
           height: '100%',
           display: 'flex',
           background: OG.bg,
-          backgroundImage: bg
-            ? undefined
-            : `radial-gradient(circle at 88% 6%, rgba(124,58,237,0.4) 0%, rgba(124,58,237,0) 45%), radial-gradient(circle at 6% 96%, rgba(16,185,129,0.2) 0%, rgba(16,185,129,0) 38%)`,
+          // satori walks raw style objects (not React DOM) — an explicit
+          // `undefined` value here crashed the whole route with
+          // "Cannot read properties of undefined (reading 'trim')".
+          // Conditional spread instead, never a undefined-valued key.
+          ...(bg
+            ? {}
+            : {
+                backgroundImage: `radial-gradient(circle at 88% 6%, rgba(124,58,237,0.4) 0%, rgba(124,58,237,0) 45%), radial-gradient(circle at 6% 96%, rgba(16,185,129,0.2) 0%, rgba(16,185,129,0) 38%)`,
+              }),
           fontFamily: 'Vazirmatn',
         }}
       >

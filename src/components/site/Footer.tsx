@@ -30,6 +30,7 @@ export function Footer() {
             <Link href="/services" className="hover:text-foreground">{t.nav.services}</Link>
             <Link href="/work" className="hover:text-foreground">{t.nav.projects}</Link>
             <Link href="/blog" className="hover:text-foreground">{t.nav.blog}</Link>
+            <Link href="/daily" className="hover:text-foreground">{t.nav.daily}</Link>
             <Link href="/contact" className="hover:text-foreground">{t.nav.contact}</Link>
           </nav>
         </div>

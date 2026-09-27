@@ -4,7 +4,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { Lang } from './i18n';
 
-export type View = 'home' | 'services' | 'projects' | 'blog' | 'about' | 'contact' | 'fde' | 'admin';
+export type View = 'home' | 'services' | 'projects' | 'blog' | 'daily' | 'about' | 'contact' | 'fde' | 'admin';
 export type ColorMode = 'light' | 'dark';
 
 /**
@@ -18,6 +18,7 @@ export const VIEW_PATH: Record<View, string> = {
   services: '/services',
   projects: '/work',
   blog: '/blog',
+  daily: '/daily',
   about: '/about',
   contact: '/contact',
   fde: '/fde',
@@ -33,6 +34,7 @@ export function viewFromPathname(pathname: string | null | undefined): View {
     case 'services': return 'services';
     case 'work': return 'projects';
     case 'blog': return 'blog';
+    case 'daily': return 'daily';
     case 'about': return 'about';
     case 'contact': return 'contact';
     case 'fde':
