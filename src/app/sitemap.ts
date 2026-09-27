@@ -34,6 +34,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE}/lab`, changeFrequency: 'monthly', priority: 0.5 },
     { url: `${BASE}/blog`, changeFrequency: 'daily', priority: 0.9 },
     { url: `${BASE}/daily`, changeFrequency: 'daily', priority: 0.8 },
+    // the three daily lanes — real crawlable category hubs linked from the
+    // blog daily-box and the /daily index tabs
+    { url: `${BASE}/daily/cat/product`, changeFrequency: 'daily', priority: 0.7 },
+    { url: `${BASE}/daily/cat/ai`, changeFrequency: 'daily', priority: 0.7 },
+    { url: `${BASE}/daily/cat/startup`, changeFrequency: 'daily', priority: 0.7 },
     { url: `${BASE}/about`, changeFrequency: 'yearly', priority: 0.5 },
     { url: `${BASE}/contact`, changeFrequency: 'yearly', priority: 0.6 },
   ];

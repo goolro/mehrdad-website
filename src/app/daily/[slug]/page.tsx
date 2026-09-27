@@ -88,23 +88,25 @@ export default async function DailyArticlePage({ params }: Props) {
   if (!a || !isArticleLive(a)) notFound(); // scheduled-future → 404 until the slot
 
   // INTERNAL LINKING: related picks topically-similar articles first (shared
-  // tags) so crawler-visible links connect same-topic pages — not just the
-  // three newest rows. Ties and no-overlap fall back to newest-first.
+  // tags + the same daily lane) so crawler-visible links connect same-topic
+  // pages — not just the three newest rows. Ties and no-overlap fall back to
+  // newest-first.
   let relatedRows: { slug: string; day: string; titleEn: string; titleFa: string }[] = [];
   try {
     const myTags = new Set(tagsOf(a.tagsEn));
     const pool = await db.dailyArticle.findMany({
       where: { ...dailyVisibleWhere(), slug: { not: a.slug } },
       orderBy: [{ day: 'desc' }, { createdAt: 'desc' }],
-      select: { slug: true, day: true, titleEn: true, titleFa: true, tagsEn: true },
+      select: { slug: true, day: true, titleEn: true, titleFa: true, tagsEn: true, category: true },
       take: 25,
     });
     relatedRows = pool
       .map((r) => {
         const shared = tagsOf(r.tagsEn).filter((t) => myTags.has(t)).length;
-        return { ...r, shared };
+        const sameLane = r.category === a.category ? 1 : 0; // same daily lane ranks higher
+        return { ...r, score: shared * 2 + sameLane };
       })
-      .sort((x, y) => y.shared - x.shared || y.day.localeCompare(x.day))
+      .sort((x, y) => y.score - x.score || y.day.localeCompare(x.day))
       .slice(0, 3)
       .map(({ slug: s, day, titleEn, titleFa }) => ({ slug: s, day, titleEn, titleFa }));
   } catch {
@@ -113,11 +115,13 @@ export default async function DailyArticlePage({ params }: Props) {
 
   const tagsEn = tagsOf(a.tagsEn);
   const tagsFa = tagsOf(a.tagsFa);
+  const sectionLabels: Record<string, string> = { product: 'Products', ai: 'AI', startup: 'Startups' };
 
   // defense in depth: bodies were sanitized on save — sanitize again on read
   const article = {
     slug: a.slug,
     day: a.day,
+    category: a.category,
     titleEn: a.titleEn,
     titleFa: a.titleFa,
     summaryEn: a.summaryEn,
@@ -142,6 +146,7 @@ export default async function DailyArticlePage({ params }: Props) {
           datePublished: a.day,
           dateModified: a.updatedAt.toISOString(),
           inLanguage: ['en', 'fa'],
+          articleSection: sectionLabels[a.category] || 'Products',
           keywords: tagsEn.join(', '),
           author: { '@type': 'Person', name: 'Mehrdad', url: `${BASE}/about` },
           publisher: { '@type': 'Person', name: 'Mehrdad', url: BASE },

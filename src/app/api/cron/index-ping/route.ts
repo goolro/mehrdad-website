@@ -32,7 +32,20 @@ export const maxDuration = 60;
 
 const BASE = (process.env.SITE_ORIGIN || 'https://mehrdad.ir').replace(/\/+$/, '');
 
-const STATICS = ['/', '/blog', '/daily', '/work', '/services', '/fde', '/lab', '/about', '/contact'];
+const STATICS = [
+  '/',
+  '/blog',
+  '/daily',
+  '/daily/cat/product',
+  '/daily/cat/ai',
+  '/daily/cat/startup',
+  '/work',
+  '/services',
+  '/fde',
+  '/lab',
+  '/about',
+  '/contact',
+];
 
 // daily set — only pages that plausibly change day-to-day. IndexNow's own
 // usage guidance says repeatedly notifying UNCHANGED URLs makes them dampen

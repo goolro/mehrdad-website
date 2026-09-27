@@ -279,6 +279,9 @@ model DailyArticle {
   id        String  @id @default(cuid())
   slug      String  @unique
   day       String // publication day 'YYYY-MM-DD' (Tehran calendar) — groups the index
+  // one of: product | ai | startup — the three daily lanes the owner picked
+  // for the section (surfaces in the blog daily-box, index tabs, /daily/cat/*)
+  category  String  @default("product")
   titleEn   String
   titleFa   String
   summaryEn String // short excerpt — doubles as the SEO meta description

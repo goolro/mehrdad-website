@@ -55,6 +55,7 @@ export default async function DailyPage() {
   const articles: DailyArticleCard[] = rows.map((r) => ({
     slug: r.slug,
     day: r.day,
+    category: r.category,
     titleEn: r.titleEn,
     titleFa: r.titleFa,
     summaryEn: r.summaryEn,

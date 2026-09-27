@@ -3,6 +3,7 @@ import { db } from '@/lib/db';
 import { checkAdmin } from '@/lib/admin';
 import { notifyIndexNow } from '@/lib/indexnow';
 import { sanitizePostHtml, sanitizePlainText } from '@/lib/sanitize';
+import { isDailyCategory } from '@/lib/daily';
 
 export const dynamic = 'force-dynamic';
 
@@ -55,6 +56,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     if (b.verdictFa !== undefined) data.verdictFa = sanitizePostHtml(b.verdictFa);
     if (b.tagsEn !== undefined) data.tagsEn = parseTags(b.tagsEn);
     if (b.tagsFa !== undefined) data.tagsFa = parseTags(b.tagsFa);
+    if (b.category !== undefined) data.category = isDailyCategory(b.category) ? b.category : 'product';
     if (b.day !== undefined && DAY_RE.test(String(b.day))) data.day = b.day;
     if (b.published !== undefined) data.published = !!b.published;
     // staggered publishing: patch the go-live slot. Empty string / null clears it (live now).

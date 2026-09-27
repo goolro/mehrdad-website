@@ -11,7 +11,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { CommentsSection } from './CommentsSection';
 import { ShareBar } from './ShareBar';
 import { trackArticleViewed } from '@/lib/analytics';
-import { Search, FileText, ChevronLeft, ChevronRight, Clock, Info, MessageSquare } from 'lucide-react';
+import { Search, FileText, ChevronLeft, ChevronRight, Clock, Info, MessageSquare, Newspaper } from 'lucide-react';
+import { DAILY_CATEGORIES } from '@/lib/daily';
 
 interface CategoryItem { id: string; slug: string; nameEn: string; nameFa: string; count?: number }
 interface TagItem { id: string; slug: string; nameEn: string; nameFa: string; count?: number }
@@ -90,6 +91,43 @@ export function BlogView({ initial }: { initial?: BlogInitialData }) {
     <div className="mx-auto w-full max-w-7xl px-4 py-12 sm:px-6">
       <h1 className="text-3xl font-extrabold sm:text-4xl">{t.blog.title}</h1>
       <p className="mt-2 text-muted-foreground">{t.blog.sub}</p>
+
+      {/* DAILY BOX — the owner's daily section lives at its own link (/daily)
+          and the three lanes are one click away from the blog header. */}
+      <section
+        aria-label={t.blog.dailyBox.title}
+        className="mt-8 rounded-2xl border border-violet-500/30 bg-violet-500/5 p-5 sm:p-6"
+      >
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="min-w-0">
+            <Badge variant="outline" className="gap-1 border-violet-500/40 bg-violet-500/10 text-violet-600 dark:text-violet-400">
+              <Newspaper className="h-3.5 w-3.5" />
+              {t.blog.dailyBox.badge}
+            </Badge>
+            <h2 className="mt-2 text-xl font-bold tracking-tight">{t.blog.dailyBox.title}</h2>
+            <p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-muted-foreground">
+              {t.blog.dailyBox.desc}
+            </p>
+          </div>
+          <Link
+            href="/daily"
+            className="inline-flex shrink-0 items-center gap-1.5 self-start rounded-lg border border-violet-500/40 px-3 py-2 text-sm font-medium text-violet-600 transition-colors hover:bg-violet-500/10 dark:text-violet-400"
+          >
+            {t.blog.dailyBox.all}
+          </Link>
+        </div>
+        <div className="mt-4 flex flex-wrap gap-2">
+          {DAILY_CATEGORIES.map((c) => (
+            <Link
+              key={c}
+              href={`/daily/cat/${c}`}
+              className="rounded-full border border-border bg-card px-4 py-2 text-sm font-medium transition-all hover:-translate-y-0.5 hover:border-violet-500/50 hover:text-violet-600 dark:hover:text-violet-400"
+            >
+              {t.daily.cats[c]}
+            </Link>
+          ))}
+        </div>
+      </section>
 
       {/* search + filters */}
       <div className="mt-8 flex flex-col gap-4">

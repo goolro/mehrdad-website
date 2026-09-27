@@ -70,6 +70,7 @@ const SEED_PROJECTS: SeedProject[] = [
 interface SeedArticle {
   slug: string;
   day: string;
+  category: 'product' | 'ai' | 'startup';
   titleEn: string;
   titleFa: string;
   summaryEn: string;
@@ -86,6 +87,7 @@ const SEED_ARTICLES: SeedArticle[] = [
   {
     slug: 'gpt-6-sol-luna',
     day: '2026-09-27',
+    category: 'ai',
     titleEn: 'GPT-6 Sol and Luna: frontier AI at half the price changes the math for small teams',
     titleFa: 'GPT-6 سول و لونا — هوش مصنوعی مرزی با نصف قیمت و معادلهٔ تازهٔ تیم‌های کوچک',
     summaryEn:
@@ -124,6 +126,7 @@ const SEED_ARTICLES: SeedArticle[] = [
   {
     slug: 'superhuman-go',
     day: '2026-09-27',
+    category: 'ai',
     titleEn: 'Superhuman Go puts the AI assistant where the work actually happens',
     titleFa: 'Superhuman Go — دستیار هوشمند درست سر جای واقعی کار',
     summaryEn:
@@ -158,6 +161,7 @@ const SEED_ARTICLES: SeedArticle[] = [
   {
     slug: 'cuey',
     day: '2026-09-26',
+    category: 'ai',
     titleEn: 'Cuey compares ChatGPT and Claude and Gemini in a single tab',
     titleFa: 'Cuey — مقایسهٔ ChatGPT و Claude و Gemini در یک تب',
     summaryEn:
@@ -184,6 +188,7 @@ const SEED_ARTICLES: SeedArticle[] = [
   {
     slug: 'fewer',
     day: '2026-09-26',
+    category: 'product',
     titleEn: 'Fewer is a launcher that counts how often you pick up your phone',
     titleFa: 'Fewer — لانچری که می‌شمارد چند بار در روز گوشی را برمی‌دارید',
     summaryEn:
@@ -216,6 +221,7 @@ const SEED_ARTICLES: SeedArticle[] = [
   {
     slug: 'kiwidesk',
     day: '2026-09-25',
+    category: 'product',
     titleEn: 'KiwiDesk brings macOS window tiling that feels built into the system',
     titleFa: 'KiwiDesk — چیدمان پنجره برای مک که انگار جزو خود سیستم است',
     summaryEn:
@@ -248,6 +254,7 @@ const SEED_ARTICLES: SeedArticle[] = [
   {
     slug: 'paragraph-notes',
     day: '2026-09-25',
+    category: 'product',
     titleEn: 'Paragraph Notes is a private Markdown home for your Mac',
     titleFa: 'Paragraph Notes — خانهٔ خصوصی Markdown برای مک شما',
     summaryEn:
@@ -278,6 +285,80 @@ const SEED_ARTICLES: SeedArticle[] = [
     verdictFa: `<p>Paragraph Notes در چک‌لیست قابلیت‌ها بر کارگاه‌های بزرگ نمی‌برد — بازی آن این نیست. او سؤال ده‌ساله را می‌برد: آیا یادداشت‌هایتان ده سال دیگر هنوز مال خودتان خواهد بود. فایل ساده از هر شرکتی ماندگارتر است. اگر برای معیشت می‌نویسید جای دائمی در مک شما را دارد.</p>`,
     tagsEn: ['local-first', 'notes'],
     tagsFa: ['local-first', 'یادداشت'],
+  },
+  {
+    slug: 'linear-method',
+    day: '2026-09-28',
+    category: 'startup',
+    titleEn: 'The Linear method: why saying no to half the roadmap builds the better startup',
+    titleFa: 'روش لینیر — چرا نه گفتن به نصف نقشهٔ راه استارتاپ بهتری می‌سازد',
+    summaryEn:
+      'Linear grew a devoted user base by refusing the startup default of shipping everything: a slower cadence of opinionated releases and an interface that stays fast. What a small team can copy from that discipline without copying the product.',
+    summaryFa:
+      'لینیر با رد کردن عادت پیش‌فرض استارتاپ‌ها یعنی ساختن همه‌چیز کاربرانی وفادار پیدا کرد: ریتم آرام‌تر انتشار با نظر مشخص و رابطی که همیشه سریع می‌ماند. آنچه یک تیم کوچک می‌تواند از این نظم یاد بگیرد بدون کپی کردن محصول.',
+    bodyEn: `<p>Every startup tutorial repeats the same instruction: ship fast and ship often. Linear quietly runs the opposite experiment — a release cadence that looks slow from the outside while the product feels faster than almost anything else in its category. The two ideas are not actually in conflict. Linear ships fast internally and publishes slowly and deliberately.</p>
+<h2>The three decisions worth studying</h2>
+<ul>
+<li><strong>Opinion over options.</strong> The settings surface is small because most decisions were made once and made well.</li>
+<li><strong>Speed as a feature.</strong> Every screen responds under a blink — performance budgets treated as product requirements.</li>
+<li><strong>A small public surface.</strong> The team writes about how they work and lets the method do the marketing.</li>
+</ul>
+<h2>What a smaller team can actually take</h2>
+<p>You cannot copy a design culture in a weekend. What transfers is the filter: before adding a feature ask what the product says no to. A roadmap that tries to please everyone ships a mediocre version of everything. My own rule for client products is the same — the second version of a feature is where the product starts to rot. This is exactly how I scope work on the <a href="/services">product services</a> side.</p>
+<h2>The trade-off is real</h2>
+<p>Saying no costs growth in the short term. Some segments never convert because the product refuses their workflow. The bet is that depth wins retention and retention compounds into word of mouth. For teams with runway the math works. For teams chasing their first revenue a stricter filter can starve the machine — know which situation you are in before borrowing the method.</p>`,
+    bodyFa: `<p>همهٔ آموزش‌های استارتاپی یک دستور تکراری دارند: سریع بساز و زیاد منتشر کن. لینیر به‌آرامی آزمایش مخالف را اجرا می‌کند — ریتم انتشارش از بیرون کند به نظر می‌رسد در حالی که محصولش از تقریبا هر رقیب هم‌دسته سریع‌تر حس می‌شود. این دو اصل در تضاد نیستند. لینیر درون تیم سریع می‌سازد و بیرون را عمدا آهسته نگه می‌دارد.</p>
+<h2>سه تصمیمی که ارزش مطالعه دارد</h2>
+<ul>
+<li><strong>نظر مشخص به‌جای گزینه‌های بی‌شمار.</strong> صفحهٔ تنظیمات کوچک است چون بیشتر تصمیم‌ها یک بار و درست گرفته شده‌اند.</li>
+<li><strong>سرعت به‌عنوان قابلیت.</strong> هر صفحه زیر یک پلک‌زدن پاسخ می‌دهد — بودجهٔ عملکرد مثل الزام محصول رعایت می‌شود.</li>
+<li><strong>سطح عمومی کوچک.</strong> تیم دربارهٔ شیوهٔ کارش می‌نویسد و همین روش کار بازاریابی را انجام می‌دهد.</li>
+</ul>
+<h2>یک تیم کوچک‌تر چه چیزی واقعا می‌تواند بردارد</h2>
+<p>فرهنگ طراحی را نمی‌توان در یک آخر هفته کپی کرد. آنچه جابه‌جا می‌شود فیلتر است: پیش از افزودن هر قابلیت بپرس محصول به چه چیزی نه می‌گوید. نقشهٔ راهی که بخواهد همه را خوشحال کند نسخهٔ متوسط همه‌چیز را تحویل می‌دهد. قانون من در محصولات سفارشی همین است — قابلیت در نسخهٔ دومش شروع به پوسیدن می‌کند. همین منطق را در <a href="/services">خدمات ساخت محصول</a> به کار می‌برم.</p>
+<h2>هزینهٔ این انتخاب واقعی است</h2>
+<p>نه گفتن در کوتاه‌مدت رشد را کم می‌کند. بعضی گروه‌ها هرگز تبدیل نمی‌شوند چون محصول از گردش کارشان سر باز می‌زند. شرط این روش این است که عمق نگه‌داشت کاربر را می‌برد و نگه‌داشت به تبادل شفاهی تبدیل می‌شود. برای تیم‌هایی با زمان کافی این معادله جواب می‌دهد. برای تیم‌هایی که دنبال اولین درآمدشان هستند فیلتر سخت می‌تواند موتور را گرسنه نگه دارد — پیش از قرض گرفتن این روش بدانید در کدام وضعیت هستید.</p>`,
+    verdictEn: `<p>Linear is the best current argument that taste is a growth strategy. The product does not chase every market and that refusal is exactly why the users it does have talk about it constantly. My verdict for founders: steal the filter — not the interface. Decide what your product will never do and write it down where the whole team can see. The roadmap that survives is the one with sentences removed from it.</p>`,
+    verdictFa: `<p>لینیر بهترین استدلال کنونی است برای اینکه سلیقه یک راهبرد رشد است. محصول به‌دنبال هر بازار نمی‌رود و دقیقا همین سر باز زدن دلیل اصلی این است که کاربرانش مدام درباره‌اش حرف می‌زنند. حکم من برای بنیان‌گذاران: فیلتر را بدزدید نه رابط کاربری را. تصمیم بگیرید محصول شما هرگز چه چیزی نخواهد بود و آن را جایی بنویسید که کل تیم ببیند. نقشهٔ راهی که دوام می‌آورد نقشه‌ای است که از آن جمله حذف شده باشد.</p>`,
+    tagsEn: ['startups', 'product strategy'],
+    tagsFa: ['استارتاپ', 'راهبرد محصول'],
+  },
+  {
+    slug: 'calm-company-basecamp',
+    day: '2026-09-29',
+    category: 'startup',
+    titleEn: 'Basecamp keeps proving calm companies outlast blitzscaled ones',
+    titleFa: 'Basecamp — ثابت می‌کند شرکت‌های آرام از شرکت‌های تندرشد ماندگارترند',
+    summaryEn:
+      'While most software companies race headcount and burn, Basecamp has run the same playbook for two decades: a handful of products, profitable every year, no growth theater. Why the calm model is newly relevant for founders in 2026.',
+    summaryFa:
+      'در حالی که بیشتر شرکت‌های نرم‌افزاری مسابقهٔ استخدام و سوخت‌رسانی را دنبال می‌کنند Basecamp دو ده است با همان دستور کار پیش می‌رود: چند محصول معدود و سوددهی در هر سال و بدون نمایش رشد. چرا مدل آرام برای بنیان‌گذاران در سال ۲۰۲۶ تازه اهمیت گرفته است.',
+    bodyEn: `<p>The dominant startup story of the last fifteen years says grow or die: raise big and hire fast and figure out revenue later. Basecamp never subscribed. The company stayed small on purpose and profitable on purpose and kept its product surface almost unchanged while entire categories around it boomed and collapsed.</p>
+<h2>What the calm company actually optimizes</h2>
+<ul>
+<li><strong>Profit over headcount.</strong> Every new hire must remove more work than they add.</li>
+<li><strong>Few products kept excellent.</strong> The lineup stays short — the maintenance burden stays survivable.</li>
+<li><strong>No growth theater.</strong> Metrics that do not touch the bank account are not celebrated.</li>
+</ul>
+<h2>Why this reads differently in 2026</h2>
+<p>Every year the cost story of running software shifts. Talent is expensive and customer acquisition is expensive and investors have stopped rewarding pure growth. In that climate the calm playbook stops looking conservative and starts looking like arbitrage: a two-person team with a profitable product can survive decades that kill venture-funded competitors. I see the same pattern in miniature among the <a href="/work">small products I build</a> — a narrow profitable tool outlives three flashy experiments.</p>
+<h2>The honest limitations</h2>
+<p>Calm is not free. Markets that demand rapid scale pass such companies by and some categories genuinely need blitzscale to exist at all. A calm company also caps its own upside — nobody buys a private island on Basecamp margins. The model is a values decision as much as a strategy one.</p>`,
+    bodyFa: `<p>روایت غالب استارتاپ در پانزده سال گذشته چنین می‌گوید: رشد کن یا بمیر — بزرگ جذب سرمایه کن و سریع استخدام کن و درآمد را بعدا سرجوش بیاور. Basecamp هرگز این روایت را نپذیرفت. شرکت عمدا کوچک ماند و عمدا سودده بود و سطح محصولش تقریبا ثابت ماند در حالی که دسته‌های کامل اطرافش اوج گرفتند و فروپاشیدند.</p>
+<h2>شرکت آرام در واقع چه چیزی را بهینه می‌کند</h2>
+<ul>
+<li><strong>سود به‌جای شمار نیرو.</strong> هر استخدام تازه باید بیشتر از کاری که اضافه می‌کند کار حذف کند.</li>
+<li><strong>محصولات معدود اما عالی.</strong> فهرست محصولات کوتاه می‌ماند — بار نگه‌داری قابل تحمل می‌ماند.</li>
+<li><strong>بدون نمایش رشد.</strong> سنجه‌ای که به حساب بانکی نرسد جشن گرفته نمی‌شود.</li>
+</ul>
+<h2>چرا این متن در سال ۲۰۲۶ جور دیگری خوانده می‌شود</h2>
+<p>هر سال داستان هزینهٔ نرم‌افزار جابه‌جا می‌شود. استعداد گران است و جذب مشتری گران است و سرمایه‌گذاران دیگر رشد خالص را پاداش نمی‌دهند. در این فضا دستور کار آرام محافظه‌کارانه به نظر نمی‌رسد و شبی آربیتراژ می‌شود: تیمی دونفره با محصولی سودده دهه‌هایی زنده می‌ماند که رقیب‌های سرمایه‌پذیر را می‌کشد. من همین الگو را در مقیاس کوچک در <a href="/work">محصولاتی که می‌سازم</a> می‌بینم — یک ابزار باریک و سودده از سه آزمایش پرزرق‌وبرق ماندگارتر است.</p>
+<h2>محدودیت‌های صادقانه</h2>
+<p>آرامش رایگان نیست. بازارهایی که رشد سریع می‌خواهند از کنار چنین شرکت‌هایی رد می‌شوند و بعضی دسته‌ها واقعا برای زاده شدن به رشد تند نیاز دارند. شرکت آرام سقف سود خودش را هم می‌زند — با حاشیهٔ سود Basecamp کسی جزیرهٔ خصوصی نمی‌خرد. این مدل هم‌اندازهٔ یک راهبرد یک تصمیم ارزشی است.</p>`,
+    verdictEn: `<p>Two decades of profitability without a growth machine is the strongest possible evidence for the calm model and almost nobody copies it — because it is boring and boring does not trend. My take for founders building in 2026: decide early whether you are building a rocket or a house. Rockets need fuel and a launch window. Houses need a foundation and a roof that does not leak. Both are valid. Pretending your house is a rocket is what kills companies.</p>`,
+    verdictFa: `<p>دو ده سوددهی بدون ماشین رشد قوی‌ترین شاهد ممکن برای مدل آرام است و تقریبا هیچ‌کس آن را کپی نمی‌کند — چون کسل‌کننده است و کسل‌کننده‌ها ترند نمی‌شوند. نظر من برای بنیان‌گذارانی که در ۲۰۲۶ می‌سازند: زود تصمیم بگیرید که موشک می‌سازید یا خانه. موشک سوخت می‌خواهد و پنجرهٔ پرتاب. خانه پی می‌خواهد و سقفی که ترک بردارد ندارد. هر دو درست‌اند. ادعای موشک بودن برای خانه‌ای که موشک نیست همان چیزی است که شرکت‌ها را می‌کشد.</p>`,
+    tagsEn: ['startups', 'bootstrapping'],
+    tagsFa: ['استارتاپ', 'بووت‌استرپ'],
   },
 ];
 
@@ -310,6 +391,7 @@ async function bootstrapDailyTable(): Promise<boolean> {
         "id" TEXT NOT NULL,
         "slug" TEXT NOT NULL,
         "day" TEXT NOT NULL,
+        "category" TEXT NOT NULL DEFAULT 'product',
         "titleEn" TEXT NOT NULL,
         "titleFa" TEXT NOT NULL,
         "summaryEn" TEXT NOT NULL,
@@ -335,6 +417,11 @@ async function bootstrapDailyTable(): Promise<boolean> {
     // legacy rows = already live — same semantics as before this migration.
     await db.$executeRawUnsafe(
       `ALTER TABLE "DailyArticle" ADD COLUMN IF NOT EXISTS "publishAt" TIMESTAMP(3)`
+    );
+    // daily categories (2026-09-29): product | ai | startup — the three lanes
+    // surfaced in the blog daily-box and the /daily index tabs.
+    await db.$executeRawUnsafe(
+      `ALTER TABLE "DailyArticle" ADD COLUMN IF NOT EXISTS "category" TEXT NOT NULL DEFAULT 'product'`
     );
     changed = true;
   } catch (err) {
@@ -386,6 +473,27 @@ export async function importContentSeed(): Promise<void> {
       });
       console.log(`[seed] daily article "${row.slug}" created (${row.day})`);
       dailyChanged = true;
+    }
+
+    // ONE-TIME legacy category repair (2026-09-29): rows created before the
+    // category column existed all carry the DEFAULT 'product' while three of
+    // the seeded articles are AI analyses. The repair flips ONLY rows still
+    // sitting at the default and then never runs again (SiteSetting flag) —
+    // a deliberate admin choice made later is never overwritten.
+    const repairFlag = await db.siteSetting.findUnique({ where: { key: 'dailyCategoryRepairDone' } });
+    if (!repairFlag) {
+      for (const row of SEED_ARTICLES) {
+        await db.dailyArticle.updateMany({
+          where: { slug: row.slug, category: 'product' },
+          data: { category: row.category },
+        });
+      }
+      await db.siteSetting.upsert({
+        where: { key: 'dailyCategoryRepairDone' },
+        create: { key: 'dailyCategoryRepairDone', value: '1' },
+        update: { value: '1' },
+      });
+      console.log('[seed] daily category repair pass done');
     }
 
     // the static /daily pages are prerendered at BUILD time — when this boot

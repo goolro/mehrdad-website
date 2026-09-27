@@ -17,6 +17,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
@@ -26,6 +27,7 @@ interface Article {
   id: string;
   slug: string;
   day: string;
+  category: string;
   titleEn: string;
   titleFa: string;
   summaryEn: string;
@@ -44,6 +46,7 @@ interface FormState {
   id: string | null;
   slug: string;
   day: string;
+  category: string;
   titleEn: string;
   titleFa: string;
   summaryEn: string;
@@ -62,6 +65,7 @@ const EMPTY_FORM = (): FormState => ({
   id: null,
   slug: '',
   day: new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Tehran' }).format(new Date()),
+  category: 'product',
   titleEn: '',
   titleFa: '',
   summaryEn: '',
@@ -145,6 +149,7 @@ export function DailyStudio() {
       const payload = {
         slug: form.slug,
         day: form.day,
+        category: form.category,
         titleEn: form.titleEn,
         titleFa: form.titleFa,
         summaryEn: form.summaryEn,
@@ -208,6 +213,7 @@ export function DailyStudio() {
       id: a.id,
       slug: a.slug,
       day: a.day,
+      category: a.category || 'product',
       titleEn: a.titleEn,
       titleFa: a.titleFa,
       summaryEn: a.summaryEn,
@@ -280,6 +286,9 @@ export function DailyStudio() {
                       <div className="min-w-0 flex-1">
                         <div className="flex flex-wrap items-center gap-2">
                           <span className="truncate text-sm font-semibold">{a.titleEn}</span>
+                          <Badge variant="outline" className="shrink-0 text-[10px] text-violet-600">
+                            {t.cats[(a.category || 'product') as 'product']}
+                          </Badge>
                           {statusOf(a) === 'draft' && (
                             <Badge variant="outline" className="shrink-0 text-[10px] text-amber-600">
                               DRAFT
@@ -341,6 +350,20 @@ export function DailyStudio() {
                   <Label>{t.day}</Label>
                   <Input value={form.day} onChange={set('day')} placeholder="YYYY-MM-DD" dir="ltr" />
                 </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label>{t.category}</Label>
+                <Select value={form.category} onValueChange={(v) => setForm((f) => (f ? { ...f, category: v } : f))}>
+                  <SelectTrigger dir="ltr">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="product">{t.cats.product}</SelectItem>
+                    <SelectItem value="ai">{t.cats.ai}</SelectItem>
+                    <SelectItem value="startup">{t.cats.startup}</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="grid gap-3 sm:grid-cols-2">
