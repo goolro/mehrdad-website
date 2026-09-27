@@ -7,6 +7,8 @@ import { notifyIndexNow } from '@/lib/indexnow';
 export const dynamic = 'force-dynamic';
 export const maxDuration = 300;
 
+const BASE = (process.env.SITE_ORIGIN || 'https://mehrdad.ir').replace(/\/+$/, '');
+
 /**
  * Manual "Import from Product Hunt" — same routine as the daily cron:
  * fetch the feed, store what is new, translate each line to Persian.
