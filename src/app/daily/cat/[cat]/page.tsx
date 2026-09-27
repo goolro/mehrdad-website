@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { DailyView, type DailyArticleCard } from '@/components/site/DailyView';
 import { db } from '@/lib/db';
 import { dailyVisibleWhere, DAILY_CATEGORIES } from '@/lib/daily';
+import { importContentSeed } from '@/lib/seed-import';
 
 // ISR — same contract as /daily: category pages re-render every 15 minutes
 // so scheduled articles appear in their lane right after their random slot.
@@ -17,6 +18,9 @@ export function generateStaticParams() {
 const CAT_RE = /^[a-z]+$/;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  // idempotent bootstrap before ANY prerender touches the table (same
+  // self-healing contract as /daily and /work)
+  await importContentSeed();
   const { cat } = await params;
   if (!(DAILY_CATEGORIES as readonly string[]).includes(cat)) {
     return { title: 'Not found | Mehrdad' };

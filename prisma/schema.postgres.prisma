@@ -286,6 +286,10 @@ model DailyArticle {
   id        String  @id @default(cuid())
   slug      String  @unique
   day       String // publication day 'YYYY-MM-DD' (Tehran calendar) — groups the index
+  // one of: product | ai | startup — the three daily lanes (blog daily-box,
+  // /daily tabs, /daily/cat/<lane> hubs). The boot bootstrap adds the column
+  // on first boot via ALTER TABLE ... DEFAULT 'product'.
+  category  String  @default("product")
   titleEn   String
   titleFa   String
   summaryEn String // short excerpt — doubles as the SEO meta description
