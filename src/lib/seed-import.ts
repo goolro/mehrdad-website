@@ -134,10 +134,57 @@ const SEED_DAILY: SeedDaily[] = [
 
 let done = false;
 
+/**
+ * Schema bootstrap for the DailyProduct table (2026-09-27).
+ *
+ * The daily digest ships its TABLE with git on the same basis as its
+ * rows: `prisma db push` against the production URL needs manual access
+ * this project deliberately avoids, so the first postgres boot runs an
+ * idempotent CREATE TABLE IF NOT EXISTS — non-destructive by
+ * construction (it can never alter or drop existing data) and a no-op
+ * on every later boot. SQLite environments (sandbox/cPanel) already get
+ * the table from `prisma db push`, so the DDL is skipped there.
+ * After the table exists and the first rows are seeded, the deploy hook
+ * fires once so the static /daily page rebuilds WITH content.
+ */
+async function bootstrapDailyTable(): Promise<boolean> {
+  const url = process.env.DATABASE_URL || '';
+  if (url.startsWith('file:')) return false; // sqlite — schema lives in prisma db push
+  try {
+    await db.$executeRawUnsafe(`
+      CREATE TABLE IF NOT EXISTS "DailyProduct" (
+        "id" TEXT NOT NULL,
+        "day" TEXT NOT NULL,
+        "name" TEXT NOT NULL,
+        "taglineEn" TEXT NOT NULL,
+        "taglineFa" TEXT,
+        "url" TEXT NOT NULL,
+        "logo" TEXT,
+        "votes" INTEGER NOT NULL DEFAULT 0,
+        "order" INTEGER NOT NULL DEFAULT 0,
+        "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        CONSTRAINT "DailyProduct_pkey" PRIMARY KEY ("id")
+      )`);
+    await db.$executeRawUnsafe(
+      `CREATE UNIQUE INDEX IF NOT EXISTS "DailyProduct_url_key" ON "DailyProduct"("url")`
+    );
+    await db.$executeRawUnsafe(
+      `CREATE INDEX IF NOT EXISTS "DailyProduct_day_order_idx" ON "DailyProduct"("day", "order")`
+    );
+    return true;
+  } catch (err) {
+    console.warn('[seed] daily table bootstrap skipped:', err instanceof Error ? err.message : err);
+    return false;
+  }
+}
+
 export async function importContentSeed(): Promise<void> {
   if (done) return;
   done = true;
   try {
+    let dailyChanged = await bootstrapDailyTable();
+
     for (const row of SEED_PROJECTS) {
       const existing = await db.project.findUnique({ where: { slug: row.slug } });
       if (!existing) {
@@ -167,6 +214,16 @@ export async function importContentSeed(): Promise<void> {
       if (existing) continue;
       await db.dailyProduct.create({ data: row });
       console.log(`[seed] daily "${row.name}" created (${row.day})`);
+      dailyChanged = true;
+    }
+
+    // the static /daily page is prerendered at BUILD time — when this boot
+    // actually created the table or the first rows, fire the deploy hook
+    // once so the next build bakes the digest in (self-healing first
+    // deploy; the guard below keeps it from looping).
+    if (dailyChanged && process.env.VERCEL_DEPLOY_HOOK_URL) {
+      await fetch(process.env.VERCEL_DEPLOY_HOOK_URL, { method: 'POST' }).catch(() => {});
+      console.log('[seed] deploy hook fired for the daily digest');
     }
   } catch (err) {
     console.warn('[seed] import skipped:', err instanceof Error ? err.message : err);
