@@ -63,5 +63,22 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.6,
   }));
 
-  return [...statics, ...postUrls, ...projectUrls];
+  // daily articles (/daily/<slug>) — original bilingual editorials.
+  // A missing table (first-deploy window) degrades to an empty list; a
+  // real DB outage propagates and keeps the previous good deployment.
+  let articleUrls: MetadataRoute.Sitemap = [];
+  const articles = await db.dailyArticle.findMany({
+    where: { published: true },
+    orderBy: { day: 'desc' },
+    select: { slug: true, day: true },
+    take: 200,
+  });
+  articleUrls = articles.map((a) => ({
+    url: `${BASE}/daily/${a.slug}`,
+    lastModified: new Date(`${a.day}T00:00:00Z`),
+    changeFrequency: 'monthly' as const,
+    priority: 0.7,
+  }));
+
+  return [...statics, ...postUrls, ...projectUrls, ...articleUrls];
 }

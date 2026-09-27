@@ -2,66 +2,100 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { checkAdmin } from '@/lib/admin';
 import { notifyIndexNow } from '@/lib/indexnow';
-import { tehranDay } from '@/lib/daily-digest';
+import { sanitizePostHtml, sanitizePlainText } from '@/lib/sanitize';
 
 export const dynamic = 'force-dynamic';
 
 const BASE = (process.env.SITE_ORIGIN || 'https://mehrdad.ir').replace(/\/+$/, '');
 
-/** list every digest item — the studio groups by day client-side */
+/** digest day for a moment — Tehran calendar, ISO 'YYYY-MM-DD' */
+function tehranDay(d: Date = new Date()): string {
+  return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Tehran' }).format(d);
+}
+
+const DAY_RE = /^\d{4}-\d{2}-\d{2}$/;
+const SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
+function parseTags(v: unknown): string[] | null {
+  if (v === undefined) return null;
+  if (!Array.isArray(v)) return null;
+  return v
+    .map((t) => String(t || '').trim())
+    .filter(Boolean)
+    .slice(0, 10);
+}
+
+/** list every article — the studio groups by day client-side */
 export async function GET(req: NextRequest) {
   const denied = checkAdmin(req);
   if (denied) return denied;
-  const items = await db.dailyProduct.findMany({
-    orderBy: [{ day: 'desc' }, { order: 'asc' }, { createdAt: 'desc' }],
+  const items = await db.dailyArticle.findMany({
+    orderBy: [{ day: 'desc' }, { createdAt: 'desc' }],
     take: 300,
   });
   return NextResponse.json({ items });
 }
-
-const DAY_RE = /^\d{4}-\d{2}-\d{2}$/;
 
 export async function POST(req: NextRequest) {
   const denied = checkAdmin(req);
   if (denied) return denied;
   try {
     const b = await req.json();
-    const name = String(b.name || '').trim();
-    const url = String(b.url || '').trim();
-    const taglineEn = String(b.taglineEn || '').trim();
-    if (!name || !url || !taglineEn) {
-      return NextResponse.json({ error: 'name url taglineEn are required' }, { status: 400 });
+    const titleEn = sanitizePlainText(b.titleEn, 200);
+    const titleFa = sanitizePlainText(b.titleFa, 200);
+    const summaryEn = sanitizePlainText(b.summaryEn, 400);
+    const summaryFa = sanitizePlainText(b.summaryFa, 400);
+    const bodyEn = sanitizePostHtml(b.bodyEn);
+    const bodyFa = sanitizePostHtml(b.bodyFa);
+    if (!titleEn || !titleFa || !summaryEn || !summaryFa || !bodyEn || !bodyFa) {
+      return NextResponse.json(
+        { error: 'titles and summaries and full bodies (EN + FA) are required' },
+        { status: 400 }
+      );
     }
-    if (!/^https:\/\/(www\.)?producthunt\.com\//i.test(url)) {
-      return NextResponse.json({ error: 'URL must be a producthunt.com link' }, { status: 400 });
+    let slug = String(b.slug || '')
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .slice(0, 80);
+    if (!SLUG_RE.test(slug)) {
+      slug = slug.slice(0, 40) || 'article';
+      if (!SLUG_RE.test(slug)) return NextResponse.json({ error: 'Invalid slug' }, { status: 400 });
     }
     const day = DAY_RE.test(String(b.day || '')) ? b.day : tehranDay();
-    const exists = await db.dailyProduct.findUnique({ where: { url } });
-    if (exists) return NextResponse.json({ error: 'This product is already in the digest' }, { status: 409 });
+    const exists = await db.dailyArticle.findUnique({ where: { slug } });
+    if (exists) return NextResponse.json({ error: 'An article with this slug already exists' }, { status: 409 });
 
-    const order = Number.isFinite(b.order) ? Number(b.order) : await db.dailyProduct.count({ where: { day } });
-    const item = await db.dailyProduct.create({
+    const tagsEn = parseTags(b.tagsEn);
+    const tagsFa = parseTags(b.tagsFa);
+    const item = await db.dailyArticle.create({
       data: {
+        slug,
         day,
-        name: name.slice(0, 120),
-        taglineEn: taglineEn.slice(0, 240),
-        taglineFa: String(b.taglineFa || '').trim().slice(0, 240) || null,
-        url,
-        logo: String(b.logo || '').trim() || null,
-        votes: Number.isFinite(b.votes) ? Math.max(0, Math.trunc(b.votes)) : 0,
-        order,
+        titleEn,
+        titleFa,
+        summaryEn,
+        summaryFa,
+        bodyEn,
+        bodyFa,
+        verdictEn: sanitizePostHtml(b.verdictEn),
+        verdictFa: sanitizePostHtml(b.verdictFa),
+        tagsEn: tagsEn ? JSON.stringify(tagsEn) : null,
+        tagsFa: tagsFa ? JSON.stringify(tagsFa) : null,
+        published: b.published === undefined ? true : !!b.published,
       },
     });
 
     // publish path is identical to every other content mutation: rebuild
-    // the static pages (deploy hook) + ping the digest URL for indexing
+    // the static pages (deploy hook) + ping the new URLs for indexing
     if (process.env.VERCEL_DEPLOY_HOOK_URL) {
       await fetch(process.env.VERCEL_DEPLOY_HOOK_URL, { method: 'POST' }).catch(() => {});
     }
-    notifyIndexNow([`${BASE}/daily`]);
+    notifyIndexNow([`${BASE}/daily`, `${BASE}/daily/${item.slug}`]);
     return NextResponse.json({ ok: true, item });
   } catch (e) {
     console.error('admin daily create error:', e);
-    return NextResponse.json({ error: 'Failed to create item' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to create article' }, { status: 500 });
   }
 }
