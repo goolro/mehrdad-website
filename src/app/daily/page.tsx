@@ -19,12 +19,27 @@ export const metadata: Metadata = {
 };
 
 export default async function DailyPage() {
-  // fail-loud (build keeps the previous GOOD deployment on a DB outage —
-  // eb906e3 policy): never bake an empty digest silently
-  const items = await db.dailyProduct.findMany({
-    orderBy: [{ day: 'desc' }, { order: 'asc' }, { createdAt: 'asc' }],
-    take: 120,
-  });
+  // The table exists in every environment that ran `prisma db push`
+  // (sandbox/cPanel) or one postgres boot (boot-time IF NOT EXISTS
+  // bootstrap in seed-import.ts). EXACTLY on the very first postgres
+  // deploy the table can still be missing during this build — degrade to
+  // the empty state there instead of failing the whole deploy: the boot
+  // bootstrap creates the table, seeds it and fires the deploy hook, so
+  // the NEXT build bakes the digest in (self-healing, no manual DB access).
+  // On the normal path this stays fail-loud: a DB outage at build time
+  // keeps the previous GOOD deployment (eb906e3 policy) because a Turso
+  // outage throws (connection error), it does not return "table missing".
+  let items: Awaited<ReturnType<typeof db.dailyProduct.findMany>> = [];
+  try {
+    items = await db.dailyProduct.findMany({
+      orderBy: [{ day: 'desc' }, { order: 'asc' }, { createdAt: 'asc' }],
+      take: 120,
+    });
+  } catch (err) {
+    const missing = err instanceof Error && /does not exist/i.test(err.message);
+    if (!missing) throw err; // real outage → keep the previous deployment
+    console.warn('[daily] table missing at build time — empty digest until the boot bootstrap');
+  }
 
   // group by digest day, newest day first
   const groups: { day: string; items: typeof items }[] = [];

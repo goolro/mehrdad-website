@@ -36,6 +36,11 @@ export async function GET(req: NextRequest) {
     if (summary.created.length > 0) {
       const BASE = (process.env.SITE_ORIGIN || 'https://mehrdad.ir').replace(/\/+$/, '');
       notifyIndexNow([`${BASE}/daily`]);
+      // /daily is a build-time static page — rebuild it so today's import
+      // is actually visible (same publish path as every content mutation)
+      if (process.env.VERCEL_DEPLOY_HOOK_URL) {
+        await fetch(process.env.VERCEL_DEPLOY_HOOK_URL, { method: 'POST' }).catch(() => {});
+      }
     }
     return NextResponse.json({ ok: true, ...summary });
   } catch (e) {
