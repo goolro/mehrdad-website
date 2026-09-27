@@ -3,6 +3,7 @@ import { db } from '@/lib/db';
 import { checkAdmin } from '@/lib/admin';
 import { notifyIndexNow } from '@/lib/indexnow';
 import { sanitizePostHtml, sanitizePlainText } from '@/lib/sanitize';
+import { isDailyCategory } from '@/lib/daily';
 
 export const dynamic = 'force-dynamic';
 
@@ -69,6 +70,8 @@ export async function POST(req: NextRequest) {
 
     const tagsEn = parseTags(b.tagsEn);
     const tagsFa = parseTags(b.tagsFa);
+    // one of the owner's three daily lanes — product | ai | startup
+    const category = isDailyCategory(b.category) ? b.category : 'product';
     // staggered publishing: an optional go-live slot. Empty/null → live now.
     let publishAt: Date | null = null;
     if (b.publishAt !== undefined && b.publishAt !== null && String(b.publishAt).trim() !== '') {
@@ -90,6 +93,7 @@ export async function POST(req: NextRequest) {
         bodyFa,
         verdictEn: sanitizePostHtml(b.verdictEn),
         verdictFa: sanitizePostHtml(b.verdictFa),
+        category,
         tagsEn: tagsEn ? JSON.stringify(tagsEn) : null,
         tagsFa: tagsFa ? JSON.stringify(tagsFa) : null,
         published: b.published === undefined ? true : !!b.published,

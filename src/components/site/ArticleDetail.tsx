@@ -18,6 +18,7 @@ import { ArrowLeft, ArrowRight, ChevronRight, GraduationCap, ListOrdered } from 
 export interface DailyArticleFull {
   slug: string;
   day: string;
+  category: string;
   titleEn: string;
   titleFa: string;
   summaryEn: string;
@@ -41,8 +42,10 @@ export function DailyArticleDetail({
   const t = (ui[lang] as typeof ui.en).daily;
   const isFa = lang === 'fa';
 
+  // STRICT LANGUAGE SEPARATION (owner rule 2026-09-29): a FA page shows ONLY
+  // Persian and an EN page ONLY English — no alt-language headline, no mixed
+  // strings, anywhere.
   const title = pick(lang, article.titleEn, article.titleFa);
-  const altTitle = isFa ? article.titleEn : article.titleFa;
   const summary = pick(lang, article.summaryEn, article.summaryFa);
   const body = isFa ? article.bodyFa : article.bodyEn;
   const verdict = isFa ? article.verdictFa : article.verdictEn;
@@ -62,15 +65,17 @@ export function DailyArticleDetail({
       <header className="mt-6">
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
           <time dateTime={article.day}>{formatDate(lang, `${article.day}T00:00:00Z`)}</time>
+          <Link
+            href={`/daily/cat/${article.category}`}
+            className="font-medium text-violet-600 transition-colors hover:text-violet-500 dark:text-violet-400"
+          >
+            {t.cats[article.category as keyof typeof t.cats] || article.category}
+          </Link>
           {tags.slice(0, 4).map((tg) => (
             <span key={tg}>#{tg}</span>
           ))}
         </div>
         <h1 className="mt-3 text-3xl font-extrabold leading-tight sm:text-4xl">{title}</h1>
-        {/* the other language's headline — the section is bilingual by design */}
-        <p className="mt-2 text-sm text-muted-foreground" dir={isFa ? 'ltr' : 'rtl'}>
-          {altTitle}
-        </p>
       </header>
 
       {/* summary — the requested خلاصه, visually separated from the body */}
