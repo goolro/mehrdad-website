@@ -5,12 +5,13 @@ import { DailyArticleDetail } from '@/components/site/ArticleDetail';
 import { importContentSeed } from '@/lib/seed-import';
 import { JsonLd } from '@/components/site/JsonLd';
 import { sanitizePostHtml } from '@/lib/sanitize';
+import { dailyVisibleWhere, isArticleLive } from '@/lib/daily';
 
-// Fully static: rendered once per BUILD (same contract as /work/[slug]).
-// Content updates publish via the Vercel Deploy Hook fired by the admin
-// panel. Unknown slugs between deploys still render on demand
-// (dynamicParams) and are cached until the next deploy.
-export const dynamic = 'force-static';
+// ISR (staggered publishing): the page re-renders every 15 minutes, so an
+// article scheduled with publishAt becomes reachable right after its slot
+// without a redeploy. Until then it 404s (isArticleLive gate below).
+// Unknown slugs still render on demand (dynamicParams) and get cached.
+export const revalidate = 900;
 
 const BASE = (process.env.SITE_ORIGIN || 'https://mehrdad.ir').replace(/\/+$/, '');
 
@@ -41,7 +42,7 @@ export async function generateStaticParams() {
   await importContentSeed();
   try {
     const rows = await db.dailyArticle.findMany({
-      where: { published: true },
+      where: dailyVisibleWhere(), // scheduled-future slugs render on demand AFTER their slot
       select: { slug: true },
       take: 200,
     });
@@ -56,7 +57,7 @@ type Props = { params: Promise<{ slug: string }> };
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const a = await safeFindArticle(slug);
-  if (!a || !a.published) return { title: 'Article not found | Mehrdad' };
+  if (!a || !isArticleLive(a)) return { title: 'Article not found | Mehrdad' };
   const tagsEn = tagsOf(a.tagsEn);
   return {
     title: `${a.titleEn} | Mehrdad — Daily Product Analysis`,
@@ -84,17 +85,28 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function DailyArticlePage({ params }: Props) {
   const { slug } = await params;
   const a = await safeFindArticle(slug);
-  if (!a || !a.published) notFound();
+  if (!a || !isArticleLive(a)) notFound(); // scheduled-future → 404 until the slot
 
-  // newest published others — same-day items naturally float up
+  // INTERNAL LINKING: related picks topically-similar articles first (shared
+  // tags) so crawler-visible links connect same-topic pages — not just the
+  // three newest rows. Ties and no-overlap fall back to newest-first.
   let relatedRows: { slug: string; day: string; titleEn: string; titleFa: string }[] = [];
   try {
-    relatedRows = await db.dailyArticle.findMany({
-      where: { published: true, slug: { not: a.slug } },
+    const myTags = new Set(tagsOf(a.tagsEn));
+    const pool = await db.dailyArticle.findMany({
+      where: { ...dailyVisibleWhere(), slug: { not: a.slug } },
       orderBy: [{ day: 'desc' }, { createdAt: 'desc' }],
-      select: { slug: true, day: true, titleEn: true, titleFa: true },
-      take: 3,
+      select: { slug: true, day: true, titleEn: true, titleFa: true, tagsEn: true },
+      take: 25,
     });
+    relatedRows = pool
+      .map((r) => {
+        const shared = tagsOf(r.tagsEn).filter((t) => myTags.has(t)).length;
+        return { ...r, shared };
+      })
+      .sort((x, y) => y.shared - x.shared || y.day.localeCompare(x.day))
+      .slice(0, 3)
+      .map(({ slug: s, day, titleEn, titleFa }) => ({ slug: s, day, titleEn, titleFa }));
   } catch {
     relatedRows = []; // related is a nice-to-have — never fail the page for it
   }

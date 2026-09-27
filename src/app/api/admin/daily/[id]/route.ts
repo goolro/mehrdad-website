@@ -57,6 +57,18 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     if (b.tagsFa !== undefined) data.tagsFa = parseTags(b.tagsFa);
     if (b.day !== undefined && DAY_RE.test(String(b.day))) data.day = b.day;
     if (b.published !== undefined) data.published = !!b.published;
+    // staggered publishing: patch the go-live slot. Empty string / null clears it (live now).
+    if (b.publishAt !== undefined) {
+      if (b.publishAt === null || String(b.publishAt).trim() === '') {
+        data.publishAt = null;
+      } else {
+        const d = new Date(String(b.publishAt));
+        if (Number.isNaN(d.getTime())) {
+          return NextResponse.json({ error: 'publishAt is not a valid date' }, { status: 400 });
+        }
+        data.publishAt = d;
+      }
+    }
 
     const item = await db.dailyArticle.update({ where: { id }, data });
     if (process.env.VERCEL_DEPLOY_HOOK_URL) {

@@ -331,6 +331,11 @@ async function bootstrapDailyTable(): Promise<boolean> {
     await db.$executeRawUnsafe(
       `CREATE INDEX IF NOT EXISTS "DailyArticle_day_idx" ON "DailyArticle"("day")`
     );
+    // staggered publishing (2026-09-28): the scheduled go-live column. NULL on
+    // legacy rows = already live — same semantics as before this migration.
+    await db.$executeRawUnsafe(
+      `ALTER TABLE "DailyArticle" ADD COLUMN IF NOT EXISTS "publishAt" TIMESTAMP(3)`
+    );
     changed = true;
   } catch (err) {
     console.warn('[seed] daily table bootstrap skipped:', err instanceof Error ? err.message : err);

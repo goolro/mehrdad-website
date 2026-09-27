@@ -1,6 +1,7 @@
 import type { MetadataRoute } from 'next';
 import { db } from '@/lib/db';
 import { isUnpublishedPostSlug } from '@/lib/queries';
+import { dailyVisibleWhere } from '@/lib/daily';
 
 // PRERENDERED AT BUILD (2026-09-08, SEO-growth): the sitemap is generated
 // once per deploy, not per request.
@@ -68,7 +69,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // real DB outage propagates and keeps the previous good deployment.
   let articleUrls: MetadataRoute.Sitemap = [];
   const articles = await db.dailyArticle.findMany({
-    where: { published: true },
+    where: dailyVisibleWhere(), // scheduled-future items stay OUT of the sitemap until their slot (no crawl → 404)
     orderBy: { day: 'desc' },
     select: { slug: true, day: true },
     take: 200,

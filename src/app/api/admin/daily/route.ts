@@ -69,6 +69,15 @@ export async function POST(req: NextRequest) {
 
     const tagsEn = parseTags(b.tagsEn);
     const tagsFa = parseTags(b.tagsFa);
+    // staggered publishing: an optional go-live slot. Empty/null → live now.
+    let publishAt: Date | null = null;
+    if (b.publishAt !== undefined && b.publishAt !== null && String(b.publishAt).trim() !== '') {
+      const d = new Date(String(b.publishAt));
+      if (Number.isNaN(d.getTime())) {
+        return NextResponse.json({ error: 'publishAt is not a valid date' }, { status: 400 });
+      }
+      publishAt = d;
+    }
     const item = await db.dailyArticle.create({
       data: {
         slug,
@@ -84,6 +93,7 @@ export async function POST(req: NextRequest) {
         tagsEn: tagsEn ? JSON.stringify(tagsEn) : null,
         tagsFa: tagsFa ? JSON.stringify(tagsFa) : null,
         published: b.published === undefined ? true : !!b.published,
+        publishAt,
       },
     });
 

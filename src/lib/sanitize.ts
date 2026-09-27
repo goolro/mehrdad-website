@@ -26,6 +26,36 @@ import sanitizeHtml from 'sanitize-html';
  */
 const SAFE_DATA_URI = /^data:image\/(png|jpe?g|gif|webp|avif);base64,/i;
 
+/**
+ * The hosts that count as OUR OWN site for the link policy. Any href that is
+ * root-relative (starts with '/'), a fragment, a mailto:, or points at one of
+ * these hosts is internal → stays FOLLOWED so internal link equity flows.
+ * Everything else is external → nofollow + new tab (editorial caution: we
+ * never vouch for third-party pages, per the owner's Google-safety rule).
+ */
+function isInternalHref(href: string): boolean {
+  const h = href.trim();
+  if (!h) return true; // bare <a> without href — treat as harmless
+  if (/^(\/|#)/.test(h)) return true;
+  if (/^mailto:/i.test(h)) return true;
+  try {
+    const u = new URL(h);
+    const siteHost = new URL(process.env.SITE_ORIGIN || 'https://mehrdad.ir').hostname.toLowerCase();
+    const host = u.hostname.toLowerCase();
+    return host === siteHost || host === 'mehrdad.ir' || host === 'www.mehrdad.ir';
+  } catch {
+    return false;
+  }
+}
+
+function linkSeoTransform(attribs: sanitizeHtml.Attributes): { tagName: string; attribs: sanitizeHtml.Attributes } {
+  const href = typeof attribs.href === 'string' ? attribs.href : '';
+  if (isInternalHref(href)) {
+    return { tagName: 'a', attribs: { ...attribs, rel: 'noopener' } };
+  }
+  return { tagName: 'a', attribs: { ...attribs, rel: 'nofollow noopener noreferrer', target: '_blank' } };
+}
+
 const POST_OPTIONS: sanitizeHtml.IOptions = {
   allowedTags: [
     // structure
@@ -63,12 +93,12 @@ const POST_OPTIONS: sanitizeHtml.IOptions = {
     img: ['http', 'https', 'data'],
   },
   allowProtocolRelative: false,
-  // every <a> gets safe rel defaults
+  // SEO link policy (2026-09-28): INTERNAL links must stay FOLLOWED — nofollow
+  // on our own URLs blunts internal link equity (owner request: لینک‌سازی داخلی).
+  // EXTERNAL links get the cautious editorial treatment: nofollow + a new tab,
+  // so we never vouch for third-party pages in Google's eyes.
   transformTags: {
-    a: (tagName, attribs) => ({
-      tagName: 'a',
-      attribs: { ...attribs, rel: 'noopener noreferrer nofollow' },
-    }),
+    a: (tagName, attribs) => linkSeoTransform(attribs),
     img: (tagName, attribs) => {
       const next: Record<string, string> = { ...attribs, loading: attribs.loading || 'lazy' };
       if (typeof next.src === 'string' && /^\s*data:/i.test(next.src) && !SAFE_DATA_URI.test(next.src.trim())) {
