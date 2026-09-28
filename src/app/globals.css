@@ -412,3 +412,27 @@
 @media (prefers-reduced-motion: reduce) {
   .fde-shimmer { animation: none; }
 }
+
+/* ── FA boot guard (English-flash fix, 2026-01) ──────────────────────
+   The static build server-renders English for every visitor; a Persian
+   user used to SEE English text until JS hydration applied the persisted
+   language. The pre-paint boot script (layout.tsx) adds `lang-boot-fa`
+   when localStorage says Persian: this rule keeps the body invisible so
+   the first PAINT is the committed Persian render (SiteChrome removes
+   the class in a layout effect, i.e. before the browser paints).
+   Safety: a 0s forwards animation force-reveals the body after 1.2s, so
+   a JS failure or a stalled hydration can never leave a blank page.
+   no-JS visitors never get the class at all. */
+html.lang-boot-fa {
+  background: #09090b; /* zinc-950 — matches the default dark body */
+}
+html.lang-boot-fa.lang-boot-light {
+  background: #fafafa; /* zinc-50 — light-mode users */
+}
+html.lang-boot-fa body {
+  visibility: hidden;
+  animation: lang-boot-reveal 0s 1.2s forwards;
+}
+@keyframes lang-boot-reveal {
+  to { visibility: visible; }
+}

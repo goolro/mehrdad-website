@@ -99,8 +99,18 @@ export const viewport: Viewport = {
  * with ?lang=fa and this script flips language+dir BEFORE first paint —
  * zero flash, zero extra rendering cost. Google's renderer executes this
  * script, so the hreflang=fa variants are indexable as Persian content.
+ *
+ * 2026-01 (English-flash fix, owner report): the SSR text itself is always
+ * English (static build), so a FA user used to SEE English content for the
+ * whole hydration window before the persisted lang applied. The script now
+ * also sets `lang-boot-fa` (+ `lang-boot-light` for light-mode users): CSS
+ * keeps <body> invisible until SiteChrome commits the Persian render
+ * pre-paint — a FA user sees the dark background for a blink, then Persian,
+ * never English. A CSS animation force-reveals the body after ~1.2s so a
+ * JS failure can never blank the site (no-JS visitors never get the class
+ * at all — it is only set by this script).
  */
-const bootScript = `(function(){try{var q=new URLSearchParams(location.search).get('lang');if(q==='fa'||q==='en'){try{var raw2=JSON.parse(localStorage.getItem('mehrdad-app')||'{}');raw2.state=Object.assign({},raw2.state,{lang:q});localStorage.setItem('mehrdad-app',JSON.stringify(raw2));}catch(e){}if(q==='fa')document.documentElement.lang='fa',document.documentElement.dir='rtl';else document.documentElement.lang='en',document.documentElement.dir='ltr';}var s={};try{s=(JSON.parse(localStorage.getItem('mehrdad-app')||'{}').state)||{};}catch(e){}if(!s.mode||s.mode==='dark')document.documentElement.classList.add('dark');if(s.lang==='fa'){document.documentElement.lang='fa';document.documentElement.dir='rtl';}var t=localStorage.getItem('mehrdad-theme-cache');if(t)document.documentElement.dataset.theme=t;}catch(e){}})();`;
+const bootScript = `(function(){try{var q=new URLSearchParams(location.search).get('lang');if(q==='fa'||q==='en'){try{var raw2=JSON.parse(localStorage.getItem('mehrdad-app')||'{}');raw2.state=Object.assign({},raw2.state,{lang:q});localStorage.setItem('mehrdad-app',JSON.stringify(raw2));}catch(e){}if(q==='fa')document.documentElement.lang='fa',document.documentElement.dir='rtl';else document.documentElement.lang='en',document.documentElement.dir='ltr';}var s={};try{s=(JSON.parse(localStorage.getItem('mehrdad-app')||'{}').state)||{};}catch(e){}if(!s.mode||s.mode==='dark')document.documentElement.classList.add('dark');if(s.lang==='fa'){document.documentElement.lang='fa';document.documentElement.dir='rtl';document.documentElement.classList.add('lang-boot-fa');if(s.mode==='light')document.documentElement.classList.add('lang-boot-light');}var t=localStorage.getItem('mehrdad-theme-cache');if(t)document.documentElement.dataset.theme=t;}catch(e){}})();`;
 
 export default function RootLayout({
   children,
