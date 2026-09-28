@@ -100,6 +100,13 @@ export function ensureAiArticleTable(): Promise<void> {
       await db
         .$executeRawUnsafe(`CREATE INDEX IF NOT EXISTS "AiArticle_status_createdAt_idx" ON "AiArticle"("status", "createdAt")`)
         .catch(() => {});
+      // brief column (brief-builder wiring, 2026-09) — postgres supports IF NOT EXISTS;
+      // sqlite (sandbox) gets it via db:push, older sqlite prod tables via the caught ALTER
+      await db
+        .$executeRawUnsafe(`ALTER TABLE "AiArticle" ADD COLUMN IF NOT EXISTS "brief" TEXT`)
+        .catch(async () => {
+          await db.$executeRawUnsafe(`ALTER TABLE "AiArticle" ADD COLUMN "brief" TEXT`).catch(() => {});
+        });
     })().catch((e) => {
       ensured = null; // allow retry on the next request
       throw e;
@@ -406,6 +413,8 @@ export interface PipelineInput {
   keyword?: string;
   target: 'website' | 'linkedin';
   lang: 'fa' | 'en';
+  /** SEO brief from the Brief Builder — the writer must follow its outline */
+  brief?: string;
 }
 
 interface WriterArticle {
@@ -480,6 +489,10 @@ Respond with ONLY valid JSON (no markdown fences) in this exact shape:
 {"titleFa":"","titleEn":"","slug":"kebab-case-from-english-title","excerptFa":"","excerptEn":"","metaTitle":"","metaDescription":"","keywords":["","",""],"contentFa":"<h2>…</h2><p>…</p>…","contentEn":"<h2>…</h2><p>…</p>…"}
 Both languages are always produced. The HTML must use only <h2>, <h3>, <p>, <ul>, <li>, <strong>, <em>, <a> tags — no <html>/<body>/<h1>.`;
     user = `Topic: ${input.topic}${input.keyword ? `\nFocus keyword: ${input.keyword}` : ''}${
+      input.brief
+        ? `\n\nCONTENT BRIEF (from the SEO brief builder — MANDATORY: follow its H2/H3 outline, cover every listed topic, and answer the FAQ questions in a dedicated FAQ section):\n${input.brief}`
+        : ''
+    }${
       feedback ? `\n\nREVISION REQUEST (${input.lang} version must be rewritten; keep the other language version as-is):\n${feedback}` : ''
     }\n\nWrite the full article now.`;
   } else {
@@ -741,6 +754,7 @@ export async function pipelineGenerate(input: PipelineInput): Promise<string> {
       lang: input.lang,
       topic: input.topic,
       keyword: input.keyword || null,
+      brief: input.brief || null,
       status: 'draft',
       titleFa: written.titleFa || null,
       titleEn: written.titleEn || null,
@@ -853,7 +867,14 @@ export async function pipelineRevise(id: string) {
 
   const written = sanitizeWriterOutput(
     await writeArticle(
-      { topic: a.topic, keyword: a.keyword || undefined, target: a.target as 'website' | 'linkedin', lang: a.lang as 'fa' | 'en' },
+      {
+        topic: a.topic,
+        keyword: a.keyword || undefined,
+        target: a.target as 'website' | 'linkedin',
+        lang: a.lang as 'fa' | 'en',
+        // the brief keeps steering every revision round
+        brief: a.brief || undefined,
+      },
       feedback
     )
   );

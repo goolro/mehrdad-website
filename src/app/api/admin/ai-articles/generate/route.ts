@@ -19,11 +19,12 @@ export async function POST(req: NextRequest) {
     const b = await req.json().catch(() => ({}));
     const topic = (b.topic || '').trim().slice(0, 300);
     const keyword = (b.keyword || '').trim().slice(0, 150) || undefined;
+    const brief = (b.brief || '').trim().slice(0, 8000) || undefined;
     const target = b.target === 'linkedin' ? 'linkedin' : 'website';
     const lang = b.lang === 'en' ? 'en' : 'fa';
     if (!topic) return NextResponse.json({ error: 'Topic required' }, { status: 400 });
 
-    const id = await pipelineGenerate({ topic, keyword, target, lang });
+    const id = await pipelineGenerate({ topic, keyword, target, lang, brief });
     const row = await db.aiArticle.findUnique({ where: { id } });
     return NextResponse.json({ ok: true, article: row ? serializeArticle(row) : null });
   } catch (e) {

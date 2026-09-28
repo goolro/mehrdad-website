@@ -243,6 +243,7 @@ model AiArticle {
   lang            String   @default("fa") // fa | en
   topic           String
   keyword         String?
+  brief           String? // content brief from the Brief Builder (steers writer + revisions)
   status          String   @default("draft") // draft | needs_revision | approved | published | failed
   titleFa         String?
   titleEn         String?
@@ -298,4 +299,55 @@ model DailyArticle {
   updatedAt DateTime @updatedAt
 
   @@index([day])
+}
+
+// ───────────────────────── SEO Brief Builder ─────────────────────────
+
+/// Competitor / reference site the brief builder scans. The owner asked for
+/// the NotebookLM-style workflow (competitor URLs → extract headings → AI
+/// keeps the important ones → content brief) as a native admin tool instead.
+model BriefSource {
+  id       String  @id @default(cuid())
+  name     String
+  url      String  @unique
+  lang     String  @default("en") // en | fa
+  category String  @default("product") // product | ai | startup
+  active   Boolean @default(true)
+  // why a source may be dormant — e.g. "blocks server-side bots"
+  note     String?
+  scans    BriefScan[]
+  createdAt DateTime @default(now())
+}
+
+/// One scan of one source page — raw extracted heading outline (JSON TEXT,
+/// same pattern as every other list in this sqlite schema).
+model BriefScan {
+  id           String      @id @default(cuid())
+  sourceId     String
+  source       BriefSource @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  ok           Boolean     @default(true)
+  error        String?
+  title        String? // <title> of the fetched page
+  headings     String      @default("[]") // JSON [{tag:"h2", text:"…"}]
+  headingCount Int         @default(0)
+  createdAt    DateTime    @default(now())
+
+  @@index([sourceId, createdAt])
+}
+
+/// One generated content brief for a target page/topic — the deliverable a
+/// human writer (or the AI article pipeline) writes from.
+model Brief {
+  id          String   @id @default(cuid())
+  topic       String
+  category    String   @default("product") // product | ai | startup
+  status      String   @default("ready") // ready | used | archived
+  filtered    String   @default("[]") // JSON — AI-filtered important headings
+  structure   String? // JSON {h2:[], h3:[], topics:[], missing:[], faq:[]}
+  briefMd     String? // full human-readable brief (markdown)
+  sourceCount Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([status, createdAt])
 }
