@@ -21,7 +21,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Plus, Pencil, Trash2, CalendarClock } from 'lucide-react';
+import { Loader2, Plus, Pencil, Trash2, CalendarClock, Check, X } from 'lucide-react';
 
 interface Article {
   id: string;
@@ -131,6 +131,7 @@ export function DailyStudio() {
   const [items, setItems] = useState<Article[] | null>(null);
   const [saving, setSaving] = useState(false);
   const [autoBusy, setAutoBusy] = useState(false);
+  const [approvingId, setApprovingId] = useState<string | null>(null);
   const [form, setForm] = useState<FormState | null>(null);
 
   const load = useCallback(() => {
@@ -208,6 +209,32 @@ export function DailyStudio() {
     setAutoBusy(false);
   }
 
+  /** the owner's Approve — hands the piece the next free random slot */
+  async function approve(id: string) {
+    setApprovingId(id);
+    try {
+      const res = await fetch(`/api/admin/daily/${id}/approve`, { method: 'POST' });
+      const d = await res.json();
+      if (!res.ok || !d.ok) {
+        toast({ title: d.error || 'Approve failed', variant: 'destructive' });
+        return;
+      }
+      toast({ title: t.approvedDone.replace('{time}', formatSlot(lang, d.publishAt)) });
+      load();
+    } catch {
+      toast({ title: 'Approve failed', variant: 'destructive' });
+    } finally {
+      setApprovingId(null);
+    }
+  }
+
+  /** reject = remove from the queue entirely */
+  async function reject(id: string) {
+    if (!confirm(t.confirmReject)) return;
+    await fetch(`/api/admin/daily/${id}`, { method: 'DELETE' });
+    load();
+  }
+
   function editItem(a: Article) {
     setForm({
       id: a.id,
@@ -229,9 +256,11 @@ export function DailyStudio() {
     });
   }
 
-  // group by day (items already arrive day-desc)
+  // group by day (items already arrive day-desc) — drafts live in the
+  // approval queue above instead
+  const review = (items || []).filter((a) => !a.published);
   const groups: { day: string; items: Article[] }[] = [];
-  for (const a of items || []) {
+  for (const a of (items || []).filter((x) => x.published)) {
     const last = groups[groups.length - 1];
     if (last && last.day === a.day) last.items.push(a);
     else groups.push({ day: a.day, items: [a] });
@@ -258,6 +287,64 @@ export function DailyStudio() {
         </Button>
       </div>
       <p className="text-xs text-muted-foreground">{t.slotsNote}</p>
+
+      {review.length > 0 && (
+        <section className="rounded-2xl border-2 border-amber-500/40 bg-amber-500/5 p-4 sm:p-5">
+          <div className="flex flex-wrap items-center gap-2">
+            <h3 className="flex items-center gap-2 font-bold text-amber-700 dark:text-amber-400">
+              <CalendarClock className="h-4 w-4" />
+              {t.reviewTitle}
+              <Badge className="bg-amber-500/15 text-amber-700 dark:text-amber-400" variant="secondary">
+                {review.length}
+              </Badge>
+            </h3>
+          </div>
+          <p className="mt-1 text-xs text-muted-foreground">{t.reviewHint}</p>
+          <div className="mt-3 space-y-2">
+            {review.map((a) => (
+              <div
+                key={a.id}
+                className="flex flex-col gap-2 rounded-xl border border-amber-500/30 bg-card p-3 sm:flex-row sm:items-center sm:gap-3"
+              >
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="truncate text-sm font-semibold">{a.titleFa || a.titleEn}</span>
+                    <Badge variant="outline" className="shrink-0 text-[10px] text-violet-600">
+                      {t.cats[(a.category || 'product') as 'product']}
+                    </Badge>
+                  </div>
+                  <p className="mt-0.5 truncate text-xs text-muted-foreground" dir="auto">
+                    {a.summaryFa || a.summaryEn}
+                  </p>
+                </div>
+                <div className="flex shrink-0 gap-1.5">
+                  <Button
+                    size="sm"
+                    className="gap-1 bg-emerald-600 hover:bg-emerald-700"
+                    onClick={() => approve(a.id)}
+                    disabled={approvingId === a.id}
+                  >
+                    {approvingId === a.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />}
+                    {approvingId === a.id ? t.approving : t.approve}
+                  </Button>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="h-8 w-8 text-red-500 hover:text-red-600"
+                    onClick={() => reject(a.id)}
+                    title={t.reject}
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </Button>
+                  <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => editItem(a)} title={t.edit}>
+                    <Pencil className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       {items && items.length === 0 && (
         <div className="rounded-xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">

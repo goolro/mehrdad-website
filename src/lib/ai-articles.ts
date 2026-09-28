@@ -34,7 +34,7 @@ import { htmlToText } from '@/lib/social-studio';
 export const APPROVE_THRESHOLD = 85;
 export const MAX_REVISIONS = 2;
 
-const BRAND = `Mehrdad — an independent product builder & engineer.
+export const BRAND = `Mehrdad — an independent product builder & engineer.
 His world: startups, smart city technology, AI, inventions, product design, digital marketing.
 Site: https://mehrdad.ir — portfolio, services and blog live there.
 Voice: confident but not boastful, practical, forward-looking, concrete examples over vague hype.`;
@@ -47,7 +47,7 @@ Voice: confident but not boastful, practical, forward-looking, concrete examples
  * EDITOR agent re-enforces the same list by acting as an AI-pattern
  * detector before anything can reach `approved`.
  */
-const HUMAN_STYLE_RULES = `HUMAN-VOICE ALGORITHM (every rule mandatory — the goal is prose a human editor would sign without suspecting machine assistance):
+export const HUMAN_STYLE_RULES = `HUMAN-VOICE ALGORITHM (every rule mandatory — the goal is prose a human editor would sign without suspecting machine assistance):
 1. RHYTHM BURST: alternate 3-8 word sentences with 20-30 word ones. Never write three consecutive sentences with similar length or shape. Mechanical evenness is the #1 machine fingerprint.
 2. BANNED PHRASES — never write: «در دنیای امروز»، «در عصر دیجیتال»، «در دنیای پرسرعت امروز»، «شایان ذکر است»، «لازم به ذکر است»، «بدون شک»، «بر هیچ‌کس پوشیده نیست»، «در نهایت می‌توان گفت»، «همان‌طور که می‌دانید»، «در این مقاله قصد دارم»، "in today's fast-paced world"، "it's important to note"، "delve"، "unlock"، "moreover"، "in conclusion". If a sentence could open a Wikipedia article, delete it.
 3. OPEN CONCRETE: the first paragraph is a specific moment — a real situation, a question a client actually asked, a number from your own work, a mistake you made. Never a definition of the topic.
@@ -431,7 +431,7 @@ interface WriterArticle {
   hashtags?: string[];
 }
 
-const WEBSITE_SEO_RULES = `SEO REQUIREMENTS (all mandatory):
+export const WEBSITE_SEO_RULES = `SEO REQUIREMENTS (all mandatory):
 - Focus keyword appears in: title, meta title, meta description, the first paragraph, and at least two H2 headings — naturally, never stuffed.
 - <metaTitle> ≤ 60 chars. <metaDescription> ≤ 155 chars, written to earn the click.
 - Body: 900-1300 words per language. Semantic structure with <h2> main sections and <h2>/<h3> sub-points. Paragraphs short (2-4 sentences).
@@ -449,7 +449,7 @@ const WEBSITE_SEO_RULES = `SEO REQUIREMENTS (all mandatory):
  * that without touching the human-voice algorithm — answer blocks are
  * plain declarative islands, surrounding prose stays bursty/opinionated.
  */
-const GEO_CITABILITY_RULES = `GEO / AI-CITABILITY RULES (mandatory — answer engines quote self-contained passages):
+export const GEO_CITABILITY_RULES = `GEO / AI-CITABILITY RULES (mandatory — answer engines quote self-contained passages):
 - Write 2-3 "answer blocks" in the body: single <p> of 40-60 words that stands completely alone — names the subject explicitly, states one concrete fact pattern (what it is / how it works / what it costs / who wins) and could be quoted verbatim by an AI engine with zero surrounding context.
 - Every FAQ answer opens with the direct answer in its FIRST sentence, then adds nuance — answer-first, never buildup-first.
 - Include at least one explicit definition sentence per key concept («X یعنی ...» / "X is ...") — definitions are the most-cited passage type.
