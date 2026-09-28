@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { clientIp, readJsonBody, jsonBodyError, rateLimit, tooManyRequests } from '@/lib/rate-limit';
+import { isSessionOwner } from '@/lib/chat-owner';
 
 export const dynamic = 'force-dynamic';
 
@@ -23,6 +24,11 @@ export async function POST(req: NextRequest) {
   try {
     const body = parsed.data || {};
     const sessionId = String(body.sessionId ?? '').trim().slice(0, 64);
+    // ownership-bound (round-3 finding L4): only the visitor holding the
+    // token issued WITH this session may attach contact details to it —
+    // a known id alone can no longer hijack someone else's conversation
+    // into a lead or overwrite its contact fields
+    const sessionToken = String(body.sessionToken ?? '').trim().slice(0, 128);
     const name = String(body.name ?? '').trim().slice(0, 120);
     const email = String(body.email ?? '').trim().slice(0, 200);
     const phone = String(body.phone ?? '').trim().slice(0, 40);
@@ -47,6 +53,9 @@ export async function POST(req: NextRequest) {
     const session = await db.chatSession.findUnique({ where: { id: sessionId } });
     if (!session) {
       return NextResponse.json({ error: 'Session not found' }, { status: 404 });
+    }
+    if (!(await isSessionOwner(sessionId, sessionToken))) {
+      return NextResponse.json({ error: 'Session mismatch' }, { status: 403 });
     }
 
     await db.chatSession.update({

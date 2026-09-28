@@ -3,6 +3,7 @@ import { db } from '@/lib/db';
 import { retrieveContext, buildContextBlock } from '@/lib/rag';
 import { chatCompletion, chatCompletionStream, getProviderChain, zaiComplete, type ChatTurn } from '@/lib/ai-provider';
 import { clientIp, readJsonBody, jsonBodyError, rateLimit, tooManyRequests } from '@/lib/rate-limit';
+import { resolveOwnedSession, isSessionOwner } from '@/lib/chat-owner';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -139,7 +140,7 @@ export async function POST(req: NextRequest) {
     const body = parsed.data || {};
     const message = String(body.message ?? '').trim().slice(0, 2000);
     const lang: 'en' | 'fa' = PERSIAN_RE.test(message) ? 'fa' : body.lang === 'fa' ? 'fa' : 'en';
-    let sessionId = String(body.sessionId ?? '').trim();
+    let sessionId = String(body.sessionId ?? '').trim().slice(0, 64);
     // conversational flow (owner rule): the widget sends which scripted flow
     // the visitor is in ('order' | 'partner') — the chip tap itself never
     // reaches the API (the intro line is instant client-side) so this body
@@ -150,15 +151,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Message required' }, { status: 400 });
     }
 
-    // session
-    if (sessionId) {
-      const exists = await db.chatSession.findUnique({ where: { id: sessionId } });
-      if (!exists) sessionId = '';
-    }
-    if (!sessionId) {
-      const s = await db.chatSession.create({ data: {} });
-      sessionId = s.id;
-    }
+    // session — ownership-bound (round-3 finding L4): continuing a
+    // conversation requires the (sessionId, sessionToken) pair the server
+    // issued together; a wrong/missing token silently starts a FRESH
+    // session instead of continuing someone else's
+    const owned = await resolveOwnedSession(
+      sessionId,
+      String(body.sessionToken ?? '').trim().slice(0, 128)
+    );
+    sessionId = owned.sessionId;
+    const sessionToken = owned.sessionToken;
 
     // greeting/thanks fast-path: create the session, log both turns, answer
     // now — zero AI cost, zero wait for the shortest (and most common) pings
@@ -175,7 +177,7 @@ export async function POST(req: NextRequest) {
     if (quick) {
       await db.chatMessage.create({ data: { sessionId, role: 'user', content: message, lang } });
       await db.chatMessage.create({ data: { sessionId, role: 'assistant', content: quick, lang } });
-      return NextResponse.json({ reply: quick, sessionId, sources: [], aiUnavailable: false });
+      return NextResponse.json({ reply: quick, sessionId, sessionToken, sources: [], aiUnavailable: false });
     }
 
     // history — the LAST 6 messages (asc+take was silently sending the
@@ -306,6 +308,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({
         reply: canned,
         sessionId,
+        sessionToken,
         sources: [],
         aiUnavailable: false,
         phoneCaptured,
@@ -412,7 +415,7 @@ ${context || '(دانش خاصی یافت نشد — فقط از حقایق پا
           let started = false; // any delta already sent → no retries (would duplicate)
           let servedBy = ''; // which provider answered (debug/observability)
           try {
-            send({ sessionId }); // bind the session before first token
+            send({ sessionId, sessionToken }); // bind the session (and its owner token) before first token
             const chain = await getProviderChain();
             // attempt 1: generous budget; attempt 2 (transient 429/5xx):
             // short — the visitor is already waiting. When several providers
@@ -562,7 +565,7 @@ ${context || '(دانش خاصی یافت نشد — فقط از حقایق پا
 
     const sources = [...new Set(chunks.map((c) => c.refSlug).filter(Boolean))].slice(0, 4);
 
-    return NextResponse.json({ reply, sessionId, sources, aiUnavailable });
+    return NextResponse.json({ reply, sessionId, sessionToken, sources, aiUnavailable });
   } catch (e) {
     console.error('chat api error:', e);
     return NextResponse.json({ error: 'Chat failed' }, { status: 500 });
@@ -579,8 +582,13 @@ export async function DELETE(req: NextRequest) {
     const parsed = await readJsonBody(req, 4);
     if (!parsed.ok) return jsonBodyError(parsed.error);
     const body = parsed.data;
-    const sessionId = typeof body?.sessionId === 'string' ? body.sessionId : '';
-    if (sessionId) {
+    const sessionId = typeof body?.sessionId === 'string' ? body.sessionId.trim().slice(0, 64) : '';
+    // ownership-bound deletion (round-3 finding L4): only the visitor who
+    // holds the token issued WITH this session may remove it — a known or
+    // guessed id alone deletes nothing (the answer stays ok:true either
+    // way, so existence is never revealed)
+    const clientToken = typeof body?.sessionToken === 'string' ? body.sessionToken.trim().slice(0, 128) : '';
+    if (sessionId && (await isSessionOwner(sessionId, clientToken))) {
       // messages cascade-delete with the session
       await db.chatSession.delete({ where: { id: sessionId } }).catch(() => {});
     }

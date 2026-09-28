@@ -23,6 +23,10 @@ export function ChatWidget() {
   // live token stream: null = idle, string = assistant bubble being typed out
   const [streamText, setStreamText] = useState<string | null>(null);
   const sessionIdRef = useRef<string>('');
+  // owner token issued TOGETHER with the sessionId (privacy: round-3 L4).
+  // The server only continues/deletes a session for the caller that holds
+  // both — this ref is the only place the raw token ever lives client-side.
+  const sessionTokenRef = useRef<string>('');
   // the REAL scrolling element — a plain overflow-y-auto div. Radix ScrollArea
   // forwards its ref to the non-scrollable Root, which silently broke every
   // auto-scroll attempt (transcript never followed the conversation).
@@ -51,6 +55,7 @@ export function ChatWidget() {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- deliberate one-shot reset on language change (documented)
     setMessages([{ role: 'assistant', content: t.chat.welcome }]);
     sessionIdRef.current = '';
+    sessionTokenRef.current = '';
     setHasSession(false);
     setLead('idle');
     setFlow(null);
@@ -122,6 +127,7 @@ export function ChatWidget() {
           message: msg,
           lang,
           sessionId: sessionIdRef.current,
+          sessionToken: sessionTokenRef.current,
           stream: true,
           context: view === 'fde' ? 'fde' : undefined,
           flow,
@@ -137,10 +143,12 @@ export function ChatWidget() {
         const data = (await res.json().catch(() => null)) as {
           reply?: string;
           sessionId?: string;
+          sessionToken?: string;
           phoneCaptured?: boolean;
         } | null;
         if (data?.sessionId) {
           sessionIdRef.current = data.sessionId;
+          sessionTokenRef.current = data.sessionToken || '';
           setHasSession(true);
         }
         // the phone step completes the scripted flow — the visitor is now a
@@ -170,6 +178,9 @@ export function ChatWidget() {
         if (typeof ev.sessionId === 'string' && ev.sessionId) {
           sessionIdRef.current = ev.sessionId;
           setHasSession(true);
+        }
+        if (typeof ev.sessionToken === 'string' && ev.sessionToken) {
+          sessionTokenRef.current = ev.sessionToken;
         }
         if (ev.phoneCaptured === true) setFlow(null);
         if (typeof ev.delta === 'string' && ev.delta) {
@@ -214,7 +225,7 @@ export function ChatWidget() {
       const res = await fetch('/api/chat/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sessionId: sessionIdRef.current, ...leadForm }),
+        body: JSON.stringify({ sessionId: sessionIdRef.current, sessionToken: sessionTokenRef.current, ...leadForm }),
       });
       if (res.ok) {
         setLead('sent');
@@ -281,10 +292,14 @@ export function ChatWidget() {
                 fetch('/api/chat', {
                   method: 'DELETE',
                   headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ sessionId: sessionIdRef.current }),
+                  body: JSON.stringify({
+                    sessionId: sessionIdRef.current,
+                    sessionToken: sessionTokenRef.current,
+                  }),
                 }).catch(() => {});
               }
               sessionIdRef.current = '';
+              sessionTokenRef.current = '';
               setMessages([{ role: 'assistant', content: t.chat.welcome }]);
               setHasSession(false);
               setLead('idle');
