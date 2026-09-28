@@ -109,6 +109,19 @@ const nextConfig: NextConfig = {
     ignoreBuildErrors: false,
   },
   reactStrictMode: false,
+  experimental: {
+    // SLOW-INPAGE-NAVIGATION FIX (owner report 2026-01): the client router
+    // cache expired a prefetched static page after ~30s–5min, so clicking
+    // e.g. Home after a few minutes of reading refetched the RSC payload
+    // over a slow network (visible multi-second wait). Static pages here
+    // only change on a DEPLOY (force-static + deploy-hook rebuilds), so a
+    // long client-side freshness window is safe and keeps in-page nav
+    // instant; dynamic pages get a modest bump.
+    staleTimes: {
+      dynamic: 120, // default 30s
+      static: 1800, // default 300s — 30min matches the deploy cadence
+    },
+  },
 };
 
 export default nextConfig;

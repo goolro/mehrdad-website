@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useLayoutEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useApp, registerNavigate, viewFromPathname } from './store';
 import { Header } from './Header';
@@ -8,6 +8,13 @@ import { Footer } from './Footer';
 import { ChatWidget } from './ChatWidget';
 import { LangBanner } from './LangBanner';
 import { ThemeBackground } from './ThemeBackground';
+
+/**
+ * useLayoutEffect runs BEFORE the browser paints; useEffect runs after.
+ * SSR code must not call useLayoutEffect (React warns), so an isomorphic
+ * alias picks the right hook per environment.
+ */
+const useIsoLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
 /**
  * Shared chrome for every real route (real-routes SEO migration).
@@ -55,11 +62,25 @@ export function SiteChrome({ children }: { children: React.ReactNode }) {
     document.documentElement.dir = lang === 'fa' ? 'rtl' : 'ltr';
   }, [lang]);
 
-  // navigation bridge: store actions navigate through the App Router
-  useEffect(() => {
+  // navigation bridge: store actions navigate through the App Router.
+  // ISO-LAYOUT-EFFECT (2026-01 English-flash fix): the persisted language
+  // must be applied to the store BEFORE the browser's first paint, not in
+  // a post-paint useEffect. With skipHydration (store.ts) the first client
+  // render matches the SSR HTML (English); this hook then synchronously
+  // reads localStorage and re-renders in Persian in the SAME commit —
+  // the user paints Persian once and never sees an English frame.
+  // Also removes the boot script's `lang-boot-fa` body guard (globals.css)
+  // in the same pre-paint window, revealing the committed Persian UI.
+  useIsoLayoutEffect(() => {
     registerNavigate((path) => router.push(path));
-    // apply persisted language/mode AFTER first paint (hydration-safe —
-    // see skipHydration note in store.ts)
+    try {
+      const raw = JSON.parse(localStorage.getItem('mehrdad-app') || '{}').state || {};
+      if (raw.lang === 'fa' || raw.lang === 'en') useApp.setState({ lang: raw.lang });
+      if (raw.mode === 'light' || raw.mode === 'dark') useApp.setState({ mode: raw.mode });
+    } catch {}
+    document.documentElement.classList.remove('lang-boot-fa', 'lang-boot-light');
+    // full persist hydration (sync storage) — same values, kept for any
+    // future persisted fields beyond lang/mode
     useApp.persist.rehydrate();
   }, [router]);
 
