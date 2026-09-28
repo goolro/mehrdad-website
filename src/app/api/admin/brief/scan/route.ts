@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { checkAdmin } from '@/lib/admin';
-import { scanSources, isBriefCategory, type ScanOutcome } from '@/lib/brief';
+import { scanSources, isBriefCategory } from '@/lib/brief';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 120;
@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
     const results = await scanSources({ category, force: !!b.force });
     const ok = results.filter((r) => r.ok && r.headings.length > 0);
     const failed = results.filter((r) => !r.ok);
-    const summary = results.map((r): Omit<ScanOutcome, 'headings'> & { headingCount: number } => ({
+    const summary = results.map((r) => ({
       sourceId: r.sourceId,
       name: r.name,
       url: r.url,
@@ -30,7 +30,6 @@ export async function POST(req: NextRequest) {
       title: r.title,
       cached: r.cached,
       scanId: r.scanId,
-      headings: [],
       headingCount: r.headings.length,
     }));
     return NextResponse.json({
