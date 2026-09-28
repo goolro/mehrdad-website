@@ -103,7 +103,6 @@ export function BriefBuilder() {
   const [newSource, setNewSource] = useState({ name: '', url: '', lang: 'en', category: 'product' });
   const [adding, setAdding] = useState(false);
 
-  const [scanCat, setScanCat] = useState<string>('product');
   const [scanResults, setScanResults] = useState<ScanSummaryItem[] | null>(null);
   const [scanning, setScanning] = useState(false);
 
@@ -172,7 +171,7 @@ export function BriefBuilder() {
       const res = await fetch('/api/admin/brief/scan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ category: scanCat, force }),
+        body: JSON.stringify({ category: briefCat, force }),
       });
       const d = await res.json();
       if (!res.ok || !d.ok) {
@@ -206,7 +205,6 @@ export function BriefBuilder() {
         return;
       }
       setBrief(d.brief as BriefResult);
-      setScanCat(briefCat);
       loadHistory();
     } finally {
       setBuilding(false);
