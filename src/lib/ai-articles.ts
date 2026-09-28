@@ -431,6 +431,21 @@ const WEBSITE_SEO_RULES = `SEO REQUIREMENTS (all mandatory):
 - Content must teach something concrete: steps, examples, numbers, real trade-offs. No fluff introductions like "in today's fast-paced world".
 - End the body (before FAQ) with one short actionable takeaway paragraph.`;
 
+/**
+ * GEO / AI-CITABILITY RULES (2026-01) — from the geo-seo audit tool
+ * (skills/geo-seo, adapted from github geo-seo-claude). The live audit
+ * scored article pages 23-50/100 on citability: passages are narrative
+ * and not extractable. AI answer engines (ChatGPT / Perplexity / Google
+ * AI Overviews) quote SELF-CONTAINED passages verbatim; these rules fix
+ * that without touching the human-voice algorithm — answer blocks are
+ * plain declarative islands, surrounding prose stays bursty/opinionated.
+ */
+const GEO_CITABILITY_RULES = `GEO / AI-CITABILITY RULES (mandatory — answer engines quote self-contained passages):
+- Write 2-3 "answer blocks" in the body: single <p> of 40-60 words that stands completely alone — names the subject explicitly, states one concrete fact pattern (what it is / how it works / what it costs / who wins) and could be quoted verbatim by an AI engine with zero surrounding context.
+- Every FAQ answer opens with the direct answer in its FIRST sentence, then adds nuance — answer-first, never buildup-first.
+- Include at least one explicit definition sentence per key concept («X یعنی ...» / "X is ...") — definitions are the most-cited passage type.
+- These blocks must not read like the rest of the article's voice work: plain, declarative, fact-dense. Everything around them keeps the HUMAN-VOICE ALGORITHM.`;
+
 async function writeArticle(input: PipelineInput, feedback?: string): Promise<WriterArticle> {
   const pool = await getInternalLinkPool();
   const chunks = await retrieveContext(`${input.topic} ${input.keyword || ''}`, 5);
@@ -451,6 +466,8 @@ TASK: write a complete, publication-ready, fully SEO-optimized blog article that
 ${HUMAN_STYLE_RULES}
 
 ${WEBSITE_SEO_RULES}
+
+${GEO_CITABILITY_RULES}
 
 ALLOWED INTERNAL LINKS (the ONLY slugs you may link to):
 ${renderLinkPool(pool)}
@@ -610,7 +627,8 @@ ${
 4. Internal links: 3-6 contextual links with descriptive anchors. LinkedIn: zero fake links
 5. Content depth: concrete examples/steps, scannable paragraphs, 900-1300 words
 6. FAQ section present
-7. Link integrity: every internal link slug must exist in the ALLOWED LIST${hallucinated.length ? `\n\nDETECTED HALLUCINATED LINKS (automatic must_fix): ${hallucinated.map((l) => l.slug).join(', ')}` : ''}`
+7. Link integrity: every internal link slug must exist in the ALLOWED LIST${hallucinated.length ? `\n\nDETECTED HALLUCINATED LINKS (automatic must_fix): ${hallucinated.map((l) => l.slug).join(', ')}` : ''}
+8. GEO citability: 2-3 self-contained 40-60 word answer blocks present (subject named explicitly, quoteable with zero context); FAQ answers open with the direct answer in the first sentence; at least one explicit definition sentence per key concept`
 }
 
 ALLOWED INTERNAL LINK SLUGS:
@@ -662,6 +680,7 @@ CHECKLIST (score 0-100, be strict):
 5. Structure & flow: logical progression, no repeated sentences, no filler phrases
 6. Value: the reader finishes knowing something they can actually use
 7. CTA: present and honest${article.target === 'linkedin' ? '; hook must work in the first 2 lines' : ''}
+8. GEO (website target only): at least two passages a search-AI could quote verbatim — self-contained, fact-dense, 40-60 words${article.target === 'linkedin' ? ' (N/A for LinkedIn)' : ''}
 
 ${reviewShapeLine()}`;
 
