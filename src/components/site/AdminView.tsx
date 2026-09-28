@@ -17,7 +17,7 @@ import {
   LayoutDashboard, FileText, Sparkles, Mail, Lock, Trash2, Languages,
   RefreshCw, ImageIcon, Eye, Loader2, LogOut, Globe, MessageSquare, Check, X, Palette,
   Bot, MessagesSquare, Phone, KeyRound, PlayCircle, Pencil, BadgeCheck, UserCheck,
-  FolderKanban, Share2, Workflow, Bell, Newspaper,
+  FolderKanban, Share2, Workflow, Bell, Newspaper, ListTree,
 } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { PROJECT_STATUSES, normalizeStatus } from '@/lib/project-status';
@@ -25,6 +25,7 @@ import { THEMES } from '@/lib/themes';
 import { SocialStudio } from './SocialStudio';
 import { ContentPipeline } from './ContentPipeline';
 import { DailyStudio } from './DailyStudio';
+import { BriefBuilder } from './BriefBuilder';
 
 interface CategoryItem { id: string; slug: string; nameEn: string; nameFa: string; count: number }
 interface AdminPost {
@@ -208,6 +209,7 @@ export function AdminView() {
           <TabsTrigger value="social" className="gap-1.5"><Share2 className="h-4 w-4" />{t.admin.tabs.social}</TabsTrigger>
           <TabsTrigger value="pipeline" className="gap-1.5"><Workflow className="h-4 w-4" />{t.admin.tabs.pipeline}</TabsTrigger>
           <TabsTrigger value="daily" className="gap-1.5"><Newspaper className="h-4 w-4" />{t.admin.tabs.daily}</TabsTrigger>
+          <TabsTrigger value="brief" className="gap-1.5"><ListTree className="h-4 w-4" />{t.admin.tabs.brief}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="dashboard"><Dashboard t={t} lang={lang} onOpenChats={() => setTab('chats')} /></TabsContent>
@@ -222,6 +224,7 @@ export function AdminView() {
         <TabsContent value="social"><SocialStudio /></TabsContent>
         <TabsContent value="pipeline"><ContentPipeline /></TabsContent>
         <TabsContent value="daily"><DailyStudio /></TabsContent>
+        <TabsContent value="brief"><BriefBuilder /></TabsContent>
       </Tabs>
     </div>
   );
