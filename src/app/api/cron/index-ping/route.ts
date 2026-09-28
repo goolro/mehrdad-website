@@ -5,6 +5,7 @@ import { dailyVisibleWhere } from '@/lib/daily';
 import { submitIndexNow, indexNowKey } from '@/lib/indexnow';
 import { googleIndexingEnabled, notifyGoogleBatch } from '@/lib/google-indexing';
 import { clientIp, rateLimit, tooManyRequests } from '@/lib/rate-limit';
+import { safeEqual } from '@/lib/admin';
 
 /**
  * The indexing program (2026-09, owner request: «یه برنامه بزار ایندکس بشه»).
@@ -58,7 +59,11 @@ export async function GET(req: NextRequest) {
   if (secret) {
     const auth = req.headers.get('authorization') || '';
     const key = req.nextUrl.searchParams.get('key') || '';
-    if (auth !== `Bearer ${secret}` && key !== indexNowKey()) {
+    // timing-safe compares (round-3 follow-up) — same contract as the
+    // daily-generate cron: no microsecond oracle on the secret bytes
+    const authOk = safeEqual(auth, `Bearer ${secret}`);
+    const keyOk = safeEqual(key, indexNowKey());
+    if (!authOk && !keyOk) {
       return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
     }
   } else {

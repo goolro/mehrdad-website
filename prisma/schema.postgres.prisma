@@ -156,6 +156,10 @@ model ChatSession {
   contactNote  String?
   lead         Boolean       @default(false) // visitor explicitly asked Mehrdad to reply personally
   read         Boolean       @default(false)
+  // sha256 of the visitor's owner token (round-3 L4): continuation and
+  // deletion of a session require the matching token. Null = legacy row
+  // created before ownership existed — claimed on first contact.
+  ownerHash    String?
   createdAt    DateTime      @default(now())
   messages     ChatMessage[]
 

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse, after } from 'next/server';
 import { dailyGenerateStep } from '@/lib/daily-generator';
 import { indexNowKey } from '@/lib/indexnow';
 import { clientIp, rateLimit, tooManyRequests } from '@/lib/rate-limit';
+import { safeEqual } from '@/lib/admin';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 300;
@@ -28,7 +29,14 @@ export async function GET(req: NextRequest) {
   if (secret) {
     const auth = req.headers.get('authorization') || '';
     const key = req.nextUrl.searchParams.get('key') || '';
-    if (auth !== `Bearer ${secret}` && key !== indexNowKey()) {
+    // timing-safe compares (round-3 follow-up): never hand a remote party a
+    // microsecond oracle on the secret bytes. safeEqual() hashes both sides
+    // so any length mismatch is safe too; an empty IndexNow key would fail
+    // closed (manual ?key= runs just need the real key, which is non-empty
+    // by construction).
+    const authOk = safeEqual(auth, `Bearer ${secret}`);
+    const keyOk = safeEqual(key, indexNowKey());
+    if (!authOk && !keyOk) {
       return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
     }
   } else {
