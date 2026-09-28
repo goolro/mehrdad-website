@@ -1,12 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { checkAdmin } from '@/lib/admin';
-import {
-  randomDayCount,
-  randomDaySlots,
-  planDayToUtc,
-  tehranDay,
-} from '@/lib/daily';
+import { randomDayCount, randomDaySlots, planDayToUtc, tehranDay } from '@/lib/daily';
+import { loadPlan, savePlan, takenSlotKeys, MAX_DAYS_AHEAD, MIN_LEAD_MINUTES } from '@/lib/daily-slots';
 
 export const dynamic = 'force-dynamic';
 
@@ -30,35 +26,10 @@ export const dynamic = 'force-dynamic';
  * it stays HIDDEN until the slot passes (visibility is gated by
  * isArticleLive on the public pages) and then goes live by itself via
  * ISR. Slots already occupied by another article are skipped.
+ *
+ * 2026-09-30: the plan helpers moved to src/lib/daily-slots.ts — the
+ * owner's per-article Approve button shares the exact same plan.
  */
-
-const PLAN_KEY = 'dailyPublishPlan';
-const MAX_DAYS_AHEAD = 30;
-const MIN_LEAD_MINUTES = 45; // never slot an article less than 45 min from now
-
-/** persisted day plan: { 'YYYY-MM-DD': ['HH:MM', …] } */
-type DayPlan = Record<string, string[]>;
-
-async function loadPlan(): Promise<{ plan: DayPlan; isNew: boolean }> {
-  const row = await db.siteSetting.findUnique({ where: { key: PLAN_KEY } });
-  if (!row) return { plan: {}, isNew: true };
-  try {
-    const parsed = JSON.parse(row.value);
-    return parsed && typeof parsed === 'object' ? { plan: parsed as DayPlan, isNew: false } : { plan: {}, isNew: true };
-  } catch {
-    return { plan: {}, isNew: true };
-  }
-}
-
-async function savePlan(plan: DayPlan) {
-  // keep the record bounded — drop days older than yesterday
-  const cutoff = tehranDay(new Date(Date.now() - 2 * 86_400_000));
-  for (const day of Object.keys(plan)) {
-    if (day < cutoff) delete plan[day];
-  }
-  const value = JSON.stringify(plan);
-  await db.siteSetting.upsert({ where: { key: PLAN_KEY }, create: { key: PLAN_KEY, value }, update: { value } });
-}
 
 export async function POST(req: NextRequest) {
   const denied = checkAdmin(req);
@@ -77,16 +48,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true, scheduled: 0, note: 'no complete drafts to queue' });
     }
 
-    // 2) already-taken future slots (minute-precision keys)
-    const takenRows = await db.dailyArticle.findMany({
-      where: { publishAt: { gte: new Date() } },
-      select: { publishAt: true },
-    });
-    const taken = new Set(
-      takenRows.filter((r) => r.publishAt).map((r) => Math.floor(r.publishAt!.getTime() / 60_000))
-    );
-
-    // 3) load (or lazily generate) the random plan per day
+    // 2) already-taken future slots + persisted random plan
+    const taken = await takenSlotKeys();
     const { plan } = await loadPlan();
     const notBefore = Date.now() + MIN_LEAD_MINUTES * 60_000;
     const assignments: { id: string; slug: string; publishAt: Date; day: string }[] = [];
@@ -114,7 +77,7 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // 4) persist plan + assignments — one update per queued article
+    // 3) persist plan + assignments — one update per queued article
     await savePlan(plan);
     for (const a of assignments) {
       await db.dailyArticle.update({
@@ -123,7 +86,7 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // 5) rebuild the static pages once (queued items stay hidden until their
+    // 4) rebuild the static pages once (queued items stay hidden until their
     //    slot regardless — ISR picks each one up as its slot passes)
     if (process.env.VERCEL_DEPLOY_HOOK_URL) {
       await fetch(process.env.VERCEL_DEPLOY_HOOK_URL, { method: 'POST' }).catch(() => {});
