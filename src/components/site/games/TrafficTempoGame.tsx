@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Gamepad2, MousePointerClick, Pause, Play, RotateCcw, Volume2, VolumeX } from 'lucide-react';
+import Link from 'next/link';
+import { ChevronRight, Gamepad2, MousePointerClick, Pause, Play, RotateCcw, Smartphone, Volume2, VolumeX } from 'lucide-react';
 import { useApp } from '../store';
 import { ui } from '../i18n';
 
@@ -734,6 +735,20 @@ export function TrafficTempoGame() {
         {t.projects.webGameTitle}
       </h2>
       <p className="mt-1 text-sm text-muted-foreground">{t.projects.webGameSub}</p>
+
+      {/* full-screen mobile edition — the same game tuned for a phone:
+          portrait board + touch targets + haptics (owner request
+          2026-09-30: «ترافیک تمپو بازی موبایل دو بعدی بنویس») */}
+      <div className="mt-3">
+        <Link
+          href={lang === 'fa' ? '/play/traffic-tempo?lang=fa' : '/play/traffic-tempo'}
+          className="inline-flex h-10 items-center gap-2 rounded-full border border-amber-500/40 bg-amber-500/10 px-4 text-sm font-bold text-amber-600 transition-colors hover:bg-amber-500/20 dark:text-amber-400"
+        >
+          <Smartphone className="h-4 w-4" aria-hidden />
+          {t.projects.webGameMobileCta}
+          <ChevronRight className="h-4 w-4 rtl:rotate-180" aria-hidden />
+        </Link>
+      </div>
 
       <div className="mt-4 rounded-2xl border border-border bg-card p-4 sm:p-5">
         {phase === 'idle' ? (

@@ -244,6 +244,7 @@ export const ui = {
       // playable 2D web edition of Traffic Tempo (embedded on /work/traffic-tempo)
       webGameTitle: 'Play Traffic Tempo right here',
       webGameSub: 'A 2D web edition of the Android game — run the intersection and keep the tempo.',
+      webGameMobileCta: 'Full-screen mobile edition',
     },
     // Traffic Tempo web edition — in-game strings (lang follows the site)
     ttGame: {
@@ -268,6 +269,34 @@ export const ui = {
       reasonVip: 'A VIP car ran out of patience',
       again: 'Play again',
       passed: 'cars passed',
+    },
+    // Traffic Tempo full-screen MOBILE edition (/play/traffic-tempo) —
+    // touch-first portrait board, bigger targets, haptics
+    ttMobile: {
+      title: 'Traffic Tempo',
+      sub: 'Run the intersection — flip the lights and keep the tempo',
+      start: 'Start',
+      howTitle: 'How to play',
+      ruleToggle: 'Tap a traffic light to toggle green / red',
+      ruleFlow: 'Green releases the queue — red holds it',
+      ruleCrash: 'Two crossing cars meeting inside the box ends the run',
+      ruleVip: 'Gold VIPs lose patience while waiting — keep them moving (+3)',
+      score: 'Score',
+      best: 'Best',
+      tempo: 'Tempo',
+      pause: 'Pause',
+      resume: 'Resume',
+      paused: 'Paused',
+      soundOn: 'Sound on',
+      soundOff: 'Sound off',
+      gameOver: 'Game over',
+      reasonCrash: 'Two cars crashed inside the intersection',
+      reasonVip: 'A VIP car ran out of patience',
+      again: 'Play again',
+      exit: 'Project page',
+      newRecord: 'New record!',
+      passed: 'cars passed',
+      back: 'Back',
     },
     lab: {
       title: 'The Lab',
@@ -799,6 +828,7 @@ export const ui = {
       // نسخهٔ وب قابل بازی ترافیک تمپو (روی /work/traffic-tempo)
       webGameTitle: 'ترافیک تمپو را همین‌جا بازی کن',
       webGameSub: 'نسخهٔ وب دو بعدی بازی اندروید — تقاطع را مدیریت کن و تمپو را نگه دار.',
+      webGameMobileCta: 'نسخهٔ تمام‌صفحهٔ موبایل',
     },
     // متن‌های درون بازی ترافیک تمپو — زبان دنبال زبان سایت
     ttGame: {
@@ -823,6 +853,34 @@ export const ui = {
       reasonVip: 'حوصلهٔ یک خودروی VIP تمام شد',
       again: 'بازی دوباره',
       passed: 'خودرو رد شد',
+    },
+    // نسخهٔ موبایل تمام‌صفحهٔ ترافیک تمپو (/play/traffic-tempo) —
+    // صفحهٔ عمودی لمسی با اهداف لمسی بزرگ‌تر و لرزش هپتیک
+    ttMobile: {
+      title: 'ترافیک تمپو',
+      sub: 'تقاطع را اداره کن — چراغ‌ها را بچرخان و تمپو را نگه دار',
+      start: 'شروع',
+      howTitle: 'راهنما',
+      ruleToggle: 'روی هر چراغ بزن تا سبز یا قرمز شود',
+      ruleFlow: 'سبز صف را روان می‌کند و قرمز نگهش می‌دارد',
+      ruleCrash: 'تصادف دو خودروی عمود بر هم داخل تقاطع بازی را تمام می‌کند',
+      ruleVip: 'خودروهای طلایی حوصله‌شان محدود است — زود ردشان کن (۳ امتیاز)',
+      score: 'امتیاز',
+      best: 'رکورد',
+      tempo: 'تمپو',
+      pause: 'توقف',
+      resume: 'ادامه',
+      paused: 'متوقف شد',
+      soundOn: 'صدا روشن',
+      soundOff: 'صدا خاموش',
+      gameOver: 'بازی تمام شد',
+      reasonCrash: 'دو خودرو داخل تقاطع به هم خوردند',
+      reasonVip: 'حوصلهٔ یک خودروی VIP تمام شد',
+      again: 'بازی دوباره',
+      exit: 'صفحهٔ پروژه',
+      newRecord: 'رکورد جدید!',
+      passed: 'خودرو رد شد',
+      back: 'بازگشت',
     },
     lab: {
       title: 'آزمایشگاه',

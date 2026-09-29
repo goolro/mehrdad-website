@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { usePathname } from 'next/navigation';
 import { useApp } from './store';
 import { ui } from './i18n';
 import { Button } from '@/components/ui/button';
@@ -18,6 +19,7 @@ interface BeforeInstallPromptEvent extends Event {
 export function PwaClient() {
   const { lang } = useApp();
   const t = ui[lang];
+  const pathname = usePathname();
   const [installEvent, setInstallEvent] = useState<BeforeInstallPromptEvent | null>(null);
   const [visible, setVisible] = useState(false);
 
@@ -59,7 +61,8 @@ export function PwaClient() {
     };
   }, []);
 
-  if (!visible || !installEvent) return null;
+  // never cover the full-screen game board (/play/*) with the install pill
+  if (!visible || !installEvent || pathname.startsWith('/play/')) return null;
 
   return (
     <div
