@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useApp, pick } from './store';
 import { ui } from './i18n';
 import { FlaskConical, ChevronRight, Wrench } from 'lucide-react';
-import { StatusBadge, ProgressBar } from './ProjectsView';
+import { StatusBadge, ProgressBar, KindBadge } from './ProjectsView';
 import { normalizeStatus, showsProgress } from '@/lib/project-status';
 
 interface ProjectItem {
@@ -12,6 +12,7 @@ interface ProjectItem {
   summaryEn: string; summaryFa: string; cover: string | null;
   section: string; status: string; progress: number; featured: boolean;
   fundingAsk: string | null; statusEn: string; statusFa: string;
+  kind?: string | null;
 }
 
 /**
@@ -42,7 +43,8 @@ export function LabView({ initialProjects }: { initialProjects: ProjectItem[] })
               href={`/work/${p.slug}`}
               className="group flex flex-col rounded-2xl border border-border bg-card p-5 text-start transition-all hover:-translate-y-1 hover:border-violet-500/50 hover:shadow-lg hover:shadow-violet-600/10"
             >
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <KindBadge kind={p.kind} slug={p.slug} lang={lang} />
                 <StatusBadge status={p.status} statusEn={p.statusEn} statusFa={p.statusFa} lang={lang} />
               </div>
               <h3 className="mt-3 font-bold leading-snug">{pick(lang, p.titleEn, p.titleFa)}</h3>

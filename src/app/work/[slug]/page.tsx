@@ -99,6 +99,7 @@ export default async function ProjectPage({ params }: Props) {
           fundingAsk: project.fundingAsk,
           statusEn: project.statusEn,
           statusFa: project.statusFa,
+          kind: project.kind,
         }}
         shareUrl={`${base}/work/${project.slug}`}
       />

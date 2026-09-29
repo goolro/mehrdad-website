@@ -17,6 +17,7 @@
  * seeded rows on the very first deploy).
  */
 import { db } from '@/lib/db';
+import { ensureProjectKindColumn } from '@/lib/project-kind';
 
 interface SeedProject {
   slug: string;
@@ -435,6 +436,10 @@ export async function importContentSeed(): Promise<void> {
   if (done) return;
   done = true;
   try {
+    // the Prisma client selects "kind" on every project query — make sure
+    // the column exists BEFORE the first project read (same lazy-DDL as
+    // queries.ts; no-op once present)
+    await ensureProjectKindColumn();
     let dailyChanged = await bootstrapDailyTable();
 
     for (const row of SEED_PROJECTS) {

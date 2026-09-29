@@ -3,6 +3,7 @@ import { db } from '@/lib/db';
 import { checkAdmin } from '@/lib/admin';
 import { notifyIndexNow } from '@/lib/indexnow';
 import { PROJECT_SECTIONS, isProjectStatus } from '@/lib/project-status';
+import { ensureProjectKindColumn, isProjectKind } from '@/lib/project-kind';
 
 export const dynamic = 'force-dynamic';
 
@@ -38,6 +39,7 @@ type ProjectPayload = {
   featured?: boolean;
   fundingAsk?: string | null;
   order?: number;
+  kind?: string | null;
 };
 
 type ProjectCreateData = {
@@ -53,6 +55,7 @@ type ProjectCreateData = {
   featured: boolean;
   fundingAsk: string | null;
   order: number;
+  kind: string | null;
 };
 
 type CreateResult = { ok: true; data: ProjectCreateData } | { ok: false; error: string };
@@ -84,6 +87,8 @@ function validateCreate(body: ProjectPayload): CreateResult {
       // optional by design — empty means "none"; the UI must never imply one
       fundingAsk: body.fundingAsk == null || body.fundingAsk === '' ? null : String(body.fundingAsk).trim() || null,
       order: Math.trunc(Number(body.order) || 0),
+      // closed vocabulary — anything outside it stays unlabeled
+      kind: isProjectKind(body.kind) ? body.kind : null,
     },
   };
 }
@@ -91,6 +96,7 @@ function validateCreate(body: ProjectPayload): CreateResult {
 export async function GET(req: NextRequest) {
   const denied = checkAdmin(req);
   if (denied) return denied;
+  await ensureProjectKindColumn();
   const projects = await db.project.findMany({ orderBy: { order: 'asc' } });
   return NextResponse.json({ projects });
 }
@@ -99,6 +105,7 @@ export async function POST(req: NextRequest) {
   const denied = checkAdmin(req);
   if (denied) return denied;
   try {
+    await ensureProjectKindColumn();
     const body = (await req.json()) as ProjectPayload;
     const result = validateCreate(body);
     if (!result.ok) return NextResponse.json({ error: result.error }, { status: 400 });

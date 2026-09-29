@@ -6,6 +6,7 @@ import { useApp, pick } from './store';
 import { ui } from './i18n';
 import { Badge } from '@/components/ui/badge';
 import {
+  AppWindow,
   Archive,
   BookOpen,
   Brain,
@@ -47,12 +48,14 @@ import {
   showsProgress,
   type ProjectStatus,
 } from '@/lib/project-status';
+import { resolveProjectKind, type ProjectKind } from '@/lib/project-kind';
 
 interface ProjectItem {
   id: string; slug: string; titleEn: string; titleFa: string;
   summaryEn: string; summaryFa: string; cover: string | null;
   section: string; status: string; progress: number; featured: boolean;
   fundingAsk: string | null; statusEn: string; statusFa: string;
+  kind?: string | null;
 }
 
 /** structural subset of the Prisma Project row passed from the server page */
@@ -64,6 +67,7 @@ export interface ProjectDetailRow {
   status: string; progress: number;
   fundingAsk: string | null;
   statusEn: string | null; statusFa: string | null;
+  kind?: string | null;
 }
 
 type StatusStyle = {
@@ -131,6 +135,40 @@ export function StatusBadge({ status, statusEn, statusFa, lang }: { status: stri
     <Badge className={cfg.badgeCls} variant="secondary">
       <Icon className="me-1 h-3 w-3" />
       {t.projects[cfg.labelKey]}
+    </Badge>
+  );
+}
+
+/**
+ * KIND taxonomy badges — what a project IS (super-app / game / app),
+ * orthogonal to the lifecycle StatusBadge (where it is in its journey).
+ * Resolution: the row's own `kind` column first, then the shipped slug
+ * bootstrap map (src/lib/project-kind.ts); unknown → no badge at all.
+ */
+export const KIND_STYLE: Record<ProjectKind, { icon: typeof Sparkles; badgeCls: string }> = {
+  'super-app': { icon: Sparkles, badgeCls: 'bg-violet-600/15 text-violet-700 dark:text-violet-300' },
+  'game-online': { icon: Gamepad2, badgeCls: 'bg-emerald-600/15 text-emerald-700 dark:text-emerald-300' },
+  'game-offline': { icon: Puzzle, badgeCls: 'bg-amber-500/15 text-amber-700 dark:text-amber-300' },
+  app: { icon: AppWindow, badgeCls: 'bg-slate-500/15 text-slate-600 dark:text-slate-300' },
+};
+
+const KIND_LABEL_KEY: Record<ProjectKind, 'kindSuperApp' | 'kindGameOnline' | 'kindGameOffline' | 'kindApp'> = {
+  'super-app': 'kindSuperApp',
+  'game-online': 'kindGameOnline',
+  'game-offline': 'kindGameOffline',
+  app: 'kindApp',
+};
+
+export function KindBadge({ kind, slug, lang }: { kind?: string | null; slug: string; lang: 'en' | 'fa' }) {
+  const resolved = resolveProjectKind(kind, slug);
+  if (!resolved) return null;
+  const t = ui[lang];
+  const cfg = KIND_STYLE[resolved];
+  const Icon = cfg.icon;
+  return (
+    <Badge className={cfg.badgeCls} variant="secondary">
+      <Icon className="me-1 h-3 w-3" />
+      {t.projects[KIND_LABEL_KEY[resolved]]}
     </Badge>
   );
 }
@@ -217,7 +255,8 @@ export function ProjectsView({ initialProjects }: { initialProjects: ProjectItem
                     {String(i + 1).padStart(2, '0')}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <div className="mb-2">
+                    <div className="mb-2 flex flex-wrap items-center gap-2">
+                      <KindBadge kind={p.kind} slug={p.slug} lang={lang} />
                       <StatusBadge status={p.status} statusEn={p.statusEn} statusFa={p.statusFa} lang={lang} />
                     </div>
                     <h3 className="font-bold leading-snug">{pick(lang, p.titleEn, p.titleFa)}</h3>
@@ -258,7 +297,8 @@ export function ProjectsView({ initialProjects }: { initialProjects: ProjectItem
                   only reveals the Read-more link */}
               <summary className="flex cursor-pointer list-none items-start justify-between gap-3 p-4 [&::-webkit-details-marker]:hidden">
                 <div className="min-w-0">
-                  <div className="flex items-center gap-2.5">
+                  <div className="flex flex-wrap items-center gap-2.5">
+                    <KindBadge kind={p.kind} slug={p.slug} lang={lang} />
                     <StatusBadge status={p.status} statusEn={p.statusEn} statusFa={p.statusFa} lang={lang} />
                     <span className="truncate text-sm font-semibold">{pick(lang, p.titleEn, p.titleFa)}</span>
                   </div>
@@ -386,6 +426,7 @@ export function ProjectDetail({ project, shareUrl }: { project: ProjectDetailRow
   return (
     <article className="mx-auto w-full max-w-4xl px-4 py-12 sm:px-6">
       <div className="flex flex-wrap items-center gap-3">
+        <KindBadge kind={project.kind} slug={project.slug} lang={lang} />
         <StatusBadge
           status={project.status}
           statusEn={project.statusEn ?? undefined}

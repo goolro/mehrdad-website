@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { PROJECT_STATUSES, normalizeStatus } from '@/lib/project-status';
+import { PROJECT_KINDS, isProjectKind, type ProjectKind } from '@/lib/project-kind';
 import { THEMES } from '@/lib/themes';
 import { SocialStudio } from './SocialStudio';
 import { ContentPipeline } from './ContentPipeline';
@@ -414,12 +415,14 @@ interface AdminProject {
   summaryEn: string; summaryFa: string; cover: string | null;
   section: string; status: string; progress: number; featured: boolean;
   fundingAsk: string | null; statusEn: string; statusFa: string; order: number;
+  kind: string | null;
 }
 
 const BLANK_PROJECT: AdminProject = {
   id: '', slug: '', titleEn: '', titleFa: '', summaryEn: '', summaryFa: '',
   cover: null, section: 'work', status: 'idea', progress: 0, featured: false,
   fundingAsk: null, statusEn: '', statusFa: '', order: 0,
+  kind: null,
 };
 
 function ProjectsTab({ lang }: { lang: 'en' | 'fa' }) {
@@ -436,6 +439,7 @@ function ProjectsTab({ lang }: { lang: 'en' | 'fa' }) {
         newProject: 'پروژهٔ جدید', sectionWork: 'کارها', sectionLab: 'آزمایشگاه',
         section: 'بخش', status: 'وضعیت', progress: 'پیشرفت ساخت (٪)',
         featured: 'نمایش در صفحهٔ اصلی', fundingAsk: 'درخواست سرمایه (اختیاری — برای ایده‌ها خالی بگذارید)',
+        kind: 'نوع (برچسب روی کارت)',
         slug: 'نامک (slug)', titleEn: 'عنوان (انگلیسی)', titleFa: 'عنوان (فارسی)',
         summaryEn: 'خلاصه (انگلیسی)', summaryFa: 'خلاصه (فارسی)', cover: 'نشانی تصویر کاور',
         order: 'ترتیب نمایش', save: 'ذخیره', saving: 'در حال ذخیره…', confirmDelete: 'این پروژه حذف شود؟',
@@ -445,6 +449,7 @@ function ProjectsTab({ lang }: { lang: 'en' | 'fa' }) {
         newProject: 'New project', sectionWork: 'Work', sectionLab: 'Lab',
         section: 'Section', status: 'Status', progress: 'Build progress (%)',
         featured: 'Featured on homepage', fundingAsk: 'Funding ask (optional — leave empty for ideas)',
+        kind: 'Kind (card badge)',
         slug: 'Slug', titleEn: 'Title (EN)', titleFa: 'Title (FA)',
         summaryEn: 'Summary (EN)', summaryFa: 'Summary (FA)', cover: 'Cover image URL',
         order: 'Display order', save: 'Save', saving: 'Saving…', confirmDelete: 'Delete this project?',
@@ -478,6 +483,7 @@ function ProjectsTab({ lang }: { lang: 'en' | 'fa' }) {
         summaryEn: editing.summaryEn, summaryFa: editing.summaryFa, cover: editing.cover,
         section: editing.section, status: editing.status, progress: editing.progress,
         featured: editing.featured, fundingAsk: editing.fundingAsk || '', order: editing.order,
+        kind: editing.kind || '',
       };
       const res = await fetch(editing.id ? `/api/admin/projects/${editing.id}` : '/api/admin/projects', {
         method: editing.id ? 'PATCH' : 'POST',
@@ -507,6 +513,12 @@ function ProjectsTab({ lang }: { lang: 'en' | 'fa' }) {
   }
 
   const statusLabel = (s: string) => t.projects[normalizeStatus(s) as keyof typeof t.projects] || s;
+
+  const kindLabel = (k: ProjectKind) =>
+    k === 'super-app' ? t.projects.kindSuperApp
+    : k === 'game-online' ? t.projects.kindGameOnline
+    : k === 'game-offline' ? t.projects.kindGameOffline
+    : t.projects.kindApp;
 
   return (
     <div>
@@ -543,6 +555,9 @@ function ProjectsTab({ lang }: { lang: 'en' | 'fa' }) {
                       {p.section === 'lab' ? F.sectionLab : F.sectionWork}
                     </Badge>
                     <Badge variant="outline" className="h-4 px-1.5 text-[10px]">{statusLabel(p.status)}</Badge>
+                    {p.kind && isProjectKind(p.kind) && (
+                      <Badge variant="outline" className="h-4 px-1.5 text-[10px]">{kindLabel(p.kind)}</Badge>
+                    )}
                     {p.fundingAsk && <Badge variant="outline" className="h-4 px-1.5 text-[10px]">$</Badge>}
                   </div>
                 </div>
@@ -609,6 +624,19 @@ function ProjectsTab({ lang }: { lang: 'en' | 'fa' }) {
                     <SelectContent>
                       {PROJECT_STATUSES.map((s) => (
                         <SelectItem key={s} value={s}>{t.projects[s]}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="p-kind">{F.kind}</Label>
+                  {/* Radix forbids empty item values — 'none' is the unlabeled sentinel */}
+                  <Select value={editing.kind || 'none'} onValueChange={(v) => setEditing({ ...editing, kind: v === 'none' ? null : v })}>
+                    <SelectTrigger id="p-kind"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">{lang === 'fa' ? '— بدون برچسب —' : '— none —'}</SelectItem>
+                      {PROJECT_KINDS.map((k) => (
+                        <SelectItem key={k} value={k}>{kindLabel(k)}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>

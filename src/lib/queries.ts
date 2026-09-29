@@ -1,4 +1,5 @@
 import { db } from '@/lib/db';
+import { ensureProjectKindColumn } from '@/lib/project-kind';
 import { slugCandidates } from '@/lib/slug-lookup';
 import { sanitizePostHtml, sanitizeExcerpt } from '@/lib/sanitize';
 
@@ -209,6 +210,7 @@ export type FullPost = NonNullable<Awaited<ReturnType<typeof getPostDetail>>>['p
 export type RelatedPost = NonNullable<Awaited<ReturnType<typeof getPostDetail>>>['related'][number];
 
 export async function getProjects(opts?: { section?: 'work' | 'lab'; featured?: boolean }) {
+  await ensureProjectKindColumn();
   const where: Record<string, unknown> = {};
   // Work/Lab split (2026-09-07): /work and the homepage never render Lab
   // items and /lab never renders Work items — each section is queried
@@ -221,6 +223,7 @@ export async function getProjects(opts?: { section?: 'work' | 'lab'; featured?: 
 export type ProjectRow = Awaited<ReturnType<typeof getProjects>>[number];
 
 export async function getProjectBySlug(rawSlug: string) {
+  await ensureProjectKindColumn();
   const candidates = [rawSlug, rawSlug.toLowerCase()];
   for (const candidate of candidates) {
     const project = await db.project.findUnique({ where: { slug: candidate } });

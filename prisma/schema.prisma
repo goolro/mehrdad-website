@@ -115,6 +115,10 @@ model Project {
   // optional; rendered ONLY when explicitly set — never implied language like
   // "Seeking partners" may be attached to projects by default
   fundingAsk String?
+  // kind taxonomy badge (owner request 2026-09-29): super-app | game-online |
+  // game-offline | app — NULL means unlabeled (see src/lib/project-kind.ts
+  // for the slug bootstrap map + admin select)
+  kind       String?
   // legacy display labels — kept for data safety, no longer rendered by default
   statusEn   String  @default("")
   statusFa   String  @default("")
