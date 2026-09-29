@@ -31,6 +31,11 @@ export function SiteChrome({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { theme, mode, lang } = useApp();
 
+  // Full-screen game routes (/play/*) render bare: no header, footer, chat
+  // bubble or lang banner — the board owns the whole viewport like an
+  // installed app (the page itself provides its own back button).
+  const bare = pathname.startsWith('/play/');
+
   // load the globally selected theme (set in the admin panel)
   useEffect(() => {
     fetch('/api/site')
@@ -132,11 +137,11 @@ export function SiteChrome({ children }: { children: React.ReactNode }) {
   return (
     <div className="relative isolate flex min-h-screen flex-col text-foreground">
       <ThemeBackground themeId={theme} />
-      <Header />
+      {!bare && <Header />}
       <main className="relative z-10 flex-1">{children}</main>
-      <Footer />
-      <ChatWidget />
-      <LangBanner />
+      {!bare && <Footer />}
+      {!bare && <ChatWidget />}
+      {!bare && <LangBanner />}
       <RouteIndicator />
     </div>
   );
