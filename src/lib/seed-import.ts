@@ -523,6 +523,29 @@ export async function importContentSeed(): Promise<void> {
       }
     }
 
+    // ONE-TIME rename repair (owner request 2026-09-30, third round): the
+    // health project drops its placeholder naming «ابزار سلامت شخصی
+    // (نام موقت)» and settles on «اپلیکیشن سلامتی و تندرستی» / "Health &
+    // Wellness App". Fires ONLY while the row still holds the exact
+    // previously-seeded Persian title; any admin edit disables this repair
+    // forever. Summaries re-align to the app framing while the medical
+    // disclaimer (not a medical device + data-handling note) is preserved.
+    const ha = await db.project.findUnique({ where: { slug: 'health-app' } });
+    if (ha && ha.titleFa === 'ابزار سلامت شخصی (نام موقت)') {
+      await db.project.update({
+        where: { slug: 'health-app' },
+        data: {
+          titleEn: 'Health & Wellness App',
+          titleFa: 'اپلیکیشن سلامتی و تندرستی',
+          summaryEn:
+            'A health & wellness application — everyday logs, tracking and trends. Strictly a wellness app: not a medical device and not a substitute for professional care; a data-handling note will be published before any personal data is collected.',
+          summaryFa:
+            'اپلیکیشن سلامتی و تندرستی — ثبت و پیگیری روزمرهٔ سلامت و روند آن. صرفاً یک اپ تندرستی است؛ دستگاه پزشکی نیست و جایگزین متخصص نیست. یادداشت نحوهٔ مدیریت داده‌ها پیش از جمع‌آوری هر داده شخصی منتشر خواهد شد.',
+        },
+      });
+      console.log('[seed] project "health-app" renamed → Health & Wellness App (owner request 2026-09-30)');
+    }
+
     for (const row of SEED_ARTICLES) {
       const existing = await db.dailyArticle.findUnique({ where: { slug: row.slug } });
       if (existing) continue;
