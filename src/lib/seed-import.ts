@@ -466,6 +466,34 @@ export async function importContentSeed(): Promise<void> {
       }
     }
 
+    // ONE-TIME rename repair (owner request 2026-09-30): «ابزار مالی شخصی
+    // (نام موقت)» was always a placeholder — the product IS a business
+    // management tool for small-to-medium (and somewhat larger) businesses:
+    // fresh ventures, shops, chain stores — anyone running a business. It
+    // doubles as the owner's fundraising startup, so the funding-ask line is
+    // seeded too (only when still null — an admin-set ask always wins).
+    // Fires ONLY while the row still holds the exact temporary seeded title;
+    // any admin edit of the Persian title disables this repair forever.
+    const pft = await db.project.findUnique({ where: { slug: 'personal-finance-tool' } });
+    if (pft && pft.titleFa === 'ابزار مالی شخصی (نام موقت)') {
+      await db.project.update({
+        where: { slug: 'personal-finance-tool' },
+        data: {
+          titleEn: 'Business Management Tool',
+          titleFa: 'ابزار مدیریت کسب‌وکار',
+          summaryEn:
+            'Business management software for small to medium businesses — and even somewhat larger ones. From freshly launched ventures to shops and chain stores; anyone running a business can use it.',
+          summaryFa:
+            'نرم‌افزار مدیریت کسب‌وکار برای کسب‌وکارهای کوچک تا متوسط و حتی بزرگ‌تر — از کسب‌وکارهای تازه‌تأسیس تا فروشگاه‌ها و فروشگاه‌های زنجیره‌ای؛ هر کسی که کسب‌وکاری دارد می‌تواند از آن استفاده کند.',
+          fundingAsk:
+            pft.fundingAsk == null
+              ? 'استارتاپی در مسیر شکل‌گیری — برای جذب سرمایهٔ اولیه باز است · Open to angel & pre-seed investors'
+              : pft.fundingAsk,
+        },
+      });
+      console.log('[seed] project "personal-finance-tool" renamed → Business Management Tool (owner request 2026-09-30)');
+    }
+
     for (const row of SEED_ARTICLES) {
       const existing = await db.dailyArticle.findUnique({ where: { slug: row.slug } });
       if (existing) continue;
