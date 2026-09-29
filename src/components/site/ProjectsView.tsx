@@ -42,6 +42,7 @@ import {
 } from '@/lib/project-profiles';
 import { ShareBar } from './ShareBar';
 import { BuildLikeCta } from './BuildLikeCta';
+import { TrafficTempoGame } from './games/TrafficTempoGame';
 import {
   isActiveStatus,
   normalizeStatus,
@@ -499,6 +500,12 @@ export function ProjectDetail({ project, shareUrl }: { project: ProjectDetailRow
           )}
         </div>
       )}
+
+      {/* playable 2D web edition — Traffic Tempo only (owner request
+          2026-09-30: «ترافیک تمپو بازی دو بعدی بنویس») — lives right under
+          the Cafe Bazaar CTA so the Android link and the browser demo read
+          as one product story */}
+      {project.slug === 'traffic-tempo' && <TrafficTempoGame />}
 
       {profile && profile.phases.length > 0 && (
         <section className="mt-8" aria-labelledby="project-roadmap-title">

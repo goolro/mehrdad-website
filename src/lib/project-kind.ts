@@ -5,10 +5,12 @@ import { db } from './db';
  * کردیم را برچسب بزنیم») — a small, closed vocabulary rendered as a badge
  * on every project card / detail page:
  *
- *   super-app     سوپر اپ        (car super-app, personal finance tool)
+ *   super-app     سوپر اپ        (car super-app, personal finance tool,
+ *                                 personal health tool — owner 2026-09-30:
+ *                                 «ابزار سلامت شخصی اینم سوپر اپلیکیشن هستن»)
  *   game-online   بازی آنلاین    (quiz of koko — Q&A with Koko)
  *   game-offline  بازی آفلاین
- *   app           اپ             (ordinary apps/tools — e.g. health tool)
+ *   app           اپ             (ordinary apps/tools)
  *
  * The column is the single source of truth once a row has a value (admin
  * select writes it). KIND_DEFAULT_SLUGS below only bootstrap the rows the
@@ -27,8 +29,8 @@ export function isProjectKind(v: unknown): v is ProjectKind {
 const KIND_DEFAULT_SLUGS: Record<string, ProjectKind> = {
   'car-super-app': 'super-app',
   'personal-finance-tool': 'super-app',
+  'health-app': 'super-app', // owner reclassification 2026-09-30 — it IS a super app
   'quiz-of-koko': 'game-online',
-  'health-app': 'app',
 };
 
 /** own column value wins; legacy/unlabeled rows fall back to the slug map. */
