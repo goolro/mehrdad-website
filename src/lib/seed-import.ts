@@ -494,27 +494,33 @@ export async function importContentSeed(): Promise<void> {
       console.log('[seed] project "personal-finance-tool" renamed → Business Management Tool (owner request 2026-09-30)');
     }
 
-    // ONE-TIME rename repair (owner request 2026-09-30): «سوپراپ خودرو
-    // (نام موقت)» was a placeholder — the product now carries its brand
-    // name «دنده» (Dande — car super-app; checked against existing Iranian
-    // car-app brands, no major collision). Fires ONLY while the row still
-    // holds one of the exact temporary seeded titles; any admin edit of the
-    // Persian title disables this repair forever. Summaries weave the brand
-    // in but keep the honest software-first / hardware-later disclaimer.
+    // ONE-TIME rename repair (owner request 2026-09-30, second round): the
+    // car super-app went through «سوپراپ خودرو (نام موقت)» and the
+    // short-lived brand «دنده» (Dande) — the owner settled on the plain
+    // «مدیریت خودرو» / "Car Management". Fires ONLY while the row still
+    // holds one of those exact intermediate titles (the Dande state is
+    // additionally pinned to its exact English title — that pair could only
+    // have been written by the previous repair); any owner edit disables
+    // this repair forever. Summaries go back to the clean no-brand versions.
     const csa = await db.project.findUnique({ where: { slug: 'car-super-app' } });
-    if (csa && (csa.titleFa === 'سوپراپ خودرو (نام موقت)' || csa.titleFa === 'ابزار مدیریت خودرو (نام موقت)')) {
-      await db.project.update({
-        where: { slug: 'car-super-app' },
-        data: {
-          titleEn: 'Dande — Car Super-App',
-          titleFa: 'دنده',
-          summaryEn:
-            'Dande — a connected-car super-app and companion, software first: the app is in early building. The hardware device is a labeled future concept — not part of the current product.',
-          summaryFa:
-            'دنده — سوپراپ خودروی متصل و همراه خودروی شما؛ نرم‌افزار محور است و اپلیکیشن در مراحل اولیهٔ ساخت قرار دارد. سخت‌افزار صرفاً یک ایدهٔ برچسب‌خورده برای آینده است و بخشی از محصول فعلی نیست.',
-        },
-      });
-      console.log('[seed] project "car-super-app" renamed → Dande (owner request 2026-09-30)');
+    if (csa) {
+      const isTempName =
+        csa.titleFa === 'سوپراپ خودرو (نام موقت)' || csa.titleFa === 'ابزار مدیریت خودرو (نام موقت)';
+      const isDandeBrand = csa.titleFa === 'دنده' && csa.titleEn === 'Dande — Car Super-App';
+      if (isTempName || isDandeBrand) {
+        await db.project.update({
+          where: { slug: 'car-super-app' },
+          data: {
+            titleEn: 'Car Management',
+            titleFa: 'مدیریت خودرو',
+            summaryEn:
+              'A connected-car companion, software first: the app is in early building. The hardware device is a labeled future concept — not part of the current product.',
+            summaryFa:
+              'همراه خودرو با تمرکز بر نرم‌افزار: اپلیکیشن در مراحل اولیهٔ ساخت است. سخت‌افزار صرفاً یک ایدهٔ برچسب‌خورده برای آینده است و بخشی از محصول فعلی نیست.',
+          },
+        });
+        console.log('[seed] project "car-super-app" renamed → Car Management (owner request 2026-09-30)');
+      }
     }
 
     for (const row of SEED_ARTICLES) {
