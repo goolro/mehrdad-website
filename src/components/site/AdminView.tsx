@@ -518,6 +518,7 @@ function ProjectsTab({ lang }: { lang: 'en' | 'fa' }) {
     k === 'super-app' ? t.projects.kindSuperApp
     : k === 'game-online' ? t.projects.kindGameOnline
     : k === 'game-offline' ? t.projects.kindGameOffline
+    : k === 'game-mobile' ? t.projects.kindGameMobile
     : t.projects.kindApp;
 
   return (

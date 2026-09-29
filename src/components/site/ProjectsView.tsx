@@ -29,6 +29,7 @@ import {
   Rocket,
   Route,
   ScanSearch,
+  Smartphone,
   Sparkles,
   Store,
   Swords,
@@ -150,13 +151,15 @@ export const KIND_STYLE: Record<ProjectKind, { icon: typeof Sparkles; badgeCls: 
   'super-app': { icon: Sparkles, badgeCls: 'bg-violet-600/15 text-violet-700 dark:text-violet-300' },
   'game-online': { icon: Gamepad2, badgeCls: 'bg-emerald-600/15 text-emerald-700 dark:text-emerald-300' },
   'game-offline': { icon: Puzzle, badgeCls: 'bg-amber-500/15 text-amber-700 dark:text-amber-300' },
+  'game-mobile': { icon: Smartphone, badgeCls: 'bg-rose-600/15 text-rose-700 dark:text-rose-300' },
   app: { icon: AppWindow, badgeCls: 'bg-slate-500/15 text-slate-600 dark:text-slate-300' },
 };
 
-const KIND_LABEL_KEY: Record<ProjectKind, 'kindSuperApp' | 'kindGameOnline' | 'kindGameOffline' | 'kindApp'> = {
+const KIND_LABEL_KEY: Record<ProjectKind, 'kindSuperApp' | 'kindGameOnline' | 'kindGameOffline' | 'kindGameMobile' | 'kindApp'> = {
   'super-app': 'kindSuperApp',
   'game-online': 'kindGameOnline',
   'game-offline': 'kindGameOffline',
+  'game-mobile': 'kindGameMobile',
   app: 'kindApp',
 };
 
