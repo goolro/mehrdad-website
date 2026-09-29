@@ -65,7 +65,7 @@ interface Car {
   patience: number; // 1 → 0 while queued (VIP only)
   warned: boolean;
   passed: boolean;
-  hue: number; // body tint (non-VIP)
+  hue: string; // body tint (non-VIP)
 }
 
 interface Popup {
