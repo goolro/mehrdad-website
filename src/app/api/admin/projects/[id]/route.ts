@@ -3,6 +3,7 @@ import { db } from '@/lib/db';
 import { checkAdmin } from '@/lib/admin';
 import { notifyIndexNow } from '@/lib/indexnow';
 import { PROJECT_STATUSES, PROJECT_SECTIONS, isProjectStatus } from '@/lib/project-status';
+import { ensureProjectKindColumn, isProjectKind } from '@/lib/project-kind';
 
 export const dynamic = 'force-dynamic';
 
@@ -34,6 +35,7 @@ type ProjectPayload = {
   featured?: boolean;
   fundingAsk?: string | null;
   order?: number;
+  kind?: string | null;
 };
 
 function buildData(body: ProjectPayload): Record<string, unknown> {
@@ -60,6 +62,12 @@ function buildData(body: ProjectPayload): Record<string, unknown> {
   if (body.featured !== undefined) data.featured = Boolean(body.featured);
   // optional by design — empty string means "no funding ask", never a default
   if (body.fundingAsk !== undefined) data.fundingAsk = body.fundingAsk === '' || body.fundingAsk == null ? null : String(body.fundingAsk).trim() || null;
+  // closed vocabulary — '' clears the label; anything unknown is rejected
+  if (body.kind !== undefined) {
+    if (body.kind === '' || body.kind == null) data.kind = null;
+    else if (isProjectKind(body.kind)) data.kind = body.kind;
+    else throw new Error('invalid kind');
+  }
   if (body.order !== undefined) data.order = Math.trunc(Number(body.order) || 0);
   return data;
 }
@@ -69,6 +77,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   if (denied) return denied;
   try {
     const { id } = await params;
+    await ensureProjectKindColumn();
     const body = (await req.json()) as ProjectPayload;
     const data = buildData(body);
     const before = await db.project.findUnique({ where: { id } });

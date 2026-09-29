@@ -436,3 +436,25 @@ html.lang-boot-fa body {
 @keyframes lang-boot-reveal {
   to { visibility: visible; }
 }
+
+/* ── Route-change indicator (nav feedback, 2026-09-29) ────────────────
+   Slim top bar + corner pill rendered by RouteIndicator while a client
+   navigation is in flight. Pure CSS so it works with zero deps. */
+@keyframes nav-indicator-slide {
+  0% { transform: translateX(-150%); }
+  100% { transform: translateX(400%); }
+}
+.nav-indicator-bar {
+  animation: nav-indicator-slide 1.1s ease-in-out infinite;
+}
+@keyframes nav-indicator-in {
+  from { opacity: 0; transform: translateY(-6px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.nav-indicator-pill {
+  animation: nav-indicator-in 0.18s ease-out both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .nav-indicator-bar { animation: none; opacity: 0.6; }
+  .nav-indicator-pill { animation: none; }
+}

@@ -219,6 +219,11 @@ export const ui = {
       // homepage Work section
       seeAllWork: 'See all work',
       fundingAsk: 'Funding ask',
+      // project kind taxonomy (owner request 2026-09-29) — badge on cards
+      kindSuperApp: 'Super App',
+      kindGameOnline: 'Online Game',
+      kindGameOffline: 'Offline Game',
+      kindApp: 'App',
       // live external-link CTA (e.g. playable game) — rendered when the slug
       // has an entry in src/lib/project-links.ts
       playCta: 'Play now',
@@ -743,6 +748,11 @@ export const ui = {
       // بخش کارها در صفحهٔ اصلی
       seeAllWork: 'مشاهدهٔ همهٔ کارها',
       fundingAsk: 'درخواست سرمایه',
+      // رده‌بندی نوع پروژه (خواستهٔ مالک ۲۰۲۶-۰۹-۲۹) — بج روی کارت‌ها
+      kindSuperApp: 'سوپر اپ',
+      kindGameOnline: 'بازی آنلاین',
+      kindGameOffline: 'بازی آفلاین',
+      kindApp: 'اپ',
       // دکمهٔ لینک بیرونی زنده (مثل بازیِ قابل انجام) — فقط وقتی اسلاگ در
       // src/lib/project-links.ts ثبت باشد رندر می‌شود
       playCta: 'بازی کن',

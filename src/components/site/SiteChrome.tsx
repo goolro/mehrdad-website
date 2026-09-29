@@ -8,6 +8,8 @@ import { Footer } from './Footer';
 import { ChatWidget } from './ChatWidget';
 import { LangBanner } from './LangBanner';
 import { ThemeBackground } from './ThemeBackground';
+import { RouteIndicator } from './RouteIndicator';
+import { routeNavStart, routeNavEnd } from '@/lib/nav-indicator';
 
 /**
  * useLayoutEffect runs BEFORE the browser paints; useEffect runs after.
@@ -72,7 +74,12 @@ export function SiteChrome({ children }: { children: React.ReactNode }) {
   // Also removes the boot script's `lang-boot-fa` body guard (globals.css)
   // in the same pre-paint window, revealing the committed Persian UI.
   useIsoLayoutEffect(() => {
-    registerNavigate((path) => router.push(path));
+    // nav feedback: programmatic store navigations announce themselves the
+    // same way clicked links do (RouteIndicator listens for both)
+    registerNavigate((path) => {
+      routeNavStart();
+      router.push(path);
+    });
     try {
       const raw = JSON.parse(localStorage.getItem('mehrdad-app') || '{}').state || {};
       if (raw.lang === 'fa' || raw.lang === 'en') useApp.setState({ lang: raw.lang });
@@ -87,6 +94,7 @@ export function SiteChrome({ children }: { children: React.ReactNode }) {
   // keep the active view in sync with the real pathname (nav highlighting)
   useEffect(() => {
     useApp.setState({ view: viewFromPathname(pathname) });
+    routeNavEnd(); // navigation finished — clear the corner indicator
   }, [pathname]);
 
   // legacy hash deep-links → real paths (one-time, on first mount).
@@ -129,6 +137,7 @@ export function SiteChrome({ children }: { children: React.ReactNode }) {
       <Footer />
       <ChatWidget />
       <LangBanner />
+      <RouteIndicator />
     </div>
   );
 }

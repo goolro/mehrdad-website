@@ -6,7 +6,7 @@ import { ui } from './i18n';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ArrowRight, Sparkles, ChevronLeft, ChevronRight, FolderKanban, FileText, Hammer, HeartHandshake, Share2, Search, GraduationCap, Repeat, PenTool } from 'lucide-react';
-import { StatusBadge, ProgressBar, STATUS_STYLE } from './ProjectsView';
+import { StatusBadge, ProgressBar, STATUS_STYLE, KindBadge } from './ProjectsView';
 import { normalizeStatus, showsProgress } from '@/lib/project-status';
 import { WhatIDo } from './WhatIDo';
 
@@ -15,6 +15,7 @@ interface ProjectItem {
   id: string; slug: string; titleEn: string; titleFa: string; summaryEn: string; summaryFa: string; cover: string | null;
   section: string; status: string; progress: number; featured: boolean;
   fundingAsk: string | null; statusEn: string; statusFa: string;
+  kind?: string | null;
 }
 interface CategoryItem { id: string; slug: string; nameEn: string; nameFa: string }
 interface PostItem {
@@ -149,8 +150,9 @@ export function HomeView({ initial }: { initial: HomeInitialData }) {
                 href={`/work/${p.slug}`}
                 className="group flex flex-col rounded-2xl border border-border bg-card p-5 text-start transition-all hover:-translate-y-1 hover:border-violet-500/50 hover:shadow-lg hover:shadow-violet-600/10"
               >
-                <div className="flex items-center gap-2 text-xs font-semibold text-violet-600 dark:text-violet-400">
+                <div className="flex flex-wrap items-center gap-2 text-xs font-semibold text-violet-600 dark:text-violet-400">
                   <FolderKanban className="h-4 w-4" />
+                  <KindBadge kind={p.kind} slug={p.slug} lang={lang} />
                   <StatusBadge status={p.status} statusEn={p.statusEn} statusFa={p.statusFa} lang={lang} />
                 </div>
                 <h3 className="mt-3 font-bold leading-snug">{pick(lang, p.titleEn, p.titleFa)}</h3>
