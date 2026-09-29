@@ -10,6 +10,9 @@ import { db } from './db';
  *                                 «ابزار سلامت شخصی اینم سوپر اپلیکیشن هستن»)
  *   game-online   بازی آنلاین    (quiz of koko — Q&A with Koko)
  *   game-offline  بازی آفلاین
+ *   game-mobile   بازی موبایل دو بعدی (traffic tempo — owner 2026-09-30:
+ *                                 «اینو چرا برچسب نزدی بازی موبایل دو بعدی؟»
+ *                                 — full-screen touch-first mobile game)
  *   app           اپ             (ordinary apps/tools)
  *
  * The column is the single source of truth once a row has a value (admin
@@ -18,7 +21,7 @@ import { db } from './db';
  * its own kind, and unknown slugs simply stay unlabeled.
  */
 
-export const PROJECT_KINDS = ['super-app', 'game-online', 'game-offline', 'app'] as const;
+export const PROJECT_KINDS = ['super-app', 'game-online', 'game-offline', 'game-mobile', 'app'] as const;
 export type ProjectKind = (typeof PROJECT_KINDS)[number];
 
 export function isProjectKind(v: unknown): v is ProjectKind {
@@ -31,6 +34,7 @@ const KIND_DEFAULT_SLUGS: Record<string, ProjectKind> = {
   'personal-finance-tool': 'super-app',
   'health-app': 'super-app', // owner reclassification 2026-09-30 — it IS a super app
   'quiz-of-koko': 'game-online',
+  'traffic-tempo': 'game-mobile', // owner request 2026-09-30 — «بازی موبایل دو بعدی»
 };
 
 /** own column value wins; legacy/unlabeled rows fall back to the slug map. */

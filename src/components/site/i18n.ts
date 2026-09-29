@@ -223,6 +223,7 @@ export const ui = {
       kindSuperApp: 'Super App',
       kindGameOnline: 'Online Game',
       kindGameOffline: 'Offline Game',
+      kindGameMobile: 'Mobile 2D Game',
       kindApp: 'App',
       // live external-link CTA (e.g. playable game) — rendered when the slug
       // has an entry in src/lib/project-links.ts
@@ -808,6 +809,7 @@ export const ui = {
       kindSuperApp: 'سوپر اپ',
       kindGameOnline: 'بازی آنلاین',
       kindGameOffline: 'بازی آفلاین',
+      kindGameMobile: 'بازی موبایل دو بعدی',
       kindApp: 'اپ',
       // دکمهٔ لینک بیرونی زنده (مثل بازیِ قابل انجام) — فقط وقتی اسلاگ در
       // src/lib/project-links.ts ثبت باشد رندر می‌شود
