@@ -403,6 +403,7 @@ export const ui = {
       slogan: 'I design businesses and products with care, and build them fast with AI.',
       rights: 'All rights reserved.',
       builtWith: 'Powered by AI',
+      followInstagram: 'Mehrdad on Instagram — @startup_mt',
     },
     daily: {
       badge: 'Product analysis',
@@ -987,6 +988,7 @@ export const ui = {
       slogan: 'کسب‌وکار و محصولت رو با دقت طراحی می‌کنم، و با AI سریع می‌سازمش.',
       rights: 'تمام حقوق محفوظ است.',
       builtWith: 'قدرت‌گرفته از هوش مصنوعی',
+      followInstagram: 'اینستاگرام مهرداد — startup_mt',
     },
     daily: {
       badge: 'تحلیل محصول',

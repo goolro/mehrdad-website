@@ -1,8 +1,23 @@
 'use client';
 
 import Link from 'next/link';
+import { Instagram } from 'lucide-react';
 import { useApp } from './store';
 import { ui } from './i18n';
+
+// Social profiles (owner request 2026-09-30): the official Instagram page.
+// Keep this list small and OFFICIAL only — every entry renders as an icon
+// button site-wide in the footer and must stay mirrored in the Person
+// JSON-LD sameAs array (src/app/page.tsx) so the entity graph stays
+// consistent for search engines and LLMs.
+const SOCIAL_LINKS = [
+  {
+    id: 'instagram',
+    href: 'https://www.instagram.com/startup_mt/',
+    labelKey: 'followInstagram',
+    icon: Instagram,
+  },
+] as const;
 
 export function Footer() {
   const { lang } = useApp();
@@ -38,6 +53,21 @@ export function Footer() {
         <p className="mx-auto mt-6 max-w-xl border-t border-border/40 pt-4 text-center text-xs italic leading-relaxed text-muted-foreground">
           «{t.footer.slogan}»
         </p>
+
+        <div className="mt-4 flex items-center justify-center gap-2">
+          {SOCIAL_LINKS.map((link) => (
+            <a
+              key={link.id}
+              href={link.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={t.footer[link.labelKey]}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-border/60 bg-card text-muted-foreground transition-colors hover:border-violet-500/50 hover:text-foreground"
+            >
+              <link.icon className="h-4 w-4" aria-hidden="true" />
+            </a>
+          ))}
+        </div>
 
         <div className="mt-4 text-center text-xs text-muted-foreground">
           © {year}{' '}
