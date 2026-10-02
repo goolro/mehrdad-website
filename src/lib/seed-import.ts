@@ -432,6 +432,84 @@ async function bootstrapDailyTable(): Promise<boolean> {
   return changed;
 }
 
+// Blog post seed (owner request 2026-09-30): the angel-investor pitch for
+// the MVP-stage AI portfolio. INSERT-IF-MISSING like everything else — an
+// existing row (edited later via the admin editor) is NEVER overwritten.
+// Persian body follows the no-comma (ویرگول) house rule.
+const SEED_POSTS: Array<{
+  slug: string;
+  titleEn: string;
+  titleFa: string;
+  excerptEn: string;
+  excerptFa: string;
+  contentEn: string;
+  contentFa: string;
+  cover: string;
+}> = [
+  {
+    slug: 'angel-investor-for-mvp-portfolio',
+    titleEn: 'Looking for an Angel Investor — Taking Four AI Products From MVP to Real Traction',
+    titleFa: 'در جستجوی سرمایه‌گذار فرشته — بردن چهار محصول هوش مصنوعی از MVP به تراکشن واقعی',
+    excerptEn:
+      'A clear and documented ask: my AI products have reached MVP and are ready to demo and test. I am looking for an angel — not a big VC fund — to cover $500–$2,000 per month for 6–12 months of runway in exchange for a defined equity share.',
+    excerptFa:
+      'یک درخواست شفاف و مستند: محصولات هوش مصنوعی من به مرحلهٔ MVP رسیده‌اند و آمادهٔ ارائه و تست هستند. به دنبال یک سرمایه‌گذار فرشته هستم نه یک صندوق بزرگ — بودجهٔ ماهانهٔ ۵۰۰ تا ۲۰۰۰ دلار برای شش تا دوازده ماه runway در ازای سهم مشخصی از شرکت.',
+    contentEn: [
+      '<p>I am Mehrdad — a product builder. I design businesses and products with care and build them fast with AI. Several product tracks are in motion on this site, with each build\u2019s progress public and live. This is a clear, documented ask: I am looking for an angel investor to help take these products from MVP to real traction with a small but smart budget.</p>',
+      '<h2>Where we stand</h2>',
+      '<p>My startups are past the idea phase. The MVP is built. The product can be presented and tested — you can see a live demo today. I drive the idea, the team and the development myself: the investor does not need to hire a team or manage day-to-day operations. What is missing is a financial wing for the early growth stage.</p>',
+      '<h2>What kind of investor I am looking for — and what kind I am not</h2>',
+      '<p>I am looking for an <strong>Angel Investor</strong> — a Micro Angel, Solo GP or Founder Angel — not necessarily a big VC fund. The reason is simple: the minimum ticket at most VC funds is usually $100K to $250K, while the real need of this stage is several times smaller. Someone who can commit $1,000–$2,000 per month for 6–12 months is a far better fit for this journey than a large fund — both in entry size and in spirit of partnership.</p>',
+      '<h2>The exact numbers</h2>',
+      '<ul><li>Monthly budget: <strong>$500–$2,000</strong></li><li>Time frame: <strong>6–12 months of runway</strong></li><li>Total: <strong>$6K–$24K</strong></li></ul>',
+      '<p>The current goal is to take the product from MVP to real traction — not to raise millions from day one.</p>',
+      '<h2>Where the money goes</h2>',
+      '<p>No part of this budget goes to show. It covers real infrastructure costs and continued development:</p>',
+      '<ul><li><strong>Server &amp; hosting</strong> — the infrastructure that runs the products and the release pipeline</li><li><strong>AI API</strong> — tokens for language models, content generation and AI services</li><li><strong>Database</strong> — a managed database and backups</li><li><strong>SaaS tools</strong> — the services the products depend on</li><li><strong>Maintenance &amp; operations</strong> — monitoring, bug fixing and support</li><li><strong>Continued development</strong> — a monthly budget to grow the product and ship features</li></ul>',
+      '<h2>The portfolio — a basket of AI products</h2>',
+      '<p>I present myself to investors as a portfolio of AI products, not a single SaaS. This mix is especially attractive for an investor interested in <strong>Consumer AI + Mobile + Social + Gaming</strong>:</p>',
+      '<ul><li><strong>AI Health &amp; Wellness Super App</strong> — everyday health logs, tracking and trends; strictly a wellness tool, not a medical device. In active build with public progress on the site.</li><li><strong>AI Assistant</strong> — smart personal tools. The core assistant is live and testable today on mehrdad.ir.</li><li><strong>AI Social — Friendship &amp; Marriage</strong> — an AI companion for interaction, connection and meaningful conversation. In formation and the first candidate to start with investor support.</li><li><strong>AI Quiz / Q&amp;A Game</strong> — AI-generated questions, interaction and fun. The online version is playable today at quizofkoko.com.</li></ul>',
+      '<h2>Why a portfolio and not a single product</h2>',
+      '<p>Concentrating on one product at this stage concentrates risk. A balanced basket of four complementary tracks — health, tools, social and gaming — multiplies the chances of reaching traction while sharing the same common infrastructure. An angel gets access to a basket with one entry, not a single bet.</p>',
+      '<h2>Two cooperation models</h2>',
+      '<p><strong>Model A — Angel Investment:</strong> the investor provides, for example, $12,000 over 12 months and receives a defined equity share of the company. The percentage is set in negotiation based on an agreed valuation.</p>',
+      '<p><strong>Model B — Angel Sponsorship:</strong> the investor pays the real costs directly — server, AI API, hosting, software and maintenance — and in exchange receives a defined share of the company or product. This model suits those who prefer direct, trackable payments.</p>',
+      '<p>In both models the investor\u2019s share is transparent and written down, and the details are reviewed in a first online or in-person session.</p>',
+      '<h2>Full transparency — build progress is public</h2>',
+      '<p>On mehrdad.ir the status of every product (live, building, idea) and its build progress is displayed publicly. An investor can see real weekly progress without closed reports. This transparency is deliberate — trust is the most important asset in this kind of partnership.</p>',
+      '<h2>Next step</h2>',
+      '<p>If this reading matches your view of angel investing, reach out via the <a href="/contact">contact page</a> or connect on <a href="https://www.instagram.com/startup_mt/" target="_blank" rel="noopener noreferrer">Instagram</a>. The first step is a short session: live demos, the numbers, and the cooperation model — all in the open.</p>',
+    ].join('\n'),
+    contentFa: [
+      '<p>من مهدرد هستم — سازندهٔ محصول. کسب‌وکار و محصول را با دقت طراحی می‌کنم و با هوش مصنوعی سریع می‌سازم. چند مسیر محصولی روی همین سایت در جریان است و پیشرفت ساخت هر کدام عمومی و زنده است. این نوشته یک درخواست شفاف و مستند است: به دنبال یک سرمایه‌گذار فرشته می‌گردم تا با بودجه‌ای کوچک اما هوشمندانه بتوانیم محصولات را از مرحلهٔ MVP به تراکشن واقعی برسانیم.</p>',
+      '<h2>اینجا کجای مسیر ایستاده‌ایم</h2>',
+      '<p>استارتاپ‌های من از فاز ایده عبور کرده‌اند. MVP ساخته شده است. محصول قابلیت ارائه و تست دارد و همین امروز می‌توانید دموی آن را ببینید. ایده و تیم و توسعه را خودم جلو می‌برم — یعنی سرمایه‌گذار لازم نیست تیمی استخدام کند یا مدیریت روزمره‌ای بر عهده بگیرد. تنها چیزی که کم است یک بال پرواز مالی برای مرحلهٔ رشد اولیه است.</p>',
+      '<h2>چه نوع سرمایه‌گذاری می‌خواهم — و چه نوعی نه</h2>',
+      '<p>دنبال یک <strong>Angel Investor</strong> هستم — از جنس Micro Angel و Solo GP و Founder Angel — نه لزوماً یک صندوق بزرگ. دلیلش ساده است: حداقل تیکت سرمایه‌گذاری اکثر صندوق‌ها معمولاً $100K تا $250K است در حالی که نیاز واقعی این مرحله چند برابر کوچک‌تر است. کسی که بتواند ماهانه $1000 تا $2000 را برای شش تا دوازده ماه اختصاص دهد برای این مسیر بسیار مناسب‌تر از یک صندوق بزرگ است — هم از نظر اندازهٔ ورودی و هم از نظر روحیهٔ همراهی.</p>',
+      '<h2>عدد دقیق درخواست</h2>',
+      '<ul><li>بودجهٔ ماهانه: <strong>$500 تا $2000</strong></li><li>بازهٔ زمانی: <strong>۶ تا ۱۲ ماه runway</strong></li><li>مجموع: <strong>$6K تا $24K</strong></li></ul>',
+      '<p>هدف فعلی این است که محصول از MVP به تراکشن واقعی برسد — نه اینکه شرکت از روز اول با میلیون‌ها دلار تأمین مالی شود.</p>',
+      '<h2>پول دقیقاً کجا می‌رود</h2>',
+      '<p>هیچ بخشی از این بودجه صرف هزینه‌های نمایشی نمی‌شود. این بودجه پوشش‌دهندهٔ هزینه‌های واقعی زیرساخت و ادامهٔ توسعه است:</p>',
+      '<ul><li><strong>سرور و هاستینگ</strong> — زیرساخت اجرای محصولات و پایپ‌لاین انتشار</li><li><strong>AI API</strong> — توکن مدل‌های زبانی و تولید محتوا و سرویس‌های هوش مصنوعی</li><li><strong>Database</strong> — دیتابیس مدیریت‌شده و بکاپ</li><li><strong>ابزارهای SaaS</strong> — سرویس‌هایی که محصولات به آن‌ها وابسته‌اند</li><li><strong>نگهداری و عملیات</strong> — مانیتورینگ و رفع اشکال و پشتیبانی</li><li><strong>ادامهٔ توسعه</strong> — بودجهٔ ماهانه برای رشد محصول و افزودن قابلیت‌ها</li></ul>',
+      '<h2>پورتفولیو — یک سبد از محصولات هوش مصنوعی</h2>',
+      '<p>معرفی من به‌عنوان سرمایه‌گذار یک پورتفولیو از محصولات AI است نه یک SaaS تنها. این ترکیب برای سرمایه‌گذاری که به <strong>Consumer AI + Mobile + Social + Gaming</strong> علاقه دارد جذاب‌تر است:</p>',
+      '<ul><li><strong>اپلیکیشن سلامتی و تندرستی</strong> — سوپر اپ سلامت برای ثبت و پیگیری روزمره و روند سلامت؛ صرفاً ابزار تندرستی نه دستگاه پزشکی. در حال ساخت با پیشرفت عمومی روی سایت.</li><li><strong>دستیار هوش مصنوعی</strong> — ابزارهای هوشمند شخصی. هستهٔ همین دستیار امروز روی mehrdad.ir فعال و قابل تست است.</li><li><strong>شبکهٔ اجتماعی هوشمند — دوستی و آشنایی</strong> — دستیار AI برای تعامل و ارتباط و گفتگوی معنادار. در فاز شکل‌گیری و گزینهٔ نخست برای شروع با پشتیبانی سرمایه‌گذار.</li><li><strong>بازی سؤال و جواب هوش مصنوعی</strong> — سؤال‌های تولیدشده با AI و تعامل و سرگرمی. نسخهٔ آنلاین امروز در quizofkoko.com قابل بازی است.</li></ul>',
+      '<h2>چرا پورتفولیو و نه یک محصول تنها</h2>',
+      '<p>تمرکز روی یک محصول در این مرحله یعنی تمرکز ریسک روی یک نقطه. یک سبد متوازن از چهار مسیر مکمل — سلامت و ابزار و شبکهٔ اجتماعی و بازی — شانس رسیدن به تراکشن را چند برابر می‌کند و از همان زیرساخت مشترک به همه سرویس می‌گیرد. سرمایه‌گذار فرشته با یک ورودی به یک سبد دسترسی پیدا می‌کند نه یک شرط‌بندی واحد.</p>',
+      '<h2>دو مدل همکاری</h2>',
+      '<p><strong>مدل A — Angel Investment:</strong> سرمایه‌گذار مثلاً $12000 برای ۱۲ ماه تأمین می‌کند و در ازای آن درصد مشخصی از شرکت را دریافت می‌کند. درصد در مذاکره و بر اساس ارزیابی توافقی تعیین می‌شود.</p>',
+      '<p><strong>مدل B — Angel Sponsorship:</strong> سرمایه‌گذار هزینه‌های واقعی را مستقیم پرداخت می‌کند — سرور و AI API و هاستینگ و نرم‌افزار و نگهداری — و در ازای آن سهم مشخصی از شرکت یا محصول می‌گیرد. این مدل برای کسی مناسب‌تر است که ترجیح می‌دهد پرداختش مستقیم و قابل ردیابی باشد.</p>',
+      '<p>در هر دو مدل سهم سرمایه‌گذار شفاف و مکتوب است و جزئیات در اولین جلسهٔ حضوری یا آنلاین مرور می‌شود.</p>',
+      '<h2>شفافیت کامل — پیشرفت ساخت عمومی است</h2>',
+      '<p>روی mehrdad.ir وضعیت هر محصول (زنده و در حال ساخت و ایده) و درصد پیشرفت ساخت به‌صورت عمومی نمایش داده می‌شود. یعنی سرمایه‌گذار بدون نیاز به گزارش‌های بسته می‌تواند پیشرفت واقعی را هر هفته ببیند. این شفافیت عمدی است — در این مدل همکاری اعتماد مهم‌ترین دارایی است.</p>',
+      '<h2>گام بعدی</h2>',
+      '<p>اگر این خوانش با نگاه شما از سرمایه‌گذاری فرشته هم‌خوان است از <a href="/contact">صفحهٔ تماس</a> پیام بدهید یا در <a href="https://www.instagram.com/startup_mt/" target="_blank" rel="noopener noreferrer">اینستاگرام</a> در ارتباط باشید. گام اول یک جلسهٔ کوتاه است: دموهای زنده را می‌بینید و اعداد و مدل همکاری را شفاف مرور می‌کنیم.</p>',
+    ].join('\n'),
+    cover: '/media/angel-mvp-cover.png',
+  },
+];
+
 export async function importContentSeed(): Promise<void> {
   if (done) return;
   done = true;
@@ -544,6 +622,33 @@ export async function importContentSeed(): Promise<void> {
         },
       });
       console.log('[seed] project "health-app" renamed → Health & Wellness App (owner request 2026-09-30)');
+    }
+
+    // Blog posts — INSERT-IF-MISSING (admin editor wins on existing rows).
+    // Creating a post flips the same content-changed flag the daily seeds
+    // use so the Vercel deploy hook fires: the /blog list and /blog/[slug]
+    // pages are force-static and only pick up new posts on a rebuild.
+    for (const row of SEED_POSTS) {
+      const existing = await db.post.findUnique({ where: { slug: row.slug } });
+      if (existing) continue;
+      await db.post.create({
+        data: {
+          slug: row.slug,
+          titleEn: row.titleEn,
+          titleFa: row.titleFa,
+          excerptEn: row.excerptEn,
+          excerptFa: row.excerptFa,
+          contentEn: row.contentEn,
+          contentFa: row.contentFa,
+          cover: row.cover,
+          date: new Date(),
+          published: true,
+          featured: false,
+          source: 'ai',
+        },
+      });
+      console.log(`[seed] blog post "${row.slug}" created`);
+      dailyChanged = true;
     }
 
     for (const row of SEED_ARTICLES) {
