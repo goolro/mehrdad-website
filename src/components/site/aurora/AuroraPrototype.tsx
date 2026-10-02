@@ -236,7 +236,7 @@ export function AuroraPrototype() {
           <div className="px-5 pt-8 text-center sm:px-8">
             <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.35em] text-violet-300/90">
               <Sparkles className="h-3.5 w-3.5" aria-hidden />
-              Aurora · شفق
+              Aurora · {t('شفق', 'Sky')}
             </p>
             <h2 className="mt-3 text-3xl font-extrabold text-[#f3f1fb] sm:text-4xl">
               {t('هر جفتِ تازه، آسمانی تازه روشن می‌کند', 'Every new pairing lights a new sky')}

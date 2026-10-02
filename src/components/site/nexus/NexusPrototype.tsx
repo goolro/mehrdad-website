@@ -213,7 +213,7 @@ export function NexusPrototype() {
         <div className="nx-panel relative overflow-hidden rounded-[28px] border border-white/10 bg-[#05060a] shadow-[0_30px_90px_-40px_rgba(0,0,0,0.85)]">
           {/* header (on the chamber floor, outside the framed stage) */}
           <div className="px-5 pt-8 text-center sm:px-8">
-            <p className="text-xs font-semibold uppercase tracking-[0.35em] text-amber-500/90">Nexus · هسته</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.35em] text-amber-500/90">Nexus · {t('هسته', 'Core')}</p>
             <h2 className="mt-3 text-3xl font-extrabold text-[#f2f0fa] sm:text-4xl">
               {t('رشته‌های بی‌ربط، به هم می‌رسند', 'Where unrelated disciplines meet')}
             </h2>

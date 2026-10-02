@@ -468,7 +468,7 @@ const SEED_POSTS: Array<{
       '<ul><li><strong>Server</strong> — running the products</li><li><strong>Hosting</strong> — deployment and delivery</li><li><strong>AI API</strong> — model tokens and AI services</li><li><strong>Database</strong> — managed data and backups</li><li><strong>App infrastructure</strong> — pipelines, monitoring and domains</li><li><strong>Software tools</strong> — the SaaS the products depend on</li><li><strong>Maintenance</strong> — bug fixing and support</li><li><strong>Product development</strong> — shipping features every month</li></ul>',
       '<h2>Portfolio of AI Products</h2>',
       '<p>The projects are presented to investors exactly as they are — a Portfolio of AI Products. This mix is especially attractive for an investor interested in <strong>Consumer AI + Mobile + Social + Gaming</strong>:</p>',
-      '<ul><li><strong>AI Health &amp; Wellness Super App</strong><br/>سلامت و تندرستی</li><li><strong>AI Assistant</strong><br/>ابزارهای هوشمند شخصی</li><li><strong>AI Social / Friendship &amp; Marriage</strong><br/>ارتباطات اجتماعی<br/>دوستی و آشنایی<br/>دستیار AI برای تعامل و ارتباط</li><li><strong>AI Quiz / Q&amp;A Game</strong><br/>بازی سؤال و جواب<br/>AI-generated questions<br/>تعامل و سرگرمی</li></ul>',
+      '<ul><li><strong>AI Health &amp; Wellness Super App</strong><br/>Health &amp; wellness</li><li><strong>AI Assistant</strong><br/>Personal smart tools</li><li><strong>AI Social / Friendship &amp; Marriage</strong><br/>Social networking<br/>Friendship &amp; matchmaking<br/>An AI companion for interaction and connection</li><li><strong>AI Quiz / Q&amp;A Game</strong><br/>A question-and-answer game<br/>AI-generated questions<br/>Interaction &amp; entertainment</li></ul>',
       '<p>Where things stand today: the AI Assistant is live and testable on mehrdad.ir — the AI Quiz game is playable at quizofkoko.com — Health &amp; Wellness is in active build with public progress on the site (strictly a wellness tool, not a medical device) — AI Social is in formation and the first candidate to start with investor support.</p>',
       '<h2>Why a portfolio and not a single product</h2>',
       '<p>Concentrating on one product at this stage concentrates risk. A balanced basket of four complementary tracks — health, tools, social and gaming — multiplies the chances of reaching traction while sharing the same common infrastructure. An angel gets access to a basket with one entry, not a single bet.</p>',
@@ -567,11 +567,36 @@ export async function importContentSeed(): Promise<void> {
             'نرم‌افزار مدیریت کسب‌وکار برای کسب‌وکارهای کوچک تا متوسط و حتی بزرگ‌تر — از کسب‌وکارهای تازه‌تأسیس تا فروشگاه‌ها و فروشگاه‌های زنجیره‌ای؛ هر کسی که کسب‌وکاری دارد می‌تواند از آن استفاده کند.',
           fundingAsk:
             pft.fundingAsk == null
-              ? 'استارتاپی در مسیر شکل‌گیری — برای جذب سرمایهٔ اولیه باز است · Open to angel & pre-seed investors'
+              ? 'Open to angel & pre-seed investors'
               : pft.fundingAsk,
         },
       });
       console.log('[seed] project "personal-finance-tool" renamed → Business Management Tool (owner request 2026-09-30)');
+    }
+
+    // ONE-TIME language-purity repair (owner rule 2026-10-01: the ENGLISH
+    // environment must carry no Persian text): fundingAsk is a SINGLE shared
+    // field rendered verbatim in both languages — the previously-seeded
+    // default mixed a Persian sentence into the EN projects page. Fires ONLY
+    // while the row still holds the exact previously-seeded bilingual line;
+    // an admin-edited value is never touched. (If the owner later wants a
+    // dedicated Persian line for FA mode, that needs a fundingAskFa column —
+    // his call.)
+    const pftAsk = await db.project.findUnique({
+      where: { slug: 'personal-finance-tool' },
+      select: { fundingAsk: true },
+    });
+    if (
+      pftAsk &&
+      pftAsk.fundingAsk ===
+        'استارتاپی در مسیر شکل‌گیری — برای جذب سرمایهٔ اولیه باز است · Open to angel & pre-seed investors'
+    ) {
+      await db.project.update({
+        where: { slug: 'personal-finance-tool' },
+        data: { fundingAsk: 'Open to angel & pre-seed investors' },
+      });
+      console.log('[seed] project "personal-finance-tool" fundingAsk → English-only (EN-purity rule)');
+      dailyChanged = true;
     }
 
     // ONE-TIME rename repair (owner request 2026-09-30, second round): the
@@ -687,6 +712,32 @@ export async function importContentSeed(): Promise<void> {
         },
       });
       console.log('[seed] blog post "angel-investor-for-mvp-portfolio" revised → Portfolio of AI Products presentation (owner request)');
+      dailyChanged = true;
+    }
+
+    // ONE-TIME revision repair #2 (owner request 2026-10-01): the ENGLISH
+    // version of the "Portfolio of AI Products" list must be English-only —
+    // the previous revision accidentally embedded the Persian taglines inside
+    // contentEn (the Persian contentFa block stays exactly as dictated).
+    // Fires ONLY while the English content still carries the Persian
+    // taglines AND the row still holds the current seeded revision of the
+    // titles; any other state disables this repair forever.
+    if (
+      seededAngel &&
+      angelPost &&
+      angelPost.titleEn === seededAngel.titleEn &&
+      angelPost.titleFa === seededAngel.titleFa &&
+      typeof angelPost.contentEn === 'string' &&
+      angelPost.contentEn.includes('سلامت و تندرستی') &&
+      angelPost.contentEn.includes('ابزارهای هوشمند شخصی')
+    ) {
+      await db.post.update({
+        where: { slug: angelPost.slug },
+        data: {
+          contentEn: seededAngel.contentEn,
+        },
+      });
+      console.log('[seed] blog post "angel-investor-for-mvp-portfolio" revised → English-only portfolio list in contentEn (owner request)');
       dailyChanged = true;
     }
 

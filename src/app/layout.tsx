@@ -28,10 +28,14 @@ export const metadata: Metadata = {
     // HTML came from (injected at build time, visible in view-source)
     "x-build": process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) || "local",
   },
-  title: "Mehrdad — Product Builder | مهرداد — سازنده محصول",
+  // EN-purity rule (owner 2026-10-01): every user-visible EN surface —
+  // <title>, meta description, twitter card — is English-only. The Persian
+  // experience is the same URL + ?lang=fa (client-side flip), so the static
+  // metadata that serves it stays English.
+  title: "Mehrdad — Product Builder",
   description:
-    "I design businesses and products with care, and build them fast with AI. Real projects, honest status, lessons from real work. کسب‌وکار و محصولت رو با دقت طراحی می‌کنم، و با AI سریع می‌سازمش.",
-  keywords: ["Mehrdad", "product builder", "product design", "AI products", "startups", "smart city", "مهرداد", "سازنده محصول", "هوش مصنوعی"],
+    "I design businesses and products with care, and build them fast with AI. Real projects, honest status, lessons from real work.",
+  keywords: ["Mehrdad", "product builder", "product design", "AI products", "startups", "smart city"],
   authors: [{ name: "Mehrdad" }],
   manifest: "/manifest.json",
   applicationName: "Mehrdad",
@@ -58,7 +62,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Mehrdad — Product Builder | مهرداد — سازنده محصول",
+    title: "Mehrdad — Product Builder",
     description: "I design businesses and products with care, and build them fast with AI.",
   },
   robots: {

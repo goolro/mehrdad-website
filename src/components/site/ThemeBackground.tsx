@@ -102,7 +102,10 @@ export function ThemeBackground({ themeId }: { themeId: string }) {
           duration: 7 + rnd() * 8,
           delay: -rnd() * 12,
           size: 11 + rnd() * 8,
-          char: ['۰', '۱', '0', '1'][Math.floor(rnd() * 4)],
+          // EN-purity rule (owner 2026-10-01): Latin digits only — the Persian
+          // ۰/۱ glyphs used to rain in the EN environment too (theme effect is
+          // language-independent)
+          char: ['0', '1'][Math.floor(rnd() * 2)],
         }));
       case 'petals':
         return make(10, (i) => ({

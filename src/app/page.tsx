@@ -12,7 +12,7 @@ import { listPosts, getProjects, NOT_IN_FEATURED_POST_SLUGS } from '@/lib/querie
 export const dynamic = 'force-static';
 
 export const metadata: Metadata = {
-  title: 'Mehrdad — Product Builder | مهرداد — سازنده محصول',
+  title: 'Mehrdad — Product Builder',
   description:
     'I design businesses and products with care, and build them fast with AI. Real projects, honest status, lessons from real work.',
   alternates: {
