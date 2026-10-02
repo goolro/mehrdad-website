@@ -52,6 +52,12 @@ export function isUnpublishedPostSlug(slug: string): boolean {
   }
 }
 
+/** All hidden (kill-switch) slugs in their Prisma-comparable forms — for
+ * `slug: { notIn: … }` filters. The /blog page's crawlable archive query
+ * must exclude these too, or dead 404 links leak into the archive list
+ * (spotted 2026-10-01: 'iran-ousted-from-trade-corridors' + 'logo'). */
+export const hiddenPostSlugsForPrisma = (): string[] => [...UNPUBLISHED_POST_SLUG_SET];
+
 export type ListPostsParams = {
   page?: number;
   perPage?: number;

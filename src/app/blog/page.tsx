@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { BlogView } from '@/components/site/BlogView';
-import { listPosts } from '@/lib/queries';
+import { listPosts, hiddenPostSlugsForPrisma } from '@/lib/queries';
 import { db } from '@/lib/db';
 
 // Fully static: rendered once per BUILD (the build-time CSP meta can
@@ -39,8 +39,11 @@ export default async function BlogPage() {
     // crawlable full archive: every published post as a real <a> in the
     // initial HTML — JS-only pagination leaves ~85% of posts discoverable
     // through the sitemap alone ("Discovered — currently not indexed")
+    // kill-switch posts are excluded here too — their pages 404 by design,
+    // so their links must never appear in the archive (owner rule 2026-01,
+    // archive leak spotted 2026-10-01)
     db.post.findMany({
-      where: { published: true },
+      where: { published: true, slug: { notIn: hiddenPostSlugsForPrisma() } },
       select: { slug: true, titleEn: true, titleFa: true, date: true },
       orderBy: { date: 'desc' },
     }),
