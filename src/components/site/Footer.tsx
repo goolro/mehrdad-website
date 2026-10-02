@@ -73,7 +73,7 @@ export function Footer() {
           © {year}{' '}
           <a
             href="/"
-            aria-label="mehrdad.ir — بازگشت به صفحه اصلی"
+            aria-label={lang === 'fa' ? 'mehrdad.ir — بازگشت به صفحه اصلی' : 'mehrdad.ir — Back to home'}
             className="font-medium transition-colors hover:text-foreground"
           >
             mehrdad.ir

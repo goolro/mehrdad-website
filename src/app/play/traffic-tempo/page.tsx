@@ -7,9 +7,9 @@ import { TrafficTempoMobile } from '@/components/site/games/TrafficTempoMobile';
 export const dynamic = 'force-static';
 
 export const metadata: Metadata = {
-  title: 'Traffic Tempo — Mobile Edition | ترافیک تمپو — نسخه موبایل',
+  title: 'Traffic Tempo — Mobile Edition',
   description:
-    'Run the intersection in this 2D mobile traffic game — flip the lights, keep the tempo, never let crossing cars meet. بازی موبایل دو بعدی مدیریت تقاطع',
+    'Run the intersection in this 2D mobile traffic game — flip the lights, keep the tempo, never let crossing cars meet.',
   alternates: {
     canonical: '/play/traffic-tempo',
   },
