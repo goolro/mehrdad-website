@@ -85,9 +85,12 @@ export default async function HomePage() {
         ],
         // sameAs ties this entity to its other profiles — how Google/KG and
         // LLMs disambiguate "Mehrdad" and consolidate authority signals
+        // (Instagram added 2026-09-30 — owner request; keep in sync with the
+        // footer SOCIAL_LINKS in src/components/site/Footer.tsx)
         sameAs: [
           'https://github.com/goolro',
           'https://virgool.io/@mehrdad.ir',
+          'https://www.instagram.com/startup_mt/',
         ],
       },
     ],
