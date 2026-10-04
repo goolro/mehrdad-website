@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import {
   AppWindow,
   Archive,
+  Bell,
   BookOpen,
   Brain,
   CalendarCheck,
@@ -473,6 +474,55 @@ export function ProjectDetail({ project, shareUrl }: { project: ProjectDetailRow
         />
       )}
 
+      {/* startup-intro stat strip (owner request 2026-10-04: «طبق
+          استارتاپ‌هایی که خودشون معرفی می‌کنند هم ایده بگیر») — the classic
+          pre-launch "traction numbers" pattern; every value is copied from
+          the owner's own verbatim table above, nothing invented */}
+      {profile?.stats && profile.stats.length > 0 && (
+        <section
+          className="mt-8"
+          aria-label={pick(lang, 'Real build numbers', 'اعداد واقعی ساخت')}
+        >
+          <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+            {profile.stats.map((s) => (
+              <li
+                key={s.labelEn}
+                className="rounded-2xl border border-border bg-card p-4 text-center"
+              >
+                <p className="text-2xl font-extrabold leading-tight text-amber-600 dark:text-amber-400">
+                  {pick(lang, s.valueEn, s.valueFa)}
+                </p>
+                <p className="mt-1 text-xs leading-snug text-muted-foreground">
+                  {pick(lang, s.labelEn, s.labelFa)}
+                </p>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {/* "see it first" CTA (startup waitlist pattern, adapted 2026-10-04) —
+          routes to the site's EXISTING contact page; never invents a contact
+          channel and the story's verbatim contact placeholder stands */}
+      {profile?.contactCta && (
+        <div className="mt-6 rounded-2xl border border-amber-500/30 bg-gradient-to-br from-amber-500/10 to-orange-500/10 p-5">
+          <p
+            className="text-sm leading-relaxed"
+            dir={rtl ? 'rtl' : 'ltr'}
+          >
+            {pick(lang, profile.contactCta.textEn, profile.contactCta.textFa)}
+          </p>
+          <Link
+            href={profile.contactCta.href}
+            className="mt-3 inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 px-5 text-sm font-bold text-white shadow-md shadow-amber-500/25 transition-all hover:-translate-y-0.5 hover:shadow-lg hover:shadow-amber-500/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+          >
+            <Bell className="h-4 w-4" aria-hidden />
+            {pick(lang, profile.contactCta.labelEn, profile.contactCta.labelFa)}
+            <ChevronRight className="h-4 w-4 opacity-80 rtl:rotate-180" aria-hidden />
+          </Link>
+        </div>
+      )}
+
       {/* early-idea context — an exploratory page must never read like a
           finished product (owner feedback on /work/bizpal) */}
       {!isActiveStatus(st) && (
@@ -633,7 +683,15 @@ export function ProjectDetail({ project, shareUrl }: { project: ProjectDetailRow
       {showsProgress(st) && (
         <div className="mt-8 rounded-2xl border border-amber-500/30 bg-amber-500/5 p-5">
           <div className="mb-2 flex items-center justify-between text-sm font-medium">
-            <span>{t.projects.progress}</span>
+            {/* profile label override (health-app: «پیشرفت فاز اول») so the
+                box names the phase the owner's 74% belongs to */}
+            <span>
+              {pick(
+                lang,
+                profile?.progressLabelEn ?? t.projects.progress,
+                profile?.progressLabelFa ?? t.projects.progress,
+              )}
+            </span>
             <span className="font-extrabold text-amber-600 dark:text-amber-400">{project.progress}%</span>
           </div>
           <ProgressBar value={project.progress} barCls={cfg.barCls} />
