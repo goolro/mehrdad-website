@@ -581,7 +581,13 @@ export function ProjectDetail({ project, shareUrl }: { project: ProjectDetailRow
             <Route className="h-5 w-5 text-amber-500" aria-hidden />
             {t.projects.roadmapTitle}
           </h2>
-          <ol className="mt-4 grid gap-3 sm:grid-cols-3">
+          {/* 4+ phases read better as 2×2 (tablet) / one row of 4 (desktop);
+              the classic 1–3 phase roadmaps keep the original 3-col grid */}
+          <ol
+            className={`mt-4 grid gap-3 ${
+              profile.phases.length >= 4 ? 'sm:grid-cols-2 lg:grid-cols-4' : 'sm:grid-cols-3'
+            }`}
+          >
             {profile.phases.map((ph) => {
               const PhaseIcon = PHASE_ICONS[ph.icon] ?? Route;
               const tone = PHASE_TONE[ph.tone];

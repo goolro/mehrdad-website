@@ -331,10 +331,12 @@ export const PROJECT_PROFILES: Record<string, ProjectProfile> = {
     features: [],
     tech: [],
     // Owner request 2026-10-04: «درصد پیشرفت را 74 درصد بزن — برای فاز اول
-    // مشخص کن فاز اول 74 درصد پیشرفته». The DB row's progress field carries
-    // the 74 (one-time seed repair in seed-import.ts) and the phase card
-    // names it as PHASE ONE's figure. Scope of the phase is deliberately NOT
-    // described — the owner hasn't dictated what Phase 1 contains.
+    // مشخص کن فاز اول 74 درصد پیشرفته» و همان روز: «مثل این 3 فاز دیگه قرار
+    // بده اونها را عدد زیر 10 درصد بزار که اون قسمت پر بشه». The DB row's
+    // progress field carries the 74 (one-time seed repair in seed-import.ts)
+    // and the first card names it as PHASE ONE's figure. Scopes of the phases
+    // are deliberately NOT described — the owner hasn't dictated what each
+    // phase contains; phases 2–4 carry the owner-ordered sub-10% figures.
     phases: [
       {
         key: 'phase-1',
@@ -347,6 +349,42 @@ export const PROJECT_PROFILES: Record<string, ProjectProfile> = {
         tone: 'active',
         badgeEn: '74%',
         badgeFa: '۷۴٪',
+      },
+      {
+        key: 'phase-2',
+        icon: 'hammer',
+        titleEn: 'Phase 2',
+        titleFa: 'فاز دوم',
+        stateEn: '5% complete — just getting started',
+        stateFa: '۵٪ پیشرفت — در ابتدای مسیر',
+        ring: 5,
+        tone: 'ready',
+        badgeEn: '5%',
+        badgeFa: '۵٪',
+      },
+      {
+        key: 'phase-3',
+        icon: 'hammer',
+        titleEn: 'Phase 3',
+        titleFa: 'فاز سوم',
+        stateEn: '4% complete — just getting started',
+        stateFa: '۴٪ پیشرفت — در ابتدای مسیر',
+        ring: 4,
+        tone: 'ready',
+        badgeEn: '4%',
+        badgeFa: '۴٪',
+      },
+      {
+        key: 'phase-4',
+        icon: 'hammer',
+        titleEn: 'Phase 4',
+        titleFa: 'فاز چهارم',
+        stateEn: '3% complete — just getting started',
+        stateFa: '۳٪ پیشرفت — در ابتدای مسیر',
+        ring: 3,
+        tone: 'ready',
+        badgeEn: '3%',
+        badgeFa: '۳٪',
       },
     ],
     // progress box label names the phase (owner request 2026-10-04)
