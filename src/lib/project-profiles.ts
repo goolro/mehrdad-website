@@ -74,6 +74,20 @@ export interface ProfileStory {
   htmlFa: string;
 }
 
+/**
+ * Optional visual stat strip — the classic pre-launch startup pattern of
+ * putting the build numbers up as big tiles ("traction without revenue":
+ * execution metrics stand in for revenue until reveal). EVERY value must be
+ * copied from the owner's own published numbers (the verbatim story table)
+ * — nothing invented, nothing extrapolated.
+ */
+export interface ProfileStat {
+  valueEn: string;
+  valueFa: string;
+  labelEn: string;
+  labelFa: string;
+}
+
 export interface ProjectProfile {
   features: ProfileFeature[];
   tech: ProfileTechItem[];
@@ -84,6 +98,23 @@ export interface ProjectProfile {
   relatedPost?: RelatedPost;
   /** optional owner-dictated story block (stealth teaser, marketing stages …) */
   story?: ProfileStory;
+  /** optional stat strip under the story (values = the owner's own numbers) */
+  stats?: ProfileStat[];
+  /** label override for the build-progress box (e.g. «پیشرفت فاز اول»);
+   *  falls back to the shared i18n label when absent */
+  progressLabelEn?: string;
+  progressLabelFa?: string;
+  /** optional "see it first" CTA (startup waitlist pattern, adapted): points
+   *  at an EXISTING site surface only — it never invents a new contact
+   *  channel, and the owner's verbatim contact placeholder in the story
+   *  stands until he supplies the real one */
+  contactCta?: {
+    href: string;
+    textEn: string;
+    textFa: string;
+    labelEn: string;
+    labelFa: string;
+  };
 }
 
 export const PROJECT_PROFILES: Record<string, ProjectProfile> = {
@@ -291,11 +322,89 @@ export const PROJECT_PROFILES: Record<string, ProjectProfile> = {
    * the marketing stage next and it gets APPENDED to these same two
    * strings. The bracketed contact line is the owner's own placeholder
    * until he supplies the real contact. htmlEn must stay Persian-free.
+   *
+   * 2026-10-04 owner additions around (never inside) the verbatim block:
+   * Phase-1 card at 74%, progress-label override, stat strip (his own
+   * numbers) and the contact-page CTA — see the fields below.
    */
   'health-app': {
     features: [],
     tech: [],
-    phases: [],
+    // Owner request 2026-10-04: «درصد پیشرفت را 74 درصد بزن — برای فاز اول
+    // مشخص کن فاز اول 74 درصد پیشرفته». The DB row's progress field carries
+    // the 74 (one-time seed repair in seed-import.ts) and the phase card
+    // names it as PHASE ONE's figure. Scope of the phase is deliberately NOT
+    // described — the owner hasn't dictated what Phase 1 contains.
+    phases: [
+      {
+        key: 'phase-1',
+        icon: 'hammer',
+        titleEn: 'Phase 1',
+        titleFa: 'فاز اول',
+        stateEn: '74% complete — build in progress',
+        stateFa: '۷۴٪ پیشرفت — ساخت در جریان است',
+        ring: 74,
+        tone: 'active',
+        badgeEn: '74%',
+        badgeFa: '۷۴٪',
+      },
+    ],
+    // progress box label names the phase (owner request 2026-10-04)
+    progressLabelEn: 'Phase 1 progress',
+    progressLabelFa: 'پیشرفت فاز اول',
+    // startup-intro stat strip (2026-10-04): the owner's own verbatim table
+    // numbers rendered as tiles — same figures, zero new claims
+    stats: [
+      {
+        valueEn: '125,933',
+        valueFa: '۱۲۵٬۹۳۳',
+        labelEn: 'lines of code (TypeScript)',
+        labelFa: 'خط کد (TypeScript)',
+      },
+      {
+        valueEn: '225',
+        valueFa: '۲۲۵',
+        labelEn: 'API services',
+        labelFa: 'سرویس API',
+      },
+      {
+        valueEn: '115',
+        valueFa: '۱۱۵',
+        labelEn: 'data models',
+        labelFa: 'مدل داده',
+      },
+      {
+        valueEn: '711',
+        valueFa: '۷۱۱',
+        labelEn: 'automated tests',
+        labelFa: 'تست خودکار',
+      },
+      {
+        valueEn: '4,293',
+        valueFa: '۴٬۲۹۳',
+        labelEn: 'translated strings',
+        labelFa: 'عبارت ترجمه‌شده',
+      },
+      {
+        valueEn: '144',
+        valueFa: '۱۴۴',
+        labelEn: 'UI components',
+        labelFa: 'کامپوننت رابط کاربری',
+      },
+    ],
+    // "see it first" CTA — routes to the site's existing contact page (the
+    // same surface the owner's own angel-investor text points to); mirrors
+    // the owner's own investor path (intro meeting → NDA → reveal). The
+    // verbatim [contact] placeholder above stays untouched.
+    contactCta: {
+      href: '/contact',
+      textEn:
+        'Want to see it first? Message via the contact page to follow the reveal — or request the intro meeting + NDA.',
+      textFa:
+        'می‌خواهید زودتر از همه ببینید؟ برای پیگیری رونمایی یا درخواست جلسهٔ معارفه و توافق محرمانگی از صفحهٔ تماس پیام بگذارید.',
+      labelEn: 'Contact page',
+      labelFa: 'صفحهٔ تماس',
+    },
     story: {
       htmlEn: [
         '<h2>Idea is worth . Execution is everything. We already executed.</h2>',

@@ -651,6 +651,23 @@ export async function importContentSeed(): Promise<void> {
       console.log('[seed] project "health-app" renamed → Health & Wellness App (owner request 2026-09-30)');
     }
 
+    // ONE-TIME progress repair (owner request 2026-10-04: «درصد پیشرفت را
+    // 74 درصد بزن — برای فاز اول مشخص کن فاز اول 74 درصد پیشرفته»): the
+    // health-app row moves from the old placeholder 25% to the owner's
+    // Phase-1 figure 74%. Fires ONLY while progress still holds the exact
+    // previously-seeded 25 — any admin/owner edit pins their number forever.
+    const hapProgress = await db.project.findUnique({
+      where: { slug: 'health-app' },
+      select: { progress: true },
+    });
+    if (hapProgress && hapProgress.progress === 25) {
+      await db.project.update({
+        where: { slug: 'health-app' },
+        data: { progress: 74 },
+      });
+      console.log('[seed] project "health-app" progress 25 → 74 (Phase 1, owner request 2026-10-04)');
+    }
+
     // Blog posts — INSERT-IF-MISSING (admin editor wins on existing rows).
     // Creating a post flips the same content-changed flag the daily seeds
     // use so the Vercel deploy hook fires: the /blog list and /blog/[slug]
