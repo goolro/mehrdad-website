@@ -74,20 +74,6 @@ export interface ProfileStory {
   htmlFa: string;
 }
 
-/**
- * Optional visual stat strip — the classic pre-launch startup pattern of
- * putting the build numbers up as big tiles ("traction without revenue":
- * execution metrics stand in for revenue until reveal). EVERY value must be
- * copied from the owner's own published numbers (the verbatim story table)
- * — nothing invented, nothing extrapolated.
- */
-export interface ProfileStat {
-  valueEn: string;
-  valueFa: string;
-  labelEn: string;
-  labelFa: string;
-}
-
 export interface ProjectProfile {
   features: ProfileFeature[];
   tech: ProfileTechItem[];
@@ -98,20 +84,35 @@ export interface ProjectProfile {
   relatedPost?: RelatedPost;
   /** optional owner-dictated story block (stealth teaser, marketing stages …) */
   story?: ProfileStory;
-  /** optional stat strip under the story (values = the owner's own numbers) */
-  stats?: ProfileStat[];
+  /**
+   * Optional MARKETING story block rendered BEFORE `story` (owner order
+   * 2026-10-04: «ابتدای متن بیار یعنی فنی بره بعد» — market first, technical
+   * after). health-app htmlEn = the owner's own "Market & Growth Section
+   * (final copy)" memo placed VERBATIM, with the memo's implementation notes
+   * excluded and its bracket rules applied as the memo itself prescribes:
+   * [X]% → 74 (owner-confirmed the same day), the un-verifiable deliverable
+   * sentence removed, the influencer line → "actively identifying" (the
+   * memo's own prescribed fallback). htmlFa = faithful Persian rendering of
+   * that final copy (translator: AI, pending the owner's own Persian
+   * dictation — swap it in verbatim the moment he supplies one). The memo's
+   * italic meta-notes (cite-source guidance, "measured than a pitch-deck"
+   * rationale) are implementer notes, not page copy.
+   */
+  marketStory?: ProfileStory;
   /** label override for the build-progress box (e.g. «پیشرفت فاز اول»);
    *  falls back to the shared i18n label when absent */
   progressLabelEn?: string;
   progressLabelFa?: string;
-  /** optional "see it first" CTA (startup waitlist pattern, adapted): points
-   *  at an EXISTING site surface only — it never invents a new contact
-   *  channel, and the owner's verbatim contact placeholder in the story
-   *  stands until he supplies the real one */
+  /**
+   * Optional "intro meeting" CTA (owner's Market & Growth memo, For
+   * Investors: "[Request an intro meeting →] (links to Contact)") — points
+   * at an EXISTING site surface only. The optional lead-in paragraph renders
+   * only when supplied.
+   */
   contactCta?: {
     href: string;
-    textEn: string;
-    textFa: string;
+    textEn?: string;
+    textFa?: string;
     labelEn: string;
     labelFa: string;
   };
@@ -324,8 +325,9 @@ export const PROJECT_PROFILES: Record<string, ProjectProfile> = {
    * until he supplies the real contact. htmlEn must stay Persian-free.
    *
    * 2026-10-04 owner additions around (never inside) the verbatim block:
-   * Phase-1 card at 74%, progress-label override, stat strip (his own
-   * numbers) and the contact-page CTA — see the fields below.
+   * Phase-1 card at 74% + phases 2–4 (sub-10%), progress-label override,
+   * the Market & Growth block ABOVE this story (market first, technical
+   * after) and the "Request an intro meeting" CTA — see the fields below.
    */
   'health-app': {
     features: [],
@@ -390,58 +392,90 @@ export const PROJECT_PROFILES: Record<string, ProjectProfile> = {
     // progress box label names the phase (owner request 2026-10-04)
     progressLabelEn: 'Phase 1 progress',
     progressLabelFa: 'پیشرفت فاز اول',
-    // startup-intro stat strip (2026-10-04): the owner's own verbatim table
-    // numbers rendered as tiles — same figures, zero new claims
-    stats: [
-      {
-        valueEn: '125,933',
-        valueFa: '۱۲۵٬۹۳۳',
-        labelEn: 'lines of code (TypeScript)',
-        labelFa: 'خط کد (TypeScript)',
-      },
-      {
-        valueEn: '225',
-        valueFa: '۲۲۵',
-        labelEn: 'API services',
-        labelFa: 'سرویس API',
-      },
-      {
-        valueEn: '115',
-        valueFa: '۱۱۵',
-        labelEn: 'data models',
-        labelFa: 'مدل داده',
-      },
-      {
-        valueEn: '711',
-        valueFa: '۷۱۱',
-        labelEn: 'automated tests',
-        labelFa: 'تست خودکار',
-      },
-      {
-        valueEn: '4,293',
-        valueFa: '۴٬۲۹۳',
-        labelEn: 'translated strings',
-        labelFa: 'عبارت ترجمه‌شده',
-      },
-      {
-        valueEn: '144',
-        valueFa: '۱۴۴',
-        labelEn: 'UI components',
-        labelFa: 'کامپوننت رابط کاربری',
-      },
-    ],
-    // "see it first" CTA — routes to the site's existing contact page (the
-    // same surface the owner's own angel-investor text points to); mirrors
-    // the owner's own investor path (intro meeting → NDA → reveal). The
-    // verbatim [contact] placeholder above stays untouched.
+    // MARKET & GROWTH — owner's "final copy" memo (2026-10-04), rendered
+    // FIRST (owner order: «ابتدای متن بیار یعنی فنی بره بعد»). EN = the
+    // memo's page copy verbatim (its two italic meta-notes and the
+    // "paste this in place of…" instruction are implementer notes, excluded;
+    // brackets resolved per the memo's own rules — [X]% → 74 as the owner
+    // confirmed, deliverable sentence removed, influencer line → the memo's
+    // "actively identifying" fallback). FA = faithful rendering of the same
+    // copy (no Persian comma rule respected) — pending the owner's own
+    // Persian dictation. The LOC/API/test metrics strip was removed per the
+    // memo: those numbers stay only inside the technical block below.
+    marketStory: {
+      htmlEn: [
+        '<blockquote><p>The wellness app market is not a niche bet — it\'s one of the fastest-growing categories in consumer software, and still early enough for a focused, well-designed product to carve out real share.</p></blockquote>',
+        '<h2>Market Opportunity</h2>',
+        '<p><strong>Market size.</strong> Estimates vary by how narrowly the category is defined, so here are the relevant readings, named by scope:</p>',
+        '<ul>',
+        '<li><strong>Wellness apps</strong> (the closest match to this product): an estimated <strong>$15.3B in 2026</strong>, projected to reach <strong>$26.2B by 2030</strong> — a 14.9% CAGR (Grand View Research).</li>',
+        '<li><strong>mHealth apps</strong> (the broader category covering all mobile health software): an estimated <strong>$45.1B in 2026</strong>, projected to reach <strong>$113.2B by 2034</strong> — an 11.8% CAGR, with wellness management already the largest single segment inside it (Fortune Business Insights).</li>',
+        '<li><strong>Adoption context:</strong> global wellness-app users surpassed an estimated <strong>2.2 billion people in 2024</strong> — the audience already exists and is growing; the opportunity is capturing a meaningful share of it with a better product, not creating the category from scratch.</li>',
+        '</ul>',
+        '<p><strong>Why this segment, why now:</strong></p>',
+        '<ul>',
+        '<li>Rising chronic-disease awareness and preventive-health behavior are structurally increasing demand for self-monitoring tools, independent of any single product\'s marketing (Fortune Business Insights; Business Research Insights).</li>',
+        '<li>Smartphone penetration and wearable adoption continue to lower the cost of the kind of continuous, everyday tracking this product is built around.</li>',
+        '<li>The category is large enough to support multiple winners, but still fragmented enough that a genuinely well-designed, fast-to-use experience can stand out — most incumbents in this space are either narrow single-purpose trackers or bloated "do everything" platforms.</li>',
+        '</ul>',
+        '<h2>Our Approach (public version — no mechanism disclosed)</h2>',
+        '<p>A wellness app built around two AI-driven assessment engines that turn everyday health signals into a clear, visual read on where the user\'s body stands — without the friction of manual logging that kills retention in most tracking apps. The specific mechanics are reserved for the in-person/NDA walkthrough; what\'s shared publicly is the outcome: a fast, visually clear, genuinely useful read on personal health trends, not a replacement for medical care.</p>',
+        '<p><strong>Status:</strong> Building — 74% through Phase 1.</p>',
+        '<h2>Growth Strategy</h2>',
+        '<blockquote><p>The goal is 100,000 users within 6 months of public launch. This is a target we\'re building toward deliberately, not a guarantee — here\'s the reasoning and the plan behind it.</p></blockquote>',
+        '<p><strong>1. Freemium as the acquisition engine.</strong><br/>A meaningful part of the assessment experience is free from day one. The logic: the product\'s core value (a genuinely useful, good-looking read on your own health data) is also its best advertisement — people share results, not feature lists. Conversion to paid tiers is designed around deeper tracking, history, and personalized recommendations once a user is already getting value for free.</p>',
+        '<p><strong>2. Gamification for retention, not just acquisition.</strong><br/>Health apps typically lose most users within the first few weeks. The product\'s progress visuals, streaks, and milestone mechanics are designed specifically to counter that drop-off — growth only compounds if the people who join in month one are still active in month three.</p>',
+        '<p><strong>3. Influencer and professional-network distribution.</strong><br/>The plan is to seed the free tier with health/fitness content creators, trainers, and (longer-term) clinicians who can genuinely vouch for the product\'s output — not a paid blast to unrelated audiences. The first creators and professionals for this seeding phase are being actively identified.</p>',
+        '<p><strong>4. What has to go right for this to work — stated plainly:</strong></p>',
+        '<ul>',
+        '<li>The free tier has to be good enough on its own to generate organic shares — this is being validated with real early users before scaling any paid or influencer spend.</li>',
+        '<li>Retention in the first 30 days is the real leading indicator, more than raw signups — this is the number we\'re tracking most closely post-launch.</li>',
+        '<li>100,000 in 6 months is the target scenario if the above two hold at the rates we\'re modeling; we\'ll share actual cohort data as it comes in rather than only the headline number.</li>',
+        '</ul>',
+        '<h2>For Investors</h2>',
+        '<p>Execution on the core product is underway and can be shown in a live walkthrough. What\'s public here is the market case and the growth logic; the product mechanics, current metrics, and roadmap detail are covered in an intro call, after which an NDA can be arranged for a full technical and product walkthrough.</p>',
+      ].join(''),
+      htmlFa: [
+        '<blockquote><p>بازار اپ‌های تندرستی یک شرط‌بندی حاشیه‌ای نیست — یکی از سریع‌ترین دسته‌های در حال رشد در نرم‌افزار مصرفی است و هنوز به‌قدر کافی جوان است که یک محصول متمرکز و خوش‌طرح بتواند سهم واقعی برای خود کنار بزند.</p></blockquote>',
+        '<h2>فرصت بازار</h2>',
+        '<p><strong>اندازهٔ بازار.</strong> برآوردها بسته به این‌که دسته چقدر محدود تعریف شود متفاوت‌اند؛ پس هر سه خوانش مرتبط را — با نام‌بردن دامنهٔ هر کدام — می‌آوریم:</p>',
+        '<ul>',
+        '<li><strong>اپ‌های تندرستی</strong> (نزدیک‌ترین تطابق با این محصول): برآورد <strong>۱۵٫۳ میلیارد دلار در ۲۰۲۶</strong> و پیش‌بینی رسیدن به <strong>۲۶٫۲ میلیارد دلار تا ۲۰۳۰</strong> — با نرخ رشد مرکب سالانه ۱۴٫۹٪ (Grand View Research).</li>',
+        '<li><strong>اپ‌های mHealth</strong> (دستهٔ گسترده‌تر شامل همهٔ نرم‌افزارهای سلامت موبایل): برآورد <strong>۴۵٫۱ میلیارد دلار در ۲۰۲۶</strong> و پیش‌بینی رسیدن به <strong>۱۱۳٫۲ میلیارد دلار تا ۲۰۳۴</strong> — با نرخ رشد مرکب سالانه ۱۱٫۸٪؛ مدیریت تندرستی همین حالا بزرگ‌ترین تک‌بخش آن است (Fortune Business Insights).</li>',
+        '<li><strong>بستر پذیرش:</strong> شمار کاربران جهانی اپ‌های تندرستی در ۲۰۲۴ از مرز برآوردی <strong>۲٫۲ میلیارد نفر</strong> گذشت — مخاطب از قبل وجود دارد و بزرگ می‌شود؛ فرصت سهم‌گرفتن معنادار از این مخاطب با محصولی بهتر است؛ نه ساختن دسته از صفر.</li>',
+        '</ul>',
+        '<p><strong>چرا این بخش از بازار و چرا حالا:</strong></p>',
+        '<ul>',
+        '<li>رشد آگاهی از بیماری‌های مزمن و گرایش به سلامت پیشگیرانه به‌صورت ساختاری تقاضا برای ابزارهای خودپایشی را بالا می‌برد — مستقل از بازاریابی هر محصول خاص (Fortune Business Insights؛ Business Research Insights).</li>',
+        '<li>نفوذ گوشی هوشمند و پوشیدنی‌ها همچنان هزینهٔ آن ردیابی روزمره و پیوسته را پایین می‌آورد که این محصول حول آن ساخته شده است.</li>',
+        '<li>این دسته به‌اندازهٔ کافی بزرگ است که جای چند برنده داشته باشد و همچنان آن‌قدر پراکنده است که یک تجربهٔ واقعاً خوش‌طرح و سریع بتواند خودش را نشان بدهد — بیشتر بازیگران فعلی یا ردیاب‌های تک‌منظورهٔ محدودند یا پلتفرم‌های شلوغ «همه‌کاره».</li>',
+        '</ul>',
+        '<h2>رویکرد ما (نسخهٔ عمومی — بدون افشای مکانیزم)</h2>',
+        '<p>اپ تندرستی ساخته‌شده حول دو موتور ارزیابی مبتنی بر هوش مصنوعی که سیگنال‌های روزمرهٔ سلامت را به یک خوانش روشن و بصری از وضعیت بدن کاربر تبدیل می‌کنند — بدون اصطکاک ثبت دستی که در بیشتر اپ‌های ردیابی نگه‌داشت کاربر را از بین می‌برد. جزئیات مکانیزم برای پیمایش حضوری/محرمانگی (NDA) نگه داشته شده است؛ آنچه عمومی است نتیجه است: خوانشی سریع و بصری و واقعاً کاربردی از روند سلامت شخصی — نه جایگزینی برای مراقبت پزشکی.</p>',
+        '<p><strong>وضعیت:</strong> در حال ساخت — ۷۴٪ فاز اول.</p>',
+        '<h2>استراتژی رشد</h2>',
+        '<blockquote><p>هدف ۱۰۰٬۰۰۰ کاربر در ۶ ماه پس از عرضهٔ عمومی است. هدفی است که آگاهانه به‌سویش می‌سازیم؛ نه یک تضمین — استدلال و برنامهٔ پشت آن این است:</p></blockquote>',
+        '<p><strong>۱. فری‌میوم به‌عنوان موتور جذب.</strong><br/>بخش معناداری از تجربهٔ ارزیابی از روز اول رایگان است. منطق: ارزش اصلی محصول (خوانشی واقعاً مفید و خوش‌ظاهر از دادهٔ سلامت خودتان) بهترین تبلیغ آن هم هست — آدم‌ها نتیجه را به اشتراک می‌گذارند نه فهرست قابلیت‌ها را. تبدیل به پلن پولی حول ردیابی عمیق‌تر و تاریخچه و پیشنهادهای شخصی‌سازی‌شده طراحی شده است؛ برای وقتی که کاربر از نسخهٔ رایگان ارزش گرفته باشد.</p>',
+        '<p><strong>۲. گیمیفیکیشن برای نگه‌داشت — نه فقط جذب.</strong><br/>اپ‌های سلامت معمولاً در هفته‌های نخست بیشتر کاربرانشان را از دست می‌دهند. نمای پیشرفت و استریک‌ها و مکانیک‌های نقاط عطف محصول دقیقاً برای مقابله با همان ریزش طراحی شده‌اند — رشد فقط وقتی مرکب می‌شود که کسانی که ماه اول آمده‌اند در ماه سوم هم فعال باشند.</p>',
+        '<p><strong>۳. توزیع از طریق اینفلوئنسرها و شبکهٔ متخصصان.</strong><br/>برنامه این است که نسخهٔ رایگان با تولیدکننده‌های محتوای سلامت/فیتنس و مربیان و (در بلندمدت) متخصصان بالینی بذرگذاری شود — کسانی که واقعاً از خروجی محصول پشتیبانی کنند؛ نه یک کمپین پولی به مخاطب بی‌ربط. نخستین خالق‌ها و متخصصان این مرحله در حال شناسایی فعال هستند.</p>',
+        '<p><strong>۴. چه چیزهایی باید درست پیش برود — شفاف و رک:</strong></p>',
+        '<ul>',
+        '<li>نسخهٔ رایگان باید به‌تنهایی به‌قدر کافی خوب باشد که به‌صورت ارگانیک به اشتراک گذاشته شود — این با کاربران واقعی اولیه و پیش از هر هزینهٔ تبلیغاتی یا اینفلوئنسری اعتبارسنجی می‌شود.</li>',
+        '<li>نگه‌داشت در ۳۰ روز نخست نشانگر پیشروی واقعی است؛ بیش از ثبت‌نام خام — این عددی است که بعد از عرضه بیش از همه رصد می‌کنیم.</li>',
+        '<li>«۱۰۰٬۰۰۰ در ۶ ماه» سناریوی هدف است اگر دو مورد بالا با نرخ‌های مدل‌شده جلو بروند؛ دادهٔ واقعی کوهورت‌ها را همین‌طور که می‌رسد منتشر می‌کنیم؛ نه فقط عدد تیتری.</li>',
+        '</ul>',
+        '<h2>برای سرمایه‌گذاران</h2>',
+        '<p>اجرای محصول اصلی در جریان است و در یک پیمایش زنده قابل مشاهده است. آنچه این‌جا عمومی است داستان بازار و منطق رشد است؛ مکانیزم محصول و متریک‌های فعلی و جزئیات نقشهٔ راه در یک جلسهٔ معارفه پوشش داده می‌شود و پس از آن توافق محرمانگی برای یک پیمایش فنی و محصولی کامل قابل ترتیب است.</p>',
+      ].join(''),
+    },
+    // "Request an intro meeting →" CTA — the memo's own For Investors
+    // closing ("links to Contact"); routes to the site's existing /contact
+    // page. The verbatim [contact] placeholder in the technical block below
+    // stays untouched until the owner supplies the real channel.
     contactCta: {
       href: '/contact',
-      textEn:
-        'Want to see it first? Message via the contact page to follow the reveal — or request the intro meeting + NDA.',
-      textFa:
-        'می‌خواهید زودتر از همه ببینید؟ برای پیگیری رونمایی یا درخواست جلسهٔ معارفه و توافق محرمانگی از صفحهٔ تماس پیام بگذارید.',
-      labelEn: 'Contact page',
-      labelFa: 'صفحهٔ تماس',
+      labelEn: 'Request an intro meeting',
+      labelFa: 'درخواست جلسهٔ معارفه',
     },
     story: {
       htmlEn: [
