@@ -61,6 +61,19 @@ export interface ProfileShot {
   altFa: string;
 }
 
+/**
+ * Owner-dictated long-form story block rendered on /work/<slug> right under
+ * the summary. Both strings are the OWNER'S OWN COPY placed verbatim
+ * (owner rule 2026-10-02: «دقیق بزاری … هیچ کاری دیگری غیر از اینکه گفتم
+ * نکن») — never paraphrase, never translate between them: htmlFa is the
+ * owner's full Persian text, htmlEn is the owner's own compact English
+ * text. The EN string must stay Persian-free (EN-purity rule).
+ */
+export interface ProfileStory {
+  htmlEn: string;
+  htmlFa: string;
+}
+
 export interface ProjectProfile {
   features: ProfileFeature[];
   tech: ProfileTechItem[];
@@ -69,6 +82,8 @@ export interface ProjectProfile {
   media?: ProfileShot[];
   /** optional link to the owner's own published research/pitch post for this idea */
   relatedPost?: RelatedPost;
+  /** optional owner-dictated story block (stealth teaser, marketing stages …) */
+  story?: ProfileStory;
 }
 
 export const PROJECT_PROFILES: Record<string, ProjectProfile> = {
@@ -266,6 +281,77 @@ export const PROJECT_PROFILES: Record<string, ProjectProfile> = {
         badgeFa: 'شروع شد',
       },
     ],
+  },
+
+  /**
+   * Health & Wellness Super App — stealth teaser stage. Owner request
+   * 2026-10-02: «اینو برای سوپر اپ سلامتی و تندرستی باید دقیق بزاری …
+   * هیچ کاری دیگری غیر از اینکه گفتم نکن». Both blocks are the OWNER'S
+   * dictated copy placed VERBATIM (technical stage); the owner will supply
+   * the marketing stage next and it gets APPENDED to these same two
+   * strings. The bracketed contact line is the owner's own placeholder
+   * until he supplies the real contact. htmlEn must stay Persian-free.
+   */
+  'health-app': {
+    features: [],
+    tech: [],
+    phases: [],
+    story: {
+      htmlEn: [
+        '<h2>Idea is worth . Execution is everything. We already executed.</h2>',
+        '<p>A complete product has been built in silence. This page won\'t tell you what it does — no name, no domain, no details. But everything here is real:</p>',
+        '<ul>',
+        '<li><strong>Live beta</strong> running on real production infrastructure</li>',
+        '<li><strong>Two independent AI engines</strong> at the core — functions undisclosed</li>',
+        '<li><strong>Global from day one</strong> — 4 languages, full RTL</li>',
+        '<li><strong>Enterprise-grade security</strong> — strict tenant isolation, RBAC, audit trails</li>',
+        '</ul>',
+        '<p><strong>The numbers:</strong> 125,933 lines of code · 225 API services · 115 data models · 711 automated tests with zero-failure automated releases · 4,293 translated strings · 42 internal documents · 25+ formal architecture decisions.</p>',
+        '<p><strong>For investors:</strong> execution risk is already eliminated — capital goes to growth, not to building. Intro meeting + NDA first; live product, market and roadmap at the reveal session.</p>',
+        '<p>📩 <strong>[contact]</strong></p>',
+        '<blockquote><em>Coming soon. See it first.</em></blockquote>',
+      ].join(''),
+      htmlFa: [
+        '<h2>ایده ارزش . اجرا هست. و ما اجرا را تمام کرده‌ایم.</h2>',
+        '<hr/>',
+        '<p>یک محصول کامل، در سکوت ساخته شده است.</p>',
+        '<p>این صفحه قرار نیست به شما بگوید این محصول چه می‌کند؛ نه نامی می‌آید، نه حوزه، نه جزئیات. اما یک چیز از همین ابتدا شفاف است: <strong>هر عددی که در این‌جا می‌بینید واقعی است</strong> — حاصل هزاران ساعت مهندسی واقعی، نه ادعای بازاریابی.</p>',
+        '<h3>چرا سکوت؟</h3>',
+        '<p>چون در دنیای استارتاپ‌ها، ایده کپی می‌شود — اجرا نه. ما ترجیح داده‌ایم محصول اول کامل شود، بعد معرفی. این سکوتِ انتخابی، اولین نشانهٔ جدی‌بودن این پروژه است: کسی که چیزی برای پنهان‌کردن ندارد، دربارهٔ خودش شعار می‌دهد؛ کسی که چیزی ساخته، دربارهٔ اعدادش حرف می‌زند.</p>',
+        '<h3>آنچه مجازیم بگوییم</h3>',
+        '<ul>',
+        '<li>✅ <strong>یک پلتفرم کامل و چندوجهی</strong> که نسخهٔ آزمایشی‌اش همین حالا روی زیرساخت production واقعی <strong>زنده</strong> است</li>',
+        '<li>✅ <strong>دو موتور مستقل هوش مصنوعی</strong> در هستهٔ محصول — کارکردشان فعلاً محرمانه است</li>',
+        '<li>✅ <strong>آمادهٔ بازار جهانی از روز اول</strong> — چهار زبان، با پشتیبانی کامل راست‌به‌چپ</li>',
+        '<li>✅ <strong>امنیت در سطح سازمانی</strong> — ایزوله‌سازی کامل داده در سطح هر مشتری، کنترل دسترسی نقش‌محور، لاگ حسابرسی، محدودسازی نرخ</li>',
+        '<li>✅ <strong>مهندسی مستند‌محور</strong> — ۴۲ سند داخلی و بیش از ۲۵ تصمیم معماری رسمی ثبت‌شده</li>',
+        '</ul>',
+        '<h3>اعداد واقعی پشت این محصول</h3>',
+        '<table><thead><tr><th>سنجه</th><th>مقدار</th></tr></thead><tbody>',
+        '<tr><td>خطوط کد (TypeScript)</td><td><strong>۱۲۵٬۹۳۳</strong> در ۵۸۲ فایل</td></tr>',
+        '<tr><td>سرویس‌های API</td><td><strong>۲۲۵</strong></td></tr>',
+        '<tr><td>مدل‌های داده</td><td><strong>۱۱۵</strong></td></tr>',
+        '<tr><td>تست‌های خودکار</td><td><strong>۷۱۱</strong> — انتشار خودکار با صفر شکست</td></tr>',
+        '<tr><td>زبان‌ها</td><td><strong>۴</strong> + RTL کامل (۴٬۲۹۳ عبارت ترجمه‌شده با هم‌ارزی صددرصد)</td></tr>',
+        '<tr><td>اجزای رابط کاربری</td><td><strong>۱۴۴</strong> کامپوننت</td></tr>',
+        '</tbody></table>',
+        '<h3>استاندارد مهندسی</h3>',
+        '<ul>',
+        '<li>انتشار خودکار (CI/CD) با دروازه‌های سخت: صفر خطای بررسی کد، صفر خطای تایپ، تست کامل سبز — هر بار</li>',
+        '<li>پردازه‌های زمان‌بندی‌شدهٔ پس‌زمینه و پشتیبان‌گیری خودکار</li>',
+        '<li>تراکنش‌های مالی رقابت‌امن (race-safe) و دفترهای حسابرسی برای اعمال حساس</li>',
+        '</ul>',
+        '<h3>برای سرمایه‌گذاران</h3>',
+        '<p>این پروژه در مرحله‌ای است که کمتر استارتاپی به آن می‌رسد: <strong>محصول ساخته شده، کار می‌کند و زنده است.</strong> یعنی ریسک اجرا — بزرگ‌ترین ریسک هر سرمایه‌گذاری فناوری — عملاً حذف شده و منابع به‌جای ساخت، صرف رشد می‌شود.</p>',
+        '<p>مسیر آشنایی:</p>',
+        '<ol>',
+        '<li><strong>جلسهٔ اول (معارفه):</strong> آشنایی با تیم و امضای توافق محرمانگی</li>',
+        '<li><strong>جلسهٔ دوم (رونمایی):</strong> مشاهدهٔ زندهٔ محصول، حوزهٔ بازار، مدل کسب‌وکار و نقشهٔ راه</li>',
+        '</ol>',
+        '<p>📩 <strong>ارتباط: [راه تماس — ایمیل اختصاصی پیشنهاد می‌شود]</strong></p>',
+        '<blockquote><em>به‌زودی معرفی می‌شود. زودتر از همه ببینید.</em></blockquote>',
+      ].join(''),
+    },
   },
 
   /**

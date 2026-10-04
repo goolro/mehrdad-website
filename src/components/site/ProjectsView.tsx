@@ -458,6 +458,21 @@ export function ProjectDetail({ project, shareUrl }: { project: ProjectDetailRow
         <p>{summary}</p>
       </div>
 
+      {/* owner-dictated story block (health-app stealth teaser, 2026-10-02) —
+          verbatim copy lives in src/lib/project-profiles.ts; rendered under
+          the summary in the live UI language, RTL-aware like the article body.
+          EN view shows the owner's compact English text, FA view the owner's
+          full Persian text. Grows in place when the owner adds stages. */}
+      {profile?.story && (
+        <div
+          className="prose-blog mt-10"
+          dir={rtl ? 'rtl' : 'ltr'}
+          dangerouslySetInnerHTML={{
+            __html: pick(lang, profile.story.htmlEn, profile.story.htmlFa),
+          }}
+        />
+      )}
+
       {/* early-idea context — an exploratory page must never read like a
           finished product (owner feedback on /work/bizpal) */}
       {!isActiveStatus(st) && (
