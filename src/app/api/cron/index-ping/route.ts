@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { isUnpublishedPostSlug } from '@/lib/queries';
+import { isProjectHidden } from '@/lib/project-visibility';
 import { dailyVisibleWhere } from '@/lib/daily';
 import { submitIndexNow, indexNowKey } from '@/lib/indexnow';
 import { googleIndexingEnabled, notifyGoogleBatch } from '@/lib/google-indexing';
@@ -119,7 +120,10 @@ export async function GET(req: NextRequest) {
     if (full) {
       // project detail pages render under /work/<slug> for BOTH sections
       // (work + lab); the /lab page itself is in STATICS. Full sweep only.
-      const projects = await db.project.findMany({ select: { slug: true } });
+      const projects = (await db.project.findMany({ select: { slug: true } }))
+        // display kill-switch (project-visibility.ts): hidden projects 404 —
+        // pinging them would (re)index a page that must not exist publicly
+        .filter((pr) => !isProjectHidden(pr.slug));
       for (const pr of projects) urls.add(`${BASE}/work/${pr.slug}`);
     }
 

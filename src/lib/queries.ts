@@ -1,5 +1,6 @@
 import { db } from '@/lib/db';
 import { ensureProjectKindColumn } from '@/lib/project-kind';
+import { isProjectHidden, visibleProjects } from '@/lib/project-visibility';
 import { slugCandidates } from '@/lib/slug-lookup';
 import { sanitizePostHtml, sanitizeExcerpt } from '@/lib/sanitize';
 
@@ -223,12 +224,18 @@ export async function getProjects(opts?: { section?: 'work' | 'lab'; featured?: 
   // explicitly. Legacy rows predate the `section` column and default to work.
   if (opts?.section) where.section = opts.section;
   if (opts?.featured) where.featured = true;
-  return db.project.findMany({ where, orderBy: { order: 'asc' } });
+  // display kill-switch (project-visibility.ts) — hidden slugs vanish from
+  // /work, /lab, home and llms.txt while the DB row stays intact
+  return visibleProjects(await db.project.findMany({ where, orderBy: { order: 'asc' } }));
 }
 
 export type ProjectRow = Awaited<ReturnType<typeof getProjects>>[number];
 
 export async function getProjectBySlug(rawSlug: string) {
+  // display kill-switch — /work/<slug> + opengraph-image 404 for hidden slugs
+  // (reversible: project-visibility.ts); admin routes query db directly and
+  // are unaffected
+  if (isProjectHidden(rawSlug)) return null;
   await ensureProjectKindColumn();
   const candidates = [rawSlug, rawSlug.toLowerCase()];
   for (const candidate of candidates) {

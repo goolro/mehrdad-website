@@ -1,5 +1,6 @@
 import { db } from '@/lib/db';
 import { invalidateKbCache } from './rag';
+import { visibleProjects } from './project-visibility';
 
 function stripHtml(html: string): string {
   return html
@@ -87,7 +88,9 @@ export async function rebuildKb() {
     }
   }
 
-  const projects = await db.project.findMany();
+  // display kill-switch (project-visibility.ts): hidden projects stay out of
+  // the AI-assistant knowledge base — the product is not shown anywhere
+  const projects = visibleProjects(await db.project.findMany());
   for (const p of projects) {
     const body = `${p.summaryEn} ${p.summaryFa}`;
     const parts = chunkText(stripHtml(body), 800);

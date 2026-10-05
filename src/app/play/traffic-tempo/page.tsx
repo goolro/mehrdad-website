@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from 'next';
+import { notFound } from 'next/navigation';
 import { TrafficTempoMobile } from '@/components/site/games/TrafficTempoMobile';
+import { isProjectHidden } from '@/lib/project-visibility';
 
 // Fully static like every public page — the game is a pure client island
 // (canvas + engine live in effects/gestures) so the build-time CSP meta
@@ -24,5 +26,8 @@ export const viewport: Viewport = {
 };
 
 export default function PlayTrafficTempoPage() {
+  // display kill-switch (project-visibility.ts): hidden → 404 while the
+  // owner keeps the product unpublished; re-enabling is a one-line change
+  if (isProjectHidden('traffic-tempo')) notFound();
   return <TrafficTempoMobile />;
 }
