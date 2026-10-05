@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { visibleProjects } from '@/lib/project-visibility';
 
 export const dynamic = 'force-dynamic';
 
@@ -7,7 +8,9 @@ export async function GET(_req: NextRequest) {
   try {
     const [services, projects, categories, tags, postCount, themeRow] = await Promise.all([
       db.service.findMany({ orderBy: { order: 'asc' } }),
-      db.project.findMany({ orderBy: { order: 'asc' } }),
+      // display kill-switch (project-visibility.ts): hidden projects stay out
+      // of the public site JSON (admin uses /api/admin/projects — unfiltered)
+      visibleProjects(await db.project.findMany({ orderBy: { order: 'asc' } })),
       db.category.findMany({
         where: { posts: { some: {} } },
         orderBy: { nameEn: 'asc' },

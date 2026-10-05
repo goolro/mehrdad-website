@@ -1,6 +1,7 @@
 import type { MetadataRoute } from 'next';
 import { db } from '@/lib/db';
 import { isUnpublishedPostSlug } from '@/lib/queries';
+import { isProjectHidden } from '@/lib/project-visibility';
 import { dailyVisibleWhere } from '@/lib/daily';
 
 // PRERENDERED AT BUILD (2026-09-08, SEO-growth): the sitemap is generated
@@ -63,7 +64,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.7,
   }));
 
-  const projectUrls: MetadataRoute.Sitemap = projects.map((p) => ({
+  const projectUrls: MetadataRoute.Sitemap = projects
+    // display kill-switch (project-visibility.ts): hidden project pages 404,
+    // so listing them would poison the crawl — same rule as kill-switch posts
+    .filter((p) => !isProjectHidden(p.slug))
+    .map((p) => ({
     url: `${BASE}/work/${p.slug}`,
     changeFrequency: 'monthly' as const,
     priority: 0.6,
