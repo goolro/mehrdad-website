@@ -80,13 +80,11 @@ const nextConfig: NextConfig = {
   serverExternalPackages: ["@prisma/adapter-libsql", "@libsql/client", "@libsql/engine"],
   // don't advertise the framework version in production responses
   poweredByHeader: false,
-  // Agency panel (Task 54): the private /agency panel serves the bundled
-  // agent library (src/data/agency-library.json, ~4MB) via fs.readFileSync
-  // at runtime — without tracing includes the file would be missing from the
-  // serverless bundle on Vercel (fs reads are not traced automatically).
-  outputFileTracingIncludes: {
-    "/api/agency/:path*": ["./src/data/agency-library.json"],
-  },
+  // Agency panel (Task 54): the agent library (src/data/agency-library.json,
+  // ~4MB) is REQUIRED into the server chunk by src/lib/agency/library.ts, so
+  // the bundler ships it automatically. A previous fs.readFileSync approach
+  // made the output-file tracer trace the whole project and killed the
+  // Vercel build — do not go back to dynamic fs reads for it.
   async rewrites() {
     return [
       // Traffic Tempo (Android app) privacy policy — required by Google Play.
