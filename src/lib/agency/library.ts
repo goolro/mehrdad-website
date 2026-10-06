@@ -5,54 +5,23 @@
  * https://github.com/msitarzewski/agency-agents ("The Agency", MIT) by
  * scripts/build-agency-library.mjs into src/data/agency-library.json.
  *
- * The bundle is read via fs at runtime (not imported) so the 4MB JSON never
- * inflates the TypeScript graph or the client bundle; next.config.ts ships
- * the file inside the serverless bundle via outputFileTracingIncludes.
- * Parsed once per process and cached on globalThis (survives HMR).
+ * The bundle is REQUIRED (not fs-read) so the bundler inlines the JSON into
+ * the server chunk at build time. A dynamic fs read (readFileSync on a
+ * variable path) made the output-file tracer fall back to tracing the WHOLE
+ * project ("Dynamic filesystem access causes tracing of the whole project")
+ * which blew up the Vercel build; a static `import` of a 4MB JSON would also
+ * force TypeScript to infer its full literal type. `require` + cast gives
+ * bundling without fs and without tsc type inference. Parsed once per
+ * process at module scope (no per-request work).
  */
-import { readFileSync, existsSync } from 'fs';
-import { join } from 'path';
-
-export interface AgencyDivision {
-  id: string;
-  label: string;
-  icon: string | null;
-  color: string | null;
-  count: number;
-}
-
-export interface AgencyAgent {
-  id: string;
-  division: string;
-  name: string;
-  description: string;
-  body: string;
-}
-
-export type AgencyAgentSlim = Omit<AgencyAgent, 'body'>;
-
-export interface AgencyRunbookGroup {
-  group: string;
-  activation: string | null;
-  agents: string[];
-}
-
-export interface AgencyRunbook {
-  slug: string;
-  title: string;
-  mode: string | null;
-  duration: string | null;
-  summary: string;
-  groups: AgencyRunbookGroup[];
-}
-
-export interface AgencyStats {
-  agentCount: number;
-  divisionCount: number;
-  runbookCount: number;
-  generatedAt: string;
-  source: string;
-}
+import type {
+  AgencyDivision,
+  AgencyAgent,
+  AgencyAgentSlim,
+  AgencyRunbook,
+  AgencyRunbookGroup,
+  AgencyStats,
+} from './types';
 
 interface AgencyBundle {
   generatedAt: string;
@@ -62,8 +31,8 @@ interface AgencyBundle {
   runbooks: AgencyRunbook[];
 }
 
-const LIB_PATH =
-  process.env.AGENCY_LIBRARY_PATH ?? join(process.cwd(), 'src', 'data', 'agency-library.json');
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const REQUIRED_BUNDLE = require('../../data/agency-library.json') as AgencyBundle;
 
 const globalForAgency = globalThis as unknown as {
   __agencyBundle?: AgencyBundle;
@@ -72,18 +41,17 @@ const globalForAgency = globalThis as unknown as {
 
 function loadBundle(): AgencyBundle {
   if (globalForAgency.__agencyBundle) return globalForAgency.__agencyBundle;
-  if (!existsSync(LIB_PATH)) {
+  if (!REQUIRED_BUNDLE || !Array.isArray(REQUIRED_BUNDLE.agents)) {
     // fail soft with an empty library: the panel renders a clear empty state
     // instead of crashing the route (e.g. a build where the bundle step was
     // skipped). Regenerate with: node scripts/build-agency-library.mjs
-    console.error(`[agency] library bundle missing at ${LIB_PATH} — run scripts/build-agency-library.mjs`);
+    console.error('[agency] library bundle missing/invalid — run scripts/build-agency-library.mjs');
     const empty: AgencyBundle = { generatedAt: '', source: '', divisions: [], agents: [], runbooks: [] };
     globalForAgency.__agencyBundle = empty;
     return empty;
   }
-  const parsed = JSON.parse(readFileSync(LIB_PATH, 'utf8')) as AgencyBundle;
-  globalForAgency.__agencyBundle = parsed;
-  return parsed;
+  globalForAgency.__agencyBundle = REQUIRED_BUNDLE;
+  return REQUIRED_BUNDLE;
 }
 
 /** All agents WITH persona bodies — never send to the client in bulk. */
@@ -144,3 +112,5 @@ export function agencyRosterPayload() {
     runbooks: agencyRunbooks(),
   };
 }
+
+export type { AgencyDivision, AgencyAgent, AgencyAgentSlim, AgencyRunbook, AgencyRunbookGroup, AgencyStats };
