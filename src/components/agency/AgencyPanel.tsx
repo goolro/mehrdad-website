@@ -30,9 +30,11 @@ import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { AgencyAgents } from '@/components/agency/AgencyAgents';
+import { AgencyDivisions } from '@/components/agency/AgencyDivisions';
 import { AgencyTeam } from '@/components/agency/AgencyTeam';
 import { AgencyHistory } from '@/components/agency/AgencyHistory';
 import { AgencyGuide } from '@/components/agency/AgencyGuide';
+import { DIVISION_ICONS } from '@/components/agency/division-icons';
 import {
   agencyFetch,
   readFavorites,
@@ -41,9 +43,10 @@ import {
   type SessionSummary,
 } from '@/components/agency/agency-client';
 
-type Tab = 'dashboard' | 'agents' | 'team' | 'history' | 'guide';
+type Tab = 'divisions' | 'dashboard' | 'agents' | 'team' | 'history' | 'guide';
 
 const TABS: { id: Tab; label: string; icon: typeof LayoutDashboard }[] = [
+  { id: 'divisions', label: 'دپارتمان‌ها', icon: Building2 },
   { id: 'dashboard', label: 'داشبورد', icon: LayoutDashboard },
   { id: 'agents', label: 'ایجنت‌ها', icon: Bot },
   { id: 'team', label: 'اجرای تیمی', icon: Users },
@@ -71,7 +74,8 @@ export function AgencyPanel() {
   const [loginError, setLoginError] = useState('');
 
   const [roster, setRoster] = useState<RosterPayload | null>(null);
-  const [tab, setTab] = useState<Tab>('dashboard');
+  const [tab, setTab] = useState<Tab>('divisions');
+  const [divisionSel, setDivisionSel] = useState<string | null>(null);
   const [sessions, setSessions] = useState<SessionSummary[]>([]);
 
   // ── auth ────────────────────────────────────────────────────────────────
@@ -259,7 +263,12 @@ export function AgencyPanel() {
           return (
             <button
               key={t.id}
-              onClick={() => setTab(t.id)}
+              onClick={() => {
+                // the divisions tab is the boxes grid — a fresh click must
+                // not re-open the last-visited division page (Task 55 QA)
+                if (t.id === 'divisions') setDivisionSel(null);
+                setTab(t.id);
+              }}
               aria-current={active ? 'page' : undefined}
               className={`flex h-9 shrink-0 items-center gap-1.5 rounded-lg px-3 text-xs font-medium transition-colors ${
                 active
@@ -282,11 +291,22 @@ export function AgencyPanel() {
               <Skeleton key={i} className="h-24 rounded-2xl bg-zinc-800/60" />
             ))}
           </div>
+        ) : tab === 'divisions' ? (
+          <AgencyDivisions
+            roster={roster}
+            onRan={loadSessions}
+            selected={divisionSel}
+            onSelect={setDivisionSel}
+          />
         ) : tab === 'dashboard' ? (
           <Dashboard
             roster={roster}
             sessions={sessions}
             onGoTab={setTab}
+            onOpenDivision={(id) => {
+              setDivisionSel(id);
+              setTab('divisions');
+            }}
             onOpenSession={(s) => {
               setTab('history');
             }}
@@ -310,15 +330,17 @@ function Dashboard({
   roster,
   sessions,
   onGoTab,
+  onOpenDivision,
 }: {
   roster: RosterPayload;
   sessions: SessionSummary[];
   onGoTab: (t: Tab) => void;
+  onOpenDivision: (divisionId: string) => void;
   onOpenSession: (s: SessionSummary) => void;
 }) {
   const favs = readFavorites();
   const favAgents = roster.agents.filter((a) => favs.includes(a.id));
-  const topDivisions = [...roster.divisions].sort((a, b) => b.count - a.count).slice(0, 6);
+  const topDivisions = [...roster.divisions].sort((a, b) => b.count - a.count).slice(0, 8);
 
   return (
     <div className="mx-auto max-w-5xl space-y-6 p-4 sm:p-6">
@@ -362,23 +384,44 @@ function Dashboard({
         )}
       </section>
 
-      {/* divisions overview */}
+      {/* divisions overview — mini boxes open the dedicated division page */}
       <section aria-label="دپارتمان‌ها">
         <h2 className="mb-3 flex items-center gap-2 text-sm font-bold">
           <Sparkles className="h-4 w-4 text-emerald-400" aria-hidden /> دپارتمان‌های پرتعداد
         </h2>
-        <div className="flex flex-wrap gap-2">
-          {topDivisions.map((d) => (
-            <button
-              key={d.id}
-              onClick={() => onGoTab('agents')}
-              className="rounded-full border border-zinc-800 bg-zinc-900/60 px-3 py-1.5 text-[11px] transition-colors hover:border-emerald-500/40 hover:text-emerald-300"
-            >
-              {d.label}
-              <span className="ms-1.5 text-zinc-500">{toFa(d.count)}</span>
-            </button>
-          ))}
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+          {topDivisions.map((d) => {
+            const Icon = (d.icon && DIVISION_ICONS[d.icon]) || Bot;
+            const color = d.color ?? '#34d399';
+            return (
+              <button
+                key={d.id}
+                onClick={() => onOpenDivision(d.id)}
+                className="flex items-center gap-2.5 rounded-xl border bg-zinc-900/60 p-3 text-start transition-colors hover:-translate-y-0.5"
+                style={{ borderColor: `${color}45` }}
+              >
+                <span
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg"
+                  style={{ backgroundColor: `${color}1f` }}
+                >
+                  <Icon className="h-5 w-5" style={{ color }} aria-hidden />
+                </span>
+                <span className="min-w-0">
+                  <span className="block truncate text-[11px] font-bold">{d.label}</span>
+                  <span className="block text-[10px] text-zinc-500">
+                    {d.count.toLocaleString('fa-IR')} ایجنت
+                  </span>
+                </span>
+              </button>
+            );
+          })}
         </div>
+        <button
+          onClick={() => onGoTab('divisions')}
+          className="mt-2 text-[11px] font-medium text-emerald-400 transition-colors hover:text-emerald-300"
+        >
+          مشاهده همه دپارتمان‌ها ←
+        </button>
       </section>
 
       {/* recent sessions */}

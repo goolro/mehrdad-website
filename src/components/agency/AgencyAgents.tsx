@@ -48,13 +48,25 @@ interface FullAgent extends ClientAgent {
 export function AgencyAgents({
   roster,
   onRan,
+  division: divisionProp,
+  onDivisionChange,
 }: {
   roster: RosterPayload;
   onRan: () => void;
+  /** Controlled division (Task 55): when set, the list is scoped from the
+   * division boxes tab. Passing `onDivisionChange` lets chip clicks bubble up
+   * so the parent can swap the banner / return to the boxes grid on "همه". */
+  division?: string | null;
+  onDivisionChange?: (d: string | null) => void;
 }) {
   const { toast } = useToast();
   const [query, setQuery] = useState('');
-  const [division, setDivision] = useState<string>('all');
+  const [divisionState, setDivisionState] = useState<string>('all');
+  const division = divisionProp ?? divisionState;
+  const setDivision = (d: string) => {
+    setDivisionState(d);
+    onDivisionChange?.(d === 'all' ? null : d);
+  };
   const [favOnly, setFavOnly] = useState(false);
   const [favs, setFavs] = useState<string[]>(() => readFavorites());
   const [detail, setDetail] = useState<FullAgent | null>(null);
