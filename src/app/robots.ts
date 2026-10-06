@@ -58,8 +58,9 @@ export default function robots(): MetadataRoute.Robots {
       ...AI_CRAWLERS.map((userAgent) => ({ userAgent, allow: '/' })),
       // private surfaces: the admin panel is meta-noindexed already; the
       // Disallow keeps well-behaved crawlers and vulnerability scanners from
-      // even fetching it (the login route lives under /api/admin too)
-      { userAgent: '*', disallow: ['/admin', '/api/admin'] },
+      // even fetching it (the login route lives under /api/admin too).
+      // /agency (Task 54) is the owner's private AI panel — same policy.
+      { userAgent: '*', disallow: ['/admin', '/api/admin', '/agency', '/api/agency'] },
     ],
     sitemap: `${base}/sitemap.xml`,
   };

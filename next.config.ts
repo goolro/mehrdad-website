@@ -80,6 +80,13 @@ const nextConfig: NextConfig = {
   serverExternalPackages: ["@prisma/adapter-libsql", "@libsql/client", "@libsql/engine"],
   // don't advertise the framework version in production responses
   poweredByHeader: false,
+  // Agency panel (Task 54): the private /agency panel serves the bundled
+  // agent library (src/data/agency-library.json, ~4MB) via fs.readFileSync
+  // at runtime — without tracing includes the file would be missing from the
+  // serverless bundle on Vercel (fs reads are not traced automatically).
+  outputFileTracingIncludes: {
+    "/api/agency/:path*": ["./src/data/agency-library.json"],
+  },
   async rewrites() {
     return [
       // Traffic Tempo (Android app) privacy policy — required by Google Play.
@@ -99,6 +106,11 @@ const nextConfig: NextConfig = {
       {
         // admin responses are private — never let any cache store them
         source: "/api/admin/:path*",
+        headers: [{ key: "Cache-Control", value: "no-store" }],
+      },
+      {
+        // agency panel API (Task 54) is owner-only — same no-store policy
+        source: "/api/agency/:path*",
         headers: [{ key: "Cache-Control", value: "no-store" }],
       },
     ];
