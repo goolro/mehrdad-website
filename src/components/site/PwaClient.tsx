@@ -61,8 +61,10 @@ export function PwaClient() {
     };
   }, []);
 
-  // never cover the full-screen game board (/play/*) with the install pill
-  if (!visible || !installEvent || pathname.startsWith('/play/')) return null;
+  // never cover the full-screen game board (/play/*) or the private agency
+  // panel (/agency) with the install pill
+  if (!visible || !installEvent || pathname.startsWith('/play/') || pathname.startsWith('/agency'))
+    return null;
 
   return (
     <div
