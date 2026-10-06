@@ -22,6 +22,7 @@ import type {
   AgencyRunbookGroup,
   AgencyStats,
 } from './types';
+import { GROWTH_RUNBOOKS, validateGrowthRunbooks } from './growth-runbooks';
 
 interface AgencyBundle {
   generatedAt: string;
@@ -49,6 +50,12 @@ function loadBundle(): AgencyBundle {
     const empty: AgencyBundle = { generatedAt: '', source: '', divisions: [], agents: [], runbooks: [] };
     globalForAgency.__agencyBundle = empty;
     return empty;
+  }
+  // overlay integrity: a stale bundle (renamed upstream agents) must never
+  // reach the panel with dangling runbook references — surface it loudly
+  const missing = validateGrowthRunbooks(new Set(REQUIRED_BUNDLE.agents.map((a) => a.id)));
+  if (missing.length > 0) {
+    console.error('[agency] growth-runbooks reference unknown agents:', missing.join(', '));
   }
   globalForAgency.__agencyBundle = REQUIRED_BUNDLE;
   return REQUIRED_BUNDLE;
@@ -85,8 +92,9 @@ export function agencyDivisionLabel(id: string): string {
   return loadBundle().divisions.find((d) => d.id === id)?.label ?? id;
 }
 
+/** Upstream runbooks + the owner's business-growth overlay (Task 56). */
 export function agencyRunbooks(): AgencyRunbook[] {
-  return loadBundle().runbooks;
+  return [...loadBundle().runbooks, ...GROWTH_RUNBOOKS];
 }
 
 export function agencyStats(): AgencyStats {
@@ -94,7 +102,7 @@ export function agencyStats(): AgencyStats {
   return {
     agentCount: b.agents.length,
     divisionCount: b.divisions.length,
-    runbookCount: b.runbooks.length,
+    runbookCount: agencyRunbooks().length,
     generatedAt: b.generatedAt,
     source: b.source,
   };

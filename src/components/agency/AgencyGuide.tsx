@@ -48,13 +48,18 @@ export function AgencyGuide({ roster }: { roster: RosterPayload }) {
         </h2>
         <ul className="list-inside list-disc space-y-1.5 rounded-xl border border-zinc-800 bg-zinc-900/60 p-4 text-xs leading-6 text-zinc-300">
           <li>
+            <b>دپارتمان‌ها:</b> در تب «دپارتمان‌ها» روی باکس هر دپارتمان بزن تا صفحهٔ اختصاصی‌اش
+            باز شود — همهٔ ایجنت‌های همان حوزه، با جستجو و گفتگو.
+          </li>
+          <li>
             <b>گفتگوی تکی:</b> در تب «ایجنت‌ها» یک متخصص پیدا کن و «گفتگو» را بزن — مثلاً
             UX Researcher برای بررسی تجربهٔ کاربری، یا Security Auditor برای بازبینی امنیتی.
           </li>
           <li>
-            <b>اجرای تیمی:</b> در تب «اجرای تیمی» یک ران‌بوک آماده (مثل Startup MVP Build) انتخاب
-            کن؛ یک تسک می‌دهی و هر عضو تیم از دید تخصص خودش جواب می‌دهد — خروجی جمعی با یک فایل
-            Markdown قابل export است.
+            <b>اجرای تیمی:</b> در تب «اجرای تیمی» یک ران‌بوک آماده انتخاب کن — برای کارهای
+            کسب‌وکار ران‌بوک‌های اختصاصی هم داریم: Startup Strategy، Investor Ready Kit،
+            Content Factory و Social Launch Engine؛ یک تسک می‌دهی و هر عضو تیم از دید تخصص خودش
+            جواب می‌دهد — خروجی جمعی با یک فایل Markdown قابل export است.
           </li>
           <li>
             <b>منتخب‌ها:</b> ستارهٔ ایجنت‌های پرکاربردت را بزن تا در داشبورد میان‌بر بسازند.
