@@ -3,7 +3,7 @@ import { checkAdmin } from '@/lib/admin';
 import { db } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
-export const maxDuration = 120; // ffmpeg concat of a ~12s 720p clip is fast, but leave headroom
+export const maxDuration = 60; // ffmpeg concat of a ~12s 720p clip is fast, but leave headroom
 
 /**
  * GET ?id=<videoId>[&final=1] — download one generated video.
