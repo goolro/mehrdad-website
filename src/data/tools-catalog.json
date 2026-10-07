@@ -1,0 +1,185 @@
+{
+  "generatedAt": "2026-10-08",
+  "installed": [
+    {
+      "id": "marketingskills",
+      "name": "Marketing Skills",
+      "source": "coreyhaines31/marketingskills",
+      "kind": "skills",
+      "goals": ["startup", "funding", "content", "social"],
+      "count": 50,
+      "license": "MIT",
+      "faDescription": "۵۰ مهارت بازاریابی آماده برای ایجنت‌ها: کپی‌رایتینگ، سئو، ایمیل سرد، قیمت‌گذاری، لانچ محصول، تبلیغات و تحقیق مشتری — کامل‌ترین بسته برای جذب سرمایه و رشد.",
+      "location": "/home/z/agency-tools/marketingskills",
+      "usage": [
+        "npx skills add coreyhaines31/marketingskills",
+        "یا فایل skills/<name>/SKILL.md را مستقیم به ایجنت بده"
+      ],
+      "highlights": [
+        "marketing-plan",
+        "copywriting",
+        "cold-email",
+        "social",
+        "launch",
+        "seo-audit",
+        "pricing",
+        "customer-research"
+      ]
+    },
+    {
+      "id": "agent-skills",
+      "name": "Agent Skills (Addy Osmani)",
+      "source": "addyosmani/agent-skills",
+      "kind": "skills",
+      "goals": ["startup", "dev"],
+      "count": 25,
+      "license": "MIT",
+      "faDescription": "۲۵ مهارت مهندسی برای ایجنت‌ها: از پرورش ایده و مشخصه‌نویسی تا ساخت، تست، بازبینی و انتشار — سرعت توسعه سایت و پنل را بالا می‌برد.",
+      "location": "/home/z/agency-tools/agent-skills",
+      "usage": [
+        "npx skills add addyosmani/agent-skills",
+        "یا فایل skills/<name>/SKILL.md را به ایجنت بده"
+      ],
+      "highlights": [
+        "idea-refine",
+        "spec-driven-development",
+        "planning-and-task-breakdown",
+        "code-review-and-quality",
+        "shipping-and-launch"
+      ]
+    },
+    {
+      "id": "i-have-adhd",
+      "name": "i-have-adhd",
+      "source": "ayghri/i-have-adhd",
+      "kind": "skills",
+      "goals": ["startup", "dev"],
+      "count": 1,
+      "license": "MIT",
+      "faDescription": "مهارت سبک پاسخ‌دهی ایجنت‌ها برای ذهن‌های بیش‌فعال: اول اقدام، بعد توضیح؛ بدون مقدمه و تشریفات. راهنمای فارسی هم دارد.",
+      "location": "/home/z/agency-tools/i-have-adhd",
+      "usage": ["فایل skills/i-have-adhd/SKILL.md را به سیستم ایجنت اضافه کن"],
+      "highlights": ["action-first", "one-next-action", "no-preamble", "README فارسی"]
+    },
+    {
+      "id": "free-llm-api-resources",
+      "name": "Free LLM API Resources",
+      "source": "raullenchai/free-llm-api-resources",
+      "kind": "reference",
+      "goals": ["content", "dev"],
+      "license": null,
+      "faDescription": "فهرست به‌روز سرویس‌های API هوش مصنوعی رایگان (OpenRouter، Groq، Gemini، Cerebras و…) همراه با محدودیت هرکدام — برای تولید محتوای ارزان و آزمایش‌ها.",
+      "location": "/home/z/agency-tools/free-llm-api-resources",
+      "usage": ["فایل README.md را برای انتخاب سرویس رایگان بخوان"],
+      "highlights": ["OpenRouter", "Groq", "Google AI Studio", "Cerebras", "GitHub Models"]
+    },
+    {
+      "id": "playwright-cli",
+      "name": "Playwright CLI",
+      "source": "microsoft/playwright-cli",
+      "kind": "cli",
+      "goals": ["social", "dev"],
+      "version": "0.1.22",
+      "license": "Apache-2.0",
+      "faDescription": "مرورگر بدون‌سر رسمی مایکروسافت برای اتوماسیون: انتشار خودکار در شبکه‌های اجتماعی، تست سایت و اسکرین‌شات. کرومیوم نصب و کامل تست شد.",
+      "location": "CLI سراسری (bun) + کرومیوم ۱۵۵",
+      "usage": [
+        "playwright-cli open <url> --browser chromium",
+        "playwright-cli screenshot --filename shot.png",
+        "playwright-cli close"
+      ],
+      "highlights": ["اتوماسیون مرورگر", "نشست پایدار با کوکی (--persistent)", "مهارت نصب‌شده در ~/.claude/skills/playwright-cli"]
+    },
+    {
+      "id": "agent-reach",
+      "name": "Agent Reach",
+      "source": "Panniantong/agent-reach",
+      "kind": "cli",
+      "goals": ["content", "social"],
+      "version": "1.5.0",
+      "license": "MIT",
+      "faDescription": "چشم اینترنت برای ایجنت‌ها: خواندن هر وب‌سایت، زیرنویس ویدیوهای یوتیوب، فید RSS و گیت‌هاب. کانال‌هایی مثل X و لینکدین بعداً با کوکی مرورگر شخصی باز می‌شوند.",
+      "location": "/home/z/.venv/bin/agent-reach",
+      "usage": ["agent-reach doctor  (بررسی وضعیت کانال‌ها)", "agent-reach install --env=auto"],
+      "highlights": ["زیرنویس یوتیوب (yt-dlp)", "RSS/Atom", "خواندن وب", "جستجوی Bilibili/V2EX"]
+    },
+    {
+      "id": "ctx7",
+      "name": "Context7 CLI",
+      "source": "upstash/context7",
+      "kind": "cli",
+      "goals": ["dev"],
+      "version": "0.5.14",
+      "license": "MIT",
+      "faDescription": "مستندات به‌روز کتابخانه‌ها را داخل پرامپت ایجنت می‌آورد تا کد با APIهای قدیمی یا توهمی نوشته نشود — سرعت و کیفیت توسعه سایت را بالا می‌برد.",
+      "location": "CLI سراسری (bun)",
+      "usage": ["ctx7 resolve next.js", "سرویس میزبان: https://mcp.context7.com/mcp"],
+      "highlights": ["مستندات زنده", "MCP میزبان", "پلن رایگان"]
+    },
+    {
+      "id": "skillui",
+      "name": "SkillUI",
+      "source": "amaancoderx/npxskillui",
+      "kind": "cli",
+      "goals": ["startup", "content"],
+      "version": "1.3.4",
+      "license": "MIT",
+      "faDescription": "سیستم طراحی هر سایت را استخراج می‌کند (رنگ، تایپوگرافی، فاصله‌ها، انیمیشن‌ها) و به مهارت قابل‌استفاده برای ایجنت تبدیل می‌کند — عالی برای صفحه فرود و پیچ سرمایه‌گذار.",
+      "location": "CLI سراسری (bun)",
+      "usage": ["skillui --url https://example.com", "skillui --dir ./src"],
+      "highlights": ["استخراج دیزاین‌سیستم", "بدون نیاز به API key", "خروجی CLAUDE.md + SKILL.md"]
+    }
+  ],
+  "rejected": [
+    {
+      "id": "ruflo",
+      "name": "ruflo",
+      "faReason": "۲۱۷ مگابایت؛ همپوشانی کامل با سامانه ایجنت فعلی — نگهداری سنگین، ارزش اضافه کم"
+    },
+    {
+      "id": "laya",
+      "name": "laya",
+      "faReason": "نیاز به torch و دانلود چند گیگابایت مدل؛ با چهار هدف فعلی بی‌ربط"
+    },
+    {
+      "id": "strix",
+      "name": "strix",
+      "faReason": "الزام Docker برای تست نفوذ؛ در این محیط Docker نداریم"
+    },
+    {
+      "id": "openclaude",
+      "name": "openclaude",
+      "faReason": "CLI کدنویسی تکراری؛ همین قابلیت الان در دسترس است"
+    },
+    {
+      "id": "academic-research-skills",
+      "name": "academic-research-skills",
+      "faReason": "مخصوص مقاله دانشگاهی + مجوز غیرتجاری (CC BY-NC) — مناسب کار آژانس نیست"
+    },
+    {
+      "id": "openmaic",
+      "name": "OpenMAIC",
+      "faReason": "پلتفرم آموزشی سنگین با Postgres و Docker — در این محیط قابل نصب نیست"
+    },
+    {
+      "id": "invidious",
+      "name": "invidious",
+      "faReason": "نمونه‌های عمومی آماده وجود دارد؛ سلف‌هاست Crystal+Postgres توجیه ندارد (yt-dlp هم داریم)"
+    },
+    {
+      "id": "minimind",
+      "name": "minimind",
+      "faReason": "پروژه آموزشی ساخت LLM با GPU — بدون GPU بی‌معناست"
+    },
+    {
+      "id": "supabase-mcp",
+      "name": "Supabase MCP",
+      "faReason": "حساب Supabase لازم دارد؛ اگر بعداً بک‌اند را به Supabase بردیم فعالش می‌کنیم"
+    },
+    {
+      "id": "huggingface",
+      "name": "HuggingFace",
+      "faReason": "CLI آن (hf) از قبل نصب است؛ transformers بدون GPU به‌درد نمی‌خورد"
+    }
+  ]
+}
