@@ -240,7 +240,7 @@ export function AgencyPanel() {
                 at a stale cached panel — the cache question behind «چیزی وجود
                 نداره». Bump together with the sw.js CACHE_VERSION. */}
             <span className="ms-2 align-middle rounded bg-emerald-500/15 px-1.5 py-0.5 text-[10px] font-bold text-emerald-300 ring-1 ring-emerald-500/30">
-              نسخه ۵۵
+              نسخه ۵۶
             </span>
           </h1>
           <p className="truncate text-[11px] text-zinc-500">
