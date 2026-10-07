@@ -1,8 +1,16 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { checkAdmin } from '@/lib/admin';
-import { clearSampleIdeas, createIdea, deleteIdeaTree, generateIdeasForSample } from '@/lib/agency/content';
+import {
+  clearSampleIdeas,
+  createIdea,
+  deleteIdeaTree,
+  generateIdeasForSample,
+  resolveSampleRef,
+} from '@/lib/agency/content';
 
 export const dynamic = 'force-dynamic';
+// Vercel default 10s killed studio calls (2026-10-08 incident) — 60s = Hobby max.
+export const maxDuration = 60;
 
 /**
  * POST { sampleId } — generate 5 similar-not-copied ideas for one reference
@@ -23,14 +31,18 @@ export async function POST(req: NextRequest) {
   const sampleId = body.sampleId;
 
   try {
-    const ideas = await generateIdeasForSample(sampleId);
+    // static fallback ids (`static:<reelId>`, served when DB reads degrade)
+    // must be resolved to a real ContentSample row BEFORE any write, or the
+    // ideas would be orphaned under an id the sample include never matches
+    const realSampleId = await resolveSampleRef(sampleId);
+    const ideas = await generateIdeasForSample(realSampleId);
 
     // regenerate = clean slate for this sample (owner asked «یکی یکی»)
-    await clearSampleIdeas(sampleId);
+    await clearSampleIdeas(realSampleId);
     const created = await Promise.all(
       ideas.map((idea) =>
         createIdea({
-          sampleId,
+          sampleId: realSampleId,
           idx: idea.idx,
           title: idea.title,
           hook: idea.hook,

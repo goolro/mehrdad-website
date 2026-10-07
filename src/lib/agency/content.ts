@@ -96,7 +96,7 @@ export interface SampleWithIdeas extends StudioSampleRow {
 // ── build-safe facade over the new prisma models ─────────────────────────
 
 interface MinDelegate<Row> {
-  findUnique(args: { where: { id: string } }): Promise<Row | null>;
+  findUnique(args: { where: Record<string, string> }): Promise<Row | null>;
   findMany(args?: unknown): Promise<Row[]>;
   create(args: unknown): Promise<Row>;
   update(args: { where: { id: string }; data: unknown }): Promise<Row>;
@@ -123,6 +123,13 @@ let ensured: Promise<void> | null = null;
  * ensureAgencyTables(): the Turso database ships without them and there is
  * no deploy-time migration hook, so the first studio request creates them.
  * Idempotent, cached per process.
+ *
+ * ROBUSTNESS (production incident 2026-10-08): the first version cached the
+ * promise WITHOUT a catch-reset, so one transient Turso failure during DDL
+ * made EVERY later request throw forever (the panel showed ۰ نمونه مرجع
+ * permanently). Now: index statements are best-effort, a table failure
+ * resets `ensured` so the next request retries, and a deploy-time bootstrap
+ * (scripts/postbuild.mjs) creates everything before the first request.
  */
 export function ensureStudioTables(): Promise<void> {
   if (!ensured) {
@@ -138,12 +145,14 @@ export function ensureStudioTables(): Promise<void> {
           "note" TEXT NOT NULL,
           "likes" TEXT NOT NULL,
           "hashtags" TEXT NOT NULL DEFAULT '[]',
-          "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+          "createdAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
         )
       `);
-      await db.$executeRawUnsafe(
-        `CREATE UNIQUE INDEX IF NOT EXISTS "ContentSample.reelId_key" ON "ContentSample"("reelId")`
-      );
+      await db
+        .$executeRawUnsafe(
+          `CREATE UNIQUE INDEX IF NOT EXISTS "ContentSample.reelId_key" ON "ContentSample"("reelId")`
+        )
+        .catch(() => {}); // best-effort — the seed also de-dupes by count
       await db.$executeRawUnsafe(`
         CREATE TABLE IF NOT EXISTS "ContentIdea" (
           "id" TEXT NOT NULL PRIMARY KEY,
@@ -156,13 +165,15 @@ export function ensureStudioTables(): Promise<void> {
           "caption" TEXT NOT NULL,
           "hashtags" TEXT NOT NULL DEFAULT '[]',
           "status" TEXT NOT NULL DEFAULT 'idea',
-          "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-          "updatedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+          "createdAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          "updatedAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
         )
       `);
-      await db.$executeRawUnsafe(
-        `CREATE UNIQUE INDEX IF NOT EXISTS "ContentIdea.sampleId_idx_key" ON "ContentIdea"("sampleId", "idx")`
-      );
+      await db
+        .$executeRawUnsafe(
+          `CREATE UNIQUE INDEX IF NOT EXISTS "ContentIdea.sampleId_idx_key" ON "ContentIdea"("sampleId", "idx")`
+        )
+        .catch(() => {});
       await db.$executeRawUnsafe(`
         CREATE TABLE IF NOT EXISTS "ContentVideo" (
           "id" TEXT NOT NULL PRIMARY KEY,
@@ -172,13 +183,15 @@ export function ensureStudioTables(): Promise<void> {
           "url" TEXT,
           "coverUrl" TEXT,
           "error" TEXT,
-          "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-          "updatedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+          "createdAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          "updatedAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
         )
       `);
-      await db.$executeRawUnsafe(
-        `CREATE INDEX IF NOT EXISTS "ContentVideo.ideaId_createdAt_idx" ON "ContentVideo"("ideaId", "createdAt")`
-      );
+      await db
+        .$executeRawUnsafe(
+          `CREATE INDEX IF NOT EXISTS "ContentVideo.ideaId_createdAt_idx" ON "ContentVideo"("ideaId", "createdAt")`
+        )
+        .catch(() => {});
       await db.$executeRawUnsafe(`
         CREATE TABLE IF NOT EXISTS "HashtagBank" (
           "id" TEXT NOT NULL PRIMARY KEY,
@@ -187,10 +200,17 @@ export function ensureStudioTables(): Promise<void> {
           "category" TEXT NOT NULL DEFAULT 'general'
         )
       `);
-      await db.$executeRawUnsafe(
-        `CREATE UNIQUE INDEX IF NOT EXISTS "HashtagBank.tag_key" ON "HashtagBank"("tag")`
-      );
-    })();
+      await db
+        .$executeRawUnsafe(
+          `CREATE UNIQUE INDEX IF NOT EXISTS "HashtagBank.tag_key" ON "HashtagBank"("tag")`
+        )
+        .catch(() => {});
+    })().catch((e) => {
+      // allow a retry on the next request instead of caching the failure
+      // (house pattern from store.ts — the missing reset shipped the bug)
+      ensured = null;
+      throw e;
+    });
   }
   return ensured;
 }
@@ -355,7 +375,8 @@ const IDEATION_SYSTEM = `تو استراتژیست محتوای اینستاگر
 فیلد script = سناریوی صحنه‌به‌صحنه به فارسی برای فیلم‌برداری/بازتولید توسط انسان (۳ تا ۵ خط).`;
 
 export async function generateIdeasForSample(sampleId: string): Promise<StudioIdea[]> {
-  const sample = await studio.contentSample.findUnique({ where: { id: sampleId } });
+  const realId = await resolveSampleRef(sampleId);
+  const sample = await studio.contentSample.findUnique({ where: { id: realId } });
   if (!sample) throw new Error('نمونه پیدا نشد');
 
   const bank = await studio.hashtagBank.findMany();
@@ -513,6 +534,81 @@ export async function listStudioSamples(): Promise<SampleWithIdeas[]> {
   })) as SampleWithIdeas[];
 }
 
+// ── static fallback (production incident 2026-10-08) ─────────────────────
+
+/**
+ * A sample row built from the committed seed constant — id is a stable
+ * `static:<reelId>` reference. resolveSampleRef() maps it back to a real DB
+ * row (creating it if needed) the moment the owner acts on it, so a
+ * degraded read never blocks a write.
+ */
+function staticSampleRow(s: StudioSampleSeed): SampleWithIdeas {
+  return {
+    id: `static:${s.reelId}`,
+    reelId: s.reelId,
+    url: s.url,
+    account: s.account,
+    styleTag: s.styleTag,
+    title: s.title,
+    note: s.note,
+    likes: s.likes,
+    hashtags: JSON.stringify(s.hashtags),
+    createdAt: new Date(0),
+    ideas: [],
+  };
+}
+
+export interface StudioSamplesPayload {
+  samples: SampleWithIdeas[];
+  dbOk: boolean;
+  warning?: string;
+}
+
+/**
+ * DB list with a never-empty guarantee: the 10 reference samples are
+ * committed constants, so even a fully broken database still shows the
+ * studio with all 10 cards (owner incident: a runtime failure rendered an
+ * EMPTY studio and looked like «the feature does not exist»). `warning`
+ * travels to the UI as a persistent banner.
+ */
+export async function listStudioSamplesSafe(): Promise<StudioSamplesPayload> {
+  try {
+    await ensureStudioSeed();
+    const rows = await listStudioSamples();
+    if (rows.length > 0) return { samples: rows, dbOk: true };
+    // seeded but listing empty → treat as degraded, show the constants
+    return {
+      samples: SAMPLE_SEED.map(staticSampleRow),
+      dbOk: false,
+      warning: 'اتصال به پایگاه داده برقرار نیست — نمونه‌ها از حافظهٔ داخلی نمایش داده می‌شوند. ساختن ایده همچنان امتحان می‌شود.',
+    };
+  } catch (e) {
+    return {
+      samples: SAMPLE_SEED.map(staticSampleRow),
+      dbOk: false,
+      warning: `اتصال به پایگاه داده برقرار نشد — نمونه‌ها از حافظهٔ داخلی نمایش داده می‌شوند. (${String((e as Error).message ?? e).slice(0, 120)})`,
+    };
+  }
+}
+
+/**
+ * Map a (possibly static) sample reference to a real ContentSample row id.
+ * `static:<reelId>` → upsert the row from the committed seed constant, so
+ * ideation works even while reads are degraded.
+ */
+export async function resolveSampleRef(sampleId: string): Promise<string> {
+  if (!sampleId.startsWith('static:')) return sampleId;
+  const reelId = sampleId.slice('static:'.length);
+  const seed = SAMPLE_SEED.find((s) => s.reelId === reelId);
+  if (!seed) throw new Error('نمونه نامعتبر است');
+  const existing = await studio.contentSample.findUnique({ where: { reelId } });
+  if (existing) return existing.id;
+  const created = await studio.contentSample.create({
+    data: { ...seed, hashtags: JSON.stringify(seed.hashtags) },
+  });
+  return created.id;
+}
+
 /** Persist one generated idea (facade — see build-safety note). */
 export async function createIdea(data: {
   sampleId: string;
@@ -569,16 +665,22 @@ export async function removeHashtag(id: string): Promise<void> {
 /** Insert the 10 reference samples + hashtag bank once (idempotent). */
 export async function ensureStudioSeed(): Promise<void> {
   await ensureStudioTables();
-  const sampleCount = await studio.contentSample.count();
-  if (sampleCount === 0) {
-    for (const s of SAMPLE_SEED) {
-      await studio.contentSample.create({ data: { ...s, hashtags: JSON.stringify(s.hashtags) } });
-    }
+  const [sampleCount, tagCount] = await Promise.all([
+    studio.contentSample.count(),
+    studio.hashtagBank.count(),
+  ]);
+  if (sampleCount < SAMPLE_SEED.length) {
+    // parallel + per-row tolerant: a race between two cold lambdas (both
+    // seeing count()=0) must not 500 the request on a unique collision
+    await Promise.allSettled(
+      SAMPLE_SEED.map((s) =>
+        studio.contentSample.create({ data: { ...s, hashtags: JSON.stringify(s.hashtags) } })
+      )
+    );
   }
-  const tagCount = await studio.hashtagBank.count();
-  if (tagCount === 0) {
-    for (const t of HASHTAG_SEED) {
-      await studio.hashtagBank.create({ data: t });
-    }
+  if (tagCount < HASHTAG_SEED.length) {
+    await Promise.allSettled(
+      HASHTAG_SEED.map((t) => studio.hashtagBank.create({ data: t }))
+    );
   }
 }

@@ -3,6 +3,8 @@ import { checkAdmin } from '@/lib/admin';
 import { listIdeaVideos, pendingVideosOfIdea, pollVideo, submitVideoForIdea } from '@/lib/agency/content';
 
 export const dynamic = 'force-dynamic';
+// Vercel default 10s killed studio calls (2026-10-08 incident) — 60s = Hobby max.
+export const maxDuration = 60;
 
 /**
  * POST { ideaId, duration? } — submit one AI video task (CogVideoX, 9:16).
