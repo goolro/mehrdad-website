@@ -234,7 +234,15 @@ export function AgencyPanel() {
           <Bot className="h-5 w-5 text-emerald-400" aria-hidden />
         </div>
         <div className="min-w-0 flex-1">
-          <h1 className="truncate text-sm font-bold leading-5">پنل آژانس</h1>
+          <h1 className="truncate text-sm font-bold leading-5">
+            پنل آژانس
+            {/* build marker (Task 55): lets the owner verify he is NOT looking
+                at a stale cached panel — the cache question behind «چیزی وجود
+                نداره». Bump together with the sw.js CACHE_VERSION. */}
+            <span className="ms-2 align-middle rounded bg-emerald-500/15 px-1.5 py-0.5 text-[10px] font-bold text-emerald-300 ring-1 ring-emerald-500/30">
+              نسخه ۵۵
+            </span>
+          </h1>
           <p className="truncate text-[11px] text-zinc-500">
             {roster
               ? `${toFa(roster.stats.agentCount)} ایجنت تخصصی از ${roster.stats.source}`
@@ -269,6 +277,10 @@ export function AgencyPanel() {
         {TABS.map((t) => {
           const Icon = t.icon;
           const active = tab === t.id;
+          // the Content Studio is THE reason the owner opens this panel —
+          // its tab gets a bigger, bolder pill so it is unmissable
+          // («فونت بزرگتر … دم دست تر»)
+          const studio = t.id === 'content';
           return (
             <button
               key={t.id}
@@ -279,13 +291,17 @@ export function AgencyPanel() {
                 setTab(t.id);
               }}
               aria-current={active ? 'page' : undefined}
-              className={`flex h-9 shrink-0 items-center gap-1.5 rounded-lg px-3 text-xs font-medium transition-colors ${
+              className={`flex shrink-0 items-center gap-1.5 rounded-lg font-bold transition-colors ${
+                studio
+                  ? 'h-10 bg-amber-400/10 px-4 text-sm text-amber-300 ring-1 ring-amber-400/40 hover:bg-amber-400/20'
+                  : 'h-9 px-3 text-xs font-medium'
+              } ${
                 active
-                  ? 'bg-emerald-500/15 text-emerald-300 ring-1 ring-emerald-500/30'
+                  ? 'bg-emerald-500/15 !text-emerald-300 ring-1 ring-emerald-500/30'
                   : 'text-zinc-400 hover:bg-zinc-800/70 hover:text-zinc-200'
               }`}
             >
-              <Icon className="h-4 w-4" aria-hidden />
+              <Icon className={studio ? 'h-5 w-5' : 'h-4 w-4'} aria-hidden />
               {t.label}
             </button>
           );
