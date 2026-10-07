@@ -364,3 +364,70 @@ model Brief {
 
   @@index([status, createdAt])
 }
+
+// ───────────────────────── Content Studio (استودیو محتوا) ─────────────────────────
+// EXACT MIRROR of the Task 55 models in prisma/schema.prisma. The Vercel build
+// generates the Prisma client from THIS file (vercel.json buildCommand), so a
+// model that exists only in schema.prisma does NOT exist at runtime on the
+// deployment — which is exactly why the studio shipped empty (2026-10-08:
+// db.contentSample was undefined → every studio API 500'd → ۰ نمونه). Any new
+// model MUST land in BOTH schema files, always.
+
+/// One of the 10 reference Instagram reels the owner supplied.
+model ContentSample {
+  id        String        @id @default(cuid())
+  reelId    String        @unique
+  url       String
+  account   String
+  styleTag  String
+  title     String
+  note      String
+  likes     String
+  hashtags  String        @default("[]") // JSON string[]
+  ideas     ContentIdea[]
+  createdAt DateTime      @default(now())
+}
+
+/// One of the 5 video concepts generated for a sample.
+model ContentIdea {
+  id          String        @id @default(cuid())
+  sampleId    String
+  sample      ContentSample @relation(fields: [sampleId], references: [id], onDelete: Cascade)
+  idx         Int
+  title       String
+  hook        String
+  script      String
+  videoPrompt String
+  caption     String
+  hashtags    String        @default("[]") // JSON string[]
+  status      String        @default("idea") // idea | published
+  videos      ContentVideo[]
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@unique([sampleId, idx])
+}
+
+/// One generated video for an idea (provider URL is temporary).
+model ContentVideo {
+  id             String      @id @default(cuid())
+  ideaId         String
+  idea           ContentIdea @relation(fields: [ideaId], references: [id], onDelete: Cascade)
+  providerTaskId String
+  status         String      @default("generating") // generating | ready | failed
+  url            String?
+  coverUrl       String?
+  error          String?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  @@index([ideaId, createdAt])
+}
+
+/// Editable popular-hashtag bank merged into every idea's hashtag set.
+model HashtagBank {
+  id       String @id @default(cuid())
+  tag      String @unique
+  lang     String @default("fa")
+  category String @default("general")
+}

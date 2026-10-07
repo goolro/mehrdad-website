@@ -13,6 +13,7 @@
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
+  AlertTriangle,
   Check,
   Copy,
   Download,
@@ -101,6 +102,7 @@ const faNum = (n: number | string) => String(n).replace(/\d/g, (d) => '۰۱۲۳�
 export function AgencyContentStudio() {
   const { toast } = useToast();
   const [samples, setSamples] = useState<SampleNode[] | null>(null);
+  const [studioWarning, setStudioWarning] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [ideating, setIdeating] = useState<string | null>(null); // sampleId
   const [submittingIdea, setSubmittingIdea] = useState<string | null>(null); // ideaId
@@ -114,9 +116,10 @@ export function AgencyContentStudio() {
 
   // ── data loading ───────────────────────────────────────────────────────
   const loadSamples = useCallback(() => {
-    agencyFetch<{ samples: SampleNode[] }>('/api/agency/content/samples')
+    agencyFetch<{ samples: SampleNode[]; warning?: string }>('/api/agency/content/samples')
       .then((d) => {
         setSamples(d.samples);
+        setStudioWarning(d.warning ?? null);
         setSelectedId((cur) => cur ?? d.samples[0]?.id ?? null);
       })
       .catch((e: Error) => {
@@ -278,6 +281,19 @@ export function AgencyContentStudio() {
 
   return (
     <div className="space-y-8 text-lg">
+      {/* degraded-DB banner — PERSISTENT (not a toast): the 2026-10-08 incident
+          rendered a silent empty studio that looked like «the feature does not
+          exist». The owner must always see the true state of the studio. */}
+      {studioWarning && (
+        <div className="flex items-start gap-3 rounded-2xl border-2 border-amber-400/60 bg-amber-400/10 p-4">
+          <AlertTriangle className="mt-1 h-6 w-6 shrink-0 text-amber-400" aria-hidden />
+          <div>
+            <p className="text-lg font-bold text-amber-300">هشدار اتصال</p>
+            <p className="mt-1 text-base leading-relaxed text-amber-100/90">{studioWarning}</p>
+          </div>
+        </div>
+      )}
+
       {/* header */}
       <header className="space-y-2">
         <h2 className="flex items-center gap-3 text-3xl font-extrabold">

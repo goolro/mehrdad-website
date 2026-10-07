@@ -3,6 +3,8 @@ import { checkAdmin } from '@/lib/admin';
 import { getVideoRow } from '@/lib/agency/content';
 
 export const dynamic = 'force-dynamic';
+// Vercel default 10s killed studio calls (2026-10-08 incident) — 60s = Hobby max.
+export const maxDuration = 60;
 
 /**
  * GET ?id=<videoId>[&final=1] — download one generated video.
