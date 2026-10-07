@@ -77,7 +77,7 @@ const nextConfig: NextConfig = {
   // standalone bundle: it loads native bindings (@libsql/linux-x64-gnu) at
   // runtime, which cannot be bundled into server chunks. Without this the
   // artifact ships without the packages and remote DB mode crashes on boot.
-  serverExternalPackages: ["@prisma/adapter-libsql", "@libsql/client", "@libsql/engine", "ffmpeg-static"],
+  serverExternalPackages: ["@prisma/adapter-libsql", "@libsql/client", "@libsql/engine"],
   // don't advertise the framework version in production responses
   poweredByHeader: false,
   // Agency panel (Task 54): the agent library (src/data/agency-library.json,
@@ -85,20 +85,13 @@ const nextConfig: NextConfig = {
   // the bundler ships it automatically. A previous fs.readFileSync approach
   // made the output-file tracer trace the whole project and killed the
   // Vercel build — do not go back to dynamic fs reads for it.
-  // Content Studio (Task 55): the branded-outro download route needs the
-  // ffmpeg-static binary + the outro card PNG at runtime. These are TARGETED
-  // includes for that one route (explicit file paths — this does NOT trigger
-  // the whole-project tracing blow-up described above). The package dir is
-  // included (not the bare binary) so the trace tolerates a download hiccup
-  // during install; the route degrades to the raw download if the binary is
-  // absent. trustedDependencies in package.json makes bun run the package's
-  // postinstall on Vercel so the binary is actually there.
-  outputFileTracingIncludes: {
-    "/api/agency/content/file": [
-      "./node_modules/ffmpeg-static",
-      "./public/agency-content/outro-card.png",
-    ],
-  },
+  // Content Studio (Task 55): do NOT add outputFileTracingIncludes here for
+  // the ffmpeg-static binary — two production deploys failed with it
+  // (dpl_7Cpu + successor, root cause invisible server-side). The branded
+  // outro route resolves the binary at runtime (node_modules → PATH) and
+  // degrades gracefully to the raw scene download when ffmpeg is absent
+  // (which is the case on Vercel lambdas). Final branded assembly runs in
+  // the studio sandbox instead — owner asked for a one-by-one workflow.
   async rewrites() {
     return [
       // Traffic Tempo (Android app) privacy policy — required by Google Play.

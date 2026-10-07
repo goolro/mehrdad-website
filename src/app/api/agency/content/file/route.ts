@@ -14,8 +14,8 @@ export const maxDuration = 120; // ffmpeg concat of a ~12s 720p clip is fast, bu
  *   MP4. Everything happens in-memory/tmp inside this request — nothing is
  *   stored. Falls back with a Persian error if the provider link expired.
  *
- * ffmpeg comes from the ffmpeg-static package (bundled via
- * outputFileTracingIncludes in next.config.ts) so this works on Vercel too.
+ * ffmpeg is resolved at runtime (system binary on the studio sandbox);
+ * Vercel lambdas gracefully degrade to the raw scene download.
  */
 
 import { execFile } from 'child_process';
@@ -24,25 +24,24 @@ import fs from 'fs';
 import path from 'path';
 import { tmpdir } from 'os';
 import { promisify } from 'util';
-import ffmpegStatic from 'ffmpeg-static';
 
 const execFileAsync = promisify(execFile);
 
-async function resolveFfmpeg(): Promise<string> {
-  // ffmpeg-static resolves via __dirname, which breaks when the bundler
-  // inlines it — resolve both ways and pick the one that exists.
-  const candidates = [
-    String(ffmpegStatic ?? ''),
-    path.join(process.cwd(), 'node_modules', 'ffmpeg-static', 'ffmpeg'),
-  ];
-  for (const c of candidates) {
-    if (c && fs.existsSync(c)) return c;
-  }
-  return 'ffmpeg'; // last resort: whatever is on PATH
+/**
+ * Resolve an ffmpeg binary at runtime. On the studio sandbox the system
+ * ffmpeg exists; on Vercel lambdas nothing does, so the branded-outro
+ * assembly degrades to a friendly Persian error and the owner uses the raw
+ * download (final branded MP4s are assembled in the sandbox studio — the
+ * owner explicitly asked for a one-by-one workflow).
+ */
+function resolveFfmpeg(): string {
+  const candidate = path.join(process.cwd(), 'node_modules', 'ffmpeg-static', 'ffmpeg');
+  if (fs.existsSync(candidate)) return candidate;
+  return 'ffmpeg';
 }
 
 async function runFfmpeg(args: string[], expectOutput?: string, minBytes = 50_000): Promise<void> {
-  const bin = await resolveFfmpeg();
+  const bin = resolveFfmpeg();
   const argv = ['-hide_banner', '-loglevel', 'error', '-y', '-threads', '2', ...args];
   try {
     await execFileAsync(bin, argv, {
