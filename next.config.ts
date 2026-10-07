@@ -88,10 +88,14 @@ const nextConfig: NextConfig = {
   // Content Studio (Task 55): the branded-outro download route needs the
   // ffmpeg-static binary + the outro card PNG at runtime. These are TARGETED
   // includes for that one route (explicit file paths — this does NOT trigger
-  // the whole-project tracing blow-up described above).
+  // the whole-project tracing blow-up described above). The package dir is
+  // included (not the bare binary) so the trace tolerates a download hiccup
+  // during install; the route degrades to the raw download if the binary is
+  // absent. trustedDependencies in package.json makes bun run the package's
+  // postinstall on Vercel so the binary is actually there.
   outputFileTracingIncludes: {
     "/api/agency/content/file": [
-      "./node_modules/ffmpeg-static/ffmpeg",
+      "./node_modules/ffmpeg-static",
       "./public/agency-content/outro-card.png",
     ],
   },
