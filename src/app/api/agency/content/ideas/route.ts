@@ -4,7 +4,7 @@ import { db } from '@/lib/db';
 import { generateIdeasForSample } from '@/lib/agency/content';
 
 export const dynamic = 'force-dynamic';
-export const maxDuration = 120; // ideation runs one LLM call (~10-30s typical)
+export const maxDuration = 60; // ideation runs one LLM call (~10-30s typical)
 
 /**
  * POST { sampleId } — generate 5 similar-not-copied ideas for one reference
