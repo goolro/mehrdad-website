@@ -24,6 +24,7 @@ import {
   Sparkles,
   Star,
   Users,
+  Wrench,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -32,6 +33,7 @@ import { useToast } from '@/hooks/use-toast';
 import { AgencyAgents } from '@/components/agency/AgencyAgents';
 import { AgencyDivisions } from '@/components/agency/AgencyDivisions';
 import { AgencyTeam } from '@/components/agency/AgencyTeam';
+import { AgencyTools } from '@/components/agency/AgencyTools';
 import { AgencyHistory } from '@/components/agency/AgencyHistory';
 import { AgencyGuide } from '@/components/agency/AgencyGuide';
 import { DIVISION_ICONS } from '@/components/agency/division-icons';
@@ -43,13 +45,14 @@ import {
   type SessionSummary,
 } from '@/components/agency/agency-client';
 
-type Tab = 'divisions' | 'dashboard' | 'agents' | 'team' | 'history' | 'guide';
+type Tab = 'divisions' | 'dashboard' | 'agents' | 'team' | 'tools' | 'history' | 'guide';
 
 const TABS: { id: Tab; label: string; icon: typeof LayoutDashboard }[] = [
   { id: 'divisions', label: 'دپارتمان‌ها', icon: Building2 },
   { id: 'dashboard', label: 'داشبورد', icon: LayoutDashboard },
   { id: 'agents', label: 'ایجنت‌ها', icon: Bot },
   { id: 'team', label: 'اجرای تیمی', icon: Users },
+  { id: 'tools', label: 'ابزارها', icon: Wrench },
   { id: 'history', label: 'تاریخچه', icon: History },
   { id: 'guide', label: 'راهنما', icon: Compass },
 ];
@@ -315,6 +318,8 @@ export function AgencyPanel() {
           <AgencyAgents roster={roster} onRan={loadSessions} />
         ) : tab === 'team' ? (
           <AgencyTeam roster={roster} onRan={loadSessions} />
+        ) : tab === 'tools' ? (
+          <AgencyTools />
         ) : tab === 'history' ? (
           <AgencyHistory sessions={sessions} onChanged={loadSessions} />
         ) : (
