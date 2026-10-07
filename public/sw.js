@@ -1,5 +1,5 @@
 /* Mehrdad.ir Service Worker — PWA offline shell + smart caching */
-const CACHE_VERSION = 'mehrdad-v5'; // v5: Content Studio launch — wipe stale panel caches (owner saw an old tab list)
+const CACHE_VERSION = 'mehrdad-v6'; // v5: Content Studio launch — wipe stale panel caches (owner saw an old tab list)
 const OFFLINE_CACHE = 'mehrdad-offline-v1';
 
 // Pre-cache the app shell
