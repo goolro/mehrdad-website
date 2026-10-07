@@ -14,7 +14,6 @@ import { useRouter } from 'next/navigation';
 import {
   Bot,
   Building2,
-  Clapperboard,
   Compass,
   History,
   Home,
@@ -27,7 +26,6 @@ import {
   Users,
   Wrench,
 } from 'lucide-react';
-import { AgencyContentStudio } from '@/components/agency/AgencyContentStudio';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -47,13 +45,9 @@ import {
   type SessionSummary,
 } from '@/components/agency/agency-client';
 
-type Tab = 'content' | 'divisions' | 'dashboard' | 'agents' | 'team' | 'tools' | 'history' | 'guide';
+type Tab = 'divisions' | 'dashboard' | 'agents' | 'team' | 'tools' | 'history' | 'guide';
 
-// Content Studio is deliberately the FIRST tab — the owner opens the panel to
-// produce content for @startup_mt / Mehrdad.ir, so it must be the first thing
-// seen («همون اول ببینم»).
 const TABS: { id: Tab; label: string; icon: typeof LayoutDashboard }[] = [
-  { id: 'content', label: 'استودیو محتوا', icon: Clapperboard },
   { id: 'divisions', label: 'دپارتمان‌ها', icon: Building2 },
   { id: 'dashboard', label: 'داشبورد', icon: LayoutDashboard },
   { id: 'agents', label: 'ایجنت‌ها', icon: Bot },
@@ -83,7 +77,7 @@ export function AgencyPanel() {
   const [loginError, setLoginError] = useState('');
 
   const [roster, setRoster] = useState<RosterPayload | null>(null);
-  const [tab, setTab] = useState<Tab>('content');
+  const [tab, setTab] = useState<Tab>('divisions');
   const [divisionSel, setDivisionSel] = useState<string | null>(null);
   const [sessions, setSessions] = useState<SessionSummary[]>([]);
 
@@ -300,8 +294,6 @@ export function AgencyPanel() {
               <Skeleton key={i} className="h-24 rounded-2xl bg-zinc-800/60" />
             ))}
           </div>
-        ) : tab === 'content' ? (
-          <AgencyContentStudio />
         ) : tab === 'divisions' ? (
           <AgencyDivisions
             roster={roster}
