@@ -85,6 +85,13 @@ const nextConfig: NextConfig = {
   // the bundler ships it automatically. A previous fs.readFileSync approach
   // made the output-file tracer trace the whole project and killed the
   // Vercel build — do not go back to dynamic fs reads for it.
+  // Content Studio (Task 55): do NOT add outputFileTracingIncludes here for
+  // the ffmpeg-static binary — two production deploys failed with it
+  // (dpl_7Cpu + successor, root cause invisible server-side). The branded
+  // outro route resolves the binary at runtime (node_modules → PATH) and
+  // degrades gracefully to the raw scene download when ffmpeg is absent
+  // (which is the case on Vercel lambdas). Final branded assembly runs in
+  // the studio sandbox instead — owner asked for a one-by-one workflow.
   async rewrites() {
     return [
       // Traffic Tempo (Android app) privacy policy — required by Google Play.
