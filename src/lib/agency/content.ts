@@ -7,6 +7,14 @@
  *
  * The outro card is a committed static asset (public/agency-content/
  * outro-card.png, 720×1280) so Persian text renders exactly — no AI text.
+ *
+ * BUILD-SAFETY NOTE: the Vercel build type-checks against a Prisma client
+ * that was generated in a cached node_modules layer from BEFORE this task's
+ * models existed (deploy 4afa923 vs 3c3f3ce proved it). So every new-model
+ * access goes through a locally-typed facade (`studio`) instead of generated
+ * delegates, and `ensureStudioTables()` creates the tables at runtime the
+ * same way ensureAgencyTables() does for the agency tables — Turso ships
+ * without them.
  */
 
 import { db } from '@/lib/db';
@@ -32,6 +40,159 @@ export interface StudioSampleSeed {
   note: string;
   likes: string;
   hashtags: string[];
+}
+
+// ── row shapes (mirror prisma/schema.prisma, typed locally — see note) ───
+
+export interface StudioSampleRow {
+  id: string;
+  reelId: string;
+  url: string;
+  account: string;
+  styleTag: string;
+  title: string;
+  note: string;
+  likes: string;
+  hashtags: string; // JSON string[]
+  createdAt: Date;
+}
+
+export interface StudioIdeaRow {
+  id: string;
+  sampleId: string;
+  idx: number;
+  title: string;
+  hook: string;
+  script: string;
+  videoPrompt: string;
+  caption: string;
+  hashtags: string; // JSON string[]
+  status: string;
+  createdAt: Date;
+}
+
+export interface StudioVideoRow {
+  id: string;
+  ideaId: string;
+  providerTaskId: string;
+  status: string; // generating | ready | failed
+  url: string | null;
+  coverUrl: string | null;
+  error: string | null;
+  createdAt: Date;
+}
+
+export interface StudioTagRow {
+  id: string;
+  tag: string;
+  lang: string; // fa | en
+  category: string;
+}
+
+export interface SampleWithIdeas extends StudioSampleRow {
+  ideas: (StudioIdeaRow & { videos: StudioVideoRow[] })[];
+}
+
+// ── build-safe facade over the new prisma models ─────────────────────────
+
+interface MinDelegate<Row> {
+  findUnique(args: { where: { id: string } }): Promise<Row | null>;
+  findMany(args?: unknown): Promise<Row[]>;
+  create(args: unknown): Promise<Row>;
+  update(args: { where: { id: string }; data: unknown }): Promise<Row>;
+  delete(args: { where: { id: string } }): Promise<unknown>;
+  deleteMany(args?: unknown): Promise<unknown>;
+  count(): Promise<number>;
+}
+
+interface DbFacade {
+  contentSample: MinDelegate<StudioSampleRow>;
+  contentIdea: MinDelegate<StudioIdeaRow>;
+  contentVideo: MinDelegate<StudioVideoRow>;
+  hashtagBank: MinDelegate<StudioTagRow>;
+}
+
+const studio = db as unknown as DbFacade;
+
+// ── runtime table creation (Turso ships without the Task 55 tables) ─────
+
+let ensured: Promise<void> | null = null;
+
+/**
+ * Create the Task 55 tables at runtime — same house pattern as
+ * ensureAgencyTables(): the Turso database ships without them and there is
+ * no deploy-time migration hook, so the first studio request creates them.
+ * Idempotent, cached per process.
+ */
+export function ensureStudioTables(): Promise<void> {
+  if (!ensured) {
+    ensured = (async () => {
+      await db.$executeRawUnsafe(`
+        CREATE TABLE IF NOT EXISTS "ContentSample" (
+          "id" TEXT NOT NULL PRIMARY KEY,
+          "reelId" TEXT NOT NULL,
+          "url" TEXT NOT NULL,
+          "account" TEXT NOT NULL,
+          "styleTag" TEXT NOT NULL,
+          "title" TEXT NOT NULL,
+          "note" TEXT NOT NULL,
+          "likes" TEXT NOT NULL,
+          "hashtags" TEXT NOT NULL DEFAULT '[]',
+          "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+        )
+      `);
+      await db.$executeRawUnsafe(
+        `CREATE UNIQUE INDEX IF NOT EXISTS "ContentSample.reelId_key" ON "ContentSample"("reelId")`
+      );
+      await db.$executeRawUnsafe(`
+        CREATE TABLE IF NOT EXISTS "ContentIdea" (
+          "id" TEXT NOT NULL PRIMARY KEY,
+          "sampleId" TEXT NOT NULL,
+          "idx" INTEGER NOT NULL,
+          "title" TEXT NOT NULL,
+          "hook" TEXT NOT NULL,
+          "script" TEXT NOT NULL,
+          "videoPrompt" TEXT NOT NULL,
+          "caption" TEXT NOT NULL,
+          "hashtags" TEXT NOT NULL DEFAULT '[]',
+          "status" TEXT NOT NULL DEFAULT 'idea',
+          "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          "updatedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+        )
+      `);
+      await db.$executeRawUnsafe(
+        `CREATE UNIQUE INDEX IF NOT EXISTS "ContentIdea.sampleId_idx_key" ON "ContentIdea"("sampleId", "idx")`
+      );
+      await db.$executeRawUnsafe(`
+        CREATE TABLE IF NOT EXISTS "ContentVideo" (
+          "id" TEXT NOT NULL PRIMARY KEY,
+          "ideaId" TEXT NOT NULL,
+          "providerTaskId" TEXT NOT NULL,
+          "status" TEXT NOT NULL DEFAULT 'generating',
+          "url" TEXT,
+          "coverUrl" TEXT,
+          "error" TEXT,
+          "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          "updatedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+        )
+      `);
+      await db.$executeRawUnsafe(
+        `CREATE INDEX IF NOT EXISTS "ContentVideo.ideaId_createdAt_idx" ON "ContentVideo"("ideaId", "createdAt")`
+      );
+      await db.$executeRawUnsafe(`
+        CREATE TABLE IF NOT EXISTS "HashtagBank" (
+          "id" TEXT NOT NULL PRIMARY KEY,
+          "tag" TEXT NOT NULL,
+          "lang" TEXT NOT NULL DEFAULT 'fa',
+          "category" TEXT NOT NULL DEFAULT 'general'
+        )
+      `);
+      await db.$executeRawUnsafe(
+        `CREATE UNIQUE INDEX IF NOT EXISTS "HashtagBank.tag_key" ON "HashtagBank"("tag")`
+      );
+    })();
+  }
+  return ensured;
 }
 
 // ── seed data: the owner's 10 reference reels (captions fetched 2026-10-07) ─
@@ -194,10 +355,10 @@ const IDEATION_SYSTEM = `تو استراتژیست محتوای اینستاگر
 فیلد script = سناریوی صحنه‌به‌صحنه به فارسی برای فیلم‌برداری/بازتولید توسط انسان (۳ تا ۵ خط).`;
 
 export async function generateIdeasForSample(sampleId: string): Promise<StudioIdea[]> {
-  const sample = await db.contentSample.findUnique({ where: { id: sampleId } });
+  const sample = await studio.contentSample.findUnique({ where: { id: sampleId } });
   if (!sample) throw new Error('نمونه پیدا نشد');
 
-  const bank = await db.hashtagBank.findMany();
+  const bank = await studio.hashtagBank.findMany();
   const bankTags = bank.map((b) => b.tag);
 
   const { default: ZAI } = await import('z-ai-web-dev-sdk');
@@ -252,7 +413,7 @@ export interface SubmitResult {
  * polls via /api/agency/content/video.
  */
 export async function submitVideoForIdea(ideaId: string, duration = VIDEO_DURATION): Promise<SubmitResult> {
-  const idea = await db.contentIdea.findUnique({ where: { id: ideaId } });
+  const idea = await studio.contentIdea.findUnique({ where: { id: ideaId } });
   if (!idea) return { ok: false, error: 'ایده پیدا نشد' };
 
   const { default: ZAI } = await import('z-ai-web-dev-sdk');
@@ -277,7 +438,7 @@ export async function submitVideoForIdea(ideaId: string, duration = VIDEO_DURATI
     return { ok: false, error: `خطای سرویس ویدیو: ${msg.slice(0, 160)}` };
   }
 
-  const video = await db.contentVideo.create({
+  const video = await studio.contentVideo.create({
     data: {
       ideaId,
       providerTaskId: task.id,
@@ -298,7 +459,7 @@ export interface PollOutcome {
 
 /** Query one pending video's provider task and sync the DB row. */
 export async function pollVideo(videoId: string): Promise<PollOutcome> {
-  const video = await db.contentVideo.findUnique({ where: { id: videoId } });
+  const video = await studio.contentVideo.findUnique({ where: { id: videoId } });
   if (!video) throw new Error('ویدیو پیدا نشد');
 
   if (video.status !== 'generating') {
@@ -321,36 +482,103 @@ export async function pollVideo(videoId: string): Promise<PollOutcome> {
     const url = res?.video_result?.[0]?.url ?? res?.video_url ?? null;
     const coverUrl = res?.video_result?.[0]?.cover_image_url ?? null;
     if (url) {
-      await db.contentVideo.update({ where: { id: video.id }, data: { status: 'ready', url, coverUrl, error: null } });
+      await studio.contentVideo.update({ where: { id: video.id }, data: { status: 'ready', url, coverUrl, error: null } });
       return { id: video.id, status: 'ready', url, coverUrl: coverUrl ?? undefined };
     }
-    await db.contentVideo.update({ where: { id: video.id }, data: { status: 'failed', error: 'خروجی ویدیو خالی بود' } });
+    await studio.contentVideo.update({ where: { id: video.id }, data: { status: 'failed', error: 'خروجی ویدیو خالی بود' } });
     return { id: video.id, status: 'failed', error: 'خروجی ویدیو خالی بود' };
   }
 
   if (status === 'FAIL') {
     const err = String(res?.error?.message ?? 'تولید ویدیو شکست خورد').slice(0, 200);
-    await db.contentVideo.update({ where: { id: video.id }, data: { status: 'failed', error: err } });
+    await studio.contentVideo.update({ where: { id: video.id }, data: { status: 'failed', error: err } });
     return { id: video.id, status: 'failed', error: err };
   }
 
   return { id: video.id, status: 'generating' };
 }
 
-// ── seeding ──────────────────────────────────────────────────────────────
+// ── listing + seeding (runtime table creation + one-time seed) ───────────
+
+/** All samples with their ideas and videos — the studio root payload. */
+export async function listStudioSamples(): Promise<SampleWithIdeas[]> {
+  return (await studio.contentSample.findMany({
+    orderBy: { createdAt: 'asc' },
+    include: {
+      ideas: {
+        orderBy: { idx: 'asc' },
+        include: { videos: { orderBy: { createdAt: 'desc' } } },
+      },
+    },
+  })) as SampleWithIdeas[];
+}
+
+/** Persist one generated idea (facade — see build-safety note). */
+export async function createIdea(data: {
+  sampleId: string;
+  idx: number;
+  title: string;
+  hook: string;
+  script: string;
+  videoPrompt: string;
+  caption: string;
+  hashtags: string; // JSON string[]
+}): Promise<StudioIdeaRow> {
+  return studio.contentIdea.create({ data });
+}
+
+/** Drop one idea and its videos (raw cascade — no FK enforcement). */
+export async function deleteIdeaTree(ideaId: string): Promise<void> {
+  await db.$executeRawUnsafe(`DELETE FROM "ContentVideo" WHERE "ideaId" = ?`, ideaId);
+  await db.$executeRawUnsafe(`DELETE FROM "ContentIdea" WHERE "id" = ?`, ideaId);
+}
+
+/** Clean slate for one sample before regenerating its 5 ideas. */
+export async function clearSampleIdeas(sampleId: string): Promise<void> {
+  await db.$executeRawUnsafe(
+    `DELETE FROM "ContentVideo" WHERE "ideaId" IN (SELECT "id" FROM "ContentIdea" WHERE "sampleId" = ?)`,
+    sampleId
+  );
+  await db.$executeRawUnsafe(`DELETE FROM "ContentIdea" WHERE "sampleId" = ?`, sampleId);
+}
+
+export async function listIdeaVideos(ideaId: string): Promise<StudioVideoRow[]> {
+  return studio.contentVideo.findMany({ where: { ideaId }, orderBy: { createdAt: 'desc' } });
+}
+
+export async function pendingVideosOfIdea(ideaId: string): Promise<StudioVideoRow[]> {
+  return studio.contentVideo.findMany({ where: { ideaId, status: 'generating' } });
+}
+
+export async function getVideoRow(videoId: string): Promise<StudioVideoRow | null> {
+  return studio.contentVideo.findUnique({ where: { id: videoId } });
+}
+
+export async function addHashtag(tag: string, lang: string, category: string): Promise<StudioTagRow> {
+  return studio.hashtagBank.create({ data: { tag, lang, category } });
+}
+
+export async function listHashtags(): Promise<StudioTagRow[]> {
+  return studio.hashtagBank.findMany({ orderBy: [{ lang: 'asc' }, { tag: 'asc' }] });
+}
+
+export async function removeHashtag(id: string): Promise<void> {
+  await studio.hashtagBank.delete({ where: { id } });
+}
 
 /** Insert the 10 reference samples + hashtag bank once (idempotent). */
 export async function ensureStudioSeed(): Promise<void> {
-  const sampleCount = await db.contentSample.count();
+  await ensureStudioTables();
+  const sampleCount = await studio.contentSample.count();
   if (sampleCount === 0) {
     for (const s of SAMPLE_SEED) {
-      await db.contentSample.create({ data: { ...s, hashtags: JSON.stringify(s.hashtags) } });
+      await studio.contentSample.create({ data: { ...s, hashtags: JSON.stringify(s.hashtags) } });
     }
   }
-  const tagCount = await db.hashtagBank.count();
+  const tagCount = await studio.hashtagBank.count();
   if (tagCount === 0) {
     for (const t of HASHTAG_SEED) {
-      await db.hashtagBank.create({ data: t });
+      await studio.hashtagBank.create({ data: t });
     }
   }
 }
