@@ -1,7 +1,15 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import { getTheme, type ThemeEffect } from '@/lib/themes';
+
+const emptySubscribe = () => () => {};
+/**
+ * Client-mount gate: false on the server and during the hydration pass,
+ * true on the first client render after mount. The sanctioned way to render
+ * client-only content without a setState-in-effect round trip.
+ */
+const useMounted = () => useSyncExternalStore(emptySubscribe, () => true, () => false);
 
 /**
  * Fixed animated background layer, driven by the active site theme.
@@ -48,6 +56,7 @@ export function ThemeBackground({ themeId }: { themeId: string }) {
   // .tb-live starts the motion shortly after mount — after Lighthouse-style
   // load captures have finished, so visual completeness can settle.
   const [live, setLive] = useState(false);
+  const mounted = useMounted();
   useEffect(() => {
     // 10s: comfortably past Lighthouse-style capture windows (load + network/
     // CPU quiet ≈ load+5-8s on throttled mobile), imperceptible for real
@@ -146,6 +155,11 @@ export function ThemeBackground({ themeId }: { themeId: string }) {
   const charClass = FALL_CLASS[effect];
   const dotClass = DOT_CLASS[effect] || charClass;
 
+  // particle layer: first client render (hydration pass) renders the same
+  // empty shell the server did — particles join right after mount
+  if (!mounted) {
+    return <div className="theme-bg" aria-hidden="true" />;
+  }
   return (
     <div className={live ? 'theme-bg tb-live' : 'theme-bg'} aria-hidden="true">
       {list.map((p) =>

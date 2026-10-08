@@ -944,7 +944,7 @@ export function TrafficTempoMobile() {
     <div
       ref={wrapRef}
       dir={lang === 'fa' ? 'rtl' : 'ltr'}
-      className="fixed inset-x-0 top-0 z-40 h-screen overflow-hidden bg-[#15191c] text-white select-none supports-[height:100dvh]:h-[100dvh]"
+      className="play-root fixed inset-x-0 top-0 z-40 h-screen overflow-hidden bg-[#15191c] text-white select-none supports-[height:100dvh]:h-[100dvh]"
       style={{ overscrollBehavior: 'none' }}
     >
       <canvas
