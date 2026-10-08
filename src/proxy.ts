@@ -110,10 +110,12 @@ export function proxy(req: NextRequest) {
 
   // Preview-workspace ONLY (the sandbox dev server runs with PREVIEW_EMBED=1):
   // the owner opens the preview panel at "/" and must land on the content
-  // factory dashboard, not the public homepage. Vercel production never sets
-  // PREVIEW_EMBED, so this branch is a no-op there — the public site is safe.
+  // factory dashboard, not the public homepage. A REDIRECT (not a rewrite):
+  // the client reads usePathname() to drop the site chrome, and usePathname
+  // reports the browser URL — rewrites would leave it at "/" and the chrome
+  // would stay. Vercel production never sets PREVIEW_EMBED → no-op there.
   if (process.env.PREVIEW_EMBED === "1" && path === "/") {
-    return NextResponse.rewrite(new URL("/factory", req.nextUrl.origin));
+    return NextResponse.redirect(new URL("/factory", req.nextUrl.origin), 307);
   }
 
   const normalized = normalize(path);
