@@ -1,6 +1,13 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+/* content factory (preview-workspace only — gitignored): Tailwind v4's
+   automatic source detection skips gitignored files, so its classes would
+   never be generated. Register them explicitly. On Vercel these dirs are
+   absent (never committed) → empty source, completely harmless. */
+@source "../components/factory/**/*.{ts,tsx}";
+@source "../app/factory/**/*.tsx";
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {

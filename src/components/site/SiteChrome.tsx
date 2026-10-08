@@ -34,7 +34,14 @@ export function SiteChrome({ children }: { children: React.ReactNode }) {
   // Full-screen game routes (/play/*) render bare: no header, footer, chat
   // bubble or lang banner — the board owns the whole viewport like an
   // installed app (the page itself provides its own back button).
-  const bare = pathname.startsWith('/play/');
+  // /factory (content factory, preview-workspace only) renders bare too:
+  // the owner wants a standalone command-center dashboard, not a site page.
+  // On Vercel the /factory route does not exist (gitignored) → harmless.
+  const bare = pathname.startsWith('/play/') || pathname.startsWith('/factory');
+  // the factory is a standalone LIGHT dashboard: the fixed ThemeBackground
+  // (dark vignette overlay) sits on top of the viewport and would wash out
+  // its cream palette — /play/* keeps it, /factory drops it.
+  const showThemeBackground = !pathname.startsWith('/factory');
 
   // load the globally selected theme (set in the admin panel)
   useEffect(() => {
@@ -136,7 +143,7 @@ export function SiteChrome({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="relative isolate flex min-h-screen flex-col text-foreground">
-      <ThemeBackground themeId={theme} />
+      {showThemeBackground && <ThemeBackground themeId={theme} />}
       {!bare && <Header />}
       <main className="relative z-10 flex-1">{children}</main>
       {!bare && <Footer />}
