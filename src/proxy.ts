@@ -107,6 +107,15 @@ function lookup(rawPath: string, searchParams: URLSearchParams): string | null {
 
 export function proxy(req: NextRequest) {
   const path = req.nextUrl.pathname;
+
+  // Preview-workspace ONLY (the sandbox dev server runs with PREVIEW_EMBED=1):
+  // the owner opens the preview panel at "/" and must land on the content
+  // factory dashboard, not the public homepage. Vercel production never sets
+  // PREVIEW_EMBED, so this branch is a no-op there — the public site is safe.
+  if (process.env.PREVIEW_EMBED === "1" && path === "/") {
+    return NextResponse.rewrite(new URL("/factory", req.nextUrl.origin));
+  }
+
   const normalized = normalize(path);
   if (!EXACT_REAL_ROUTES.has(normalized) && !REAL_SUBTREE.test(path)) {
     const target = lookup(path, req.nextUrl.searchParams);
