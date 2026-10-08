@@ -79,3 +79,8 @@ tool-results/
 
 # internal session notes — local only, never publish
 worklog.md
+
+# content factory assets live ONLY in the preview workspace (owner request):
+/public/reels/
+/src/app/factory/
+/src/components/factory/
