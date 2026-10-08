@@ -61,7 +61,7 @@ export function LangBanner() {
     <div
       role="status"
       aria-label="Language suggestion"
-      className="fixed inset-x-3 bottom-24 z-50 mx-auto flex max-w-xl items-center gap-3 rounded-2xl border border-violet-500/30 bg-background/95 p-3 shadow-xl shadow-violet-600/10 backdrop-blur md:bottom-5"
+      className="site-langbanner fixed inset-x-3 bottom-24 z-50 mx-auto flex max-w-xl items-center gap-3 rounded-2xl border border-violet-500/30 bg-background/95 p-3 shadow-xl shadow-violet-600/10 backdrop-blur md:bottom-5"
     >
       <Languages className="h-5 w-5 shrink-0 text-violet-600 dark:text-violet-400" aria-hidden />
       <p className="flex-1 text-sm leading-snug">

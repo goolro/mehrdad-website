@@ -31,17 +31,23 @@ export function SiteChrome({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { theme, mode, lang } = useApp();
 
-  // Full-screen game routes (/play/*) render bare: no header, footer, chat
-  // bubble or lang banner — the board owns the whole viewport like an
-  // installed app (the page itself provides its own back button).
-  // /factory (content factory, preview-workspace only) renders bare too:
-  // the owner wants a standalone command-center dashboard, not a site page.
-  // On Vercel the /factory route does not exist (gitignored) → harmless.
-  const bare = pathname.startsWith('/play/') || pathname.startsWith('/factory');
-  // the factory is a standalone LIGHT dashboard: the fixed ThemeBackground
-  // (dark vignette overlay) sits on top of the viewport and would wash out
-  // its cream palette — /play/* keeps it, /factory drops it.
-  const showThemeBackground = !pathname.startsWith('/factory');
+  // Full-screen game routes (/play/*) and the content factory (/factory,
+  // preview-workspace only) are BARE surfaces: no header, footer, chat
+  // bubble, lang banner or theme background.
+  //
+  // HYDRATION SAFETY (2026-10 owner error report): these used to be JSX
+  // conditionals driven by usePathname(). At the dev-307 boundary (preview
+  // panel opens "/" → 307 → "/factory") the server can render /factory
+  // while the client hydrates with pathname "/" — the conditional chrome
+  // then produces a STRUCTURAL mismatch (client tree has a <header> where
+  // the server HTML has <main>) and React regenerates the whole tree.
+  //
+  // Fix: the chrome is now ALWAYS rendered (structure identical on both
+  // sides, for every pathname) and hidden via CSS on bare surfaces
+  // (body:has(.factory-root) / body:has(.play-root) rules in globals.css).
+  // Attribute-free, branch-free JSX can never hydration-mismatch.
+  const bare = false; // kept as documentation anchor — see comment above
+  void bare;
 
   // load the globally selected theme (set in the admin panel)
   useEffect(() => {
@@ -143,12 +149,12 @@ export function SiteChrome({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="relative isolate flex min-h-screen flex-col text-foreground">
-      {showThemeBackground && <ThemeBackground themeId={theme} />}
-      {!bare && <Header />}
+      <ThemeBackground themeId={theme} />
+      <Header />
       <main className="relative z-10 flex-1">{children}</main>
-      {!bare && <Footer />}
-      {!bare && <ChatWidget />}
-      {!bare && <LangBanner />}
+      <Footer />
+      <ChatWidget />
+      <LangBanner />
       <RouteIndicator />
     </div>
   );

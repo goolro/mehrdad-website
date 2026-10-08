@@ -256,7 +256,7 @@ export function ChatWidget() {
     return (
       <button
         onClick={() => setChatOpen(true)}
-        className="fixed bottom-5 end-5 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-violet-600 to-fuchsia-600 text-white shadow-xl shadow-violet-600/30 transition-transform hover:scale-105"
+        className="site-chat fixed bottom-5 end-5 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-violet-600 to-fuchsia-600 text-white shadow-xl shadow-violet-600/30 transition-transform hover:scale-105"
         aria-label={t.chat.title}
       >
         <Sparkles className="h-6 w-6" />
@@ -269,7 +269,7 @@ export function ChatWidget() {
 
   return (
     <div
-      className="fixed bottom-5 end-5 z-50 flex h-[32rem] w-[calc(100vw-2.5rem)] max-w-sm flex-col overflow-hidden rounded-2xl border border-border bg-background shadow-2xl"
+      className="site-chat fixed bottom-5 end-5 z-50 flex h-[32rem] w-[calc(100vw-2.5rem)] max-w-sm flex-col overflow-hidden rounded-2xl border border-border bg-background shadow-2xl"
       dir={lang === 'fa' ? 'rtl' : 'ltr'}
       role="dialog"
       aria-label={t.chat.title}
