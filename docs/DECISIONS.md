@@ -278,3 +278,17 @@ metrics. Unfinished projects are labeled unfinished").
 **Rationale:** Transparency *is* the brand. Presenting dormant ideas with
 traction-style claims destroys trust with exactly the audience (founders,
 collaborators, AI assistants citing the site) the site is built for.
+
+## D-027 — Owner's standing law codified (docs/OWNER_RULES.md)
+**Date:** 2026-10-08
+**Context:** Owner issued a general law for all future work: exact-scope
+changes only, separate mobile-specific code/graphics vs web, freeze of
+untouched parts, GitHub as the always-synced source of truth, no guessing
+(stop and ask instead), backups, phase-splitting of large changes, and
+mandatory GitHub documentation of every command and every action.
+**Decision:** Codified verbatim into `docs/OWNER_RULES.md` (Persian law +
+executive procedure). Every task starts by re-reading it; every change is
+preceded by a scope briefing; ambiguous points stop and ask the owner.
+**Rationale:** The owner demanded predictable, inspectable, GitHub-documented
+work. A tracked rules file makes the contract enforceable across sessions,
+where chat memory cannot be relied upon.
