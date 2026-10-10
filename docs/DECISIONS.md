@@ -292,3 +292,39 @@ preceded by a scope briefing; ambiguous points stop and ask the owner.
 **Rationale:** The owner demanded predictable, inspectable, GitHub-documented
 work. A tracked rules file makes the contract enforceable across sessions,
 where chat memory cannot be relied upon.
+
+## D-028 — Content factory CLOSED; /investors redesigned to the refreshed Koko deck language
+**Date:** 2026-10-10
+**Context:** Owner order (chat): the quizofkoko.com/investors page was
+redesigned («این لینک باز طراحی شده نگاه کن») and the content factory must be
+shut down («کارخانه تولید محتوا هم تعطیل کن»). The factory (Koko-panel style
+dashboard at /factory in the preview workspace + SK reel production) had
+repeatedly failed the owner's quality bar; its last deliverable (SK-05) was
+rejected.
+**Decision:**
+1. Factory closed: `src/app/factory/`, `src/components/factory/`,
+   `public/reels/` deleted from the tree (backed up first to
+   `/home/z/factory-archive-20261010/`, outside the repo); factory `@source`
+   lines removed from globals.css; factory clauses removed from SiteChrome;
+   factory ignore lines removed from .gitignore. The preview-workspace
+   redirect (`PREVIEW_EMBED=1` only) now sends `/` → `/investors` instead of
+   `/factory` — a no-op on Vercel, so production is untouched.
+2. `/investors` v2: rebuilt in the language of the owner's refreshed
+   reference page (ivory paper deck, ink bands, serif display for EN,
+   numbered sections 01–09, decision-gated milestones, allocation table,
+   briefing form) with 100% original bilingual copy. Facts mirror ONLY the
+   owner-published refreshed page (1,287-question live pool, 10 interface /
+   10 question languages, $25k–$30k Stage-1, 40/20/14/11/8/7 allocation,
+   web live today / mobile as milestone). Earlier claims the refreshed page
+   dropped (signed v4.3.0 dual-store builds, Cafe Bazaar/Myket names,
+   "13 languages") are deliberately removed so the two owner pages never
+   contradict each other.
+3. Fixed deck palette is theme-independent (like a PDF): SiteChrome drops
+   the ThemeBackground vignette overlay on /investors (same mechanism the
+   factory used).
+**Rationale:** One founder, one story — the founder site must tell the same
+facts as the product site, in the owner's own chosen visual language, while
+adding the bilingual (fa) dimension quizofkoko.com does not have. Reels
+production is ended by owner order; the archive preserves every asset in
+case the owner ever revisits it.
+

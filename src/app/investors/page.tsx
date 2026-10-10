@@ -8,7 +8,7 @@ export const dynamic = 'force-static';
 export const metadata: Metadata = {
   title: 'Investors — Quiz of Koko | Mehrdad',
   description:
-    'Investor overview for Quiz of Koko: a live, AI-powered word-quiz game in 13 languages, a 12-month release & validation plan, and evidence-gated funding. Request a private briefing.',
+    'Investor overview for Quiz of Koko: a live web word-quiz game with an AI-validated question pool in 10 languages, a 12-month validation plan with decision gates, and evidence-gated Stage-1 funding. Request a private briefing.',
   alternates: {
     canonical: '/investors',
     languages: { en: '/investors', fa: '/investors?lang=fa', 'x-default': '/investors' },
