@@ -225,6 +225,14 @@ body:has(.play-root) .site-langbanner {
   display: none !important;
 }
 
+/* /investors-koko/* (Koko investor funnel, D-029/D-030): fixed deck
+   palettes (paper + forest) would sit under the fixed theme-background
+   overlay — hide ONLY the background there; header/footer/chat/lang
+   banner stay visible. Same CSS opt-out pattern as bare surfaces. */
+body:has(.investors-root) .theme-bg {
+  display: none !important;
+}
+
 /* ═══════════ Animated theme backgrounds ═══════════ */
 .theme-bg {
   position: fixed;

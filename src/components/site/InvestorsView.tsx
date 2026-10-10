@@ -153,7 +153,7 @@ export function InvestorsView() {
   }
 
   return (
-    <div dir={rtl ? 'rtl' : 'ltr'} style={{ backgroundColor: PAPER }} className="text-[#191713]">
+    <div dir={rtl ? 'rtl' : 'ltr'} style={{ backgroundColor: PAPER }} className="investors-root text-[#191713]">
       {/* ── announcement bar ─────────────────────────────────────────────── */}
       <div className="bg-[#b3261e] text-white">
         <div className="mx-auto flex max-w-6xl flex-col items-start gap-2 px-4 py-2.5 text-[13px] sm:flex-row sm:items-center sm:justify-between sm:px-6">

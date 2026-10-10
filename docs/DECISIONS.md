@@ -360,3 +360,35 @@ regrouped under one namespace.
 more products) coherent; the deck deepens the overview instead of
 duplicating it; bilingual fa remains the differentiator the product site
 does not have.
+
+## D-030 — Parallel WIP kept OFF main; history rebased onto the remote hydration fix (2026-10-10)
+
+**Context:** Push was finally unblocked (owner supplied repo access). Origin/main had
+diverged: it carried d9ef5c8 (SiteChrome hydration fix — chrome ALWAYS rendered, bare
+surfaces opt out via CSS), while local main carried the investor-funnel work PLUS an
+unrelated half-built WIP commit (c3e3ac0, subject "be90e2ee-…": daily-digest lib +
+admin/cron daily-import routes + ArtifactScene/ArtifactShowcase/DesignAmbient/
+DesignPreview/ContactCta + robots.txt). The WIP has 6 tsc errors (Prisma model
+`DailyProduct` absent from schema; `three` dependency not installed) and next.config
+enforces `ignoreBuildErrors: false` — pushing it as-is would fail the Vercel build and
+leave production stale.
+
+**Decision:**
+1. The full local state is preserved verbatim on branch
+   `wip/daily-digest-artifactscene-c3e3ac0` — nothing deleted (freeze law honored by
+   preservation, not destruction).
+2. main was rebuilt as origin/main + the four investor-funnel commits (interactive
+   rebase, WIP commit dropped). main contains zero WIP references; the strict type
+   gate stays.
+3. The funnel's fixed-palette exclusion was re-implemented in the new architecture:
+   SiteChrome renders chrome unconditionally (adopting d9ef5c8 wholesale);
+   /investors-koko pages carry `.investors-root` and globals.css hides ONLY
+   `.theme-bg` there (`body:has(.investors-root) .theme-bg`). The previous
+   pathname-JSX exclusion is gone — it was exactly the hydration-risk pattern
+   d9ef5c8 eliminated.
+4. The WIP's standalone robots.txt (bot policy + sitemap pointer) is restored in
+   main — complete, type-safe, operationally useful; attributed to c3e3ac0.
+
+**Rationale:** Production must never receive code known to fail its own build; when
+the daily-digest/artifact feature matures (schema model + three.js dependency), the
+side branch can be cherry-picked and this decision retired.
