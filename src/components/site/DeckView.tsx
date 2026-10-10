@@ -148,7 +148,7 @@ export function DeckView() {
   const rtl = lang === 'fa';
 
   return (
-    <div dir={rtl ? 'rtl' : 'ltr'} style={{ backgroundColor: IVORY }} className="text-[#152a1f]">
+    <div dir={rtl ? 'rtl' : 'ltr'} style={{ backgroundColor: IVORY }} className="investors-root text-[#152a1f]">
       {/* ── top bar ─────────────────────────────────────────────────────────── */}
       <header style={{ backgroundColor: FOREST }} className="text-white">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3.5 sm:px-6">
