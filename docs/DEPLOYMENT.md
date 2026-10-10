@@ -125,6 +125,20 @@ ever empty again, rebuild it first with `bun analysis/import_content.ts`
 `wp_comments.json` per docs/CONTENT_MIGRATION.md) then
 `bun analysis/seed_tags.ts --apply`.
 
+**Targeted content seeds** (2026-10-11): `scripts/seed-investor-posts-supabase.ts`
+upserts the two Quiz of Koko investor posts straight into production over the
+same HTTPS SQL endpoint — no full re-migration, no DB password:
+
+```bash
+SUPABASE_TOKEN=<pat> bun scripts/seed-investor-posts-supabase.ts
+```
+
+Idempotent: content fields refresh, `date`/`published`/`featured` stay
+owner-managed. Because `/blog` is `force-static`, the posts go live on the
+next deploy (a push to `main` is enough). The local twin is
+`scripts/seed-investor-posts.ts` (Prisma, SQLite) — both share the same
+POSTS data.
+
 ### Runtime connection (Vercel env only)
 
 `DATABASE_URL` = Supavisor **transaction pooler** (serverless-safe, IPv4):
