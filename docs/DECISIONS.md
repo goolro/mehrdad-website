@@ -392,3 +392,9 @@ leave production stale.
 **Rationale:** Production must never receive code known to fail its own build; when
 the daily-digest/artifact feature matures (schema model + three.js dependency), the
 side branch can be cherry-picked and this decision retired.
+
+> **Amendment (same day):** the restored public/robots.txt turned out to be
+> SHADOWED — the project already ships `src/app/robots.ts` (richer AI-bot
+> policy + /admin,/api/admin,/agency,/api/agency disallows + Sitemap pointer),
+> and app routes take precedence over public/ files. The static copy was
+> removed to keep one source of truth for /robots.txt.
