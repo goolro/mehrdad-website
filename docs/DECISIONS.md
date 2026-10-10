@@ -328,3 +328,35 @@ adding the bilingual (fa) dimension quizofkoko.com does not have. Reels
 production is ended by owner order; the archive preserves every asset in
 case the owner ever revisits it.
 
+
+## D-029 — Investor funnel moved under /investors-koko/*; 19-section pitch deck added at /investors-koko/deck
+**Date:** 2026-10-10
+**Context:** Owner studied quizofkoko.com/deck (the deep 19-section pitch
+deck companion to the /investors overview) and ordered Option A — build the
+same two-layer funnel on mehrdad.ir — with the address
+`mehrdad.ir/investors-koko/deck`, reasoning: «چون ما بازم ممکنه کار برای
+سرمایه گذاری و دک داشته باشیم --- پس همه ادرس ها را درست کن» (future
+investment work and future decks). All investor addresses were therefore
+regrouped under one namespace.
+**Decision:**
+1. Address scheme: `/investors` → **`/investors-koko`** (the overview,
+   content unchanged); deck at **`/investors-koko/deck`**. The old
+   `/investors` route is a permanent 308 redirect so any shared link still
+   lands correctly. Sitemap lists both new addresses.
+2. `/investors-koko/deck` = a 19-section pitch deck mirroring the owner's
+   deck language (forest green + lime + mint/ivory/yellow bands, numbered
+   chips 01–19, CSS quiz-card mocks) with 100% original bilingual copy
+   (i18n.ts → `ui[lang].deck`, en + fa). Facts ONLY from the owner's two
+   published pages: 1,287 pool, $25k–$30k, $500–$3,000/month project
+   support, 40/20/14/11/8/7 allocation, FREE / KOKO PLUS (price to
+   confirm) / future tier, advertising + subscription formulas with every
+   input labelled "Founder input", TAM/SAM/SOM intentionally blank.
+   Every conversion CTA routes to `/investors-koko#briefing` — zero new
+   backend surface.
+3. `/investors-koko` gained a deck-link banner; SiteChrome drops
+   ThemeBackground for the whole `/investors-koko/*` prefix; preview
+   redirect `/` targets `/investors-koko`.
+**Rationale:** One namespace keeps future investor surfaces (more decks,
+more products) coherent; the deck deepens the overview instead of
+duplicating it; bilingual fa remains the differentiator the product site
+does not have.
