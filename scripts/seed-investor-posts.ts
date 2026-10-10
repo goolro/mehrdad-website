@@ -7,11 +7,14 @@
  * and category links but never touches `date`, `published`, or `featured` —
  * so re-seeding against any environment cannot clobber owner-managed state.
  *
- * Works against WHATEVER database src/lib/db.ts resolves for the current
- * environment: the local SQLite file in development, and the production
- * Turso instance when run with TURSO_DATABASE_URL + TURSO_AUTH_TOKEN set.
+ * Works against WHATEVER database the Prisma client resolves for the current
+ * environment: the local SQLite file in development. For the PRODUCTION
+ * Supabase Postgres instance use scripts/seed-investor-posts-supabase.ts
+ * (HTTPS via the Supabase Management API — no DB password needed), which
+ * reuses the POSTS data exported below.
  *
- *   bun run scripts/seed-investor-posts.ts
+ *   bun run scripts/seed-investor-posts.ts          # local SQLite
+ *   bun run scripts/seed-investor-posts-supabase.ts # production Supabase
  *
  * Facts policy (OWNER_RULES law #9 / D-029): every figure traces to the two
  * published funnel pages — 1,287 questions, 10+10 languages, web-live-today,
@@ -21,7 +24,7 @@
  */
 import { PrismaClient } from '@prisma/client';
 
-type PostSeed = {
+export type PostSeed = {
   slug: string;
   titleEn: string;
   titleFa: string;
@@ -36,7 +39,7 @@ const OVERVIEW_URL = 'https://mehrdad.ir/investors-koko';
 const DECK_URL = 'https://mehrdad.ir/investors-koko/deck';
 const BRIEFING_URL = 'https://mehrdad.ir/investors-koko#briefing';
 
-const POSTS: PostSeed[] = [
+export const POSTS: PostSeed[] = [
   {
     slug: 'koko-investor-overview',
     titleEn: 'Quiz of Koko — the investor overview is live on mehrdad.ir',
@@ -158,7 +161,9 @@ async function main() {
   }
 }
 
-main().catch((e) => {
-  console.error(e);
-  process.exit(1);
-});
+if (import.meta.main) {
+  main().catch((e) => {
+    console.error(e);
+    process.exit(1);
+  });
+}
