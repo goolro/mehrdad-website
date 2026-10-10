@@ -110,14 +110,14 @@ export function proxy(req: NextRequest) {
 
   // Preview-workspace ONLY (the sandbox dev server runs with PREVIEW_EMBED=1):
   // the owner opens the preview panel at "/" and must land on the public
-  // investor overview (/investors). The content factory that used to sit
+  // investor overview (/investors-koko). The content factory that used to sit
   // here was CLOSED by owner order on 2026-10-10 (DECISIONS.md D-028) and
   // its code is archived outside the repo. A REDIRECT (not a rewrite): the
   // client reads usePathname() for chrome decisions, and usePathname
   // reports the browser URL — rewrites would leave it at "/" and the chrome
   // would misbehave. Vercel production never sets PREVIEW_EMBED → no-op.
   if (process.env.PREVIEW_EMBED === "1" && path === "/") {
-    return NextResponse.redirect(new URL("/investors", req.nextUrl.origin), 307);
+    return NextResponse.redirect(new URL("/investors-koko", req.nextUrl.origin), 307);
   }
 
   const normalized = normalize(path);

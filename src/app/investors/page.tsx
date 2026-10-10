@@ -1,20 +1,14 @@
-import type { Metadata } from 'next';
-import { InvestorsView } from '@/components/site/InvestorsView';
+import { permanentRedirect } from 'next/navigation';
 
-// Investor overview for «Quiz of Koko» — fully static like the other
-// marketing surfaces (build-time CSP meta; served from the edge).
-export const dynamic = 'force-static';
+/**
+ * /investors moved to /investors-koko (owner decision 2026-10-10, D-029):
+ * the whole Koko investor funnel now lives under the /investors-koko/*
+ * namespace so future investor surfaces and additional decks can sit
+ * beside it (e.g. /investors-koko/deck). This tiny route keeps any link
+ * that was ever shared as /investors alive with a permanent 308.
+ */
+export const dynamic = 'force-dynamic';
 
-export const metadata: Metadata = {
-  title: 'Investors — Quiz of Koko | Mehrdad',
-  description:
-    'Investor overview for Quiz of Koko: a live web word-quiz game with an AI-validated question pool in 10 languages, a 12-month validation plan with decision gates, and evidence-gated Stage-1 funding. Request a private briefing.',
-  alternates: {
-    canonical: '/investors',
-    languages: { en: '/investors', fa: '/investors?lang=fa', 'x-default': '/investors' },
-  },
-};
-
-export default function InvestorsPage() {
-  return <InvestorsView />;
+export default function InvestorsRedirectPage() {
+  permanentRedirect('/investors-koko');
 }

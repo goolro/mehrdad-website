@@ -1,7 +1,10 @@
 'use client';
 
 /**
- * /investors — Investor Overview for «Quiz of Koko» (v2 — deck redesign).
+ * /investors-koko — Investor Overview for «Quiz of Koko» (v2 — deck redesign).
+ * (Route moved from /investors to /investors-koko by D-029, 2026-10-10;
+ * /investors 308-redirects here. The deep pitch deck lives at
+ * /investors-koko/deck — DeckView.tsx.)
  *
  * REDESIGNED 2026-10-10 after the owner's own refreshed investor page on
  * quizofkoko.com (owner order: «این لینک باز طراحی شده نگاه کن»). The new
@@ -598,6 +601,32 @@ export function InvestorsView() {
             {inv.s8.assistOpen}
           </Button>
         </div>
+      </section>
+
+      {/* ── full pitch deck banner → /investors-koko/deck (D-029) ─────────── */}
+      <section className="mx-auto max-w-6xl px-4 pb-14 sm:px-6 lg:pb-20">
+        <a
+          href="/investors-koko/deck"
+          className="group flex flex-col gap-5 rounded-2xl border border-[#191713]/10 p-5 shadow-sm transition hover:shadow-md sm:flex-row sm:items-center sm:justify-between sm:p-6"
+          style={{ backgroundColor: CARD }}
+        >
+          <div>
+            <p className="text-[11.5px] font-bold uppercase tracking-[0.14em] text-emerald-800">
+              {t.deck.overviewLink.kicker}
+            </p>
+            <p className="mt-1.5 text-[16.5px] font-extrabold">{t.deck.overviewLink.title}</p>
+            <p className="mt-1 max-w-2xl text-[13px] leading-6 text-[#191713]/65">{t.deck.overviewLink.sub}</p>
+          </div>
+          <div className="flex shrink-0 items-center gap-3">
+            <span className="hidden rounded-full border border-[#191713]/10 bg-[#f6f1e7] px-3 py-1 text-[11.5px] font-semibold text-[#191713]/70 sm:inline-flex">
+              {t.deck.overviewLink.meta}
+            </span>
+            <span className="inline-flex min-h-[44px] items-center gap-2 rounded-xl bg-[#191713] px-5 text-[13.5px] font-bold text-[#f6f1e7] transition group-hover:bg-[#2a2e36]">
+              {t.deck.overviewLink.cta}
+              <Arrow className="h-4 w-4" aria-hidden />
+            </span>
+          </div>
+        </a>
       </section>
 
       {/* ── 09 · private briefing form ───────────────────────────────────── */}
