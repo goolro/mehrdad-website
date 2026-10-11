@@ -107,6 +107,7 @@ async function upsertPost(p: (typeof POSTS)[number], categoryId: string): Promis
     // refresh CONTENT only — date/published/featured stay owner-managed
     await runSql(
       `UPDATE "Post" SET
+         "cover"     = ${dq(p.cover)},
          "titleEn"   = ${dq(p.titleEn)},
          "titleFa"   = ${dq(p.titleFa)},
          "excerptEn" = ${dq(p.excerptEn)},
@@ -121,11 +122,11 @@ async function upsertPost(p: (typeof POSTS)[number], categoryId: string): Promis
     postId = newId();
     await runSql(
       `INSERT INTO "Post"
-         ("id", "slug", "titleEn", "titleFa", "excerptEn", "excerptFa",
+         ("id", "slug", "cover", "titleEn", "titleFa", "excerptEn", "excerptFa",
           "contentEn", "contentFa", "date", "modified", "published",
           "featured", "source", "createdAt", "updatedAt")
        VALUES (
-         '${postId}', ${dq(p.slug)}, ${dq(p.titleEn)}, ${dq(p.titleFa)},
+         '${postId}', ${dq(p.slug)}, ${dq(p.cover)}, ${dq(p.titleEn)}, ${dq(p.titleFa)},
          ${dq(p.excerptEn)}, ${dq(p.excerptFa)},
          ${dq(p.contentEn)}, ${dq(p.contentFa)},
          now(), now(), TRUE, FALSE, 'ai', now(), now()
