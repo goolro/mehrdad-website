@@ -26,6 +26,7 @@ import { PrismaClient } from '@prisma/client';
 
 export type PostSeed = {
   slug: string;
+  cover: string;
   titleEn: string;
   titleFa: string;
   excerptEn: string;
@@ -42,6 +43,7 @@ const BRIEFING_URL = 'https://mehrdad.ir/investors-koko#briefing';
 export const POSTS: PostSeed[] = [
   {
     slug: 'koko-investor-overview',
+    cover: '/media/koko-investor-overview-cover.png',
     titleEn: 'Quiz of Koko — the investor overview is live on mehrdad.ir',
     titleFa: 'کوکو — نمای سرمایه‌گذاری حالا روی mehrdad.ir زنده است',
     excerptEn:
@@ -78,6 +80,7 @@ export const POSTS: PostSeed[] = [
   },
   {
     slug: 'koko-investor-pitch-deck',
+    cover: '/media/koko-investor-pitch-deck-cover.png',
     titleEn: 'Quiz of Koko — the full 19-section investor pitch deck',
     titleFa: 'کوکو — پیتچ‌دک کامل سرمایه‌گذاری در ۱۹ بخش',
     excerptEn:
@@ -120,15 +123,37 @@ export const POSTS: PostSeed[] = [
   },
 ];
 
+/** Resolve a category by slug, falling back to nameEn (production and the
+ * migrated local DB store Persian slugs percent-encoded; a rebuilt dev DB
+ * may have no categories at all). Returns null when unresolvable. */
+async function resolveCategory(
+  client: PrismaClient,
+  slugOrName: string,
+): Promise<string | null> {
+  const bySlug = await client.category.findUnique({ where: { slug: slugOrName } });
+  if (bySlug) return bySlug.slug;
+  const byName = await client.category.findFirst({ where: { nameEn: slugOrName } });
+  return byName?.slug ?? null;
+}
+
 async function main() {
   const db = new PrismaClient();
   try {
     for (const p of POSTS) {
-      const cats = { connect: p.categorySlugs.map((slug) => ({ slug })) };
+      // resolve categories up front; a dev DB without categories must not
+      // hard-fail the seed (P2025) — warn and seed the post uncategorised
+      const resolved: string[] = [];
+      for (const slug of p.categorySlugs) {
+        const found = await resolveCategory(db, slug);
+        if (found) resolved.push(found);
+        else console.warn(`category not found locally, skipping link: ${slug}`);
+      }
+      const cats = { connect: resolved.map((slug) => ({ slug })) };
       const post = await db.post.upsert({
         where: { slug: p.slug },
         create: {
           slug: p.slug,
+          cover: p.cover,
           titleEn: p.titleEn,
           titleFa: p.titleFa,
           excerptEn: p.excerptEn,
@@ -143,13 +168,14 @@ async function main() {
         // refresh content fields only — date/published/featured stay
         // owner-managed across re-runs
         update: {
+          cover: p.cover,
           titleEn: p.titleEn,
           titleFa: p.titleFa,
           excerptEn: p.excerptEn,
           excerptFa: p.excerptFa,
           contentEn: p.contentEn,
           contentFa: p.contentFa,
-          categories: { set: p.categorySlugs.map((slug) => ({ slug })) },
+          categories: { set: resolved.map((slug) => ({ slug })) },
         },
       });
       console.log(
