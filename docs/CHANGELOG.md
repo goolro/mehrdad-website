@@ -4,6 +4,40 @@ All notable changes to mehrdad.ir. Format: Keep-a-Changelog-ish, newest first.
 
 ## [Unreleased]
 
+### Auto-pilot wizard: language + networks owner-selectable (2026-10-13)
+- **Owner request («این فقط فارسی می‌سازه… زبان و نوع شبکه را ویزاردی انتخاب کنم»)**:
+  the auto-pilot card was Persian+LinkedIn by construction — `PLATFORM='linkedin'`
+  was hardcoded in the API and the UI never offered language/network choice.
+  It is now a 3-step wizard: **۱ زبان** (فارسی / انگلیسی / هر دو) →
+  **۲ شبکه** (LinkedIn / Instagram / X / Telegram, multi-select with icons +
+  char limits) → **۳ اجرا** (batch size 1-6, live summary
+  «N مقاله × شبکه‌ها × زبان ≈ مجموع پیش‌نویس», run). Step chips are clickable
+  for back-navigation; Next is disabled with a hint when zero networks are
+  selected; everything is bilingual like the rest of the panel.
+- **API (`/api/admin/social/autopilot`)**: accepts `platforms: string[]`
+  (validated against `PLATFORM_SPECS`, deduped; unknown/empty → linkedin
+  fallback, back-compat). Idempotency upgraded from slug-level to
+  **(slug, platform, lang)-combo level**: rerunning fills only the missing
+  combos, never duplicates. Generation is per-combo with the same soft time
+  budget, so partial runs bail out honestly between combos. `created[]` now
+  carries `platform` and the UI lists «عنوان — شبکه (زبان)».
+- **Generator robustness fix found by the self-test**: in a real wizard run,
+  telegram/en failed TWICE in a row on malformed JSON from the model
+  (SyntaxError at positions 1223/1430 — unescaped quote inside the content
+  string) and the whole run reported a failure. `generateOne` now (a) sends a
+  JSON-specific escalation message when the rejection was a parse error, and
+  (b) has a third, parser-proof attempt: plain text between `===HOOK===` /
+  `===POST===` markers (`extractMarkedPost`, exported + unit-checked), held to
+  the same language/facts contract as the JSON path. Retest of the exact
+  failing combo (telegram/en) succeeded.
+- **Self-test before reporting (owner law #1)**: tsc ✓ lint ✓; real local
+  generations via the wizard payload — linkedin/en (fa-ratio 0.00 ✓),
+  x+telegram×both (4 combos, x drafts ≤ 280 chars ✓, fa/en ratios correct ✓),
+  rerun idempotency ✓, invalid-platform fallback ✓, unauth 401 ✓; full UI
+  walkthrough in a real browser (steps → selection → live summary → real run
+  → persistent result card), no console/page errors, mobile viewport ✓.
+  Test drafts deleted afterwards (local queue back to its pre-test state).
+
 ### Deploy pipeline unfrozen + Social Studio self-test (2026-10-12)
 - **Production was frozen on 5be583a (2026-10-11) for ~a day**: every Vercel
   deploy since e3c344e failed while GitHub CI stayed green (CI builds from the

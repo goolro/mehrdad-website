@@ -266,6 +266,28 @@ ${langLine}Return ONLY valid JSON (no markdown fences) in this exact shape:
 "content" must include the hook as its first line. The "lang" field must be exactly "${lang}".`;
 }
 
+/**
+ * Parser-proof last resort (2026-10-13 self-test): telegram/en failed TWICE in
+ * a row on malformed JSON from the model (SyntaxError at positions 1223 and
+ * 1430 — an unescaped quote inside the content string), killing an otherwise
+ * good auto-pilot run. The third attempt switches to plain text between
+ * markers — there is no syntax left to break. Extracted fields are then held
+ * to the exact same language/facts contract as the JSON path.
+ */
+export function extractMarkedPost(text: string): { hook: string; content: string } | null {
+  const H = '===HOOK===';
+  const P = '===POST===';
+  const h = text.indexOf(H);
+  const p = text.indexOf(P);
+  // ===POST=== is mandatory; ===HOOK=== is optional (finish() falls back to
+  // the post's first line when the hook marker is missing).
+  if (p === -1) return null;
+  const hook = h !== -1 && p > h ? text.slice(h + H.length, p).trim() : '';
+  const content = text.slice(p + P.length).trim();
+  if (!content) return null;
+  return { hook, content };
+}
+
 async function generateOne(
   spec: { label: string; style: string; limit: number },
   platform: string,
@@ -276,36 +298,82 @@ async function generateOne(
 ): Promise<SocialPostResult> {
   const sys = buildSystemPrompt(spec, lang);
   const user = `${sourceBlock}${translationNote ? `\n\n${translationNote}` : ''}`;
+  const langLine =
+    lang === 'fa'
+      ? 'Write the ENTIRE post in fluent natural Persian (Farsi) — hook, body and hashtags all in Persian. Latin text is only allowed for unavoidable tech/product terms (e.g. MVP, AI) and URLs. Do NOT include an English version.'
+      : 'Write the ENTIRE post in natural English — hook, body and hashtags all in English.';
+  /** Attempt-3 format: plain text between markers — no JSON syntax to break. */
+  const markerSys = `${SOCIAL_VOICE}
+
+PLATFORM: ${spec.label}
+FORMAT RULES:
+${spec.style}
+
+${langLine}
+OUTPUT FORMAT (STRICT): reply with PLAIN TEXT only — NO JSON, no markdown fences, no commentary — in exactly this shape:
+===HOOK===
+<one-line hook>
+===POST===
+<the full post text>`;
   /** Kind-aware retry instruction — the model must know WHY it was rejected. */
-  const escalationFor = (kind: 'language' | 'quantitative'): string => {
+  const escalationFor = (kind: 'language' | 'quantitative' | 'json'): string => {
     if (kind === 'quantitative') {
       return 'Your previous answer was REJECTED: it contained numerals/statistics, but NO source material exists for this topic, so every number would be invented. Rewrite the full post with ZERO numerals (no percentages, no figures, no years, no counts) — qualitative statements only. Return ONLY the JSON.';
+    }
+    if (kind === 'json') {
+      return `Your previous answer was REJECTED: it was NOT valid JSON (SyntaxError). Return ONLY valid JSON — no markdown fences, no trailing commas, no raw newlines inside strings, escape every double quote — in this exact shape: {"posts":[{"lang":"${lang}","hook":"first line / hook","content":"full post text"}]}`;
     }
     return lang === 'fa'
       ? 'Your previous answer was REJECTED: it was not written in Persian. Try again and return ONLY the JSON — the full post (hook, body, hashtags) written entirely in fluent natural Persian.'
       : 'Your previous answer was REJECTED: it was not written in English. Try again and return ONLY the JSON — the full post (hook, body, hashtags) written entirely in natural English.';
   };
 
+  /** Shared validation + shaping so every attempt is held to the same contract. */
+  const finish = (rawHook: string, rawContent: string): SocialPostResult => {
+    const content = fixNameTypos(rawContent.trim());
+    if (content.length < 80) throw new Error(`suspiciously short output (${content.length} chars)`);
+    assertLanguage(content, lang);
+    if (opts.banNumerals) assertNoNumerals(content);
+    return {
+      platform,
+      lang,
+      hook: (rawHook.trim() || content.split('\n')[0] || '').slice(0, 200),
+      content: platform === 'x' ? content.slice(0, 280) : content,
+      limit: spec.limit,
+    };
+  };
+
   let lastError: unknown = null;
-  for (let attempt = 1; attempt <= 2; attempt++) {
-    const kind =
-      attempt === 1
-        ? null
-        : lastError instanceof Error && lastError.message.startsWith('quantitative-claim')
-          ? ('quantitative' as const)
-          : ('language' as const);
-    const messages =
-      attempt === 1
-        ? [
-            { role: 'system' as const, content: sys },
-            { role: 'user' as const, content: user },
-          ]
-        : [
-            { role: 'system' as const, content: sys },
-            { role: 'user' as const, content: user },
-            { role: 'user' as const, content: escalationFor(kind!) },
-          ];
+  for (let attempt = 1; attempt <= 3; attempt++) {
     try {
+      if (attempt === 3) {
+        const text = await generateWithFallback([
+          { role: 'system' as const, content: markerSys },
+          { role: 'user' as const, content: user },
+        ]);
+        const m = extractMarkedPost(text.replace(/```[a-z]*\n?/gi, ''));
+        if (!m) throw new Error('marker-mode output missing ===POST=== section');
+        return finish(m.hook, m.content);
+      }
+      const kind =
+        attempt === 1
+          ? null
+          : lastError instanceof Error && lastError.message.startsWith('quantitative-claim')
+            ? ('quantitative' as const)
+            : lastError instanceof Error && lastError.message.includes('JSON')
+              ? ('json' as const)
+              : ('language' as const);
+      const messages =
+        attempt === 1
+          ? [
+              { role: 'system' as const, content: sys },
+              { role: 'user' as const, content: user },
+            ]
+          : [
+              { role: 'system' as const, content: sys },
+              { role: 'user' as const, content: user },
+              { role: 'user' as const, content: escalationFor(kind!) },
+            ];
       const text = await generateWithFallback(messages);
       let clean = text.replace(/```json|```/g, '').trim();
       const s = clean.indexOf('{');
@@ -316,17 +384,7 @@ async function generateOne(
       };
       const first = (parsed.posts || []).find((p) => (p.content || '').trim());
       if (!first) throw new Error('empty generation result');
-      const content = fixNameTypos((first.content || '').trim());
-      if (content.length < 80) throw new Error(`suspiciously short output (${content.length} chars)`);
-      assertLanguage(content, lang);
-      if (opts.banNumerals) assertNoNumerals(content);
-      return {
-        platform,
-        lang,
-        hook: (first.hook || content.split('\n')[0] || '').slice(0, 200),
-        content: platform === 'x' ? content.slice(0, 280) : content,
-        limit: spec.limit,
-      };
+      return finish(first.hook || '', first.content || '');
     } catch (err) {
       lastError = err;
       console.error(`social generate: ${platform}/${lang} attempt ${attempt} failed:`, err);

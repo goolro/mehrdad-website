@@ -28,7 +28,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
-import { Share2, Loader2, Sparkles, Copy, Save, Trash2, Check, RefreshCw, Zap, Send, Globe, FileText, TriangleAlert } from 'lucide-react';
+import { Share2, Loader2, Sparkles, Copy, Save, Trash2, Check, RefreshCw, Zap, Send, Globe, FileText, TriangleAlert, Linkedin, Instagram, Twitter, type LucideIcon } from 'lucide-react';
 
 interface PostOption {
   slug: string;
@@ -54,7 +54,7 @@ interface DraftItem {
   createdAt: string;
 }
 interface AutopilotResult {
-  created: { slug: string; title: string; lang: string }[];
+  created: { slug: string; title: string; platform: string; lang: string }[];
   skipped: { slug: string; reason: string }[];
   failed: { slug: string; error: string }[];
 }
@@ -75,6 +75,24 @@ const PLATFORM_FA: Record<string, string> = {
 
 const PLATFORM_LIMITS: Record<string, number> = { linkedin: 3000, instagram: 2200, x: 280, telegram: 4096 };
 
+const PLATFORM_EN: Record<string, string> = Object.fromEntries(PLATFORMS.map((p) => [p.id, p.label]));
+
+/** Wizard step 2 icons — the owner picks networks visually, not by id. */
+const AP_PLATFORM_ICONS: Record<string, LucideIcon> = {
+  linkedin: Linkedin,
+  instagram: Instagram,
+  x: Twitter,
+  telegram: Send,
+};
+
+const AP_LANGS = [
+  { id: 'fa', fa: 'فارسی', en: 'Persian', faHint: 'همه پست‌ها فارسی ساخته می‌شوند', enHint: 'All posts written in Persian' },
+  { id: 'en', fa: 'انگلیسی', en: 'English', faHint: 'همه پست‌ها انگلیسی ساخته می‌شوند', enHint: 'All posts written in English' },
+  { id: 'both', fa: 'هر دو', en: 'Both', faHint: 'هر مقاله دو نسخه می‌گیرد', enHint: 'Each post gets both versions' },
+] as const;
+
+type ApLang = (typeof AP_LANGS)[number]['id'];
+
 export function SocialStudio() {
   const { lang } = useApp();
   const { toast } = useToast();
@@ -93,6 +111,12 @@ export function SocialStudio() {
   const [loadingDrafts, setLoadingDrafts] = useState(false);
   const [autopilotRunning, setAutopilotRunning] = useState(false);
   const [autopilotCount, setAutopilotCount] = useState('3');
+  // Owner-requested wizard (2026-10-13): the auto-pilot was Persian+LinkedIn
+  // hardcoded; language and networks are now chosen in a 3-step wizard
+  // (زبان → شبکه → اجرا) instead of being implied by the shared form below.
+  const [apStep, setApStep] = useState<1 | 2 | 3>(1);
+  const [apLang, setApLang] = useState<ApLang>('fa');
+  const [apPlatforms, setApPlatforms] = useState<string[]>(['linkedin']);
   // Owner-requested visibility: autopilot used to report only via transient
   // toasts (and hid failure details in server logs the owner cannot see),
   // so a failed run looked like «هیچ چیزی نشان نمی‌دهد». Everything now
@@ -149,6 +173,14 @@ export function SocialStudio() {
   function togglePlatform(id: string) {
     setPlatforms((prev) => (prev.includes(id) ? prev.filter((p) => p !== id) : [...prev, id]));
   }
+
+  function toggleApPlatform(id: string) {
+    setApPlatforms((prev) => (prev.includes(id) ? prev.filter((p) => p !== id) : [...prev, id]));
+  }
+
+  const platformLabel = (id: string) => (lang === 'fa' ? PLATFORM_FA[id] || id : PLATFORM_EN[id] || id);
+  const apLangLabel = apLang === 'fa' ? L('فارسی', 'Persian') : apLang === 'en' ? L('انگلیسی', 'English') : L('فارسی + انگلیسی', 'Persian + English');
+  const apEstimate = (Number(autopilotCount) || 3) * Math.max(apPlatforms.length, 1) * (apLang === 'both' ? 2 : 1);
 
   async function generate() {
     setGenerating(true);
@@ -235,7 +267,7 @@ export function SocialStudio() {
       const res = await fetch('/api/admin/social/autopilot', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ count: Number(autopilotCount) || 3, lang: postLang }),
+        body: JSON.stringify({ count: Number(autopilotCount) || 3, lang: apLang, platforms: apPlatforms }),
       });
       const d = (await res.json()) as (AutopilotResult & { ok?: boolean; error?: string }) | { error?: string };
       if ('created' in d) {
@@ -315,31 +347,150 @@ export function SocialStudio() {
             <Zap className="h-5 w-5 text-violet-600 dark:text-violet-400" />
           </div>
           <div className="min-w-0 flex-1">
-            <h3 className="font-bold">{L('اتوماتیک‌پایلوت لینکدین', 'LinkedIn Auto-pilot')}</h3>
+            <h3 className="font-bold">{L('اتوماتیک‌پایلوت', 'Auto-pilot')}</h3>
             <p className="mt-0.5 text-xs text-muted-foreground">
               {L(
-                'از جدیدترین مقالات، برای هرکدام که پیش‌نویس لینکدین ندارد پست می‌سازد و در صف بازبینی می‌گذارد. اجرای دوباره چیزی را تکرار نمی‌کند.',
-                'Scans the latest posts and creates LinkedIn drafts for the ones missing one — queued for your review. Re-running never duplicates.',
+                'از جدیدترین مقالات، با زبان و شبکه‌هایی که خودت انتخاب می‌کنی پست می‌سازد و در صف بازبینی می‌گذارد. اجرای دوباره چیزی را تکرار نمی‌کند.',
+                'Scans the latest posts and creates drafts in the language and networks you pick — queued for your review. Re-running never duplicates.',
               )}
             </p>
           </div>
-          <div className="flex items-center gap-2">
-            <Select value={autopilotCount} onValueChange={setAutopilotCount}>
-              <SelectTrigger className="h-9 w-[110px]" aria-label={L('تعداد مقالات', 'Batch size')}>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {[1, 2, 3, 4, 5, 6].map((n) => (
-                  <SelectItem key={n} value={String(n)}>
-                    {L(`${n} مقاله`, `${n} posts`)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+        </div>
+
+        {/* wizard steps — chips are clickable for back-navigation */}
+        <ol className="mt-4 flex flex-wrap items-center gap-1.5 text-xs">
+          {[
+            { id: 1 as const, fa: 'زبان', en: 'Language' },
+            { id: 2 as const, fa: 'شبکه', en: 'Networks' },
+            { id: 3 as const, fa: 'اجرا', en: 'Run' },
+          ].map((s) => (
+            <li key={s.id}>
+              <button
+                type="button"
+                onClick={() => !autopilotRunning && setApStep(s.id)}
+                disabled={autopilotRunning}
+                aria-current={apStep === s.id ? 'step' : undefined}
+                className={`rounded-full border px-3.5 py-1.5 font-medium transition-colors disabled:cursor-not-allowed ${
+                  apStep === s.id
+                    ? 'border-violet-600 bg-violet-600 text-white'
+                    : 'border-border bg-background text-muted-foreground hover:bg-muted'
+                }`}
+              >
+                {L(
+                  `${s.id === 1 ? '۱' : s.id === 2 ? '۲' : '۳'} ${s.fa}`,
+                  `${s.id} ${s.en}`,
+                )}
+              </button>
+            </li>
+          ))}
+        </ol>
+
+        {/* step 1 — language */}
+        {apStep === 1 && (
+          <div className="mt-4 space-y-2">
+            <Label>{L('پست‌ها به چه زبانی ساخته شوند؟', 'Which language should the posts be in?')}</Label>
+            <div className="grid gap-2 sm:grid-cols-3">
+              {AP_LANGS.map((o) => (
+                <button
+                  key={o.id}
+                  type="button"
+                  onClick={() => setApLang(o.id)}
+                  aria-pressed={apLang === o.id}
+                  className={`rounded-xl border p-3 text-start transition-colors ${
+                    apLang === o.id ? 'border-violet-600 bg-violet-600/10' : 'border-border bg-background hover:bg-muted'
+                  }`}
+                >
+                  <span className="flex items-center justify-between gap-2 font-bold">
+                    {L(o.fa, o.en)}
+                    {apLang === o.id && <Check className="h-4 w-4 shrink-0 text-violet-600 dark:text-violet-400" />}
+                  </span>
+                  <span className="mt-1 block text-xs text-muted-foreground">{L(o.faHint, o.enHint)}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* step 2 — networks (multi-select) */}
+        {apStep === 2 && (
+          <div className="mt-4 space-y-2">
+            <Label>{L('برای کدام شبکه‌ها؟ (چندتایی مجاز)', 'Which networks? (multi-select)')}</Label>
+            <div className="grid gap-2 sm:grid-cols-2">
+              {PLATFORMS.map((p) => {
+                const on = apPlatforms.includes(p.id);
+                const Icon = AP_PLATFORM_ICONS[p.id];
+                return (
+                  <button
+                    key={p.id}
+                    type="button"
+                    onClick={() => toggleApPlatform(p.id)}
+                    aria-pressed={on}
+                    className={`flex items-center gap-3 rounded-xl border p-3 text-start transition-colors ${
+                      on ? 'border-violet-600 bg-violet-600/10' : 'border-border bg-background hover:bg-muted'
+                    }`}
+                  >
+                    <span
+                      className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${
+                        on ? 'bg-violet-600 text-white' : 'bg-muted text-muted-foreground'
+                      }`}
+                    >
+                      <Icon className="h-5 w-5" />
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block font-bold">{platformLabel(p.id)}</span>
+                      <span className="block text-xs text-muted-foreground" dir="ltr">
+                        {PLATFORM_LIMITS[p.id]} {L('نویسه', 'chars')}
+                      </span>
+                    </span>
+                    {on && <Check className="h-4 w-4 shrink-0 text-violet-600 dark:text-violet-400" />}
+                  </button>
+                );
+              })}
+            </div>
+            {apPlatforms.length === 0 && (
+              <p className="text-xs text-red-500">{L('حداقل یک شبکه انتخاب کن.', 'Pick at least one network.')}</p>
+            )}
+          </div>
+        )}
+
+        {/* step 3 — batch size, summary, run */}
+        {apStep === 3 && (
+          <div className="mt-4 space-y-3">
+            <div className="flex flex-wrap items-center gap-3">
+              <Label className="shrink-0">{L('تعداد مقالات', 'Posts to process')}</Label>
+              <Select value={autopilotCount} onValueChange={setAutopilotCount} disabled={autopilotRunning}>
+                <SelectTrigger className="h-9 w-[130px]" aria-label={L('تعداد مقالات', 'Batch size')}>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {[1, 2, 3, 4, 5, 6].map((n) => (
+                    <SelectItem key={n} value={String(n)}>
+                      {L(`${n} مقاله`, `${n} posts`)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="rounded-xl border border-violet-500/30 bg-background/60 p-3 text-sm">
+              <p>
+                {L('خلاصه اجرا: ', 'Run summary: ')}
+                <b>
+                  {`${Number(autopilotCount) || 3} ${L('مقاله × ', 'post(s) × ')}`}
+                  {apPlatforms.map(platformLabel).join(L('، ', ', '))}
+                  {` × ${apLangLabel} ≈ ${apEstimate} ${L('پیش‌نویس', 'draft(s)')}`}
+                </b>
+              </p>
+              <p className="mt-1.5 text-xs text-muted-foreground">
+                {L(
+                  'هر پیش‌نویس حدود ۳۰ تا ۶۰ ثانیه؛ فقط برای مقاله‌هایی ساخته می‌شود که از قبل پیش‌نویسِ هم‌شبکه و هم‌زبان نداشته باشند.',
+                  'Each draft takes ~30-60s; drafts are only created for posts that do not already have one in the same network + language.',
+                )}
+              </p>
+            </div>
             <Button
               onClick={runAutopilot}
-              disabled={autopilotRunning}
-              className="bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white hover:from-violet-700 hover:to-fuchsia-700"
+              disabled={autopilotRunning || apPlatforms.length === 0}
+              className="w-full bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white hover:from-violet-700 hover:to-fuchsia-700"
             >
               {autopilotRunning ? (
                 <>
@@ -354,12 +505,32 @@ export function SocialStudio() {
               )}
             </Button>
           </div>
-        </div>
+        )}
+
+        {/* wizard nav — hidden while a run is in flight */}
+        {!autopilotRunning && (
+          <div className="mt-4 flex items-center gap-2">
+            {apStep > 1 && (
+              <Button size="sm" variant="ghost" onClick={() => setApStep((s) => (s - 1) as 1 | 2)}>
+                {L('قبلی', 'Back')}
+              </Button>
+            )}
+            {apStep < 3 && (
+              <Button
+                size="sm"
+                onClick={() => setApStep((s) => (s + 1) as 2 | 3)}
+                disabled={apStep === 2 && apPlatforms.length === 0}
+              >
+                {L('بعدی', 'Next')}
+              </Button>
+            )}
+          </div>
+        )}
         {autopilotRunning && (
           <p className="mt-3 text-xs text-muted-foreground">
             {L(
-              'هر پست حدود ۳۰ تا ۶۰ ثانیه طول می‌کشد — صفحه را نبند؛ نتیجه در همین کارت و در «پیش‌نویس‌های ذخیره‌شده» ظاهر می‌شود.',
-              'Each post takes ~30-60s — keep this page open; the result appears in this card and under “Saved drafts”.'
+              'هر پیش‌نویس حدود ۳۰ تا ۶۰ ثانیه طول می‌کشد — صفحه را نبند؛ نتیجه در همین کارت و در «پیش‌نویس‌های ذخیره‌شده» ظاهر می‌شود.',
+              'Each draft takes ~30-60s — keep this page open; the result appears in this card and under “Saved drafts”.'
             )}
           </p>
         )}
@@ -373,18 +544,18 @@ export function SocialStudio() {
             <p className="font-bold">
               {autopilotResult.created.length > 0
                 ? L(
-                    `${autopilotResult.created.length} پیش‌نویس لینکدین ساخته شد — در «پیش‌نویس‌های ذخیره‌شده» پایین صفحه است ✓`,
-                    `${autopilotResult.created.length} LinkedIn draft(s) created — see “Saved drafts” below ✓`
+                    `${autopilotResult.created.length} پیش‌نویس ساخته شد — در «پیش‌نویس‌های ذخیره‌شده» پایین صفحه است ✓`,
+                    `${autopilotResult.created.length} draft(s) created — see “Saved drafts” below ✓`
                   )
                 : autopilotResult.failed.length > 0
                   ? L('پیش‌نویس جدیدی ساخته نشد — خطاها را پایین ببین.', 'No new drafts were created — see the failures below.')
-                  : L('چیزی برای ساختن نبود — همه مقالات جدید پیش‌نویس دارند.', 'Nothing to create — recent posts already have drafts.')}
+                  : L('چیزی برای ساختن نبود — همه این مقالات از قبل پیش‌نویس دارند.', 'Nothing to create — these posts already have drafts.')}
             </p>
             {autopilotResult.created.length > 0 && (
               <ul className="list-inside list-disc space-y-0.5 text-emerald-700 dark:text-emerald-400">
                 {autopilotResult.created.map((c, i) => (
-                  <li key={`${c.slug}:${c.lang}:${i}`}>
-                    {c.title || c.slug} ({c.lang})
+                  <li key={`${c.slug}:${c.platform}:${c.lang}:${i}`}>
+                    {c.title || c.slug} — {platformLabel(c.platform)} ({c.lang})
                   </li>
                 ))}
               </ul>
