@@ -51,7 +51,11 @@ function isInternalHref(href: string): boolean {
 function linkSeoTransform(attribs: sanitizeHtml.Attributes): { tagName: string; attribs: sanitizeHtml.Attributes } {
   const href = typeof attribs.href === 'string' ? attribs.href : '';
   if (isInternalHref(href)) {
-    return { tagName: 'a', attribs: { ...attribs, rel: 'noopener' } };
+    // preserve a rel that already exists (round-3 CI idempotency check): a
+    // second pass must not rewrite rel — e.g. a <a> whose href was dropped
+    // as a javascript: URL re-enters here with no href and must keep the
+    // nofollow trio the first pass attached.
+    return { tagName: 'a', attribs: { ...attribs, rel: attribs.rel || 'noopener' } };
   }
   return { tagName: 'a', attribs: { ...attribs, rel: 'nofollow noopener noreferrer', target: '_blank' } };
 }
