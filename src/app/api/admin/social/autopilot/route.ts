@@ -3,6 +3,7 @@ import { checkAdmin } from '@/lib/admin';
 import { db } from '@/lib/db';
 import { ensureSocialDraftTable } from '@/lib/social-drafts';
 import { generateSocialPosts } from '@/lib/social-studio';
+import { isUnpublishedPostSlug } from '@/lib/queries';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 300;
@@ -37,13 +38,19 @@ export async function POST(req:NextRequest) {
     const count = Math.min(Math.max(Number(b.count) || 3, 1), 6);
     const lang = b.lang === 'en' || b.lang === 'both' ? b.lang : 'fa';
 
-    // candidate posts: newest published first
-    const candidates = await db.post.findMany({
+    // candidate posts: newest published first. Posts hidden at app level
+    // (UNPUBLISHED_POST_SLUGS — published=true in the DB but 404 on the
+    // site) must never get drafts: a draft pointing at a 404 wastes the
+    // owner's review time and sends LinkedIn traffic nowhere. Matching is
+    // decode-aware (production stores percent-encoded WP slugs).
+    const rawCandidates = await db.post.findMany({
       where: { published: true },
       orderBy: { date: 'desc' },
       take: 30,
       select: { slug: true, titleEn: true, titleFa: true },
     });
+    const hidden = rawCandidates.filter((p) => isUnpublishedPostSlug(p.slug));
+    const candidates = rawCandidates.filter((p) => !isUnpublishedPostSlug(p.slug));
 
     // existing LinkedIn drafts by source slug (any state counts as covered)
     const existing = await db.socialDraft.findMany({
@@ -55,10 +62,16 @@ export async function POST(req:NextRequest) {
     const targets = candidates.filter((p) => !covered.has(p.slug)).slice(0, count);
 
     const created: { slug: string; title: string; lang: string }[] = [];
-    const skipped: { slug: string; reason: string }[] = candidates
-      .filter((p) => covered.has(p.slug))
-      .slice(0, 10)
-      .map((p) => ({ slug: p.slug, reason: 'already has a LinkedIn draft' }));
+    const skipped: { slug: string; reason: string }[] = [
+      ...candidates
+        .filter((p) => covered.has(p.slug))
+        .slice(0, 10)
+        .map((p) => ({ slug: p.slug, reason: 'already has a LinkedIn draft' })),
+      ...hidden.map((p) => ({
+        slug: p.slug,
+        reason: 'hidden on the site (no public URL) — excluded from social',
+      })),
+    ];
     const failed: { slug: string; error: string }[] = [];
 
     for (const post of targets) {
