@@ -1,11 +1,14 @@
 'use client';
 
 import Link from 'next/link';
-import { Instagram } from 'lucide-react';
+import { Instagram, Linkedin } from 'lucide-react';
 import { useApp } from './store';
 import { ui } from './i18n';
 
 // Social profiles (owner request 2026-09-30): the official Instagram page.
+// LinkedIn added 2026-10-12 (owner request — growth push): the owner's
+// profile linkedin.com/in/mehrdad-ir, chosen to mirror the mehrdad.ir
+// domain. Swap to the Company Page URL once /company/mehrdad-ir is live.
 // Keep this list small and OFFICIAL only — every entry renders as an icon
 // button site-wide in the footer and must stay mirrored in the Person
 // JSON-LD sameAs array (src/app/page.tsx) so the entity graph stays
@@ -16,6 +19,12 @@ const SOCIAL_LINKS = [
     href: 'https://www.instagram.com/startup_mt/',
     labelKey: 'followInstagram',
     icon: Instagram,
+  },
+  {
+    id: 'linkedin',
+    href: 'https://www.linkedin.com/in/mehrdad-ir/',
+    labelKey: 'followLinkedin',
+    icon: Linkedin,
   },
 ] as const;
 
