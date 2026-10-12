@@ -4,6 +4,43 @@ All notable changes to mehrdad.ir. Format: Keep-a-Changelog-ish, newest first.
 
 ## [Unreleased]
 
+### Deploy pipeline unfrozen + Social Studio self-test (2026-10-12)
+- **Production was frozen on 5be583a (2026-10-11) for ~a day**: every Vercel
+  deploy since e3c344e failed while GitHub CI stayed green (CI builds from the
+  SQLite schema; Vercel builds from `prisma/schema.postgres.prisma`).
+  Root causes, in order:
+  1. e3c344e carried the resurrected `src/middleware.ts` + `public/robots.txt`
+     (Next 16 fatal: middleware + proxy cannot coexist) — fixed by b316d41.
+  2. 6621293 added the `DailyProduct` model to `prisma/schema.prisma` but NOT
+     to the Postgres mirror, so the Vercel-generated Prisma client lacked
+     `db.dailyProduct` and every `next build` died in the tsc phase —
+     unfixed until now (4 failed deploys: 6621293, 4288c44, 7ed6d68, 3e2058c).
+- **Fix (e38fd64)**: `DailyProduct` added to the Postgres mirror verbatim +
+  new CI guard `scripts/check-schema-mirror.mjs` (fails fast on any model/enum
+  drift between the two schemas, wired into ci.yml before install/build).
+  This is the second incident of the drift class (studio models, 2026-10-08);
+  the guard makes it structural instead of manual.
+- **Verification**: mirror guard ✓, postgres-client `tsc --noEmit` ✓,
+  full Vercel-equivalent build (`prisma generate --schema
+  schema.postgres.prisma && next build && postbuild`) green against a real
+  wire-protocol Postgres (PGlite) ✓ — then the real deploy e38fd64 completed
+  2026-10-12T19:51Z and the live site confirms the new code
+  (JSON-LD sameAs now lists linkedin.com/in/mehrdad-ir; /admin + /blog 200;
+  admin APIs 401 unauthenticated, fail-closed).
+- **Social Studio self-test (owner order: test before inviting the owner)**:
+  local end-to-end run of the LinkedIn auto-pilot (auth → candidate scan →
+  hidden-post skip → generation → language assertion → draft save → rerun
+  idempotency) — all green; generated Persian draft scored 0.92 Persian-letter
+  ratio, no name typo, no hallucinated markers, every number traced to the
+  source article. Topic-mode gap found and documented: with an empty RAG
+  knowledge base the model can invent statistics (40% traffic claim observed
+  locally); production KB state governs — the quality contract's facts policy
+  applies to whatever context exists.
+- **Production drafts audit (read-only, via Supabase management SQL)**: 14
+  drafts, 0 language mismatches (fa 0.91–1.00, en 0.00), no hallucination
+  markers, no name typos; full snapshot archived at
+  `docs/social-drafts-backup-2026-10-12.json`. No data was modified.
+
 ### Work/Lab restructure — content authenticity (2026-09-07)
 - **Honest project statuses**: canonical lifecycle `idea | concept |
   building | testing | live | paused | archived` on the Project model
