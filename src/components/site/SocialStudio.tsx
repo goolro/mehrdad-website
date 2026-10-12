@@ -17,8 +17,18 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
-import { Share2, Loader2, Sparkles, Copy, Save, Trash2, Check, RefreshCw, Zap, Send, Globe } from 'lucide-react';
+import { Share2, Loader2, Sparkles, Copy, Save, Trash2, Check, RefreshCw, Zap, Send, Globe, FileText, TriangleAlert } from 'lucide-react';
 
 interface PostOption {
   slug: string;
@@ -94,10 +104,31 @@ export function SocialStudio() {
   const [platformFilter, setPlatformFilter] = useState<string>('all');
   const [publishingId, setPublishingId] = useState('');
   const [linkedinSetup, setLinkedinSetup] = useState<string[] | null>(null);
+  // Deleting a draft is permanent — route it through a confirm dialog.
+  const [draftToDelete, setDraftToDelete] = useState<DraftItem | null>(null);
 
   const L = (fa: string, en: string) => pick(lang, fa, en);
   // Persian copy is primary on this site; keep textarea direction honest.
   const isFa = (v: string) => /[\u0600-\u06FF]/.test(v);
+
+  /** Client-side guard mirroring the server-side language assertion: flags
+   * drafts whose text language does not match their stored label. */
+  const langMismatch = (d: DraftItem): boolean => (d.lang === 'fa' ? !isFa(d.content) : isFa(d.content));
+
+  /** Source-article lookup for draft cards. Production stores percent-encoded
+   * WP slugs, so the display title decodes first and falls back to the admin
+   * post list, then to the decoded slug itself. */
+  const sourceInfoFor = (d: DraftItem): { title: string; href: string } | null => {
+    if (!d.sourceSlug) return null;
+    const post = posts.find((p) => p.slug === d.sourceSlug);
+    let display = d.sourceSlug;
+    try {
+      display = decodeURIComponent(d.sourceSlug);
+    } catch {
+      /* keep raw slug */
+    }
+    return { title: post?.titleFa || post?.titleEn || display, href: `/blog/${d.sourceSlug}` };
+  };
 
   const loadDrafts = useCallback(() => {
     return fetch('/api/admin/social/drafts')
@@ -625,7 +656,6 @@ export function SocialStudio() {
                         {L('منتشر شد', 'Published')}
                       </Badge>
                     )}
-                    <span className="text-xs text-muted-foreground">{new Date(d.createdAt).toLocaleDateString()}</span>
                     <div className="ms-auto flex gap-1">
                       {d.platform === 'linkedin' && !d.posted && (
                         <Button
@@ -653,10 +683,42 @@ export function SocialStudio() {
                       >
                         <Copy className="h-3.5 w-3.5" />
                       </Button>
-                      <Button size="sm" variant="ghost" onClick={() => removeDraft(d.id)} aria-label="delete">
+                      <Button size="sm" variant="ghost" onClick={() => setDraftToDelete(d)} aria-label={L('حذف پیش‌نویس', 'Delete draft')}>
                         <Trash2 className="h-3.5 w-3.5 text-red-500" />
                       </Button>
                     </div>
+                  </div>
+                  {/* context row: source article, language guard, size, date */}
+                  <div className="mb-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+                    {d.sourceSlug ? (
+                      <a
+                        href={sourceInfoFor(d)?.href || `/blog/${d.sourceSlug}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex min-w-0 max-w-full items-center gap-1 hover:text-foreground hover:underline"
+                        title={L('مقاله‌ی مبدأ این پیش‌نویس', 'Source article of this draft')}
+                      >
+                        <FileText className="h-3 w-3 shrink-0" />
+                        <span className="truncate">{sourceInfoFor(d)?.title || d.sourceSlug}</span>
+                      </a>
+                    ) : d.topic ? (
+                      <span className="inline-flex min-w-0 max-w-full items-center gap-1">
+                        <Sparkles className="h-3 w-3 shrink-0" />
+                        <span className="truncate">{d.topic}</span>
+                      </span>
+                    ) : null}
+                    {langMismatch(d) && (
+                      <Badge variant="secondary" className="bg-red-600/15 text-red-600 dark:text-red-400">
+                        <TriangleAlert className="me-1 h-3 w-3" />
+                        {L('زبان ناهمخوان', 'Language mismatch')}
+                      </Badge>
+                    )}
+                    <span className="ms-auto shrink-0" dir="ltr">
+                      {d.content.length.toLocaleString(lang === 'fa' ? 'fa-IR' : 'en-US')} {L('نویسه', 'chars')}
+                    </span>
+                    <span className="shrink-0" dir="ltr">
+                      {new Date(d.createdAt).toLocaleDateString(lang === 'fa' ? 'fa-IR' : undefined)}
+                    </span>
                   </div>
                   <p
                     className="max-h-24 overflow-y-auto whitespace-pre-wrap text-sm text-muted-foreground"
@@ -670,6 +732,33 @@ export function SocialStudio() {
           </ScrollArea>
         )}
       </div>
+
+      {/* delete confirmation — permanent, so it asks once */}
+      <AlertDialog open={!!draftToDelete} onOpenChange={(o) => !o && setDraftToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader dir="rtl">
+            <AlertDialogTitle>{L('حذف این پیش‌نویس؟', 'Delete this draft?')}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {L(
+                'این پیش‌نویس برای همیشه حذف می‌شود و قابل بازگشت نیست.',
+                'This draft will be permanently removed — it cannot be restored.'
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{L('انصراف', 'Cancel')}</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-red-600 text-white hover:bg-red-700"
+              onClick={() => {
+                if (draftToDelete) removeDraft(draftToDelete.id);
+                setDraftToDelete(null);
+              }}
+            >
+              {L('حذف', 'Delete')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
