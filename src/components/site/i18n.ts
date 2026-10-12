@@ -404,6 +404,7 @@ export const ui = {
       rights: 'All rights reserved.',
       builtWith: 'Powered by AI',
       followInstagram: 'Mehrdad on Instagram — @startup_mt',
+      followLinkedin: 'Mehrdad on LinkedIn — mehrdad-ir',
     },
     daily: {
       badge: 'Product analysis',
@@ -1429,6 +1430,7 @@ export const ui = {
       rights: 'تمام حقوق محفوظ است.',
       builtWith: 'قدرت‌گرفته از هوش مصنوعی',
       followInstagram: 'اینستاگرام مهرداد — startup_mt',
+      followLinkedin: 'لینکدین مهرداد — mehrdad-ir',
     },
     daily: {
       badge: 'تحلیل محصول',
