@@ -131,6 +131,26 @@ function assertLanguage(content: string, lang: 'fa' | 'en'): void {
   }
 }
 
+/**
+ * Deterministic anti-hallucination check for UNGROUNDED topics (topic mode
+ * with an empty knowledge base — production KbChunk was 0 rows on 2026-10-12).
+ * A prompt-only facts policy did NOT stop the model from inventing statistics
+ * («تا 40٪ کاهش زمان انتظار», «تا 30% کاهش مصرف انرژی») for a generic topic,
+ * so the ban is enforced mechanically: with no source material, the post may
+ * contain NO numerals at all (Latin or Persian digits). URLs and nothing else
+ * are exempted. Violation → one escalated retry → hard fail; a fabricated
+ * statistic is worse than a failed run.
+ */
+export function assertNoNumerals(content: string): void {
+  const withoutUrls = content.replace(/https?:\/\/\S+/g, ' ');
+  const m = withoutUrls.match(/[\d\u06F0-\u06F9]/);
+  if (m) {
+    const idx = m.index ?? 0;
+    const around = withoutUrls.slice(Math.max(0, idx - 40), idx + 40).replace(/\s+/g, ' ').trim();
+    throw new Error(`quantitative-claim check failed — ungrounded topic posts must contain no numerals, found "${m[0]}" near: …${around}…`);
+  }
+}
+
 /** Deterministic fix for the one misspelling the model actually produced («مهراد»). */
 function fixNameTypos(text: string): string {
   // «مهرداد» never contains «مهراد» as a substring (م‌ه‌ر‌د‌ا‌د vs م‌ه‌ر‌ا‌د),
@@ -168,14 +188,27 @@ export interface SocialGenerateOptions {
   lang: 'fa' | 'en' | 'both';
 }
 
-/** Build the source block for one target language, matching body language to it. */
-async function buildSourceBlock(opts: SocialGenerateOptions, lang: 'fa' | 'en'): Promise<{ block: string; note: string }> {
+/** Build the source block for one target language, matching body language to it.
+ * `grounded: false` means no real source material exists (topic mode with an
+ * empty knowledge base) — the caller then enforces the no-numerals contract. */
+async function buildSourceBlock(opts: SocialGenerateOptions, lang: 'fa' | 'en'): Promise<{ block: string; note: string; grounded: boolean }> {
   if (opts.source === 'topic') {
     const chunks = await retrieveContext(opts.topic || '', 4);
     const context = buildContextBlock(chunks);
+    // Ungrounded-topic guard (2026-10-12 self-test): with an empty knowledge
+    // base (production KbChunk = 0 rows on 2026-10-12) the model received no
+    // grounding at all and, despite the facts policy in the voice prompt,
+    // still invented a statistic («تا 40٪ کاهش زمان انتظار») for a generic
+    // smart-city topic. When no site knowledge exists, the topic text becomes
+    // the ONLY source and every quantitative claim is banned outright — the
+    // post must stay qualitative. (Blog-post mode is unaffected: its body IS
+    // the grounding.)
+    const ungroundedNote =
+      'NO site knowledge was found for this topic in the site knowledge base. The topic description above is your ONLY source. Do NOT invent or cite any specific statistics, percentages, survey results, prices, dates of events, or named studies — keep every claim qualitative. If the topic cannot be written about without such specifics, write about the underlying principle instead.';
     return {
       block: `TOPIC:\n${opts.topic}\n\nExisting site knowledge (may inform the post, never copy verbatim):\n${context || '(none)'}`,
-      note: '',
+      note: context ? '' : ungroundedNote,
+      grounded: Boolean(context),
     };
   }
 
@@ -213,6 +246,7 @@ async function buildSourceBlock(opts: SocialGenerateOptions, lang: 'fa' | 'en'):
   return {
     block: `SOURCE BLOG POST (already published on mehrdad.ir):\nTitle: ${title}\nURL: https://mehrdad.ir/blog/${post.slug}\nContent:\n${clampText(body, 2200)}\n\nTurn THIS post into social content — do not invent a different subject.`,
     note,
+    grounded: true,
   };
 }
 
@@ -237,17 +271,29 @@ async function generateOne(
   platform: string,
   lang: 'fa' | 'en',
   sourceBlock: string,
-  translationNote: string
+  translationNote: string,
+  opts: { banNumerals?: boolean } = {}
 ): Promise<SocialPostResult> {
   const sys = buildSystemPrompt(spec, lang);
   const user = `${sourceBlock}${translationNote ? `\n\n${translationNote}` : ''}`;
-  const escalation =
-    lang === 'fa'
+  /** Kind-aware retry instruction — the model must know WHY it was rejected. */
+  const escalationFor = (kind: 'language' | 'quantitative'): string => {
+    if (kind === 'quantitative') {
+      return 'Your previous answer was REJECTED: it contained numerals/statistics, but NO source material exists for this topic, so every number would be invented. Rewrite the full post with ZERO numerals (no percentages, no figures, no years, no counts) — qualitative statements only. Return ONLY the JSON.';
+    }
+    return lang === 'fa'
       ? 'Your previous answer was REJECTED: it was not written in Persian. Try again and return ONLY the JSON — the full post (hook, body, hashtags) written entirely in fluent natural Persian.'
       : 'Your previous answer was REJECTED: it was not written in English. Try again and return ONLY the JSON — the full post (hook, body, hashtags) written entirely in natural English.';
+  };
 
   let lastError: unknown = null;
   for (let attempt = 1; attempt <= 2; attempt++) {
+    const kind =
+      attempt === 1
+        ? null
+        : lastError instanceof Error && lastError.message.startsWith('quantitative-claim')
+          ? ('quantitative' as const)
+          : ('language' as const);
     const messages =
       attempt === 1
         ? [
@@ -257,7 +303,7 @@ async function generateOne(
         : [
             { role: 'system' as const, content: sys },
             { role: 'user' as const, content: user },
-            { role: 'user' as const, content: escalation },
+            { role: 'user' as const, content: escalationFor(kind!) },
           ];
     try {
       const text = await generateWithFallback(messages);
@@ -273,6 +319,7 @@ async function generateOne(
       const content = fixNameTypos((first.content || '').trim());
       if (content.length < 80) throw new Error(`suspiciously short output (${content.length} chars)`);
       assertLanguage(content, lang);
+      if (opts.banNumerals) assertNoNumerals(content);
       return {
         platform,
         lang,
@@ -302,8 +349,8 @@ export async function generateSocialPosts(opts: SocialGenerateOptions): Promise<
     const spec = PLATFORM_SPECS[platform];
     if (!spec) throw new Error(`Unknown platform: ${platform}`);
     for (const lang of langs) {
-      const { block, note } = await buildSourceBlock(opts, lang);
-      results.push(await generateOne(spec, platform, lang, block, note));
+      const { block, note, grounded } = await buildSourceBlock(opts, lang);
+      results.push(await generateOne(spec, platform, lang, block, note, { banNumerals: !grounded }));
     }
   }
 
