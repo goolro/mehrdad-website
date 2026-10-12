@@ -222,8 +222,8 @@ check('L5 FIXED: data:image/svg+xml is dropped from <img>',
   !/data:image\/svg\+xml/i.test(sanitizePostHtml('<img src="data:image/svg+xml;base64,PHN2Zz48L3N2Zz4=">')));
 check('raster data: URIs still allowed',
   /data:image\/png;base64,/.test(sanitizePostHtml('<img src="data:image/png;base64,iVBORw0KGgo=">')));
-check('links get rel="noopener noreferrer nofollow"',
-  /rel="noopener noreferrer nofollow"/.test(sanitizePostHtml('<a href="https://evil.tld" target="_blank">x</a>')));
+check('external links get nofollow+noopener+noreferrer (any token order)',
+  /rel="(?=[^"]*\bnofollow\b)(?=[^"]*\bnoopener\b)(?=[^"]*\bnoreferrer\b)/.test(sanitizePostHtml('<a href="https://evil.tld" target="_blank">x</a>')));
 check('protocol-relative URLs rejected', !/href="\/\//.test(sanitizePostHtml('<a href="//evil.tld">x</a>')));
 check('mailto: links survive', /href="mailto:/.test(sanitizePostHtml('<a href="mailto:a@b.co">x</a>')));
 check('plain-text sanitizer strips all markup', sanitizePlainText('<b>a</b><script>alert(1)</script>c') === 'ac');

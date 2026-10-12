@@ -34,6 +34,9 @@ jobs:
       - name: Typecheck
         run: npx tsc --noEmit
 
+      - name: Create CI database schema (empty db otherwise - ISR prerender queries it)
+        run: npx prisma db push --skip-generate
+
       - name: Build (prisma generate + next build)
         run: npm run build
 
