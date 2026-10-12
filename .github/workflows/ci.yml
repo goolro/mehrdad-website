@@ -20,6 +20,15 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      # Fail fast on schema-mirror drift BEFORE the build: the Vercel build
+      # generates its Prisma client from schema.postgres.prisma, so a model
+      # added only to schema.prisma makes every deploy fail with
+      # "Property '<model>' does not exist on type 'PrismaClient'" while this
+      # SQLite-based CI stays green. Incidents: 2026-10-08 (studio models),
+      # 2026-10-12 (DailyProduct — production frozen ~5h).
+      - name: Guard — prisma schema mirror in sync
+        run: node scripts/check-schema-mirror.mjs
+
       - uses: actions/setup-node@v7
         with:
           node-version: 20

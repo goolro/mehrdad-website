@@ -317,6 +317,30 @@ model DailyArticle {
   @@index([day])
 }
 
+/// "Daily product analysis" feed items imported from the Product Hunt feed
+/// (src/lib/daily-digest.ts → /api/admin/daily/import + /api/cron/daily-import).
+/// One row per product; `order` positions it inside its `day` group.
+/// NOTE: landed 2026-10-12 — commit 8829e19 shipped the code that uses this
+/// model but never committed the model itself, which broke `next build`
+/// (tsc: "Property 'dailyProduct' does not exist on type 'PrismaClient'").
+/// Mirror fix 2026-10-12: the model was added to schema.prisma (6621293) but
+/// not here, so the Vercel client (generated from THIS file) lacked
+/// db.dailyProduct and every deploy failed with a type error. The mirror
+/// drift is now guarded by scripts/check-schema-mirror.mjs in CI.
+model DailyProduct {
+  id        String   @id @default(cuid())
+  day       String // publication day 'YYYY-MM-DD' (Tehran calendar) — groups the digest
+  name      String // ≤120 chars (enforced by the importer's slice)
+  taglineEn String // ≤240 chars (enforced by the importer's slice)
+  taglineFa String? // AI-translated one-liner; null = EN-only row (admin fills by hand)
+  url       String   @unique
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([day])
+}
+
 // ───────────────────────── SEO Brief Builder ─────────────────────────
 
 /// Competitor / reference site the brief builder scans. The owner asked for
