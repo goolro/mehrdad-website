@@ -398,3 +398,33 @@ side branch can be cherry-picked and this decision retired.
 > policy + /admin,/api/admin,/agency,/api/agency disallows + Sitemap pointer),
 > and app routes take precedence over public/ files. The static copy was
 > removed to keep one source of truth for /robots.txt.
+
+---
+
+## 2026-10-13 — Dependency security pass (owner order: «یک کار جداگانه بررسی و ارتقا ده»)
+
+**Decision:**
+1. Security-only upgrade, minimal delta: `next` pinned EXACT `16.3.8` (first
+   patched version of all 7 runtime advisories; bun tried to pull 16.4.0 —
+   rejected to keep the change minimal and deterministic), `eslint-config-next`
+   `16.3.8`, `sharp` `0.35.4→0.35.5` (dep + override).
+2. Transitive fixes applied inside existing semver ranges: `source-map-js`
+   `1.2.1→1.2.2` (runtime), `brace-expansion` `1.1.12→1.1.21` + `5.0.12`
+   (dev-scope). 15 of 16 Dependabot alerts become fixable; the 16th (`braces`
+   ≤3.0.3, dev-scope via eslint chain) has NO patched release upstream — left
+   open, documented, auto-clears when a fix lands.
+3. The tailwind engine family is FROZEN at `4.1.18` (exact devDep pins for
+   `tailwindcss` + `@tailwindcss/postcss`, plus a new `@tailwindcss/node: 4.1.18`
+   override) — otherwise npm re-resolved 4.3.3 while bun kept 4.1.18, which
+   would make CI compile CSS with a different engine than production.
+4. `bun update <pkg>` side effects rejected: it promoted 5 transitive packages
+   to direct dependencies (`@tailwindcss/node`, `brace-expansion`, `minimatch`,
+   `postcss`, `source-map-js`) — all removed; the original direct-dependency
+   set is preserved byte-for-byte apart from the intended changes.
+5. Both lockfiles are now generated and verified in lockstep (bun.lock for
+   bun/Vercel, package-lock.json for npm CI + Dependabot).
+
+**Rationale:** this was a security maintenance pass, not an upgrade sprint —
+every version number must be the smallest change that closes an advisory, and
+every engine that affects output (CSS, images) must stay bit-identical across
+local dev, CI, and production.
