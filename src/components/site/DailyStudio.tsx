@@ -449,6 +449,7 @@ export function DailyStudio() {
                     <SelectItem value="product">{t.cats.product}</SelectItem>
                     <SelectItem value="ai">{t.cats.ai}</SelectItem>
                     <SelectItem value="startup">{t.cats.startup}</SelectItem>
+                    <SelectItem value="linkedin">{t.cats.linkedin}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

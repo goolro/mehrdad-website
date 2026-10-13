@@ -318,7 +318,7 @@ export const ui = {
       relatedTitle: 'Related articles',
       dailyBox: {
         badge: 'Daily section',
-        title: 'Daily product analysis',
+        title: 'Daily analysis',
         desc: 'A fresh ORIGINAL editorial most days — a short summary and the full article and my expert verdict. English and Persian are fully separate.',
         all: 'All daily analyses',
       },
@@ -408,7 +408,7 @@ export const ui = {
     },
     daily: {
       badge: 'Product analysis',
-      title: 'Daily product analysis',
+      title: 'Daily analysis',
       subtitle: 'Short original articles about products that got it right — what they do and why they win and my expert verdict. In English and Persian.',
       empty: 'No articles yet — the first analysis is on its way.',
       readMore: 'Read the analysis',
@@ -416,7 +416,7 @@ export const ui = {
       verdict: 'My expert take',
       back: 'All analyses',
       related: 'More analyses',
-      cats: { all: 'All', product: 'Products', ai: 'AI', startup: 'Startups' },
+      cats: { all: 'All', product: 'Products', ai: 'AI', startup: 'Startups', linkedin: 'LinkedIn' },
     },
     pwa: {
       install: 'Install Mehrdad app',
@@ -503,7 +503,7 @@ export const ui = {
         autoScheduleNone: 'No complete drafts to queue',
         slotsNote: 'Random scheduling: hours land anywhere between 08:00 and 22:00 Tehran and each day carries a random 2..5 articles — never fixed times and never a bulk dump. Same-day slots stay at least 3 hours apart.',
         category: 'Category',
-        cats: { product: 'Products', ai: 'AI', startup: 'Startups' },
+        cats: { product: 'Products', ai: 'AI', startup: 'Startups', linkedin: 'LinkedIn' },
         save: 'Save',
         cancel: 'Cancel',
         saved: 'Saved — /daily is republishing',
@@ -1345,7 +1345,7 @@ export const ui = {
       relatedTitle: 'مقالات مرتبط',
       dailyBox: {
         badge: 'بخش روزانه',
-        title: 'تحلیل روزانهٔ محصول',
+        title: 'تحلیل روزانهٔ',
         desc: 'تقریبا هر روز یک سرمقالهٔ کاملا اصیل — خلاصهٔ کوتاه و متن کامل و نظر کارشناسی من. انگلیسی و فارسی کاملا از هم جدا هستند.',
         all: 'همهٔ تحلیل‌های روزانه',
       },
@@ -1434,7 +1434,7 @@ export const ui = {
     },
     daily: {
       badge: 'تحلیل محصول',
-      title: 'تحلیل روزانهٔ محصول',
+      title: 'تحلیل روزانهٔ',
       subtitle: 'مقاله‌های کوتاه و اصیل دربارهٔ محصولاتی که درست ساخته شده‌اند — چه می‌کنند و چرا برنده‌اند و نظر کارشناسی من. به فارسی و انگلیسی.',
       empty: 'هنوز مقاله‌ای منتشر نشده — اولین تحلیل در راه است.',
       readMore: 'خواندن تحلیل',
@@ -1442,7 +1442,7 @@ export const ui = {
       verdict: 'نظر کارشناسی من',
       back: 'همهٔ تحلیل‌ها',
       related: 'تحلیل‌های بیشتر',
-      cats: { all: 'همه', product: 'محصول', ai: 'هوش مصنوعی', startup: 'استارتاپ' },
+      cats: { all: 'همه', product: 'محصول', ai: 'هوش مصنوعی', startup: 'استارتاپ', linkedin: 'لینکدین' },
     },
     pwa: {
       install: 'نصب اپلیکیشن مهرداد',
@@ -1529,7 +1529,7 @@ export const ui = {
         autoScheduleNone: 'پیش‌نویس کاملی برای صف کردن پیدا نشد',
         slotsNote: 'زمان‌بندی رندم: ساعت‌ها هر جایی بین ۰۸:۰۰ تا ۲۲:۰۰ تهران می‌افتند و هر روز به‌طور تصادفی ۲ تا ۵ مقاله منتشر می‌شود — نه ساعت ثابت و نه انتشار دسته‌جمعی. فاصلهٔ اسلات‌های یک روز حداقل ۳ ساعت است.',
         category: 'دسته‌بندی',
-        cats: { product: 'محصول', ai: 'هوش مصنوعی', startup: 'استارتاپ' },
+        cats: { product: 'محصول', ai: 'هوش مصنوعی', startup: 'استارتاپ', linkedin: 'لینکدین' },
         save: 'ذخیره',
         cancel: 'انصراف',
         saved: 'ذخیره شد — صفحهٔ روزانه بازنشر می‌شود',
