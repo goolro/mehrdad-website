@@ -17,7 +17,8 @@ export type ProfileFeatureIcon =
   | 'scan'
   | 'puzzle'
   | 'calendar'
-  | 'car';
+  | 'car'
+  | 'book';
 
 export interface ProfileFeature {
   icon: ProfileFeatureIcon;
@@ -103,6 +104,15 @@ export interface ProjectProfile {
    *  falls back to the shared i18n label when absent */
   progressLabelEn?: string;
   progressLabelFa?: string;
+  /** section-title override for the features block — the shared i18n title
+   *  reads «Game highlights» (game-oriented); non-game profiles override it
+   *  (driving-exam → «امکانات اپلیکیشن» — the app's own store wording) */
+  featuresTitleEn?: string;
+  featuresTitleFa?: string;
+  /** same override pattern for the tech-section title (shared i18n FA copy
+   *  reads «تکنولوژی‌های بازی» — game-oriented) */
+  techTitleEn?: string;
+  techTitleFa?: string;
   /**
    * Optional "intro meeting" CTA (owner's Market & Growth memo, For
    * Investors: "[Request an intro meeting →] (links to Contact)") — points
@@ -311,6 +321,125 @@ export const PROJECT_PROFILES: Record<string, ProjectProfile> = {
         tone: 'active',
         badgeEn: 'Started',
         badgeFa: 'شروع شد',
+      },
+    ],
+  },
+
+  /**
+   * Driving License Exam — free, fully offline Iranian driving-license exam
+   * trainer for Android. Owner approval 2026-10-13 («خیلی خوب انجام بده»)
+   * to add it to the portfolio via the traffic-tempo pattern. Every number
+   * below is the app's OWN Cafe Bazaar store copy (mix.azmon.app — v2.5.5
+   * fetched 2026-10-13): 950+ questions / 270+ signs / two free golden mock
+   * exams / 32 topic exams / 117 technical articles. No rating or install
+   * figures are quoted anywhere (store shows «از ۰ رأی» — nothing to quote).
+   * Persian copy obeys the editorial rule: no «،».
+   */
+  'driving-exam': {
+    featuresTitleEn: 'App highlights',
+    featuresTitleFa: 'امکانات اپلیکیشن',
+    techTitleEn: 'Tech behind it',
+    techTitleFa: 'تکنولوژی‌های اپلیکیشن',
+    features: [
+      {
+        icon: 'brain',
+        titleEn: '950+ practice questions',
+        titleFa: 'بیش از ۹۵۰ سؤال با پاسخ',
+        descEn:
+          'The complete question bank for the license exam — every question with the correct answer, organized for targeted practice.',
+        descFa:
+          'بانک کامل سؤالات آزمون گواهینامه — هر سؤال با پاسخ درست و دسته‌بندی‌شده برای تمرین هدفمند.',
+      },
+      {
+        icon: 'scan',
+        titleEn: '270+ road signs',
+        titleFa: 'بیش از ۲۷۰ تابلو راهنمایی و رانندگی',
+        descEn:
+          'Visual training for every regulatory / warning / prohibitory sign with a clear Persian explanation.',
+        descFa:
+          'آموزش تصویری همه تابلوهای انتظامی و هشداردهنده و بازدارنده با توضیح فارسی روان.',
+      },
+      {
+        icon: 'trophy',
+        titleEn: 'Two golden mock exams — free',
+        titleFa: 'دو آزمون طلایی رایگان',
+        descEn:
+          'A real exam-session simulator with a timer and scoring and a detailed report card — no payment at all.',
+        descFa:
+          'شبیه‌ساز واقعی جلسه آزمون با زمان‌سنج و نمره‌دهی و کارنامه دقیق — بدون هیچ پرداختی.',
+      },
+      {
+        icon: 'puzzle',
+        titleEn: '32 topic exams',
+        titleFa: '۳۲ آزمون موضوعی',
+        descEn:
+          'A dedicated exam for every section of the regulations — from laws and articles to violations and penalty points.',
+        descFa:
+          'آزمون تخصصی هر بخش آیین‌نامه — از قوانین و ماده‌ها تا جرائم و نمرات.',
+      },
+      {
+        icon: 'book',
+        titleEn: '117 technical articles',
+        titleFa: '۱۱۷ مطلب فنی و آموزشی',
+        descEn:
+          'Driving tips and key regulations written in plain language plus short videos for the final days of prep.',
+        descFa:
+          'نکات رانندگی و قوانین مهم به زبان ساده به‌همراه ویدیوهای آموزشی کوتاه برای آمادگی روز آزمون.',
+      },
+      {
+        icon: 'repeat',
+        titleEn: 'Smart mistake review',
+        titleFa: 'مرور هوشمند سؤال‌های اشتباه',
+        descEn:
+          'Every question you miss is saved to a personal review list — before the exam you study only your own weak spots.',
+        descFa:
+          'هر سؤالی را که اشتباه بزنید در بخش مرور ذخیره می‌شود تا قبل از آزمون فقط نکته‌های خودتان را بخوانید.',
+      },
+      {
+        icon: 'car',
+        titleEn: '100% offline — no ads',
+        titleFa: '۱۰۰٪ آفلاین — بدون تبلیغ',
+        descEn:
+          'The whole bank lives on the phone: no internet and no SIM needed and no annoying ads — an 18 MB install.',
+        descFa:
+          'همه‌چیز آفلاین روی گوشی است — بدون اینترنت و سیم‌کارت و بدون تبلیغ مزاحم — با حجم فقط ۱۸ مگابایت.',
+      },
+    ],
+    tech: [
+      { labelEn: 'Android · Cafe Bazaar', labelFa: 'اندروید · کافه‌بازار' },
+      { labelEn: '100% offline engine', labelFa: 'موتور کاملاً آفلاین' },
+      { labelEn: 'Educational — free app', labelFa: 'آموزشی — رایگان' },
+    ],
+    /** official Cafe Bazaar store artwork (s.cafebazaar.ir, fetched 2026-10-13) */
+    media: [
+      {
+        src: '/media/driving-exam-store-1.webp',
+        altEn: 'Cafe Bazaar store art — a real license-exam simulator with a timer and instant scoring, fully free',
+        altFa: 'پوستر کافه‌بازار — شبیه‌ساز آزمون گواهینامه با زمان‌سنج و نمره‌دهی — ۱۰۰٪ رایگان',
+      },
+      {
+        src: '/media/driving-exam-store-4.webp',
+        altEn: 'Cafe Bazaar store art — the complete driving-exam app home: questions and signs and resources and golden exams',
+        altFa: 'پوستر کافه‌بازار — خانه کامل اپلیکیشن: سؤال‌ها و تابلوها و منابع و آزمون طلایی',
+      },
+      {
+        src: '/media/driving-exam-store-3.webp',
+        altEn: 'Cafe Bazaar store art — smart review turns every wrong answer into a one-tap study list',
+        altFa: 'پوستر کافه‌بازار — مرور هوشمند: هر اشتباه با یک لمس مرور می‌شود',
+      },
+    ],
+    phases: [
+      {
+        key: 'bazaar',
+        icon: 'store',
+        titleEn: 'Cafe Bazaar release',
+        titleFa: 'انتشار در کافه‌بازار',
+        stateEn: 'Live — published and maintained',
+        stateFa: 'لایو — منتشر شد و در حال نگهداری',
+        ring: 100,
+        tone: 'done',
+        badgeEn: '100%',
+        badgeFa: '۱۰۰٪',
       },
     ],
   },
