@@ -288,8 +288,10 @@ model DailyArticle {
   id        String  @id @default(cuid())
   slug      String  @unique
   day       String // publication day 'YYYY-MM-DD' (Tehran calendar) — groups the index
-  // one of: product | ai | startup — the three daily lanes the owner picked
-  // for the section (surfaces in the blog daily-box, index tabs, /daily/cat/*)
+  // one of: product | ai | startup | linkedin — the daily lanes (see
+  // src/lib/daily.ts DAILY_CATEGORIES). 'linkedin' added 2026-10-13 by owner
+  // order — the fourth lane mirrors the owner's daily LinkedIn post bank
+  // (surfaces in the blog daily-box, index tabs, /daily/cat/*)
   category  String  @default("product")
   titleEn   String
   titleFa   String

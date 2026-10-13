@@ -24,10 +24,14 @@ export function isArticleLive(a: { published: boolean; publishAt: Date | null },
 }
 
 // ───────────────────────── Daily categories ─────────────────────────
-// The owner's three lanes for the daily section. The blog daily-box and
+// The owner's lanes for the daily section. The blog daily-box and
 // the /daily index tabs link straight into these.
+// 2026-10-13 owner order: «قسمت لینکدین مانند استارتاپ و محصول به ان اضافه کن»
+// — 'linkedin' is the fourth lane; the auto-generator keeps its own
+// separate LANES list (product | ai | startup) so nothing auto-writes
+// into the LinkedIn lane — that lane is fed by the owner's own daily bank.
 
-export const DAILY_CATEGORIES = ['product', 'ai', 'startup'] as const;
+export const DAILY_CATEGORIES = ['product', 'ai', 'startup', 'linkedin'] as const;
 export type DailyCategory = (typeof DAILY_CATEGORIES)[number];
 
 export function isDailyCategory(v: unknown): v is DailyCategory {

@@ -91,7 +91,7 @@ const SEED_PROJECTS: SeedProject[] = [
 interface SeedArticle {
   slug: string;
   day: string;
-  category: 'product' | 'ai' | 'startup';
+  category: 'product' | 'ai' | 'startup' | 'linkedin';
   titleEn: string;
   titleFa: string;
   summaryEn: string;
@@ -380,6 +380,175 @@ const SEED_ARTICLES: SeedArticle[] = [
     verdictFa: `<p>دو ده سوددهی بدون ماشین رشد قوی‌ترین شاهد ممکن برای مدل آرام است و تقریبا هیچ‌کس آن را کپی نمی‌کند — چون کسل‌کننده است و کسل‌کننده‌ها ترند نمی‌شوند. نظر من برای بنیان‌گذارانی که در ۲۰۲۶ می‌سازند: زود تصمیم بگیرید که موشک می‌سازید یا خانه. موشک سوخت می‌خواهد و پنجرهٔ پرتاب. خانه پی می‌خواهد و سقفی که ترک بردارد ندارد. هر دو درست‌اند. ادعای موشک بودن برای خانه‌ای که موشک نیست همان چیزی است که شرکت‌ها را می‌کشد.</p>`,
     tagsEn: ['startups', 'bootstrapping'],
     tagsFa: ['استارتاپ', 'بووت‌استرپ'],
+  },
+
+  // ─── LinkedIn lane (owner order 2026-10-13: «قسمت لینکدین مانند استارتاپ و
+  // محصول به ان اضافه کن» + «قرار بود روی سایت قسمت بلاگ و در لینکدین بزاری»)
+  // Day-1 bank — the owner's real daily LinkedIn posts mirrored on the site.
+  // All numbers are real and traceable (15/16 Dependabot alerts closed in the
+  // e07bdfb security pass / app facts from its own store page / the Social
+  // Studio feedback is the owner's verbatim sentence). Persian copy obeys the
+  // editorial rule: NO «،» anywhere.
+  {
+    slug: 'linkedin-dependency-security-pass-16-15',
+    day: '2026-10-13',
+    category: 'linkedin',
+    titleEn: 'Dependency security pass: 16 alerts and closing 15 of them',
+    titleFa: 'پاس امنیتی وابستگی‌ها — ۱۶ هشدار و بستن ۱۵ تای آن',
+    summaryEn:
+      '16 security alerts were sitting on my website repository. 15 are closed as of today with the smallest possible version changes — and the one without an upstream fix is documented and watched, not hidden.',
+    summaryFa:
+      '۱۶ هشدار امنیتی روی مخزن کد سایت من نشسته بود. امروز ۱۵ تا از آن‌ها بسته شد با کوچک‌ترین تغییرهای ممکن — و موردی که فیکس آپاستریم ندارد مستند شد و زیر نظر است نه پنهان.',
+    bodyEn: `<p>16 security alerts were sitting on my website's repository.</p>
+<p>15 of them are closed as of today.</p>
+<p>One remains: a library that has no patched release yet. I documented it and I'm watching it — not hiding it.</p>
+<p>Today's job wasn't an upgrade. It was maintenance:</p>
+<ul>
+<li>Next.js pinned exactly to 16.3.8 — the closest version that closes all 7 runtime advisories.</li>
+<li>sharp moved to 0.35.5.</li>
+<li>Transitive dependencies refreshed inside their existing ranges.</li>
+<li>The Tailwind engine frozen at 4.1.18 so CSS output stays identical in local dev and CI and production.</li>
+</ul>
+<p>Lesson: dependency security is not a blind update. It is the smallest change that closes an alert — plus freezing the versions that change your output.</p>
+<p>The site stayed up through all of it: mehrdad.ir</p>
+<p>How often do you audit your project's dependencies?</p>`,
+    bodyFa: `<p>۱۶ هشدار امنیتی روی مخزن کد سایت من نشسته بود.</p>
+<p>امروز ۱۵ تا از آن‌ها بسته شد.</p>
+<p>یکی باقی ماند: کتابخانه‌ای که نسخه‌ی اصلاح‌شده‌اش هنوز بالا نیامده. ثبتش کردم و زیر نظر دارم — پنهانش نکردم.</p>
+<p>کار امروز «ارتقا» نبود. «نگه‌داری» بود:</p>
+<ul>
+<li>Next.js دقیقاً روی نسخه 16.3.8 قفل شد. همان نزدیک‌ترین نسخه‌ای که هر ۷ حاشیه‌ی امنیتی اجرا را می‌بندد.</li>
+<li>sharp به 0.35.5 رسید.</li>
+<li>وابستگی‌های میانی در همان محدوده‌های مجاز به‌روز شدند.</li>
+<li>موتور Tailwind روی 4.1.18 منجمد شد تا خروجی CSS در لوکال و CI و پروداکشن یکی بماند.</li>
+</ul>
+<p>درس امروز: امنیت وابستگی‌ها با یک آپدیت کورکورانه حل نمی‌شود. کوچک‌ترین تغییری که هشدار را ببندد + قفل کردن نسخه‌هایی که خروجی را عوض می‌کنند.</p>
+<p>سایت بعد از همه‌ی این تغییرات بالا ماند: mehrdad.ir</p>
+<p>شما وابستگی‌های پروژه‌تان را هر چند وقت یک‌بار بازبینی می‌کنید؟</p>`,
+    verdictEn: `<p>My definition of a healthy security pass: the smallest change that closes each alert plus freezing the engines that change output — never a blind update.</p>`,
+    verdictFa: `<p>تعریف من از یک پاس امنیتی سالم: کوچک‌ترین تغییری که هر هشدار را ببندد + قفل موتورهایی که خروجی را عوض می‌کنند — هرگز آپدیت کورکورانه.</p>`,
+    tagsEn: ['LinkedIn', 'security', 'build-in-public'],
+    tagsFa: ['لینکدین', 'امنیت', 'بیلد این پابلیک'],
+  },
+  {
+    slug: 'linkedin-driving-exam-app-live-on-cafebazaar',
+    day: '2026-10-13',
+    category: 'linkedin',
+    titleEn: 'The driving-license exam app is live on Cafe Bazaar',
+    titleFa: 'اپ آزمون آیین‌نامه رانندگی در کافه‌بازار زنده است',
+    summaryEn:
+      'My driving-license exam app is now live on Cafe Bazaar. What shipped is a version whose core fully works — one honest choice included: Cafe Bazaar only for now because that is where the real users are.',
+    summaryFa:
+      'اپلیکیشن آزمون آیین‌نامه رانندگی الان در کافه‌بازار زنده است. آنچه منتشر شد نسخه‌ای است که هسته‌اش کامل کار می‌کند — و یک انتخاب صادقانه: فعلاً فقط کافه‌بازار چون کاربر واقعی همان‌جاست.',
+    bodyEn: `<p>My app «Driving License Exam» is now live on Cafe Bazaar.</p>
+<p>The theory exam is a real source of stress for most people here. The material is long and the questions repeat. The idea came from exactly that: simple, always-available practice on the phone everyone already carries.</p>
+<p>What I shipped is a version whose core fully works. Nothing more. I would rather release one thing done right than ten half-done features.</p>
+<p>One honest choice: it is on Cafe Bazaar only for now. Not Google Play. Local distribution is where this app's real users are — I decided to prove it there first.</p>
+<p>Real user behavior will decide the next step. Not my guesses.</p>
+<p>If you have taken a driving exam — what was the hardest part for you? The questions or the exam-day stress?</p>`,
+    bodyFa: `<p>اپلیکیشن «آزمون آیین‌نامه‌ی رانندگی» الان در کافه‌بازار زنده است.</p>
+<p>آزمون تئوری رانندگی برای بیشتر ما یک استرس واقعی است. حجم مطلب زیاد است و سوال‌ها تکراری می‌شوند. ایده‌ی اپ از همین‌جا آمد: تمرینی ساده و در دسترس روی همان گوشی‌ای که همیشه همراه آدم است.</p>
+<p>آنچه منتشر شد نسخه‌ای است که هسته‌اش کامل کار می‌کند. نه بیشتر. ترجیح می‌دهم یک چیز درست منتشر شود تا ده قابلیت نصفه‌نیمه.</p>
+<p>یک انتخاب صادقانه هم هست: فعلاً فقط کافه‌بازار. نه گوگل‌پلی. توزیع محلی همان جایی است که کاربر واقعی این اپ آن‌جاست. تصمیم گرفتم اول همان‌جا محک بخورد.</p>
+<p>قدم بعدی را رفتار واقعی کاربرها تعیین می‌کند — نه حدس من.</p>
+<p>اگر شما آزمون رانندگی داده‌اید سخت‌ترین بخش برای شما چه بود؟ سوال‌ها یا استرس جلسه‌ی آزمون؟</p>`,
+    verdictEn: `<p>A complete core beats ten half-done features — and distribution belongs where the real users already are.</p>`,
+    verdictFa: `<p>هسته‌ی کامل بهتر از ده قابلیت نصفه‌نیمه است — و توزیع باید جایی باشد که کاربر واقعی همان‌جاست.</p>`,
+    tagsEn: ['LinkedIn', 'Cafe Bazaar', 'mobile app'],
+    tagsFa: ['لینکدین', 'کافه بازار', 'اپلیکیشن'],
+  },
+  {
+    slug: 'linkedin-one-sentence-reshaped-social-studio-roadmap',
+    day: '2026-10-13',
+    category: 'linkedin',
+    titleEn: 'One short sentence reshaped the Social Studio roadmap',
+    titleFa: 'یک جمله‌ی کوتاه نقشه‌ی راه Social Studio را عوض کرد',
+    summaryEn:
+      'My AI content tool ships a wizard that currently generates Persian only. The feedback that arrived was one line — choose the language and the network inside the wizard — and the second version of that path clearly wins.',
+    summaryFa:
+      'ابزار تولید محتوا با هوش مصنوعی من فعلاً فقط فارسی تولید می‌کند. بازخوردی که رسید یک جمله بود: زبان و نوع شبکه را داخل ویزارد انتخاب کنم — و نسخه‌ی دوم این مسیر روشنی برنده است.',
+    bodyEn: `<p>One short sentence reshaped my product roadmap.</p>
+<p>My AI content tool (Social Studio) ships a wizard that currently generates Persian only. The feedback that arrived was one line: «I should be able to choose the language and the network inside the wizard.»</p>
+<p>That path has two versions:</p>
+<p>Current: a fast wizard, optimized for Persian — but it fences in bilingual users.</p>
+<p>Right: the user picks the language first, then the network, then the content gets generated.</p>
+<p>The second version wins. And the interesting part: this decision needed zero market analysis. One real user simply said it out loud.</p>
+<p>Lesson: the best feature requests are short. One sentence that marks the difference between "it works" and "it works for me".</p>
+<p>Now you: when you use a content tool, what do you set first? The audience language or the publishing network?</p>`,
+    bodyFa: `<p>یک جمله‌ی کوتاه نقشه‌ی راه محصول من را عوض کرد.</p>
+<p>ابزار تولید محتوا با هوش مصنوعی من (Social Studio) یک ویزارد دارد که فعلاً فقط فارسی تولید می‌کند. بازخوردی که رسید یک جمله بود: «من باید بتوانم زبان و نوع شبکه را ویزاردی انتخاب کنم».</p>
+<p>همین مسیر دو نسخه دارد:</p>
+<p>نسخه‌ی فعلی: ویزارد سریع است و برای فارسی بهینه است. اما کاربر دوزبانه را محدود می‌کند.</p>
+<p>نسخه‌ی درست: کاربر اول زبان را انتخاب می‌کند. بعد نوع شبکه را. بعد محتوا ساخته می‌شود.</p>
+<p>نسخه‌ی دوم برنده است. و جالب است که برای این تصمیم هیچ تحلیل بازاری لازم نبود. فقط یک کاربر واقعی حرفش را زد.</p>
+<p>درس امروز: بهترین feature request ها کوتاه‌اند. یک جمله که تفاوت «کار می‌کند» و «برای من کار می‌کند» را نشان می‌دهد.</p>
+<p>حالا از شما: وقتی از یک ابزار تولید محتوا استفاده می‌کنید اول چه چیزی را تنظیم می‌کنید؟ زبان مخاطب یا شبکه‌ی انتشار؟</p>`,
+    verdictEn: `<p>When one real user says one precise sentence it outranks a long market report — and reaches the roadmap faster.</p>`,
+    verdictFa: `<p>وقتی یک کاربر واقعی یک جمله دقیق می‌گوید آن جمله از یک گزارش تحلیلی بلند ارزش بیشتری دارد — و زودتر به نقشه‌ی راه می‌رسد.</p>`,
+    tagsEn: ['LinkedIn', 'AI', 'product development'],
+    tagsFa: ['لینکدین', 'هوش مصنوعی', 'توسعه محصول'],
+  },
+  {
+    slug: 'linkedin-4-rules-for-ai-drafted-posts',
+    day: '2026-10-13',
+    category: 'linkedin',
+    titleEn: '4 rules for AI-drafted posts that do not read like AI',
+    titleFa: '۴ قانون برای پست‌هایی که با AI نوشته می‌شوند و شبیه AI به نظر نمی‌رسند',
+    summaryEn:
+      'This week I fully reviewed an open-source toolkit for writing LinkedIn posts built on 2026 data. Four rules survived as the most usable: statement openings and number-first lines and links in the first comment and a real AI-tell scrub.',
+    summaryFa:
+      'این هفته یک مجموعه ابزار متن‌باز برای نوشتن پست لینکدین را کامل بررسی کردم. چهار قانون کاربردی ماند: خط اول بدون سوال و خط اول عددمحور و لینک در کامنت اول و پاکسازی نشانه‌های AI.',
+    bodyEn: `<p>4 rules for AI-drafted posts that don't read like AI.</p>
+<p>This week I fully reviewed an open-source toolkit for writing LinkedIn posts. Its methodology is built on 2026 data. The most usable parts for me:</p>
+<p>1. Never open with a question. Question-first openings pull median likes down. Move the question to the close.</p>
+<p>2. Make line one number-first. A precise number with a clear referent in the first sentence pulls median likes up.</p>
+<p>3. Keep links out of the post body. A link lives in the first comment.</p>
+<p>4. Scrub repeated AI tells. Template vocabulary and decorative staccato sentences are exactly what expert readers and LinkedIn's filter react to. The same research says LinkedIn's "AI content" report button costs a flagged post roughly 40% of its views.</p>
+<p>Rule zero that I add myself: never enter a number that isn't real. A fabricated number burns trust exactly once.</p>
+<p>This post was drafted and reviewed against the same 4 rules.</p>
+<p>Which AI tell do you spot first?</p>`,
+    bodyFa: `<p>۴ قانون برای پست‌هایی که با AI نوشته می‌شوند و شبیه AI به نظر نمی‌رسند.</p>
+<p>این هفته یک مجموعه ابزار متن‌باز برای نوشتن پست لینکدین را کامل بررسی کردم. متدولوژی‌اش روی داده‌های ۲۰۲۶ بنا شده بود. کاربردی‌ترین بخش‌هایش برای من این‌ها بود:</p>
+<p>۱. خط اول سوال نباشد. شروع با سوال به‌طور میانه لایک کمتری می‌گیرد. سوال را به انتهای پست ببر.</p>
+<p>۲. خط اول عدد داشته باشد. یک عدد دقیق با مرجع مشخص در جمله‌ی اول به‌طور میانه لایک بیشتری می‌گیرد.</p>
+<p>۳. لینک را داخل متن نگذار. لینک در کامنت اول زندگی می‌کند.</p>
+<p>۴. نشانه‌های تکراری AI را پاک کن. کلمات قالبی و جمله‌های بریده‌بریده‌ی تزئینی دقیقاً چیزی هستند که خواننده‌ی حرفه‌ای و فیلتر لینکدین را فعال می‌کنند. پژوهش همین مجموعه می‌گوید دکمه‌ی گزارش «محتوای AI» در لینکدین حدود ۴۰٪ از بازدید پست گزارش‌شده را کم می‌کند.</p>
+<p>قانون صفر که خودم اضافه می‌کنم: هیچ عددی که واقعی نیست وارد متن نکن. عدد ساختگی فقط یک بار اعتماد می‌سوزاند.</p>
+<p>این پست هم با همین ۴ قانون نوشته و بازبینی شد.</p>
+<p>شما کدام نشانه‌ی AI را زودتر از همه تشخیص می‌دهید؟</p>`,
+    verdictEn: `<p>Number-first opening and the question at the close and the link in the first comment — those three make most of the difference.</p>`,
+    verdictFa: `<p>خط اول عددمحور — سوال در انتها — لینک در کامنت اول. همین سه مورد بیشترین تفاوت را می‌سازد.</p>`,
+    tagsEn: ['LinkedIn', 'content creation'],
+    tagsFa: ['لینکدین', 'تولید محتوا'],
+  },
+  {
+    slug: 'linkedin-your-social-profile-is-rented-land',
+    day: '2026-10-13',
+    category: 'linkedin',
+    titleEn: 'Your social profile is rented land',
+    titleFa: 'پروفایل شما در شبکه‌های اجتماعی زمین اجاره‌ای است',
+    summaryEn:
+      'The algorithm changes and the rules change and the account can get restricted — none of it asks for your opinion. I built my own house at mehrdad.ir and treat LinkedIn as the storefront facing the street.',
+    summaryFa:
+      'الگوریتم عوض می‌شود و قوانین عوض می‌شود و حساب می‌تواند محدود شود — هیچ‌کدام با نظر شما نیست. خانه‌ی خودم را ساختم: mehrdad.ir — و لینکدین را مغازه‌ی رو به خیابان می‌دانم.',
+    bodyEn: `<p>Your social profile is rented land.</p>
+<p>The algorithm changes. The rules change. The account can get restricted. None of it asks for your opinion.</p>
+<p>I decided to build my own house instead: mehrdad.ir</p>
+<p>Everything that is actually mine lives there. Published work. Product pages. The project trail.</p>
+<p>LinkedIn, for me, is the storefront facing the street. It has good foot traffic — but the deed is not in my name.</p>
+<p>The point is not that LinkedIn is bad. The point is that good content should not live only inside someone else's platform. This post lives here — its permanent version lives on my own domain.</p>
+<p>If your account access was cut tomorrow, which part of your professional identity would go missing?</p>`,
+    bodyFa: `<p>پروفایل شما در شبکه‌های اجتماعی زمین اجاره‌ای است.</p>
+<p>الگوریتم عوض می‌شود. قوانین عوض می‌شود. حساب می‌تواند محدود شود. هیچ‌کدام با نظر شما اتفاق نمی‌افتد.</p>
+<p>من تصمیم گرفتم خانه‌ی خودم را درست کنم: mehrdad.ir</p>
+<p>هر چیزی که واقعاً مال من است آن‌جا زندگی می‌کند. نمونه‌کارهای منتشرشده. صفحات محصول. مسیر پروژه‌ها.</p>
+<p>لینکدین برای من مغازه‌ی رو به خیابان است. رفت‌وآمدش خوب است اما سند ملک دست من نیست.</p>
+<p>نکته این نیست که لینکدین بد است. نکته این است که محتوای خوب نباید فقط داخل پلتفرم دیگری زندگی کند. این پست این‌جا است اما نسخه‌ی ماندگارش روی دامنه‌ی خودم جا دارد.</p>
+<p>اگر فردا دسترسی اکانتتان قطع شود کدام بخش از هویت حرفه‌ای‌تان گم می‌شود؟</p>`,
+    verdictEn: `<p>Let the permanent version of your content live on your own domain — treat the networks as storefronts, not warehouses.</p>`,
+    verdictFa: `<p>نسخه‌ی ماندگار محتوایتان را روی دامنه‌ی خودتان نگه دارید — شبکه‌ها را مغازه بدانید نه انبار.</p>`,
+    tagsEn: ['LinkedIn', 'personal brand', 'website'],
+    tagsFa: ['لینکدین', 'برند شخصی', 'وبسایت'],
   },
 ];
 

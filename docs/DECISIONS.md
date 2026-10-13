@@ -462,3 +462,33 @@ plans) — it cannot run here as a plugin.
 auditable against the style guide before the owner publishes it; the reviewed
 repo's research rules (no question-first hooks, number-first openers, links in
 first comment, AI-tell scrubbing) are enforced through a per-post checklist.
+
+---
+
+## D-032 — Daily section: LinkedIn lane + section rename (owner order 2026-10-13)
+
+**Owner order (verbatim):** «قرار بود روی سایت قسمت بلاگ و در لینکدین بزاری … در
+قسمت بخش روزانه این متن تحلیل روزانهٔ محصول را بزار تحلیل روزانهٔ تغییر بده — و
+سپس قسمت لینکدین مانند استارتاپ و محصول به ان اضافه کن»
+
+**Decision:**
+1. Rename the section title everywhere it surfaces: fa «تحلیل روزانهٔ محصول» →
+   «تحلیل روزانهٔ» (blog daily-box + daily index) and EN "Daily product
+   analysis" → "Daily analysis" (i18n ×2 + /daily metadata + /daily/[slug]
+   metadata + /daily/cat/* metadata).
+2. Add a fourth daily lane 'linkedin' exactly like product/ai/startup:
+   `DAILY_CATEGORIES` (src/lib/daily.ts) + 4 i18n cats blocks (fa+en, public +
+   admin) + admin DailyStudio select + /daily/cat/[cat] metadata records +
+   schema comment. The auto-generator keeps its own separate LANES list, so
+   nothing AI-generated ever lands in the LinkedIn lane — it is fed by the
+   owner's own daily bank (D-031).
+3. The day-1 bank's 5 posts became seeded DailyArticle rows (category
+   'linkedin', day 2026-10-13, bilingual body + expert-verdict takeaway + tags)
+   inside SEED_ARTICLES — the standard content-travels-with-git path — so they
+   exist on every environment (local + production) after boot/prerender via
+   INSERT-IF-MISSING.
+
+**Rationale:** the owner wants the LinkedIn daily posts mirrored on the site's
+blog; reusing the existing DailyArticle pipeline (tabs, lane pages, sitemap,
+ISR, admin studio) costs zero new surface and keeps one publishing mechanism.
+The rename is bilingual by construction (i18n parity).

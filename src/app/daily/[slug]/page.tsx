@@ -60,7 +60,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!a || !isArticleLive(a)) return { title: 'Article not found | Mehrdad' };
   const tagsEn = tagsOf(a.tagsEn);
   return {
-    title: `${a.titleEn} | Mehrdad — Daily Product Analysis`,
+    title: `${a.titleEn} | Mehrdad — Daily Analysis`,
     description: a.summaryEn,
     keywords: tagsEn,
     alternates: {

@@ -26,9 +26,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return { title: 'Not found | Mehrdad' };
   }
   const titles: Record<string, string> = {
-    product: 'Daily product analysis — Products | Mehrdad',
-    ai: 'Daily product analysis — AI | Mehrdad',
-    startup: 'Daily product analysis — Startups | Mehrdad',
+    product: 'Daily analysis — Products | Mehrdad',
+    ai: 'Daily analysis — AI | Mehrdad',
+    startup: 'Daily analysis — Startups | Mehrdad',
+    linkedin: 'Daily analysis — LinkedIn | Mehrdad',
   };
   const descriptions: Record<string, string> = {
     product:
@@ -36,6 +37,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     ai: 'Original short articles about AI products and releases — what they do, why they matter and my expert verdict. The AI lane of the daily section.',
     startup:
       'Original short articles about startup decisions and models — what works, what fails and my expert verdict. The startups lane of the daily section.',
+    linkedin:
+      'My daily LinkedIn posts, mirrored here in full — build-in-public notes on shipping products. The LinkedIn lane of the daily section.',
   };
   return {
     title: titles[cat],
