@@ -35,6 +35,7 @@ const KIND_DEFAULT_SLUGS: Record<string, ProjectKind> = {
   'health-app': 'super-app', // owner reclassification 2026-09-30 — it IS a super app
   'quiz-of-koko': 'game-online',
   'traffic-tempo': 'game-mobile', // owner request 2026-09-30 — «بازی موبایل دو بعدی»
+  'driving-exam': 'app', // owner approval 2026-10-13 — educational Android app (Bazaar: mix.azmon.app)
 };
 
 /** own column value wins; legacy/unlabeled rows fall back to the slug map. */

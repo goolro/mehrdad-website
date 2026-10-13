@@ -58,6 +58,26 @@ const SEED_PROJECTS: SeedProject[] = [
     featured: false,
     order: 50,
   },
+  // owner approval 2026-10-13 («خیلی خوب انجام بده») — second Bazaar-published
+  // Android product joins the portfolio via the exact traffic-tempo pattern:
+  // seed row (INSERT-IF-MISSING) + PROJECT_LINKS CTA + kind bootstrap + rich
+  // profile. Copy numbers are the app's OWN store facts (950+ questions /
+  // 270+ signs / 2 golden exams / 32 topic exams / 117 articles — cafebazaar.ir
+  // mix.azmon.app page, v2.5.5). Persian copy obeys the editorial rule: no «،».
+  {
+    slug: 'driving-exam',
+    titleEn: 'Driving License Exam',
+    titleFa: 'آزمون آیین‌نامه رانندگی',
+    summaryEn:
+      'A free, fully offline Android app for the driving-license exam — 950+ practice questions, 270+ road signs, two free golden mock exams and 32 topic tests. Everything works with no internet and no ads.',
+    summaryFa:
+      'اپلیکیشن رایگان و کاملاً آفلاین آمادگی آزمون گواهینامه رانندگی — بیش از ۹۵۰ سؤال تمرینی و ۲۷۰ تابلو و ۳۲ آزمون موضوعی با شبیه‌ساز واقعی جلسه آزمون. همه‌چیز بدون اینترنت و بدون تبلیغ.',
+    cover: '/media/driving-exam-icon.webp',
+    section: 'work',
+    status: 'live',
+    featured: false,
+    order: 60,
+  },
 ];
 
 /**

@@ -36,7 +36,11 @@ import {
   Swords,
   Trophy,
 } from 'lucide-react';
-import { getProjectLink, getProjectLinkHost } from '@/lib/project-links';
+import {
+  getProjectLink,
+  getProjectLinkCta,
+  getProjectLinkHost,
+} from '@/lib/project-links';
 import {
   getProjectProfile,
   type ProfileFeatureIcon,
@@ -350,6 +354,7 @@ const FEATURE_ICONS: Record<ProfileFeatureIcon, typeof Brain> = {
   puzzle: Puzzle,
   calendar: CalendarCheck,
   car: CarFront,
+  book: BookOpen,
 };
 
 const PHASE_ICONS: Record<string, typeof Route> = {
@@ -423,6 +428,14 @@ export function ProjectDetail({ project, shareUrl }: { project: ProjectDetailRow
   // one system
   const playLink = getProjectLink(project.slug);
   const playHost = getProjectLinkHost(project.slug);
+  // non-game products override the game-oriented «Play now» CTA — e.g. the
+  // driving-exam app says «Get it on Cafe Bazaar / دریافت از بازار» with a
+  // phone icon instead of a gamepad (src/lib/project-links.ts)
+  const ctaOverride = getProjectLinkCta(project.slug);
+  const ctaLabel = ctaOverride
+    ? pick(lang, ctaOverride.labelEn, ctaOverride.labelFa)
+    : t.projects.playCta;
+  const CtaIcon = ctaOverride ? Smartphone : Gamepad2;
   // fuller story (features + tech) — only when the slug has a profile in
   // src/lib/project-profiles.ts; amber accents echo the building-status
   // system so the whole detail page reads as one
@@ -549,8 +562,8 @@ export function ProjectDetail({ project, shareUrl }: { project: ProjectDetailRow
             rel="noopener noreferrer"
             className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 px-6 font-bold text-white shadow-lg shadow-amber-500/25 transition-all hover:-translate-y-0.5 hover:shadow-xl hover:shadow-amber-500/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           >
-            <Gamepad2 className="h-5 w-5" aria-hidden />
-            {t.projects.playCta}
+            <CtaIcon className="h-5 w-5" aria-hidden />
+            {ctaLabel}
             <ExternalLink className="h-4 w-4 opacity-80" aria-hidden />
           </a>
           {playHost && (
@@ -617,7 +630,9 @@ export function ProjectDetail({ project, shareUrl }: { project: ProjectDetailRow
         <section className="mt-8" aria-labelledby="project-features-title">
           <h2 id="project-features-title" className="flex items-center gap-2 text-lg font-bold">
             <Sparkles className="h-5 w-5 text-amber-500" aria-hidden />
-            {t.projects.featuresTitle}
+            {profile.featuresTitleEn
+              ? pick(lang, profile.featuresTitleEn, profile.featuresTitleFa)
+              : t.projects.featuresTitle}
           </h2>
           <ul className="mt-4 grid gap-3 sm:grid-cols-2">
             {profile.features.map((f) => {
@@ -663,7 +678,9 @@ export function ProjectDetail({ project, shareUrl }: { project: ProjectDetailRow
         <section className="mt-8" aria-labelledby="project-tech-title">
           <h2 id="project-tech-title" className="flex items-center gap-2 text-lg font-bold">
             <Cpu className="h-5 w-5 text-amber-500" aria-hidden />
-            {t.projects.techTitle}
+            {profile.techTitleEn
+              ? pick(lang, profile.techTitleEn, profile.techTitleFa)
+              : t.projects.techTitle}
           </h2>
           <ul className="mt-4 flex flex-wrap gap-2">
             {profile.tech.map((item) => (
