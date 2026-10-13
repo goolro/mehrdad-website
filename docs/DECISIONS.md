@@ -428,3 +428,37 @@ side branch can be cherry-picked and this decision retired.
 every version number must be the smallest change that closes an advisory, and
 every engine that affects output (CSS, images) must stay bit-identical across
 local dev, CI, and production.
+
+---
+
+## D-031 — LinkedIn daily content system (owner order: «من می خواهم روزانه 5 پست برای لینکدین اماده کنی») (2026-10-13)
+
+**Context:** Owner asked to (1) prepare 5 LinkedIn posts daily and (2) review
+github.com/sergebulaev/linkedin-skills for usefulness. The repo is 12 MIT-licensed
+Claude Code/Codex skills (post writer, humanizer, hook extractor, content planner…)
+built on 2026 LinkedIn algorithm research. It targets Claude/Codex runtimes (paid
+plans) — it cannot run here as a plugin.
+
+**Decision:**
+1. Adopt the repo's METHODOLOGY, not its runtime: writing rules extracted into
+   `docs/linkedin/STYLE-GUIDE.md` (hook/length/layout rules, humanizer checklist,
+   founder angles A1–A10, formula-goal mapping, posting windows) with attribution.
+2. Daily loop: 5 posts per day prepared as a content bank at
+   `docs/linkedin/YYYY-MM-DD.md`; every post bilingual fa+en with formula code,
+   engagement goal, visual suggestion, first-comment link. Recommended publish
+   cadence 1/day (owner picks), window Tue–Thu 7:30–9:00 Tehran.
+3. Owner law integration: the reference repo itself mandates "don't fabricate" —
+   aligned with the no-fabricated-numbers rule; every number in posts must trace
+   to a real source; missing numbers become explicit `[عدد واقعی: ...]` slots.
+4. The Persian editorial rule (no «،») applies to LinkedIn post copy as well.
+5. Day-1 bank published: `docs/linkedin/2026-10-13.md` — 5 posts on real events
+   (dependency pass 15/16 closed, driving-exam app live on Cafe Bazaar, Social
+   Studio wizard feedback → roadmap, 4 AI-writing rules, owned-domain take).
+6. Content lives under git-tracked `docs/` (not the local-only worklog) so the
+   system survives sandbox resets — the local worklog.md was found lost today and
+   was rebuilt.
+
+**Rationale:** content is now versioned with the codebase and every post is
+auditable against the style guide before the owner publishes it; the reviewed
+repo's research rules (no question-first hooks, number-first openers, links in
+first comment, AI-tell scrubbing) are enforced through a per-post checklist.
