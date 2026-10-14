@@ -492,3 +492,41 @@ first comment, AI-tell scrubbing) are enforced through a per-post checklist.
 blog; reusing the existing DailyArticle pipeline (tabs, lane pages, sitemap,
 ISR, admin studio) costs zero new surface and keeps one publishing mechanism.
 The rename is bilingual by construction (i18n parity).
+
+---
+
+## D-033 — Quiz of Koko: Cafe Bazaar link beside the web CTA (owner order 2026-10-13)
+
+**Owner order (verbatim):** «کوکو توی کافه بازار منتشر شده اینم لینکش در جای مناسب
+و با دقت قرار بده و فقط همین قسمت را تغییر بده مراقب باش جای دیگه تغییر نکنه و
+بقیه قسمت ها را فریز کن»
+
+**Decision:**
+1. The Koko app's Android store link (https://cafebazaar.ir/app/com.quizofkoko.game
+   — verified HTTP 200 on 2026-10-13) is added as a SECOND live link for the
+   quiz-of-koko slug only, in the existing pure-code link system
+   (src/lib/project-links.ts): a new optional `PROJECT_EXTRA_LINKS` map +
+   `getProjectExtraLink()` accessor, same slug-keyed pattern as
+   PROJECT_LINKS / PROJECT_LINK_CTA. No DB column, content travels with git.
+2. ProjectDetail renders it as a secondary outline button (Smartphone icon,
+   «دریافت از بازار» / "Get it on Cafe Bazaar" — the exact strings already
+   used by driving-exam) beside the primary web CTA (quizofkoko.com stays
+   primary, untouched). Slugs without an entry keep the single-button layout —
+   every other project is byte-identical (freeze proven by diff: only
+   project-links.ts + ProjectsView.tsx).
+3. Repo hygiene: local main had diverged from origin/main — a duplicate of the
+   D-032 commit (a76a237) had resurrected the two files that commit b316d41
+   deliberately removed (stale src/middleware.ts + public/robots.txt which
+   break builds). Local main was hard-reset to origin/main (1d078cd) BEFORE
+   this work, so this task ships on top of the exact deployed tree.
+4. Local test fixture: the local SQLite DB was missing the quiz-of-koko row
+   (production DB only), so a local-only fixture was inserted copying the
+   production row's real values verbatim (JSON-LD + RSC payload of
+   mehrdad.ir/work/quiz-of-koko — zero invented copy). Not committed; the
+   committed change remains 2 code files + this doc.
+
+**Rationale:** the owner announced the Bazaar publication and asked for the link
+in the appropriate place with everything else frozen. Adding a second channel
+(the one-product-story pattern traffic-tempo already uses for Bazaar link +
+browser demo) adds the new link without demoting the live web game or touching
+any other section.

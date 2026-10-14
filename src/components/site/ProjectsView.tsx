@@ -37,6 +37,7 @@ import {
   Trophy,
 } from 'lucide-react';
 import {
+  getProjectExtraLink,
   getProjectLink,
   getProjectLinkCta,
   getProjectLinkHost,
@@ -436,6 +437,10 @@ export function ProjectDetail({ project, shareUrl }: { project: ProjectDetailRow
     ? pick(lang, ctaOverride.labelEn, ctaOverride.labelFa)
     : t.projects.playCta;
   const CtaIcon = ctaOverride ? Smartphone : Gamepad2;
+  // optional second distribution channel (quiz-of-koko Android app on Cafe
+  // Bazaar) — renders beside the primary CTA; slugs without an entry in
+  // PROJECT_EXTRA_LINKS keep the single-button layout untouched
+  const extraLink = getProjectExtraLink(project.slug);
   // fuller story (features + tech) — only when the slug has a profile in
   // src/lib/project-profiles.ts; amber accents echo the building-status
   // system so the whole detail page reads as one
@@ -556,16 +561,30 @@ export function ProjectDetail({ project, shareUrl }: { project: ProjectDetailRow
 
       {playLink && (
         <div className="mt-8 rounded-2xl border border-amber-500/30 bg-gradient-to-br from-amber-500/10 to-orange-500/10 p-5 sm:p-6">
-          <a
-            href={playLink}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 px-6 font-bold text-white shadow-lg shadow-amber-500/25 transition-all hover:-translate-y-0.5 hover:shadow-xl hover:shadow-amber-500/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-          >
-            <CtaIcon className="h-5 w-5" aria-hidden />
-            {ctaLabel}
-            <ExternalLink className="h-4 w-4 opacity-80" aria-hidden />
-          </a>
+          <div className="flex flex-wrap items-center gap-3">
+            <a
+              href={playLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 px-6 font-bold text-white shadow-lg shadow-amber-500/25 transition-all hover:-translate-y-0.5 hover:shadow-xl hover:shadow-amber-500/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            >
+              <CtaIcon className="h-5 w-5" aria-hidden />
+              {ctaLabel}
+              <ExternalLink className="h-4 w-4 opacity-80" aria-hidden />
+            </a>
+            {extraLink && (
+              <a
+                href={extraLink.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex h-12 items-center justify-center gap-2 rounded-xl border border-amber-500/40 bg-background/70 px-6 font-bold text-amber-700 shadow-sm transition-all hover:-translate-y-0.5 hover:border-amber-500 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 focus-visible:ring-offset-background dark:text-amber-300"
+              >
+                <Smartphone className="h-5 w-5" aria-hidden />
+                {pick(lang, extraLink.labelEn, extraLink.labelFa)}
+                <ExternalLink className="h-4 w-4 opacity-80" aria-hidden />
+              </a>
+            )}
+          </div>
           {playHost && (
             <p className="mt-2.5 text-xs text-muted-foreground">
               {playHost} — {t.projects.playNote}
