@@ -25,6 +25,40 @@ export const PROJECT_LINK_CTA: Record<string, { labelEn: string; labelFa: string
   'driving-exam': { labelEn: 'Get it on Cafe Bazaar', labelFa: 'دریافت از بازار' },
 };
 
+/**
+ * Optional SECOND live link per project slug — for products that exist in
+ * more than one place. quiz-of-koko plays on the web (quizofkoko.com) AND
+ * ships as an Android app on Cafe Bazaar (owner link, verified HTTP 200
+ * 2026-10-13). Rendered by ProjectDetail as a secondary button beside the
+ * primary CTA so both distribution channels read as one system — the same
+ * one-product-story pattern traffic-tempo uses for its Bazaar link + browser
+ * demo. Every other project stays untouched.
+ */
+export const PROJECT_EXTRA_LINKS: Record<
+  string,
+  { href: string; labelEn: string; labelFa: string }
+> = {
+  'quiz-of-koko': {
+    href: 'https://cafebazaar.ir/app/com.quizofkoko.game',
+    labelEn: 'Get it on Cafe Bazaar',
+    labelFa: 'دریافت از بازار',
+  },
+};
+
+/** validated secondary link for a slug, or null when the project has none */
+export function getProjectExtraLink(
+  slug: string,
+): { href: string; labelEn: string; labelFa: string } | null {
+  const extra = PROJECT_EXTRA_LINKS[slug];
+  if (!extra) return null;
+  try {
+    // parse once here — a malformed entry must never render as an href
+    return { ...extra, href: new URL(extra.href).toString() };
+  } catch {
+    return null;
+  }
+}
+
 /** validated external link for a slug, or null when the project has none */
 export function getProjectLink(slug: string): string | null {
   const link = PROJECT_LINKS[slug];
