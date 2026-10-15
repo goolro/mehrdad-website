@@ -210,18 +210,26 @@
    SSR and the first client render are structurally identical and
    hydration can never mismatch at the dev-307 boundary ("/" →
    "/factory"). Bare surfaces opt out visually here instead:
-   /factory → .factory-root (content factory dashboard, preview only)
-   /play/*  → .play-root    (fullscreen game) */
+   /factory      → .factory-root (content factory dashboard, preview only)
+   /play/*       → .play-root    (fullscreen game)
+   /deck/health  → .deck-root    (standalone deck address, D-034 — the
+                                   owner's deck page must show with ZERO
+                                   site template around it) */
 body:has(.factory-root) .theme-bg,
 body:has(.play-root) .theme-bg,
+body:has(.deck-root) .theme-bg,
 body:has(.factory-root) .site-header,
 body:has(.play-root) .site-header,
+body:has(.deck-root) .site-header,
 body:has(.factory-root) .site-footer,
 body:has(.play-root) .site-footer,
+body:has(.deck-root) .site-footer,
 body:has(.factory-root) .site-chat,
 body:has(.play-root) .site-chat,
+body:has(.deck-root) .site-chat,
 body:has(.factory-root) .site-langbanner,
-body:has(.play-root) .site-langbanner {
+body:has(.play-root) .site-langbanner,
+body:has(.deck-root) .site-langbanner {
   display: none !important;
 }
 
