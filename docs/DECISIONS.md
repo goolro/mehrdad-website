@@ -530,3 +530,40 @@ in the appropriate place with everything else frozen. Adding a second channel
 (the one-product-story pattern traffic-tempo already uses for Bazaar link +
 browser demo) adds the new link without demoting the live web game or touching
 any other section.
+
+---
+
+## D-034 — Reserved standalone address /deck/health (owner order 2026-10-13)
+
+**Owner order (verbatim):** «یک صفحه بهت میدهم دقیق می خواهیم همینو نشون بدهیم
+نه اینکه تو قالب وب سایت بره فقط برای پیج دک سلامتی هست باید ادرس بدهیم اوکی؟»
++ «نه سلامتی را لینکش را به انگلیسی بنویس — پیج دک را بهت میدهم و میگم چیکار
+کنیم فعلا لینک را باید بسازی»
+
+**Decision:**
+1. The address is ENGLISH per the owner's correction: **mehrdad.ir/deck/health**
+   (not the Persian transliteration). It is a RESERVED standalone surface for
+   the Health & Wellness deck the owner will deliver next — when it arrives it
+   renders EXACTLY as given, with ZERO site template around it (no header,
+   footer, AI chat bubble, lang banner or theme background).
+2. Bare-surface mechanism reuses the proven always-render-chrome + CSS
+   opt-out pattern: a new `.deck-root` marker class joins .factory-root /
+   .play-root in the globals.css bare-surface block. JSX never branches on
+   pathname — no hydration risk. (First browser check caught a stale
+   Turbopack CSS chunk serving the intermediate rule; re-triggering the
+   bundler fixed it — the shipped file was verified complete: 5 selector
+   groups + comment.)
+3. Until the owner's page arrives the route renders a restrained
+   reserved-note placeholder (DeckHealthReserved.tsx — bilingual, zero
+   claims, zero invented numbers) and carries robots noindex INTENTIONALLY;
+   the noindex must be removed in the same commit that replaces the
+   placeholder with the real deck. Not added to sitemap.xml (manual list).
+4. Engineering note learned on the way: the local SQLite DB is EPHEMERAL
+   (a dev-server restart at 18:42 restored it to seed-only state — the
+   uncommitted local quiz-of-koko fixture from D-033's testing vanished).
+   Local-only data is never relied on for verification evidence anymore;
+   production is always checked directly.
+
+**Rationale:** the owner needs the shareable address to exist NOW and will
+hand over the deck page afterwards; a reserved bare route costs nothing, is
+reversible, and the real page will drop in without touching any other file.
