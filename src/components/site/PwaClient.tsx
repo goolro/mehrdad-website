@@ -61,9 +61,17 @@ export function PwaClient() {
     };
   }, []);
 
-  // never cover the full-screen game board (/play/*) or the private agency
-  // panel (/agency) with the install pill
-  if (!visible || !installEvent || pathname.startsWith('/play/') || pathname.startsWith('/agency'))
+  // never cover the full-screen game board (/play/*), the private agency
+  // panel (/agency) or the standalone deck surfaces (/deck/* — the owner's
+  // deck pages must show with zero site furniture around them, D-034)
+  // with the install pill
+  if (
+    !visible ||
+    !installEvent ||
+    pathname.startsWith('/play/') ||
+    pathname.startsWith('/agency') ||
+    pathname.startsWith('/deck/')
+  )
     return null;
 
   return (
