@@ -567,3 +567,47 @@ any other section.
 **Rationale:** the owner needs the shareable address to exist NOW and will
 hand over the deck page afterwards; a reserved bare route costs nothing, is
 reversible, and the real page will drop in without touching any other file.
+
+---
+
+## D-035 — Health & Wellness deck ships verbatim + bilingual (2026-10-13)
+
+**Owner orders (verbatim):**
+- «یک صفحه بهت میدهم دقیق می خواهیم همینو نشون بدهیم نه اینکه تو قالب وب سایت بره
+  فقط برای پیج دک سلامتی هست باید ادرس بدهیم»
+- «نه سلامتی را لینکش را به انگلیسی بنویس» → address = /deck/health (D-034)
+- «فقط فعلا قرار بده چون تغییرات را هنوز انجام ندادیم و دو زبان قرار بده»
+  (uploaded file: [Brand] — The Health & Wellness Super App (1).html)
+
+**Decision:**
+1. The deck is served as a FULL STANDALONE HTML DOCUMENT by route handlers
+   (deck/health/route.ts + deck/health/fa/route.ts + shared deck-html.ts builder).
+   Route handlers bypass the root layout — the site template (header, footer,
+   globals.css, chat, PWA pill, fonts) physically cannot reach the deck. Stricter
+   and more faithful than the .deck-root CSS opt-out; that CSS block stays in
+   globals.css untouched (inert for this route, zero effect).
+2. Bilingual = two baked documents from one builder (no runtime i18n, no FOUC,
+   no reveal-animation glitches): /deck/health = EN exactly as delivered;
+   /deck/health/fa = FA mirror (dir=rtl, Vazirmatn, mirrored tag pill + phone
+   tilt, ← arrows, «فعال» tag). A language pill in the deck's own nav switches
+   /deck/health ↔ /deck/health/fa preserving the #anchor.
+3. ZERO content invention: every number comes from the owner's file (numeric
+   tokens identical in both languages); placeholder slots ([Brand], [$X], [Y%],
+   [K], [figure + source], [Founding story], [% complete / current stage],
+   [prototype / alpha / beta], [waitlist or sign-ups]) remain VERBATIM in both
+   languages — the owner explicitly said their edits are not done yet. FA copy
+   contains no «،» (standing rule).
+4. CSP: the deck loads Google Fonts, so /deck/health/:path* gets a deck-only CSP
+   override in next.config.ts (adds fonts.googleapis.com to style-src +
+   fonts.gstatic.com to font-src; everything else identical to the global floor).
+   Next.js headers() last-match-wins per key — the deck rule is placed AFTER the
+   global rule (verified by curl: deck gets the font CSP, /blog keeps the global
+   one unchanged).
+5. D-034 obligation executed in the same change: the reserved placeholder
+   (DeckHealthReserved.tsx) and its temporary robots noindex are REMOVED now that
+   the real deck is live. Not added to sitemap.xml (unchanged policy).
+
+**Rationale:** the owner wants the exact uploaded page at the reserved address,
+in two languages, before they apply their own edits. A raw standalone document is
+the only rendering that guarantees pixel-faithfulness ("not inside the site
+template"), and route handlers make template leakage structurally impossible.

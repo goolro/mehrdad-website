@@ -67,6 +67,34 @@ const securityHeaders = [
   { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
 ];
 
+// Health & Wellness deck (D-035): the owner's standalone deck document at
+// /deck/health (+ /deck/health/fa) loads its own Google Fonts — Inter /
+// Space Grotesk / Vazirmatn — from fonts.googleapis.com (stylesheet) and
+// fonts.gstatic.com (font files). The global floor CSP above does not list
+// those two origins, so the deck routes get the SAME floor policy with only
+// those two origins added. Deck-only override: every other route keeps
+// receiving the untouched global CSP (verified via curl after the change).
+const deckSecurityHeaders = [
+  ...securityHeaders.filter((h) => h.key !== "Content-Security-Policy"),
+  {
+    key: "Content-Security-Policy",
+    value: [
+      "default-src 'self'",
+      "script-src 'self' 'unsafe-inline' https://us.i.posthog.com https://us-assets.i.posthog.com",
+      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+      "img-src 'self' data: blob: https:",
+      "font-src 'self' data: https://fonts.gstatic.com",
+      "connect-src 'self' https://us.i.posthog.com",
+      "media-src 'self'",
+      "object-src 'none'",
+      "base-uri 'self'",
+      "form-action 'self'",
+      PREVIEW_EMBED ? "frame-ancestors *" : "frame-ancestors 'none'",
+      "upgrade-insecure-requests",
+    ].join("; "),
+  },
+];
+
 const nextConfig: NextConfig = {
   // `standalone` serves the cPanel artifact flow (scripts/build-production.sh).
   // Vercel builds its own output and its builder FAILS on standalone tracing
@@ -107,6 +135,15 @@ const nextConfig: NextConfig = {
       {
         source: "/:path*",
         headers: securityHeaders,
+      },
+      {
+        // deck-only CSP override (D-035) — MUST come AFTER the global
+        // "/:path*" rule: Next.js applies matching rules in order and the
+        // last matching rule wins for the same header key. Verified by curl:
+        // the deck routes receive the font-allowing CSP, every other route
+        // receives the untouched global one.
+        source: "/deck/health/:path*",
+        headers: deckSecurityHeaders,
       },
       {
         // admin responses are private — never let any cache store them
