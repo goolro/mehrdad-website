@@ -687,3 +687,36 @@ browser EN↔FA round-trip at 1440px AND 390px (click pill → counterpart page
 loads with correct lang/dir each way); no horizontal overflow anywhere; pill
 does not overlap footer/nav/text at any scroll position (screenshots checked);
 zero console errors.
+
+## D-038 — Language toggle moves INTO the nav badge slot (2026-10-16)
+
+**Owner order:** «WORKING TITLE … من دکمه تغییر زبان را ندیدم جای این متن بالا
+با فاصله کمی از اسم برند بزار --- فونت کوچک باشد». Two causes addressed:
+(1) D-037's commit was still local (push awaited the PAT), so production showed
+no toggle at all; (2) the owner now specifies the placement: the toggle lives
+EXACTLY where the "WORKING TITLE" / «عنوان موقت» nav badge sat — replacing it
+1:1, small gap from the brand name, small font. D-037's floating pill is
+removed (superseded).
+
+**Decision:** deterministic 1:1 badge swap in the route handlers; landing files
+stay byte-frozen.
+1. `lang-toggle.ts` now exports the exact badge strings (asserted UNIQUE —
+   count=1 in each file) + `navLangToggle()` rendering one `<style>` + one
+   `<a id="lang-fab">` styled EXACTLY like the old badge: 10px font, muted
+   pill (var(--mu)/var(--line), radius 999, padding 2px 8px, Inter + .06em
+   tracking on EN / Vazirmatn + no tracking on FA). The .logo flex gap (10px)
+   keeps the owner-specified small gap from the brand automatically.
+   EN route: label **FA** → /deck/health/fa. FA route: label **EN** →
+   /deck/health (mirrored by RTL automatically). Hover/focus affordances only.
+2. Byte-proof (bun, both languages): badge unique; served HTML with the toggle
+   removed and badge restored === EXACT original bytes; badge markup absent
+   from served output; delta +294 B (the toggle itself); zero «،».
+3. The <title> "(working title)" and footer «"Vivora" عنوان موقت است» are the
+   owner's own content — NOT touched (freeze rule).
+4. No CSP/sitemap/robots changes (same-origin link only).
+
+**Self-test evidence:** eslint clean; browser EN+FA at 1440px AND 390px —
+toggle inside nav next to brand (measured gap exactly 10px both directions,
+31×18px, 10px font); aria-role link click navigates both ways (round-trip
+verified); no horizontal overflow; no console errors; WORKING TITLE /
+«عنوان موقت» badge absent from both navs.
