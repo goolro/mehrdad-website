@@ -5,24 +5,26 @@
 // as the Persian glyph font (Inter/Space Grotesk untouched for Latin+digits),
 // translated strings, placeholder slots verbatim, numeric tokens identical,
 // and zero Persian comma «،» (standing rule). The EN version stays byte-exact.
-// The ONLY injected UI is the floating language toggle the owner explicitly
-// ordered on 2026-10-16 — one fixed pill spliced before </body>, mirrored to
-// the bottom-left for RTL; every other byte of the landing stays untouched.
+// The ONLY injected UI is the language toggle the owner ordered (2026-10-16):
+// it REPLACES the nav «عنوان موقت» badge 1:1 — same slot, same small badge
+// look, small gap from the brand name. Every other byte stays untouched.
 import { LANDING_FA } from '../landing-fa';
-import { langToggle } from '../lang-toggle';
+import { BADGE_FA, navLangToggle } from '../lang-toggle';
 
 export const dynamic = 'force-static';
 
 export async function GET() {
-  // '</body>' occurs exactly once in LANDING_FA (asserted) — deterministic splice.
+  // BADGE_FA is asserted to occur exactly once in LANDING_FA — deterministic
+  // 1:1 swap; no other byte changes.
   const html = LANDING_FA.replace(
-    '</body>',
-    langToggle({
+    BADGE_FA,
+    navLangToggle({
       label: 'EN',
       href: '/deck/health',
       ariaLabel: 'تغییر به نسخه انگلیسی',
-      side: 'left',
-    }) + '</body>',
+      title: 'English',
+      fontFamily: 'Vazirmatn',
+    }),
   );
   return new Response(html, {
     headers: { 'content-type': 'text/html; charset=utf-8' },
