@@ -720,3 +720,29 @@ toggle inside nav next to brand (measured gap exactly 10px both directions,
 31×18px, 10px font); aria-role link click navigates both ways (round-trip
 verified); no horizontal overflow; no console errors; WORKING TITLE /
 «عنوان موقت» badge absent from both navs.
+
+## D-039 — FA button font fixed to the content font (2026-10-16)
+
+**Owner order:** «سرمایه‌گذاری --این دکمه- این فونت بالا اصلا خوب نیست فونت را
+بهتر کن مثله فونت محتوا».
+
+**Root cause (logged per standing rule):** the landing's `.btn` rule hardcodes
+`font:600 15.5px Inter`. Inter ships NO Persian glyphs, so on the FA page every
+button (nav «سرمایه‌گذاری» + hero/footer CTAs — 8 elements sharing the class)
+fell back to an arbitrary system font — the ugliness the owner saw.
+
+**Decision:** FA page only — deterministic, asserted-unique byte swap in
+`fa/route.ts`: `font:600 15.5px Inter` → `font:600 15.5px
+Vazirmatn,Inter,system-ui,sans-serif` (the EXACT chain the FA content already
+uses: body{font-family:Vazirmatn,Inter,…}). Size (15.5px/.btn.sm 14px),
+weight (600), colors, gradient, paddings: untouched. EN page needs no fix —
+Inter IS the EN content font — and stays byte-frozen.
+
+**Byte-proof:** old string unique in LANDING_FA (count=1); served FA with the
+two swaps restored (badge + font) === EXACT original bytes; new chain present
+exactly once; old hardcode absent; zero «،».
+
+**Self-test evidence:** eslint clean; browser FA 1440px — nav button computed
+fontFamily = "Vazirmatn, Inter, system-ui, sans-serif" (weight 600, 14px kept);
+screenshot reviewed — joined Persian script matches body text; EN nav button
+still "Inter" (untouched by design). D-038 toggle re-verified present.

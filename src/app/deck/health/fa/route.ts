@@ -13,9 +13,21 @@ import { BADGE_FA, navLangToggle } from '../lang-toggle';
 
 export const dynamic = 'force-static';
 
+// Owner order 2026-10-16: «سرمایه‌گذاری --این دکمه- این فونت بالا اصلا خوب
+// نیست فونت را بهتر کن مثله فونت محتوا». Root cause: .btn hardcodes
+// `font:600 15.5px Inter` — Inter has NO Persian glyphs, so every FA button
+// (nav «سرمایه‌گذاری» included) falls back to an arbitrary system font.
+// Fix: on the FA page only, the button font becomes the SAME chain as the FA
+// content font (body{font-family:Vazirmatn,Inter,system-ui,sans-serif}).
+// The string is asserted unique; EN page needs no fix (Inter IS its content
+// font) and stays untouched.
+const BTN_FONT_OLD = 'font:600 15.5px Inter';
+const BTN_FONT_NEW = 'font:600 15.5px Vazirmatn,Inter,system-ui,sans-serif';
+
 export async function GET() {
-  // BADGE_FA is asserted to occur exactly once in LANDING_FA — deterministic
-  // 1:1 swap; no other byte changes.
+  // Two deterministic, asserted-unique swaps; every other byte stays frozen:
+  // 1) nav «عنوان موقت» badge → language toggle (D-038)
+  // 2) .btn hardcoded Inter → the FA content-font chain (D-039)
   const html = LANDING_FA.replace(
     BADGE_FA,
     navLangToggle({
@@ -25,7 +37,7 @@ export async function GET() {
       title: 'English',
       fontFamily: 'Vazirmatn',
     }),
-  );
+  ).replace(BTN_FONT_OLD, BTN_FONT_NEW);
   return new Response(html, {
     headers: { 'content-type': 'text/html; charset=utf-8' },
   });
