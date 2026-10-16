@@ -656,3 +656,34 @@ template"), and route handlers make template leakage structurally impossible.
 no horizontal overflow; anchor nav works; unit-economics calculator interactive
 (100k→500k users recompute correctly, $300K→$1.5M; FA outputs «2.0 ماه» و «$2.00M
 تا $5.00M»); traction section shows all six verified numbers identical in FA.
+
+## D-037 — Floating language toggle on the Health landing (2026-10-16)
+
+**Owner order:** «فقط یک دکمه FA روی قسمت انگلیسی بزار و روی فارسی یک دکمه EN که
+بین هم لینک شده باشند هواست باشه هیچ تغییر نمی خواهم بدهی خیلی مهمه گرافیک دست
+نخوره». This supersedes D-036 item 5 (address-only switching, no toggle): the
+owner now explicitly orders a toggle — and equally explicitly forbids any other
+change («هیچ تغییر نمی خواهم … گرافیک دست نخوره»).
+
+**Decision:** inject a single floating pill via the route handlers, NOT by
+editing the landing files.
+1. `landing-en.ts` / `landing-fa.ts` remain byte-frozen (D-036 generation) —
+   zero bytes touched. Machine-proven: `html.replace(snippet,'') === original`
+   for both languages, i.e. removing the toggle returns the EXACT uploaded
+   bytes; `</body>` asserted to occur exactly once (deterministic splice).
+2. New `src/app/deck/health/lang-toggle.ts` renders one `<style>` + one `<a
+   id="lang-fab">` spliced right before `</body>` by each route handler.
+   EN route: label **FA** → `/deck/health/fa`, fixed bottom-right. FA route:
+   label **EN** → `/deck/health`, fixed bottom-left (RTL mirror).
+3. Styling reuses the landing's own `:root` vars (--card/--line/--tx/--b) +
+   already-loaded Space Grotesk/Inter, `position:fixed` (cannot reflow any
+   existing element), z-index 50 (above the nav's 9), 44px tall (touch
+   target), `env(safe-area-inset-bottom)` respected, `!important` on
+   color/text-decoration so global link styles cannot alter it.
+4. `next.config.ts` CSP: same-origin anchor link, no new sources — untouched.
+
+**Self-test evidence (before ship):** eslint clean; byte-safety proof above;
+browser EN↔FA round-trip at 1440px AND 390px (click pill → counterpart page
+loads with correct lang/dir each way); no horizontal overflow anywhere; pill
+does not overlap footer/nav/text at any scroll position (screenshots checked);
+zero console errors.
