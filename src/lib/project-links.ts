@@ -59,6 +59,45 @@ export function getProjectExtraLink(
   }
 }
 
+/**
+ * Investor pitch deck per project slug (owner order 2026-10-16: on
+ * /work/health-app say the pitch deck is live and link BOTH language
+ * versions — «بگی پیچ دک داریم و … و اینم لینکشه»). Same pure-code pattern
+ * as every map in this file: content travels with git, production Postgres
+ * stays untouched. The deck pages are the standalone /deck/* surfaces
+ * (D-035/D-036) — they have no site chrome and no back link, so they open
+ * in a new tab and the project page stays open.
+ */
+export const PROJECT_PITCH_DECKS: Record<
+  string,
+  { deckEn: string; deckFa: string; noteEn: string; noteFa: string }
+> = {
+  'health-app': {
+    deckEn: 'https://mehrdad.ir/deck/health',
+    deckFa: 'https://mehrdad.ir/deck/health/fa',
+    noteEn: 'The full pitch deck of this product is live — in both Persian and English:',
+    noteFa: 'پیچ دک کامل این محصول منتشر شده است — به هر دو زبان فارسی و انگلیسی:',
+  },
+};
+
+/** validated pitch-deck links for a slug, or null when the project has none */
+export function getProjectPitchDecks(
+  slug: string,
+): { deckEn: string; deckFa: string; noteEn: string; noteFa: string } | null {
+  const deck = PROJECT_PITCH_DECKS[slug];
+  if (!deck) return null;
+  try {
+    // parse once here — a malformed entry must never render as an href
+    return {
+      ...deck,
+      deckEn: new URL(deck.deckEn).toString(),
+      deckFa: new URL(deck.deckFa).toString(),
+    };
+  } catch {
+    return null;
+  }
+}
+
 /** validated external link for a slug, or null when the project has none */
 export function getProjectLink(slug: string): string | null {
   const link = PROJECT_LINKS[slug];
