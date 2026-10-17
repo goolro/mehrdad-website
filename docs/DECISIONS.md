@@ -873,3 +873,50 @@ its own card with the page unshifted. Desktop 1440: scrollW=1440, no scrollbar o
 **Deployment:** commit pushed to GitHub main with the owner's NEW fine-grained
 PAT (inline, never stored — supersedes the earlier classic PAT); Vercel auto-deploy
 verified below in the worklog entry with production byte-for-byte + mobile checks.
+
+## D-043 — Vivora deck as a blog series: one post per slide, each with its own PDF (2026-10-17)
+
+**Owner order:** «به نظرم به شکل صفحاتی در بیار در قسمت وبلاگ بزاریم» + «یعنی هم
+فایل pdf باشه هم متن‌هایی برای توضیحات… تک تک صفحات را بزاریم بصورت pdf هم برای
+هر کدام از صفحات توضیح بدهیم برای سرچ گوگل هم خوبه» — confirmed with «باشه».
+
+**What was built:** the uploaded PPTX (19 slides) becomes 19 real blog posts in
+the existing DB-driven blog (listing + archive + sitemap + RSS + admin-editable),
+NOT static clones: `vivora-deck-01-cover` … `vivora-deck-19-team`. Each post
+carries: the slide image as cover (PNG), an original bilingual explanation whose
+every statement traces to that slide's own text (no invented numbers, each
+slide's own caveat quoted as a blockquote), a link to that slide's PDF, a link
+to the live interactive deck (EN → /deck/health, FA → /deck/health/fa), and
+prev/next series links (internal link equity across all 19).
+
+**Assets pipeline:** LibreOffice headless PPTX→PDF → per-page split →
+Ghostscript /ebook re-distillation (988K→20-24K per page) →
+`public/media/vivora-deck/vivora-deck-slide-XX.pdf` + 110dpi PNG covers
+(48-100K). 2.8MB total. Glyph-heavy capability table and the $250K donut
+verified visually.
+
+**Data pipeline:** `scripts/seed-vivora-deck-posts.ts` (local SQLite) and
+`scripts/seed-vivora-deck-posts-supabase.ts` (production, Management-API
+over HTTPS, SUPABASE_TOKEN env-only) — upsert-by-slug, content-only refresh,
+date/published/featured stay owner-managed (same contract as D-029 koko
+seeds). Dates staggered −1min so the feed reads 01→19. Category سرمایه-گذاری
+resolved, never invented. Built-in fail-loud asserts: 38 asset files exist
+before any DB write; zero «،» in Persian copy (standing editorial rule).
+
+**Sanitizer interaction (found + adapted):** the site-wide `sanitizePostHtml`
+strips the `download` attribute and adds `rel=noopener` to internal links —
+the seed content omits `download` so DB text equals rendered text; slide PDFs
+open in the browser viewer (crawlable, `application/pdf`).
+
+**Self-test evidence:** eslint clean; 19/19 seeded locally; /blog lists the
+series in order; slide pages carry EN and (?lang=fa) FA bodies in initial
+server HTML (blockquote + prev/next verified); PDFs served
+`application/pdf`; sitemap +19 URLs; RSS carries the series; agent-browser:
+listing order, PDF navigation, EN 1440 layout + footer, FA RTL toggle, 390×844
+scrollWidth 390 (no overflow), related-posts cross-link the series; dev.log
+clean.
+
+**Deployment:** assets + scripts pushed to GitHub main (PAT inline, never
+stored) → Vercel serves the PDFs/PNGs; production DB seed runs separately with
+the owner's Supabase token, then one rebuild (blog is force-static) surfaces
+the posts. Production verification logged in the worklog.
