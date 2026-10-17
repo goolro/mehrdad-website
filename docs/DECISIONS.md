@@ -780,3 +780,53 @@ design): FA view shows Persian note + Persian labels + dir=rtl; EN view
 English; click opens the deck in a NEW TAB (verified tab list);
 390px — buttons wrap, no horizontal overflow; localStorage-cleared EN default
 re-verified English; other project pages untouched.
+
+## D-041 — Deck replaced with the owner's 2026-10-17 revision at both addresses (2026-10-17)
+
+**Owner order:** «این پیج دک بروز رسانی شد --- اینو جایگزین کن --- بدون هیچ تغییری فقط
+دکمه fa را روی اون بزار مثله همان پیج دک قبلی -- و فارسی اونم بزار» + upload of
+«Vivora (working title) — The Health & Wellness Super App (3).html» (88,837 bytes).
+
+**Decision:** the uploaded revision REPLACES the previous deck at /deck/health and
+/deck/health/fa. Same pipeline as D-036/D-038/D-039, one source of truth:
+`scripts/build-health-landing.mjs` now reads the (3) revision:
+1. **EN byte-exact:** `landing-en.ts` === the upload, proven non-tautologically
+   (`EN === readFileSync(upload)`). ZERO modification. The ONLY injected UI stays
+   the D-038 nav toggle which 1:1 replaces the «WORKING TITLE» badge (badge markup
+   verified byte-identical in the new file, occurs exactly once).
+2. **FA mirror regenerated** from the same bytes: dir=rtl, Vazirmatn as the Persian
+   glyph font, translated strings — the revision's NEW/CHANGED content all mapped:
+   hero eyebrow (controlled testing · angel round), 12-month target labels, assistants
+   strategy lead, «06 Honest status» roadmap item, market «Expansion order»/«Why us»,
+   competitor table (MyFitnessPal/Noom/Headspace/Fitbit/Flo Health) + matrix header
+   «Product», moat GDPR/HIPAA line, the NEW #safety section (8 items), revenue grid
+   (subscriptions with prices + advertising), calculator churn slider (c_h/o_h) +
+   new note, sensitivity table (.cs) + paragraph, growth referral copy + K/$ grid,
+   funds section (donut chart + legend + 6 milestones + planned advisor/technical
+   lead) and the $200K-$300K angel CTA. FA-CSS injection retargeted from
+   `</style>` to `</style>\n<noscript>` (asserted unique — the revision adds a
+   second style block; naive injection would have duplicated the FA CSS) plus one
+   new RTL fix `.lg b{margin-left:0;margin-right:auto}` for the donut legend.
+   FA assertions extended: new-revision strings present in FA, old-EN strings absent,
+   27 numeric tokens survive, zero «،».
+3. **Placeholders are gone** in this revision ([CTO], [$X], [Y%], [ ]% … replaced by
+   real copy) — the D-036 "placeholders verbatim" assertion was replaced by
+   new-revision identity checks.
+4. Route handlers unchanged in behavior: EN = 1 swap (badge→FA toggle), FA = 2 swaps
+   (badge→EN toggle + D-039 .btn font chain). `font:600 15.5px Inter` verified still
+   unique in the new file.
+
+**Self-test evidence:** eslint clean; byte-proof EN===upload (true), badge count 1/1,
+FA-CSS blocks=1; browser 1440px — EN: eyebrow "MVP in controlled testing · Angel round
+open", #safety present, churn slider live ($2.00 default, o_h updates on input),
+$250K donut + legend + milestones render, CTA "Raising $200K to $300K from angels.";
+click FA toggle → /deck/health/fa: dir=rtl/lang=fa, Persian eyebrow/safety/milestones/
+CTA/churn, Vazirmatn body font, FA .btn chain intact, EN toggle back-links; 390px EN —
+badge-slot toggle beside brand, stats 5/2/1M with new labels.
+
+**Known finding (reported to owner, NOT changed — «بدون هیچ تغییری»):** the revision's
+new `.cs` sensitivity table (scenario section) is not inside a `.scroll` wrapper, so
+at 390px it causes horizontal page overflow (scrollWidth 570 vs 390) on both EN and
+FA. The previous deck had zero overflow at 390px. A one-line fix exists
+(`.cs{display:block;overflow-x:auto}` swap in both route handlers, bytes otherwise
+frozen) — awaiting owner approval before touching his file's rendering.

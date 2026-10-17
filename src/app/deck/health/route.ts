@@ -6,8 +6,10 @@
 // the brand name. Every other byte of the landing stays untouched.
 // A route handler bypasses the root layout entirely — the site template
 // (header/footer/globals.css/chat/PWA pill) physically cannot reach this page.
-// Supersedes the 2026-10-13 investor deck (D-035) at the same address — the
-// owner ordered the previous file deleted and this one put in its place (D-036).
+// Supersedes BOTH the 2026-10-13 investor deck (D-035) and the 2026-10-16
+// landing (D-036): owner order 2026-10-17 (D-041) uploaded a revised deck and
+// ordered it put in place of the previous one, byte-exact, with the same
+// language toggle on top and the same Persian mirror.
 import { LANDING_EN } from './landing-en';
 import { BADGE_EN, navLangToggle } from './lang-toggle';
 
