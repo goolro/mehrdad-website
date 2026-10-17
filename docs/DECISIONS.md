@@ -746,3 +746,37 @@ exactly once; old hardcode absent; zero «،».
 fontFamily = "Vazirmatn, Inter, system-ui, sans-serif" (weight 600, 14px kept);
 screenshot reviewed — joined Persian script matches body text; EN nav button
 still "Inter" (untouched by design). D-038 toggle re-verified present.
+
+## D-040 — Pitch-deck block on /work/health-app (2026-10-16)
+
+**Owner order:** «mehrdad.ir/deck/health/fa این لینک فارسی و انگلیسی را در
+استارتاپ https://mehrdad.ir/work/health-app در اینجا اپدیت کردی بگی پیچ دک
+داریم و …؟ و اینم لینکشه؟» — the startup page must SAY the pitch deck is live
+and link BOTH language versions. Answer was NO (live page had zero deck links);
+implemented in the same change.
+
+**Decision:** pure-code, slug-keyed (same pattern as PROJECT_LINKS /
+PROJECT_EXTRA_LINKS / D-033 — content travels with git, production Postgres
+untouched):
+1. `src/lib/project-links.ts`: new `PROJECT_PITCH_DECKS` map + validated
+   getter. Single entry `health-app`: deckEn → https://mehrdad.ir/deck/health
+   + deckFa → https://mehrdad.ir/deck/health/fa + bilingual note copy
+   (FA note has no «،» per standing rule).
+2. `ProjectsView.tsx` ProjectDetail: amber investor box between the market
+   story and the contact CTA (they read as one investor closing): note line
+   (RTL-aware) + TWO outline buttons with Presentation icon — «پیچ دک —
+   فارسی» / «پیچ دک — انگلیسی» (EN: "Pitch deck — Persian/English").
+   Labels/note go through the site's OWN i18n pick(lang,…) — no new strings
+   system. target=_blank on purpose: the /deck/* pages are standalone (no
+   site chrome, no back link) so the project page stays open.
+3. Every slug without a map entry renders byte-identical to before
+   (verified: traffic-tempo has zero deck links).
+4. NO production DB change — the live health-app row stays as-is; the block
+   is code-side so it ships with the deploy.
+
+**Self-test evidence:** eslint clean; local page EN + ?lang=fa (client-state
+lang per the 2026-09-08 lang-mixing fix — server HTML is EN-default by
+design): FA view shows Persian note + Persian labels + dir=rtl; EN view
+English; click opens the deck in a NEW TAB (verified tab list);
+390px — buttons wrap, no horizontal overflow; localStorage-cleared EN default
+re-verified English; other project pages untouched.

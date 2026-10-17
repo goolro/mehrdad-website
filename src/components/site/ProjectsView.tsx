@@ -25,6 +25,7 @@ import {
   HardHat,
   Images,
   Lightbulb,
+  Presentation,
   Puzzle,
   Repeat,
   Rocket,
@@ -41,6 +42,7 @@ import {
   getProjectLink,
   getProjectLinkCta,
   getProjectLinkHost,
+  getProjectPitchDecks,
 } from '@/lib/project-links';
 import {
   getProjectProfile,
@@ -445,6 +447,9 @@ export function ProjectDetail({ project, shareUrl }: { project: ProjectDetailRow
   // src/lib/project-profiles.ts; amber accents echo the building-status
   // system so the whole detail page reads as one
   const profile = getProjectProfile(project.slug);
+  // investor pitch deck (health-app) — slug-keyed in src/lib/project-links.ts;
+  // null for every other project so their pages stay byte-identical
+  const pitch = getProjectPitchDecks(project.slug);
 
   return (
     <article className="mx-auto w-full max-w-4xl px-4 py-12 sm:px-6">
@@ -490,6 +495,42 @@ export function ProjectDetail({ project, shareUrl }: { project: ProjectDetailRow
             __html: pick(lang, profile.marketStory.htmlEn, profile.marketStory.htmlFa),
           }}
         />
+      )}
+
+      {/* Investor pitch deck (owner order 2026-10-16: «بگی پیچ دک داریم و
+          … و اینم لینکشه») — note + BOTH deck language versions, slug-keyed
+          via PROJECT_PITCH_DECKS. New tab on purpose: the /deck/* pages are
+          standalone (no site chrome, no back link) so the project page stays
+          open. Placed right before the contact CTA so they read as one
+          investor closing. Slugs without an entry keep the page untouched. */}
+      {pitch && (
+        <div className="mt-6 rounded-2xl border border-amber-500/30 bg-gradient-to-br from-amber-500/10 to-orange-500/10 p-5">
+          <p className="text-sm leading-relaxed" dir={rtl ? 'rtl' : 'ltr'}>
+            {pick(lang, pitch.noteEn, pitch.noteFa)}
+          </p>
+          <div className="mt-4 flex flex-wrap items-center gap-3">
+            <a
+              href={pitch.deckFa}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-amber-500/40 bg-background/70 px-5 text-sm font-bold text-amber-700 shadow-sm transition-all hover:-translate-y-0.5 hover:border-amber-500 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 focus-visible:ring-offset-background dark:text-amber-300"
+            >
+              <Presentation className="h-4 w-4" aria-hidden />
+              {pick(lang, 'Pitch deck — Persian', 'پیچ دک — فارسی')}
+              <ExternalLink className="h-4 w-4 opacity-80" aria-hidden />
+            </a>
+            <a
+              href={pitch.deckEn}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-amber-500/40 bg-background/70 px-5 text-sm font-bold text-amber-700 shadow-sm transition-all hover:-translate-y-0.5 hover:border-amber-500 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 focus-visible:ring-offset-background dark:text-amber-300"
+            >
+              <Presentation className="h-4 w-4" aria-hidden />
+              {pick(lang, 'Pitch deck — English', 'پیچ دک — انگلیسی')}
+              <ExternalLink className="h-4 w-4 opacity-80" aria-hidden />
+            </a>
+          </div>
+        </div>
       )}
 
       {/* "Request an intro meeting" CTA — the memo's For Investors closing
