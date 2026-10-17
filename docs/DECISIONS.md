@@ -830,3 +830,46 @@ at 390px it causes horizontal page overflow (scrollWidth 570 vs 390) on both EN 
 FA. The previous deck had zero overflow at 390px. A one-line fix exists
 (`.cs{display:block;overflow-x:auto}` swap in both route handlers, bytes otherwise
 frozen) — awaiting owner approval before touching his file's rendering.
+
+## D-042 — Deck mobile fix: sensitivity table scrolls internally (2026-10-17)
+
+**Owner order:** «نسخه موبایل این پیج دک درست نمایش داده نمیشه مثلا برای فارسی
+انگار باید صفحه را جابجا کنی ابتدا یک بررسی بکن» — then the deploy token (approval
+to ship the proposed fix).
+
+**Investigation (worklog Task 6):** the 2026-10-17 revision's `.cs` sensitivity
+table is the ONLY table outside the file's own `.scroll{overflow-x:auto}`
+container. The file's global `table{width:100%;min-width:520px}` pushed the whole
+page 180px past a phone viewport (scrollWidth 570 vs 390). EN overflowed to the
+right; FA (dir=rtl) overflowed to the LEFT edge — page opens with columns cut off
+and must be shifted (owner's exact symptom). Hiding `.cs` in the browser returned
+scrollWidth to exactly 390 on both languages → single root cause proven. Old deck
+already had the min-width rule but no `.cs` table — the regression came with the
+new revision. Affected: every viewport narrower than ~568px; desktop/tablet fine.
+
+**Fix (minimal, owner-approved):** `src/app/deck/health/cs-scroll.ts` —
+`mobileSafeCsTable(html)` does exactly two asserted-unique insertions:
+1. `.cs-scroll{overflow-x:auto}` right after the unique `.cs th{…}` CSS rule —
+   no borders/background/radius/margins, so on viewports where the table fits
+   (~>=568px) nothing renders differently (clientW 993 === scrollW 993 at 1440px).
+2. `<div class="cs-scroll">…</div>` around the unique `<table class="cs">`.
+In RTL the container starts right-anchored → the first (rightmost) Persian
+column is visible on load. Both route handlers apply it: EN = badge→toggle +
+cs-scroll; FA = badge→toggle + .btn font chain + cs-scroll.
+
+**Byte proofs:** round-trip positional inverse inside the helper (throws unless
+removing the two insertions returns the EXACT original); external proof script:
+container+rule exactly once per language, toggle/font/rtl/«،» assertions pass,
+exact positional inverse === pre-D-042 output for both languages. Frozen
+landing files untouched (still the owner's 2026-10-17 bytes verbatim); page grows
+by exactly 56 bytes per language (89,176→89,232 EN, 100,204→100,260 FA).
+
+**Self-test evidence:** eslint clean. Local 390×844: EN scrollW=390, .cs-scroll
+289px client / 520px scroll (internal scroll), right edge 340<390; FA scrollW=390,
+scrollLeft=0 (RTL right-anchored), screenshot shows the sensitivity table inside
+its own card with the page unshifted. Desktop 1440: scrollW=1440, no scrollbar on
+.cs-scroll, layout pixels unchanged. Toggle round-trip EN→FA→EN works at 390px.
+
+**Deployment:** commit pushed to GitHub main with the owner's NEW fine-grained
+PAT (inline, never stored — supersedes the earlier classic PAT); Vercel auto-deploy
+verified below in the worklog entry with production byte-for-byte + mobile checks.
