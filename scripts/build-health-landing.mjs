@@ -1,18 +1,20 @@
 // Health & Wellness landing — generator for /deck/health surfaces.
 //
-// Owner order 2026-10-16: the uploaded file (health-superapp-landing-en (1).html)
-// is FINAL. The ENGLISH version ships BYTE-EXACT — zero modification (no font,
-// no wording, no injected UI). The PERSIAN version is built from the same bytes:
-// identical design/fonts/layout, translated strings, dir=rtl, Vazirmatn added
-// only as the Persian glyph font, placeholder slots ([CTO], [$X], [Y%], …)
-// kept verbatim, numeric tokens identical, and no Persian comma «،» anywhere.
+// Owner order 2026-10-17 (D-041): the uploaded revision «Vivora (working title) —
+// The Health & Wellness Super App (3).html» REPLACES the previous deck at the
+// same addresses. The ENGLISH version ships BYTE-EXACT — zero modification (no
+// font, no wording, no injected UI). The PERSIAN version is built from the same
+// bytes: identical design/fonts/layout, translated strings, dir=rtl, Vazirmatn
+// added only as the Persian glyph font, numeric tokens identical, and no
+// Persian comma «،» anywhere. (The old [CTO]/[$X]-style placeholders are gone
+// in this revision — every slot now carries real copy.)
 //
 // Usage: bun scripts/build-health-landing.mjs
 // Outputs: src/app/deck/health/landing-en.ts + landing-fa.ts (generated — do not hand-edit).
 
 import { readFileSync, writeFileSync } from 'node:fs';
 
-const SRC = 'upload/health-superapp-landing-en (1).html';
+const SRC = 'upload/Vivora (working title) — The Health & Wellness Super App (3).html';
 const en = readFileSync(SRC, 'utf8');
 
 // ---- ordered replacement map (EN exact string -> FA string) ---------------
@@ -26,7 +28,10 @@ const R = [
    'family=Inter:wght@400;500;600;800&family=Space+Grotesk:wght@500;700&family=Vazirmatn:wght@400;500;600;700;800&display=swap'],
 
   // ---- FA-only CSS additions (same design؛ Persian glyphs؛ RTL fixes) ----
-  ['</style>',
+  // Target is `</style>\n<noscript>` (asserted unique) because the 2026-10-17
+  // revision has TWO </style> closes: the main block AND the new <noscript>
+  // fallback style. Injecting at plain '</style>' would double the FA CSS.
+  ['</style>\n<noscript>',
    `/* ==== FA additions: same design؛ Persian glyphs via Vazirmatn؛ RTL fixes ==== */
 body{font-family:Vazirmatn,Inter,system-ui,sans-serif}
 h1,h2,h3{font-family:Vazirmatn,'Space Grotesk',Inter,sans-serif;letter-spacing:0}
@@ -37,7 +42,9 @@ td.l,th.l{text-align:right}
 .gr h4,.ps .big,.tl2 b,.tl3 b,.bc span{font-family:'Space Grotesk',Vazirmatn,sans-serif}
 .sc{left:auto;right:3cqw}
 .pl2 p em,.rg li b,.sp .jn,.dv li b{margin-left:0;margin-right:auto}
-</style>`],
+.lg b{margin-left:0;margin-right:auto}
+</style>
+<noscript>`],
 
   // ---- nav ----
   ['font:500 10px Inter;color:var(--mu);border:1px solid var(--line);border-radius:999px;padding:2px 8px;letter-spacing:.06em">WORKING TITLE</small>',
@@ -53,7 +60,7 @@ td.l,th.l{text-align:right}
   ['>Invest <span class="ar">→</span></a>', '>سرمایه‌گذاری <span class="ar">←</span></a>'],
 
   // ---- hero ----
-  ['<div class="eyebrow">MVP live · Seed round open</div>', '<div class="eyebrow">MVP زنده است · دور اولیه باز است</div>'],
+  ['<div class="eyebrow">MVP in controlled testing · Angel round open</div>', '<div class="eyebrow">MVP در تست کنترل‌شده · دور آنجل باز است</div>'],
   ['<h1>One app for <span class="gt">every part of your health.</span></h1>',
    '<h1>یک اپ برای <span class="gt">هر بخش از سلامت شما.</span></h1>'],
   ['<p class="lead">Proprietary AI assistants, verified specialists and a wellness marketplace in one platform for iOS, Android and web. Two assistants are live today, up to ten planned.</p>',
@@ -62,7 +69,7 @@ td.l,th.l{text-align:right}
   ['>Explore the product</a>', '>کاوش در محصول</a>'],
   ['<span>Product phases</span>', '<span>فازهای محصول</span>'],
   ['<span>AI assistants</span>', '<span>دستیارهای هوش مصنوعی</span>'],
-  ['<span>Users in 12 months</span>', '<span>کاربر در 12 ماه</span>'],
+  ['<span>12-month user target</span>', '<span>هدف کاربر 12 ماهه</span>'],
 
   // ---- problem ----
   ['<div class="k rv">The problem</div>', '<div class="k rv">مسئله</div>'],
@@ -180,8 +187,8 @@ td.l,th.l{text-align:right}
   // ---- assistants ----
   ['<div class="k rv">Assistant network</div>', '<div class="k rv">شبکهٔ دستیارها</div>'],
   ['Two live today. <span class="gt">Up to ten planned.</span>', 'امروز دو تا زنده. <span class="gt">تا ده تا برنامه‌ریزی شده.</span>'],
-  ['<p class="lead rv">Each assistant owns one part of a user health journey and users are acquired around them. As the network grows, assistants may converge into one unified assistant, with the same user data and the same expert layer behind it.</p>',
-   '<p class="lead rv">هر دستیار یک بخش از مسیر سلامت کاربر را دارد و کاربران حول آن جذب می‌شوند. با بزرگ‌تر شدن شبکه ممکن است دستیارها در یک دستیار یکپارچه همگرا شوند؛ با همان دادهٔ کاربر و همان لایهٔ متخصص پشت آن.</p>'],
+  ['<p class="lead rv">Strategy: acquire users through focused assistants, each owning one part of the health journey, and retain them in one shared experience. Behind every assistant sits the same engine, user profile and specialist layer, so the network can later present as a single assistant without rebuilding anything.</p>',
+   '<p class="lead rv">استراتژی: جذب کاربران از طریق دستیارهای متمرکز که هر کدام یک بخش از مسیر سلامت را دارند و نگه‌داشتن آن‌ها در یک تجربهٔ مشترک. پشت هر دستیار همان موتور و همان پروفایل کاربر و همان لایهٔ متخصص است؛ پس شبکه بعداً می‌تواند به شکل یک دستیار واحد ظاهر شود بدون بازسازی چیزی.</p>'],
   ['<span class="chip on">Assistant 1 · LIVE</span>', '<span class="chip on">دستیار 1 · فعال</span>'],
   ['<span class="chip on">Assistant 2 · LIVE</span>', '<span class="chip on">دستیار 2 · فعال</span>'],
   ['<span class="chip">Assistant 3</span>', '<span class="chip">دستیار 3</span>'],
@@ -279,6 +286,8 @@ td.l,th.l{text-align:right}
   ['"Role-based access, tenant isolation, audit trails and a binary-level leak audit with zero findings."', '"دسترسی نقش‌محور و ایزوله‌سازی tenant و لاگ حسابرسی و ممیزی نشت باینری با صفر یافته."'],
   ['"Disciplined delivery",', '"تحویل منضبط",'],
   ['"Hard CI gates and 27 additive migrations; nothing ships unless lint, types and tests pass."', '"دروازه‌های سخت CI و 27 مهاجرت افزایدنی؛ هیچ چیز بدون پاس شدن lint و تایپ و تست منتشر نمی‌شود."'],
+  ['"Honest status",', '"وضعیت صادقانه",'],
+  ['"About 100 simulated test users in controlled testing. Retention and paid conversion are being measured and are not yet established."', '"حدود 100 کاربر آزمایشی شبیه‌سازی‌شده در تست کنترل‌شده. ماندگاری و تبدیل به پرداخت در حال اندازه‌گیری است و هنوز تثبیت نشده است."'],
 
   // ---- demo ----
   ['See it work, <span class="gt">not just read about it.</span>', 'کارکردنش را ببینید <span class="gt">نه فقط درباره‌اش بخوانید.</span>'],
@@ -309,44 +318,41 @@ td.l,th.l{text-align:right}
    '<small class="n rv">منبع: Global Wellness Institute · Global Wellness Economy Monitor 2025.</small>'],
   ['"Subscription-ready",', '"آمادهٔ اشتراک",'],
   ['"US users already pay monthly for wellness apps and services."', '"کاربران آمریکا همین حالا ماهانه برای اپ‌ها و سرویس‌های سلامت پرداخت می‌کنند."'],
-  ['"Global headroom",', '"ظرفیت جهانی",'],
-  ['"Europe, MENA, Asia and LatAm: high mobile reach and low saturation, served by 4 launch languages with full RTL."',
-   '"اروپا و MENA و آسیا و آمریکای لاتین: دسترسی موبایل بالا و اشباع پایین؛ با 4 زبان عرضه و RTL کامل پوشش داده می‌شود."'],
-  ['"Why we are in",', '"چرا وارد این میدان شدیم",'],
-  ['"[Founding story, one honest sentence]. AI plus human experts in one place is rarely done."',
-   '"[Founding story, one honest sentence]. هوش مصنوعی به‌همراه متخصصان انسانی در یک جا به‌ندرت دیده می‌شود."'],
+  ['"Expansion order",', '"ترتیب گسترش",'],
+  ['"United States first, then Europe, East Asia and West Asia. English is primary; French, Persian and Chinese are planned. Regional competitor analysis precedes each entry."',
+   '"ابتدا آمریکا و سپس اروپا و شرق آسیا و غرب آسیا. انگلیسی زبان اصلی است؛ فرانسوی و فارسی و چینی برنامه‌ریزی شده‌اند. تحلیل رقبای هر منطقه پیش از ورود انجام می‌شود."'],
+  ['"Why us",', '"چرا ما",'],
+  ['"One platform joining AI guidance, care and wellness, and real specialists, built by a lean AI-assisted team that already runs a production platform."',
+   '"یک پلتفرم که راهنمایی AI و مراقبت و تندرستی و متخصصان واقعی را کنار هم می‌آورد؛ ساختهٔ تیمی چابکِ به‌کمک AI که همین حالا یک پلتفرم پروداکشن را اداره می‌کند."'],
 
   // ---- compare ----
   ['<div class="k rv">Competitive landscape</div>', '<div class="k rv">چشم‌انداز رقابتی</div>'],
   ['Strong players, <span class="gt">each solving one slice.</span>', 'بازیگران قدرتمندی که <span class="gt">هر کدام فقط یک بخش را حل می‌کنند.</span>'],
   ['<th class="l">Category</th>', '<th class="l">دسته</th>'],
-  ['<th class="l">Examples</th>', '<th class="l">نمونه‌ها</th>'],
+  ['<th class="l">Reference</th>', '<th class="l">مرجع</th>'],
   ['<th class="l">What they do well</th>', '<th class="l">نقطهٔ قوت</th>'],
   ['<th class="l">The gap</th>', '<th class="l">شکاف</th>'],
-  ['<td class="l">Nutrition and fitness tracking</td>', '<td class="l">ردیابی تغذیه و تناسب اندام</td>'],
-  ['<td class="l">MyFitnessPal, Lifesum</td>', '<td class="l">MyFitnessPal · Lifesum</td>'],
-  ['<td class="l">Logging, habit data</td>', '<td class="l">ثبت داده و عادت</td>'],
-  ['<td class="l">Mostly self-service, limited personal guidance</td>', '<td class="l">عمدتاً خودخدمتی؛ راهنمای شخصی محدود</td>'],
-  ['<td class="l">Coaching and weight management</td>', '<td class="l">کوچینگ و مدیریت وزن</td>'],
-  ['<td class="l">Behavior coaching</td>', '<td class="l">کوچینگ رفتاری</td>'],
-  ['<td class="l">Narrow focus, one goal</td>', '<td class="l">تمرکز باریک و یک هدف</td>'],
-  ['<td class="l">Mental wellness</td>', '<td class="l">سلامت روان</td>'],
-  ['<td class="l">Calm, Headspace</td>', '<td class="l">Calm · Headspace</td>'],
-  ['<td class="l">Content and mindfulness</td>', '<td class="l">محتوا و ذهن‌آگاهی</td>'],
-  ['<td class="l">One dimension, little expert access</td>', '<td class="l">یک بُعد؛ دسترسی اندک به متخصص</td>'],
-  ['<td class="l">Wearables</td>', '<td class="l">گجت‌های پوشیدنی</td>'],
-  ['<td class="l">WHOOP, Oura, Fitbit</td>', '<td class="l">WHOOP · Oura · Fitbit</td>'],
-  ['<td class="l">Biometrics</td>', '<td class="l">بیومتریکس</td>'],
-  ['<td class="l">Hardware dependent, weak action layer</td>', '<td class="l">وابسته به سخت‌افزار؛ لایهٔ اقدام ضعیف</td>'],
-  ['<td class="l">Telehealth</td>', '<td class="l">درمان از راه دور</td>'],
-  ['<td class="l">Teladoc, Amwell</td>', '<td class="l">Teladoc · Amwell</td>'],
-  ['<td class="l">Clinician access</td>', '<td class="l">دسترسی به درمانگر</td>'],
-  ['<td class="l">Reactive care, not daily guidance</td>', '<td class="l">مراقبت واکنشی؛ نه راهنمای روزانه</td>'],
+  ['<td class="l">Nutrition and fitness</td>', '<td class="l">تغذیه و تناسب اندام</td>'],
+  ['<td class="l">Nutrition tracking, calorie management</td>', '<td class="l">ردیابی تغذیه و مدیریت کالری</td>'],
+  ['<td class="l">Mostly self-service logging</td>', '<td class="l">عمدتاً ثبت خودخدمتی</td>'],
+  ['<td class="l">Weight and behavior coaching</td>', '<td class="l">وزن و کوچینگ رفتاری</td>'],
+  ['<td class="l">Behavior-focused programs</td>', '<td class="l">برنامه‌های رفتارمحور</td>'],
+  ['<td class="l">Narrow goal, program based</td>', '<td class="l">هدف باریک و برنامه‌محور</td>'],
+  ['<td class="l">Mindfulness and sleep</td>', '<td class="l">ذهن‌آگاهی و خواب</td>'],
+  ['<td class="l">Meditation and sleep content</td>', '<td class="l">محتوای مدیتیشن و خواب</td>'],
+  ['<td class="l">One dimension, no expert layer</td>', '<td class="l">یک بُعد؛ بدون لایهٔ متخصص</td>'],
+  ['<td class="l">Wearable ecosystem</td>', '<td class="l">اکوسیستم پوشیدنی</td>'],
+  ['<td class="l">Activity tracking and insights</td>', '<td class="l">ردیابی فعالیت و بینش‌ها</td>'],
+  ['<td class="l">Hardware dependent</td>', '<td class="l">وابسته به سخت‌افزار</td>'],
+  ['<td class="l">Women health tracking</td>', '<td class="l">ردیابی سلامت زنان</td>'],
+  ['<td class="l">Personalized tracking for one audience</td>', '<td class="l">ردیابی شخصی‌سازی‌شده برای یک مخاطب</td>'],
+  ['<td class="l">Focused on one segment</td>', '<td class="l">متمرکز بر یک سگمنت</td>'],
   ['<td class="l">Us</td>', '<td class="l">ما</td>'],
   ['<td class="l">AI assistants + specialists + marketplace</td>', '<td class="l">دستیارهای AI + متخصصان + بازارچه</td>'],
   ['<td class="l">One platform for the whole journey</td>', '<td class="l">یک پلتفرم برای کل مسیر</td>'],
   ['<h3 class="rv" style="margin:46px 0 0;font:700 22px \'Space Grotesk\'">Capability coverage</h3>',
    '<h3 class="rv" style="margin:46px 0 0;font:700 22px Vazirmatn,\'Space Grotesk\'">پوشش قابلیت‌ها</h3>'],
+  ['<th class="l">Product</th>', '<th class="l">محصول</th>'],
   ['<th>AI personalization</th>', '<th>شخصی‌سازی AI</th>'],
   ['<th>Live specialists</th>', '<th>متخصص زنده</th>'],
   ['<th>Whole-health scope</th>', '<th>دامنهٔ کل سلامت</th>'],
@@ -354,8 +360,8 @@ td.l,th.l{text-align:right}
   ['<th>Device integration</th>', '<th>یکپارچگی دستگاه‌ها</th>'],
   ['<th>Multilingual + RTL</th>', '<th>چندزبانه + RTL</th>'],
   ['<td class="l">Vivora (MVP + roadmap)</td>', '<td class="l">Vivora (MVP + نقشه راه)</td>'],
-  ['<small class="n rv">● strong · ◐ partial or planned · ○ limited. Our assessment of category tendencies from public positioning; individual products vary. Verify before external distribution.</small>',
-   '<small class="n rv">● قوی · ◐ جزئی یا برنامه‌ریزی‌شده · ○ محدود. ارزیابی ما از گرایش دسته‌ها بر اساس جایگاه عمومی؛ محصولات فردی متفاوت‌اند. پیش از انتشار بیرونی راستی‌آزمایی کنید.</small>'],
+  ['<small class="n rv">● strong · ◐ partial or planned · ○ limited. Our assessment from public positioning; pricing, reach and features must be verified per company before external distribution. A West Asia competitor review will precede entry into that region.</small>',
+   '<small class="n rv">● قوی · ◐ جزئی یا برنامه‌ریزی‌شده · ○ محدود. ارزیابی ما از جایگاه عمومی؛ قیمت و دسترسی و فیچرهای هر شرکت باید پیش از انتشار بیرونی راستی‌آزمایی شود. بازبینی رقبای غرب آسیا پیش از ورود به آن منطقه انجام می‌شود.</small>'],
 
   // ---- moat ----
   ['<div class="k rv">Defensibility</div>', '<div class="k rv">مزیت دفاعی</div>'],
@@ -367,8 +373,22 @@ td.l,th.l{text-align:right}
   ['"Full-stack ownership",', '"مالکیت فول‌استک",'],
   ['"Own stack, zero third-party SDKs in the native app and our own release pipeline."', '"استک خودمان و صفر SDK شخص‌ثالث در اپ نیتیو و خط لولهٔ ریلیز خودمان."'],
   ['"Privacy by design",', '"حریم خصوصی از مبنا",'],
-  ['"Role-based access, tenant isolation and encrypted credentials. Compliance scope: [HIPAA / GDPR roadmap]."',
-   '"دسترسی نقش‌محور و ایزوله‌سازی tenant و رمزنگاری credentials. دامنهٔ انطباق: [HIPAA / GDPR roadmap]."'],
+  ['"Role-based access, tenant isolation and encrypted credentials. GDPR and HIPAA applicability review planned; not yet certified."',
+   '"دسترسی نقش‌محور و ایزوله‌سازی tenant و رمزنگاری credentials. بازبینی لازم‌الاجرا بودن GDPR و HIPAA برنامه‌ریزی شده است؛ هنوز گواهی گرفته نشده است."'],
+
+  // ---- safety (NEW section in the 2026-10-17 revision) ----
+  ['<div class="k rv">Privacy, regulation and AI safety</div>', '<div class="k rv">حریم خصوصی و مقررات و ایمنی AI</div>'],
+  ['Health data deserves <span class="gt">a serious framework.</span>', 'دادهٔ سلامت لایق <span class="gt">چارچوبی جدی است.</span>'],
+  ['<p class="lead rv">Our planned approach is below. It is a proposed framework, not a claim of certification or full compliance; a technical and legal review will confirm status.</p>',
+   '<p class="lead rv">رویکرد برنامه‌ریزی‌شدهٔ ما در پایین آمده است. این یک چارچوب پیشنهادی است؛ نه ادعای گواهی یا انطباق کامل. یک بازبینی فنی و حقوقی وضعیت را تأیید می‌کند.</p>'],
+  ['"Collect only what is needed, explain why, and set retention and deletion rules."', '"فقط دادهٔ لازم جمع می‌شود و چرای آن توضیح داده می‌شود و قواعد نگه‌داری و حذف تعیین می‌شود."'],
+  ['"GDPR readiness","Assess lawful processing, transparency, user rights and special-category health data."', '"آمادگی GDPR","سنجش پردازش قانونی و شفافیت و حقوق کاربر و دادهٔ سلامت در دستهٔ خاص."'],
+  ['"US assessment","HIPAA applies depending on our role and data flows; other federal and state rules may apply."', '"ارزیابی آمریکا","HIPAA بسته به نقش ما و جریان داده‌ها اعمال می‌شود؛ قواعد فدرال و ایالتی دیگر هم ممکن است اعمال شوند."'],
+  ['"Wellness, not diagnosis","AI states its limits, avoids unsupported medical claims and points to qualified professionals."', '"تندرستی نه تشخیص","AI محدودیت‌هایش را می‌گوید و از ادعاهای پزشکی بدون پشتوانه پرهیز می‌کند و به متخصصان واجد شرایط ارجاع می‌دهد."'],
+  ['"Human escalation","High-risk questions and emergencies go to people, not only automated answers."', '"ارجاع انسانی","سؤال‌های پرخطر و فوریت‌ها به انسان‌ها می‌رسند؛ نه فقط به پاسخ‌های خودکار."'],
+  ['"Security controls","Encryption, access control, secure sign-in, monitoring, incident response, vendor review."', '"کنترل‌های امنیتی","رمزنگاری و کنترل دسترسی و ورود امن و پایش و پاسخ به حادثه و بازبینی فروشندگان."'],
+  ['"Device and claim review","Check whether any feature could count as a regulated medical device in each market."', '"بازبینی دستگاه و ادعا","بررسی اینکه آیا فیچری در هر بازار می‌تواند دستگاه پزشکی مقررات‌شده شمرده شود."'],
+  ['"Clear policies","Privacy, terms and AI-use policies published before public launch."', '"سیاست‌های شفاف","سیاست حریم خصوصی و شرایط و سیاست استفاده از AI پیش از لانچ عمومی منتشر می‌شود."'],
   ['"Global from day one",', '"جهانی از روز اول",'],
   ['"Four languages with 100 percent string parity and right-to-left support."', '"چهار زبان با پاریتی 100 درصد عبارت‌ها و پشتیبانی راست‌به‌چپ."'],
 
@@ -377,12 +397,11 @@ td.l,th.l{text-align:right}
   ['Multiple, <span class="gt">compounding</span> revenue streams.', 'جریان‌های درآمدی متعدد و <span class="gt">مضاعف‌شونده.</span>'],
   ['"In-app packages",', '"بسته‌های درون‌اپ",'],
   ['"One-time purchases of programs and services."', '"خرید یک‌بارهٔ برنامه‌ها و سرویس‌ها."'],
-  ['"Subscriptions","Monthly, 3, 6 and 12-month plans."', '"اشتراک‌ها","پلن‌های ماهانه و 3 و 6 و 12 ماهه."'],
-  ['"Premium services",', '"سرویس‌های پرمیوم",'],
-  ['"Exclusive services delivered inside the app."', '"سرویس‌های اختصاصی داخل اپ."'],
+  ['"Subscriptions","Planned prices: $9 monthly, $19 for 3 months, $79 annual."', '"اشتراک‌ها","قیمت‌های برنامه‌ریزی‌شده: ماهانه $9 و 3 ماهه $19 و سالانه $79."'],
+  ['"Advertising","Packages from about $1 to $1,000+, daily and monthly options."', '"تبلیغات","بسته‌ها از حدود $1 تا بیش از $1,000؛ گزینه‌های روزانه و ماهانه."'],
   ['"Specialist commission",', '"کمیسیون متخصصان",'],
   ['"Revenue share on expert sessions."', '"تقسیم درآمد روی جلسات متخصصان."'],
-  ['"Marketplace","Health & wellness products, from phase 2."', '"بازارچه","محصولات سلامت و تندرستی؛ از فاز 2."'],
+  ['"Marketplace","Health and wellness products from phase 2."', '"بازارچه","محصولات سلامت و تندرستی از فاز 2."'],
 
   // ---- calc ----
   ['<div class="k rv">Unit economics</div>', '<div class="k rv">اقتصاد واحد</div>'],
@@ -395,9 +414,10 @@ td.l,th.l{text-align:right}
   ['<label>Ads and other revenue per user, per year <b id="o_s"></b></label>', '<label>درآمد تبلیغات و سایر · سالانه هر کاربر <b id="o_s"></b></label>'],
   ['<label>Referral effect K <b id="o_k"></b></label>', '<label>اثر ارجاع K <b id="o_k"></b></label>'],
   ['<label>Paid acquisition cost per install <b id="o_a"></b></label>', '<label>هزینهٔ جذب پرداختی هر نصب <b id="o_a"></b></label>'],
+  ['<label>Monthly churn <b id="o_h"></b></label>', '<label>ریزش ماهانه <b id="o_h"></b></label>'],
   ['<label>Operating cost per month <b id="o_x"></b></label>', '<label>هزینهٔ عملیاتی ماهانه <b id="o_x"></b></label>'],
-  ['<small class="n">Planned plans: $9 monthly, $19 for 3 months, $79 annual. Churn fixed at 6 percent per month for LTV. Excludes app-store fees, payment fees, taxes and refunds.</small>',
-   '<small class="n">پلن‌های برنامه‌ریزی‌شده: ماهانه $9 و 3 ماهه $19 و سالانه $79. نرخ ریزش برای LTV ثابت 6 درصد در ماه در نظر گرفته شده است. کارمزد استور و کارمزد پرداخت و مالیات و بازگشت وجه لحاظ نشده است.</small>'],
+  ['<small class="n">Planned plans: $9 monthly, $19 for 3 months, $79 annual. Our first experiment targets $0.50 per install; the default here is a more conservative $2. Excludes app-store fees, payment fees, taxes and refunds.</small>',
+   '<small class="n">پلن‌های برنامه‌ریزی‌شده: ماهانه $9 و 3 ماهه $19 و سالانه $79. آزمایش اول ما هدفش $0.50 برای هر نصب است؛ مقدار پیش‌فرض اینجا محافظه‌کارانه‌تر و $2 است. کارمزد استور و کارمزد پرداخت و مالیات و بازگشت وجه لحاظ نشده است.</small>'],
   ['<small>Annual revenue</small>', '<small>درآمد سالانه</small>'],
   ['<small>Subscriptions</small>', '<small>اشتراک‌ها</small>'],
   ['<small>Ads and other</small>', '<small>تبلیغات و سایر</small>'],
@@ -414,15 +434,27 @@ td.l,th.l{text-align:right}
   ['<span>2% paid</span><i style="width:20%"></i>', '<span>2% پرداخت‌کننده</span><i style="width:20%"></i>'],
   ['<span>5% paid</span><i style="width:50%"></i>', '<span>5% پرداخت‌کننده</span><i style="width:50%"></i>'],
   ['<span>10% paid</span><i style="width:100%"></i>', '<span>10% پرداخت‌کننده</span><i style="width:100%"></i>'],
-  ['<p>At 5 percent conversion and $60 realized per paying user: 5,000 paying users and about $25K per month. With $24K to $96K annual operating cost and about $50K acquisition at $0.50 per user, the surplus before fees, taxes and refunds is roughly $154K to $226K. A reliable break-even needs measured conversion, retention, AI cost per active user and full acquisition cost.</p>',
-   '<p>با تبدیل 5 درصد و $60 محقق‌شده از هر کاربر پرداخت‌کننده: 5,000 کاربر پرداخت‌کننده و حدود $25K در ماه. با هزینهٔ عملیاتی سالانه $24K تا $96K و حدود $50K برای جذب با نرخ $0.50 برای هر کاربر؛ مازاد پیش از کارمزد و مالیات و بازگشت وجه تقریباً $154K تا $226K است. یک سر‌به‌سر قابل‌اعتماد به تبدیل و ماندگاری و هزینهٔ AI هر کاربر فعال و هزینهٔ کامل جذبِ اندازه‌گیری‌شده نیاز دارد.</p>'],
+  ['<th>CAC / install</th>', '<th>CAC / نصب</th>'],
+  ['<th>Acquisition, 100K users</th>', '<th>هزینهٔ جذب 100K کاربر</th>'],
+  ['<th>Cost per paying user</th>', '<th>هزینه هر کاربر پرداخت‌کننده</th>'],
+  ['<th>Payback</th>', '<th>بازگشت سرمایه</th>'],
+  ['<td>2 mo</td>', '<td>2 ماه</td>'],
+  ['<td>8 mo</td>', '<td>8 ماه</td>'],
+  ['<td>20 mo</td>', '<td>20 ماه</td>'],
+  ['<p>Sensitivity at 5 percent conversion, $60 per paying user per year and 8 percent monthly churn. At 5 percent conversion and $60 realized per paying user: 5,000 paying users and about $25K per month. With $24K to $96K annual operating cost and about $50K acquisition at $0.50 per user, the surplus before fees, taxes and refunds is roughly $154K to $226K. A reliable break-even needs measured conversion, retention, AI cost per active user and full acquisition cost.</p>',
+   '<p>حساسیت‌سنجی با تبدیل 5 درصد و $60 برای هر کاربر پرداخت‌کننده در سال و ریزش ماهانه 8 درصد. با تبدیل 5 درصد و $60 محقق‌شده از هر کاربر پرداخت‌کننده: 5,000 کاربر پرداخت‌کننده و حدود $25K در ماه. با هزینهٔ عملیاتی سالانه $24K تا $96K و حدود $50K برای جذب با نرخ $0.50 برای هر کاربر؛ مازاد پیش از کارمزد و مالیات و بازگشت وجه تقریباً $154K تا $226K است. یک سر‌به‌سر قابل‌اعتماد به تبدیل و ماندگاری و هزینهٔ AI هر کاربر فعال و هزینهٔ کامل جذبِ اندازه‌گیری‌شده نیاز دارد.</p>'],
 
   // ---- growth ----
   ['Built to <span class="gt">spread itself.</span>', 'ساخته‌شده برای <span class="gt">خودگسترده‌شدن.</span>'],
-  ['<p class="lead rv">Viral mechanics are native to the product, lowering acquisition cost while volume compounds.</p>',
-   '<p class="lead rv">مکانیک‌های وایرال در خود محصول تعبیه شده‌اند؛ هزینهٔ جذب را پایین می‌آورند در حالی که حجم مضاعف می‌شود.</p>'],
-  ['<span>Users in 3 months</span>', '<span>کاربر در 3 ماه</span>'],
-  ['<span>Invites per user, design target</span>', '<span>دعوت از هر کاربر · هدف طراحی</span>'],
+  ['<p class="lead rv">Referral mechanics are built into the product to lower acquisition cost. The 100K and 1M figures are targets, not forecasts; they depend on retention, acquisition performance and funding.</p>',
+   '<p class="lead rv">مکانیک ارجاع در خود محصول تعبیه شده تا هزینهٔ جذب پایین بیاید. ارقام 100K و 1M هدف‌اند نه پیش‌بینی؛ به ماندگاری و عملکرد جذب و سرمایه بستگی دارند.</p>'],
+  ['<span>Target users in 3 months</span>', '<span>هدف کاربر در 3 ماه</span>'],
+  ['<span>Target users in 12 months</span>', '<span>هدف کاربر در 12 ماه</span>'],
+  ['<span>Referral effect, measured in beta</span>', '<span>اثر ارجاع · اندازه‌گیری‌شده در بتا</span>'],
+  ['"How virality is measured","K equals invites per user times invite-to-install conversion. We measure it in beta; every 0.1 of K cuts effective acquisition cost by about 10 percent."',
+   '"نحوهٔ اندازه‌گیری وایرالی بودن","K برابر است با دعوت هر کاربر ضربدر نرخ تبدیل دعوت به نصب. آن را در بتا اندازه می‌گیریم؛ هر 0.1 از K هزینهٔ مؤثر جذب را حدود 10 درصد کم می‌کند."'],
+  ['"$","Planned pricing","$9 monthly, $19 for 3 months, $79 annual. Conversion, CAC and churn are measured in controlled testing."',
+   '"$","قیمت‌گذاری برنامه‌ریزی‌شده","ماهانه $9 و 3 ماهه $19 و سالانه $79. تبدیل و CAC و ریزش در تست کنترل‌شده اندازه‌گیری می‌شوند."'],
   ['<th>Users</th>', '<th>کاربران</th>'],
   ['<th>@ $20 / user</th>', '<th>@ $20 / کاربر</th>'],
   ['<th>@ $50 / user</th>', '<th>@ $50 / کاربر</th>'],
@@ -500,20 +532,33 @@ td.l,th.l{text-align:right}
   ['"Phase 4","Specialist tooling at scale."', '"فاز 4","ابزار متخصصان در مقیاس."'],
   ['"Phase 5","Full super-app ecosystem."', '"فاز 5","اکوسیستم کامل ابر اپ."'],
 
-  // ---- funds + team ----
-  ['<div class="k rv">Use of funds and team</div>', '<div class="k rv">استفاده از سرمایه و تیم</div>'],
-  ['Where the round <span class="gt">goes.</span>', 'سرمایه <span class="gt">کجا می‌رود.</span>'],
-  ['"[ ]%","Product and assistants","Assistants 3 to 10 and phases 2 to 5."', '"[ ]%","محصول و دستیارها","دستیارهای 3 تا 10 و فازهای 2 تا 5."'],
-  ['"[ ]%","Growth","Viral loops, launches and user acquisition."', '"[ ]%","رشد","حلقه‌های وایرال و لانچ‌ها و جذب کاربر."'],
-  ['"[ ]%","Team","Engineering, specialists network and operations."', '"[ ]%","تیم","مهندسی و شبکهٔ متخصصان و عملیات."'],
-  ['"[ ]%","Security and compliance","Audits and regulatory readiness."', '"[ ]%","امنیت و انطباق","ممیزی‌ها و آمادگی مقرراتی."'],
+  // ---- funds + milestones + team (2026-10-17 revision: donut chart + milestones) ----
+  ['<div class="k rv">Use of funds and milestones</div>', '<div class="k rv">استفاده از سرمایه و نقاط عطف</div>'],
+  ['What a <span class="gt">$250K</span> round delivers.', 'دور <span class="gt">$250K</span> چه تحویل می‌دهد.'],
+  ['<p class="lead rv">Illustrative allocation of a $250K round within the $200K to $300K target. Final budget depends on terms and roadmap.</p>',
+   '<p class="lead rv">تخصیص تخمینی دور $250K در محدودهٔ هدف $200K تا $300K. بودجهٔ نهایی به شرایط و نقشه راه بستگی دارد.</p>'],
+  ['>illustrative round</text>', '>دور تخمینی</text>'],
+  ['Product, reliability and security<b>', 'محصول و پایداری و امنیت<b>'],
+  ['User acquisition and validation<b>', 'جذب کاربر و اعتبارسنجی<b>'],
+  ['AI infrastructure and automation<b>', 'زیرساخت AI و اتوماسیون<b>'],
+  ['Hosting, analytics, tech operations<b>', 'میزبانی و تحلیل و عملیات فنی<b>'],
+  ['Compliance, privacy and legal<b>', 'انطباق و حریم خصوصی و حقوقی<b>'],
+  ['Contingency<b>', 'ذخیرهٔ احتیاطی<b>'],
+  ['"Finish controlled testing","Complete MVP testing and resolve critical defects."', '"پایان تست کنترل‌شده","تکمیل تست MVP و رفع نقص‌های بحرانی."'],
+  ['"Measure properly","Reliable analytics and retention measurement."', '"اندازه‌گیری درست","تحلیل قابل‌اعتماد و اندازه‌گیری ماندگاری."'],
+  ['"Validate pricing","Test paid conversion on the planned plans."', '"اعتبارسنجی قیمت‌گذاری","آزمایش تبدیل به پرداخت روی پلن‌های برنامه‌ریزی‌شده."'],
+  ['"US experiments","Launch first user acquisition experiments."', '"آزمایش‌های آمریکا","راه‌اندازی نخستین آزمایش‌های جذب کاربر."'],
+  ['"Know the costs","Measure CAC, referral behavior and AI cost per active user."', '"شناخت هزینه‌ها","اندازه‌گیری CAC و رفتار ارجاع و هزینهٔ AI هر کاربر فعال."'],
+  ['"Prepare Europe","Get ready for the next market."', '"آمادگی اروپا","آماده شدن برای بازار بعدی."'],
+  ['"Medical advisor","Planned: a named clinical advisor for content review and safety."', '"مشاور پزشکی","برنامه‌ریزی‌شده: یک مشاور بالینی نامدار برای بازبینی محتوا و ایمنی."'],
+  ['"Technical lead","Planned: co-founder or CTO as the platform scales."', '"راهبر فنی","برنامه‌ریزی‌شده: هم‌بنیانگذار یا CTO با بزرگ‌شدن پلتفرم."'],
   ['"Founder and designer · Mehrdad.ir"', '"بنیانگذار و طراح · Mehrdad.ir"'],
 
   // ---- CTA ----
   ['<div class="k">The round</div>', '<div class="k">دور سرمایه‌گذاری</div>'],
-  ['Raising <span class="gt">[$X]</span> for <span class="gt">[Y%]</span>.', 'جذب <span class="gt">[$X]</span> در ازای <span class="gt">[Y%]</span>.'],
-  ['<p class="lead" style="margin-bottom:30px">Funds go to product build-out, growth and team. Join us at the start of the five-phase journey.</p>',
-   '<p class="lead" style="margin-bottom:30px">سرمایه صرف تکمیل محصول و رشد و تیم می‌شود. در آغاز مسیر پنج‌فازی همراه ما باشید.</p>'],
+  ['Raising <span class="gt">$200K to $300K</span> from angels.', 'جذب <span class="gt">$200K تا $300K</span> از سرمایه‌گذاران آنجل.'],
+  ['<p class="lead" style="margin-bottom:30px">First round from angel investors; instrument and terms to be discussed. Funds validate the MVP, prove retention and conversion, and start US acquisition experiments.</p>',
+   '<p class="lead" style="margin-bottom:30px">دور اول از سرمایه‌گذاران آنجل؛ ابزار سرمایه‌گذاری و شرایط برای گفتگو است. این سرمایه MVP را اعتبارسنجی می‌کند و ماندگاری و تبدیل را اثبات می‌کند و آزمایش‌های جذب کاربر در آمریکا را شروع می‌کند.</p>'],
   ['>See the MVP live <span class="ar">→</span></a>', '>دیدن زندهٔ MVP <span class="ar">←</span></a>'],
   ['>Back to top</a>', '>بازگشت به بالا</a>'],
 
@@ -556,12 +601,14 @@ assert(!fa.includes('،'), 'FA must not contain the Persian comma «،»');
 assert(fa.includes('dir="rtl"'), 'FA must be dir=rtl');
 assert(fa.includes('lang="fa"'), 'FA must be lang=fa');
 assert(fa.includes('Vazirmatn'), 'FA must load Vazirmatn');
-assert(fa.includes('[$X]') && fa.includes('[Y%]') && fa.includes('[CTO]') && fa.includes('[Medical advisor]') && fa.includes('[One line of relevant experience]') && fa.includes('[Founding story, one honest sentence]') && fa.includes('[HIPAA / GDPR roadmap]') && fa.includes('[ ]%'), 'placeholders must stay verbatim');
+assert(en.includes('id="safety"') && en.includes('Honest status') && en.includes('What a <span class="gt">$250K</span> round delivers.') && en.includes('from angels') && en.includes('c_h'), 'EN must come from the 2026-10-17 revision');
+assert(fa.includes('id="safety"') && fa.includes('c_h') && fa.includes('بازبینی رقبای غرب آسیا') && fa.includes('وضعیت صادقانه'), 'FA must contain the new-revision sections');
+assert(!fa.includes('Privacy, regulation and AI safety') && !fa.includes('Honest status') && !fa.includes('illustrative round') && !fa.includes('Use of funds and milestones') && !fa.includes('Referral effect, measured in beta') && !fa.includes('from angels') && !fa.includes('Sensitivity at 5 percent'), 'new-revision visible strings must be translated');
 assert(!fa.includes('WORKING TITLE'), 'EN nav pill must be translated');
 assert(fa.split('<section').length === en.split('<section').length, 'section count must match');
 assert(fa.split('data-r=').length === en.split('data-r=').length, 'data-r count must match');
 assert(fa.split('data-c=').length === en.split('data-c=').length, 'data-c count must match');
-for (const token of ['149962','303','147','1139','$6.8T','$9.8T','$2.3T','100,000','1,000,000','$2M','$5M','$20M','$50M','$120K','$300K','$600K','8,420','9:41','$9','$19','$79']) {
+for (const token of ['149962','149,962','303','147','1139','1,139','$6.8T','$9.8T','$2.3T','100,000','1,000,000','$2M','$5M','$20M','$50M','$120K','$300K','$600K','$250K','$87.5K','$62.5K','$37.5K','$12.5K','$200K','$500K','$1,000','$0.50','$154K','$226K','1.6x','0.6x','8,420','9:41','$9','$19','$79']) {
   assert(fa.includes(token), 'numeric token must survive: ' + token);
 }
 assert(!fa.includes('Lines of TypeScript'), 'EN stat label must be translated');
@@ -571,16 +618,17 @@ console.log('OK: ' + R.length + ' replacements applied (' + total + ' occurrence
 // ---- write generated modules -------------------------------------------------
 writeFileSync('src/app/deck/health/landing-en.ts',
   '// GENERATED FILE — byte-exact copy of the owner\'s final upload\n' +
-  '// (health-superapp-landing-en (1).html). The EN version ships VERBATIM —\n' +
-  '// never hand-edit this file. Regenerate via: bun scripts/build-health-landing.mjs\n' +
+  '// («Vivora (working title) — The Health & Wellness Super App (3).html»,\n' +
+  '// the 2026-10-17 revision). The EN version ships VERBATIM — never hand-edit\n' +
+  '// this file. Regenerate via: bun scripts/build-health-landing.mjs\n' +
   'export const LANDING_EN = ' + JSON.stringify(en) + ';\n');
 
 writeFileSync('src/app/deck/health/landing-fa.ts',
   '// GENERATED FILE — Persian mirror of the owner\'s final landing, built by\n' +
   '// scripts/build-health-landing.mjs from the same uploaded bytes: identical\n' +
   '// design/fonts/layout، translated strings، dir=rtl، Vazirmatn added only for\n' +
-  '// Persian glyphs، placeholder slots verbatim، numeric tokens identical،\n' +
-  '// and zero Persian comma «،» (standing rule). Never hand-edit.\n' +
+  '// Persian glyphs، numeric tokens identical، and zero Persian comma «،»\n' +
+  '// (standing rule). Never hand-edit.\n' +
   'export const LANDING_FA = ' + JSON.stringify(fa) + ';\n');
 
 console.log('WROTE src/app/deck/health/landing-en.ts + landing-fa.ts');
