@@ -13,7 +13,7 @@ export default async function Image() {
       <OgCard
         kicker="MEHRDAD.IR — THE FDE PLAYBOOK"
         title="From idea to live product"
-        titleFa="پلی‌بوک — از ایده تا محصول زنده"
+        titleFa="پلی‌بوک FDE — از ایده تا محصول زنده"
         subtitle="Scope · Build · Launch · Measure"
       />
     ),
