@@ -147,3 +147,39 @@ Take it to a free 30-minute scope call, or just use it and go build. Both are wi
    PostHog events on the linked pages (`mvp_sprint_viewed`,
    `scope_builder_completed`). No likes-obsession — this is a funnel, not a
    popularity contest.
+
+---
+
+## Featured thumbnail — manual fallback
+
+If LinkedIn shows Thumbnail as required/empty when adding a link, the
+official site card images (1200×630) can be uploaded by hand:
+
+1. Open the image URL in the browser → right-click → **Save image as…**
+   - MVP Sprint → `https://mehrdad.ir/mvp-sprint/opengraph-image`
+   - Scope Builder → `https://mehrdad.ir/scope-builder/opengraph-image`
+   - Case study → `https://mehrdad.ir/case-studies/quiz-of-koko/opengraph-image`
+2. Back in **Add a link**: paste the page URL → Title as in the table →
+   Thumbnail field → **Upload** the saved image → **Save**.
+
+Or wait a few seconds in the dialog — LinkedIn usually auto-fills the
+thumbnail from the site's OG image once its crawler fetches the page.
+
+---
+
+## First 48 hours after Post 1 — network routine
+
+Reach on LinkedIn is rented from the network, not the algorithm. With a
+fresh profile, the post itself travels ~0 without this:
+
+1. **Day 1 (today):** send 15–20 connection invites — Iranian/global
+   founders, indie hackers, early-stage CTOs. Add a 1-line note (no pitch):
+   «از دنیای ساختن محصول می‌آیم — خوشحال می‌شوم وصل باشیم».
+2. **Day 1–2:** leave 3–5 substantive comments (not «عالی!») on posts by
+   people in the same niche. Comments on big posts put the name in front
+   of the right audience before the next post drops.
+3. **Every day:** reply to every comment on Post 1 within 2 hours
+   (already in the runbook). Keep max 1 post/day.
+4. **Hour 48:** screenshot the post stats (impressions + reactions) and
+   PostHog Activity page → send to the builder chat for the funnel check.
+5. **Day 3:** Post 2 (EN — Method) goes out per the plan above.
