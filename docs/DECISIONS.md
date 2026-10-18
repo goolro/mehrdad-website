@@ -920,3 +920,14 @@ clean.
 stored) → Vercel serves the PDFs/PNGs; production DB seed runs separately with
 the owner's Supabase token, then one rebuild (blog is force-static) surfaces
 the posts. Production verification logged in the worklog.
+
+**Production completion (2026-10-18):** owner supplied the Supabase Management
+API token (inline-only, never stored) → `seed-vivora-deck-posts-supabase.ts`
+run against the production project: **19/19 rows INSERTed** (no rows pre-existed),
+all `published=true featured=false source=ai`, dates staggered −1min
+(slide 01 newest, feed reads 01→19), 19/19 category links → سرمایه‌گذاری
+(exact DB slug matched, nothing invented), content sizes 886–1330 chars EN /
+817–1284 chars FA; production Post table now holds 105 rows. The owner's
+Vercel API token was tested and returned `403 invalidToken` on every endpoint —
+so the rebuild was triggered the usual way: this documentation commit pushed to
+main → Vercel auto-deploy (the mechanism that shipped every prior change).
