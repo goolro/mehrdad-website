@@ -1,9 +1,25 @@
 import type { Metadata } from 'next';
 import { MvpSprintView } from '@/components/site/MvpSprintView';
+import { JsonLd } from '@/components/site/JsonLd';
+import { ui } from '@/components/site/i18n';
 
 // Static like /services: rendered once per BUILD so the build-time CSP meta
 // applies, served from the edge until the next deploy (Deploy Hook rebuilds).
 export const dynamic = 'force-static';
+
+// FAQPage schema (phase 2, 2026-10-18) — mirrors the EN FAQ visible on
+// /mvp-sprint (Google rule: structured data must match visible content).
+// JsonLd is an inline block hashed by the build-time CSP injector; this page
+// is force-static, so no per-request rendering is introduced.
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: ui.en.mvpSprint.faq.map((f) => ({
+    '@type': 'Question',
+    name: f.q,
+    acceptedAnswer: { '@type': 'Answer', text: f.a },
+  })),
+};
 
 export const metadata: Metadata = {
   title: 'AI MVP Sprint — fixed scope, fixed quote | Mehrdad — Product Builder',
@@ -22,5 +38,10 @@ export const metadata: Metadata = {
 };
 
 export default function MvpSprintPage() {
-  return <MvpSprintView />;
+  return (
+    <>
+      <JsonLd data={faqSchema} />
+      <MvpSprintView />
+    </>
+  );
 }

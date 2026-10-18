@@ -59,6 +59,10 @@ export function Footer() {
               {lang === 'fa' ? 'اسپرینت MVP' : 'MVP Sprint'}
             </Link>
             <Link href="/work" className="hover:text-foreground">{t.nav.projects}</Link>
+            {/* phase 2 (2026-10-18): credibility crawlable from every page */}
+            <Link href="/case-studies/quiz-of-koko" className="hover:text-foreground">
+              {lang === 'fa' ? 'مطالعه موردی' : 'Case Study'}
+            </Link>
             <Link href="/blog" className="hover:text-foreground">{t.nav.blog}</Link>
             <Link href="/daily" className="hover:text-foreground">{t.nav.daily}</Link>
             <Link href="/playbook" className="hover:text-foreground">
