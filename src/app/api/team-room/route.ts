@@ -8,7 +8,7 @@ import {
 import { clientIp, rateLimit, tooManyRequests } from '@/lib/rate-limit';
 
 export const dynamic = 'force-dynamic';
-export const maxDuration = 60;
+export const maxDuration = 300;
 
 /**
  * اتاق تیم — orchestration چندایجنتی به سبک Grok (docs.x.ai → grok-4.20-multi-agent):
@@ -73,7 +73,7 @@ async function complete(messages: ChatTurn[]): Promise<string> {
   for (const provider of chain) {
     for (let attempt = 1; attempt <= 2; attempt++) {
       try {
-        const out = await chatCompletion(provider, messages, { timeoutMs: 25_000, maxTokens: 900 });
+        const out = await chatCompletion(provider, messages, { timeoutMs: 22_000, maxTokens: 700 });
         if (out.trim()) return out.trim();
         throw new Error(`provider ${provider.name} returned empty completion`);
       } catch (e) {
@@ -90,7 +90,7 @@ async function complete(messages: ChatTurn[]): Promise<string> {
 
   // dev fallback (روی Vercel معمولاً در دسترس نیست و خطا می‌دهد)
   try {
-    const out = await zaiComplete(messages, { timeoutMs: 25_000, maxTokens: 900 });
+    const out = await zaiComplete(messages, { timeoutMs: 22_000, maxTokens: 700 });
     if (out?.trim()) return out.trim();
   } catch (e) {
     lastErr = e;
@@ -214,12 +214,21 @@ export async function POST(req: NextRequest) {
           const step = i + 2;
           send({ type: 'status', agent: sp.name, color: sp.color, step, total: TOTAL });
 
+          // ناقد باید «همه‌ی» خروجی‌ها را ببیند (کارش cross-check است)؛ بقیه فقط ۲ پیام آخر
+          // تا توکن و زمان کم بماند — روی Vercel سقف اجرا محدود است.
           const dialog =
-            transcript.length === 0
-              ? 'گفت‌وگوی تیم تازه شروع شده؛ نوبت اول توست.'
-              : `گفت‌وگوی تیم تا این‌جا:\n\n${transcript
-                  .map((t) => `«${t.name}»:\n${t.text}`)
-                  .join('\n\n')}`;
+            i === 3
+              ? transcript.length === 0
+                ? 'گفت‌وگوی تیم تازه شروع شده.'
+                : `گفت‌وگوی تیم تا این‌جا:\n\n${transcript
+                    .map((t) => `«${t.name}»:\n${t.text}`)
+                    .join('\n\n')}`
+              : transcript.length === 0
+                ? 'گفت‌وگوی تیم تازه شروع شده؛ نوبت اول توست.'
+                : `آخرین حرف‌های تیم:\n\n${transcript
+                    .slice(-2)
+                    .map((t) => `«${t.name}»:\n${t.text}`)
+                    .join('\n\n')}`;
 
           const turns: ChatTurn[] = [
             { role: 'system', content: sp.persona },
