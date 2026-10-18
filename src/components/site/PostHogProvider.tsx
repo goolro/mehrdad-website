@@ -3,6 +3,7 @@
 import { Suspense, useEffect, type ReactNode } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 import posthog from 'posthog-js';
+import { markAnalyticsInitialized } from '@/lib/analytics';
 
 /**
  * PostHog product analytics (2026-02).
@@ -55,6 +56,8 @@ function bootPosthog() {
     respect_dnt: true, // browsers with Do-Not-Track enabled are never tracked
     persistence: 'localStorage+cookie',
   });
+  // from here on, helper captures queue inside posthog-js until __loaded flips
+  markAnalyticsInitialized();
 }
 
 export default function PostHogProvider({ children }: { children: ReactNode }) {
