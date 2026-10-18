@@ -1,0 +1,74 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    env:
+      # dummy values — the build never queries the database (all pages are
+      # dynamically rendered for the per-request CSP nonce), and no AI
+      # service is called at build time. NOTE: NODE_ENV must NOT be set here —
+      # it makes `npm ci` skip devDependencies (eslint/tsc missing) and
+      # `next build` already implies production.
+      DATABASE_URL: "file:./ci.db"
+      ADMIN_PASSWORD: "ci-dummy-password"
+    steps:
+      - uses: actions/checkout@v7
+
+      # Fail fast on schema-mirror drift BEFORE the build: the Vercel build
+      # generates its Prisma client from schema.postgres.prisma, so a model
+      # added only to schema.prisma makes every deploy fail with
+      # "Property '<model>' does not exist on type 'PrismaClient'" while this
+      # SQLite-based CI stays green. Incidents: 2026-10-08 (studio models),
+      # 2026-10-12 (DailyProduct — production frozen ~5h).
+      - name: Guard — prisma schema mirror in sync
+        run: node scripts/check-schema-mirror.mjs
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --include=dev
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npx tsc --noEmit
+
+      - name: Create CI database schema (empty db otherwise - ISR prerender queries it)
+        run: npx prisma db push --skip-generate
+
+      - name: Build (prisma generate + next build)
+        run: npm run build
+
+  # NOTE: scripts/pentest-local.sh / pentest-round2.sh are intentionally NOT
+  # part of CI — they are live-server penetration harnesses that need a
+  # running instance with a real local database. Run them locally per
+  # docs/SECURITY.md §5 after any auth/API change.
+
+  # Round-3 security regression suite (docs/SECURITY_REVIEW_2026-09-05-round3.md).
+  # Needs Node >= 22.6 for --experimental-strip-types, so it runs as its own job
+  # and does not build the app.
+  security-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --include=dev
+
+      - name: Security regression suite (88 checks)
+        run: node --expose-gc --experimental-strip-types scripts/security-checks.mts

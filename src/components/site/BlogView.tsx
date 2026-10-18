@@ -1,0 +1,429 @@
+'use client';
+
+import { useCallback, useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
+import { useApp, pick, formatDate } from './store';
+import { ui } from './i18n';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
+import { CommentsSection } from './CommentsSection';
+import { ShareBar } from './ShareBar';
+import { trackArticleViewed } from '@/lib/analytics';
+import { Search, FileText, ChevronLeft, ChevronRight, Clock, Info, MessageSquare, Newspaper } from 'lucide-react';
+import { DAILY_CATEGORIES } from '@/lib/daily';
+
+interface CategoryItem { id: string; slug: string; nameEn: string; nameFa: string; count?: number }
+interface TagItem { id: string; slug: string; nameEn: string; nameFa: string; count?: number }
+interface PostItem {
+  slug: string; titleEn: string | null; titleFa: string | null; excerptEn: string | null; excerptFa: string | null;
+  cover: string | null; date: string | Date; hasEn?: boolean; readMinutes?: number; commentCount?: number;
+  categories: CategoryItem[]; tags?: TagItem[];
+}
+
+interface ArchiveItem { slug: string; titleEn: string | null; titleFa: string | null; date: string | Date }
+
+/** server-fetched first page (real-routes SEO migration) */
+export interface BlogInitialData {
+  posts: PostItem[];
+  totalPages: number;
+  cats: CategoryItem[];
+  tags: TagItem[];
+  /** full crawlable archive — every published post as a real <a> in the initial HTML */
+  archive?: ArchiveItem[];
+}
+
+export function BlogView({ initial }: { initial?: BlogInitialData }) {
+  const { lang } = useApp();
+  const t = ui[lang];
+  const [cats, setCats] = useState<CategoryItem[]>(initial?.cats || []);
+  const [tags, setTags] = useState<TagItem[]>(initial?.tags || []);
+  const [activeCat, setActiveCat] = useState('');
+  const [activeTag, setActiveTag] = useState('');
+  const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(initial?.totalPages || 1);
+  const [posts, setPosts] = useState<PostItem[]>(initial?.posts || []);
+  const [loading, setLoading] = useState(false);
+  const didInitial = useRef(initial !== undefined);
+
+  useEffect(() => {
+    if (cats.length > 0 && tags.length > 0) return;
+    fetch('/api/site')
+      .then((r) => r.json())
+      .then((d) => {
+        setCats(d.categories || []);
+        setTags(d.tags || []);
+      })
+      .catch(() => {});
+     
+  }, []);
+
+  const load = useCallback(() => {
+    setLoading(true);
+    const params = new URLSearchParams({ page: String(page), perPage: '12' });
+    if (activeCat) params.set('category', activeCat);
+    if (activeTag) params.set('tag', activeTag);
+    if (search.trim()) params.set('search', search.trim());
+    fetch(`/api/posts?${params}`)
+      .then((r) => r.json())
+      .then((d) => {
+        setPosts(d.posts || []);
+        setTotalPages(d.totalPages || 1);
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [page, activeCat, activeTag, search]);
+
+  useEffect(() => {
+    // the server-rendered first page is already in the HTML — only
+    // subsequent filter/search/page changes hit the API
+    if (didInitial.current) {
+      didInitial.current = false;
+      return;
+    }
+    const timer = setTimeout(load, search ? 350 : 0);
+    return () => clearTimeout(timer);
+  }, [load, search]);
+
+  return (
+    <div className="mx-auto w-full max-w-7xl px-4 py-12 sm:px-6">
+      <h1 className="text-3xl font-extrabold sm:text-4xl">{t.blog.title}</h1>
+      <p className="mt-2 text-muted-foreground">{t.blog.sub}</p>
+
+      {/* DAILY BOX — the owner's daily section lives at its own link (/daily)
+          and the three lanes are one click away from the blog header. */}
+      <section
+        aria-label={t.blog.dailyBox.title}
+        className="mt-8 rounded-2xl border border-violet-500/30 bg-violet-500/5 p-5 sm:p-6"
+      >
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="min-w-0">
+            <Badge variant="outline" className="gap-1 border-violet-500/40 bg-violet-500/10 text-violet-600 dark:text-violet-400">
+              <Newspaper className="h-3.5 w-3.5" />
+              {t.blog.dailyBox.badge}
+            </Badge>
+            <h2 className="mt-2 text-xl font-bold tracking-tight">{t.blog.dailyBox.title}</h2>
+            <p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-muted-foreground">
+              {t.blog.dailyBox.desc}
+            </p>
+          </div>
+          <Link
+            href="/daily"
+            className="inline-flex shrink-0 items-center gap-1.5 self-start rounded-lg border border-violet-500/40 px-3 py-2 text-sm font-medium text-violet-600 transition-colors hover:bg-violet-500/10 dark:text-violet-400"
+          >
+            {t.blog.dailyBox.all}
+          </Link>
+        </div>
+        <div className="mt-4 flex flex-wrap gap-2">
+          {DAILY_CATEGORIES.map((c) => (
+            <Link
+              key={c}
+              href={`/daily/cat/${c}`}
+              className="rounded-full border border-border bg-card px-4 py-2 text-sm font-medium transition-all hover:-translate-y-0.5 hover:border-violet-500/50 hover:text-violet-600 dark:hover:text-violet-400"
+            >
+              {t.daily.cats[c]}
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      {/* search + filters */}
+      <div className="mt-8 flex flex-col gap-4">
+        <div className="relative max-w-md">
+          <Search className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
+            placeholder={t.blog.search}
+            className="ps-9"
+          />
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <button onClick={() => { setActiveCat(''); setPage(1); }}>
+            <Badge variant={activeCat === '' ? 'default' : 'outline'} className="cursor-pointer px-3 py-1.5">
+              {t.blog.all}
+            </Badge>
+          </button>
+          {cats.map((c) => (
+            <button key={c.id} onClick={() => { setActiveCat(c.slug); setPage(1); }}>
+              <Badge
+                variant={activeCat === c.slug ? 'default' : 'outline'}
+                className={`cursor-pointer px-3 py-1.5 ${activeCat === c.slug ? 'bg-violet-600 hover:bg-violet-700' : 'hover:border-violet-500/60'}`}
+              >
+                {pick(lang, c.nameEn, c.nameFa)} {c.count !== undefined && `(${c.count})`}
+              </Badge>
+            </button>
+          ))}
+        </div>
+
+        {/* curated topic tags — scrollable row, keeps the filter area compact */}
+        {tags.length > 0 && (
+          <div>
+            <div className="mb-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              {t.blog.tagsLabel}
+            </div>
+            <div className="flex max-h-14 flex-wrap gap-1.5 overflow-y-auto pr-1">
+              <button onClick={() => { setActiveTag(''); setPage(1); }}>
+                <Badge
+                  variant={activeTag === '' ? 'default' : 'outline'}
+                  className={`cursor-pointer px-2.5 py-1 text-xs ${activeTag === '' ? 'bg-fuchsia-600 hover:bg-fuchsia-700' : 'hover:border-fuchsia-500/60'}`}
+                >
+                  {t.blog.all}
+                </Badge>
+              </button>
+              {tags.map((tg) => (
+                <button key={tg.id} onClick={() => { setActiveTag(activeTag === tg.slug ? '' : tg.slug); setPage(1); }}>
+                  <Badge
+                    variant={activeTag === tg.slug ? 'default' : 'outline'}
+                    className={`cursor-pointer px-2.5 py-1 text-xs ${activeTag === tg.slug ? 'bg-fuchsia-600 hover:bg-fuchsia-700' : 'text-muted-foreground hover:border-fuchsia-500/60 hover:text-foreground'}`}
+                  >
+                    #{pick(lang, tg.nameEn, tg.nameFa)}
+                  </Badge>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* grid */}
+      {loading ? (
+        <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="overflow-hidden rounded-2xl border border-border">
+              <Skeleton className="aspect-video w-full rounded-none" />
+              <div className="space-y-2 p-4">
+                <Skeleton className="h-4 w-1/3" />
+                <Skeleton className="h-5 w-full" />
+                <Skeleton className="h-4 w-2/3" />
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : posts.length === 0 ? (
+        <div className="mt-16 text-center text-muted-foreground">
+          <FileText className="mx-auto h-12 w-12 opacity-30" />
+          <p className="mt-3">{t.blog.noResults}</p>
+        </div>
+      ) : (
+        <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {posts.map((p) => (
+            <BlogCard key={p.slug} post={p} />
+          ))}
+        </div>
+      )}
+
+      {/* pagination */}
+      {totalPages > 1 && (
+        <div className="mt-10 flex items-center justify-center gap-2">
+          <Button variant="outline" size="icon" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
+            <ChevronLeft className="h-4 w-4 rtl:rotate-180" />
+          </Button>
+          <span className="text-sm text-muted-foreground">
+            {page} / {totalPages}
+          </span>
+          <Button variant="outline" size="icon" disabled={page >= totalPages} onClick={() => setPage((p) => p + 1)}>
+            <ChevronRight className="h-4 w-4 rtl:rotate-180" />
+          </Button>
+        </div>
+      )}
+
+      {/* crawlable full archive (SEO): every published post as a real link
+          in the initial HTML — JS pagination is invisible to crawlers, so
+          this guarantees discovery of all articles */}
+      {initial?.archive && initial.archive.length > 0 && (
+        <details className="mt-10 rounded-2xl border border-border bg-card/40">
+          <summary className="cursor-pointer select-none list-none px-5 py-4 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground">
+            <span className="inline-flex items-center gap-2">
+              <FileText className="h-4 w-4" />
+              {lang === 'fa' ? 'آرشیو کامل مقالات' : 'Full archive'} · {initial.archive.length}
+            </span>
+          </summary>
+          <div className="max-h-96 overflow-y-auto border-t border-border px-5 py-3">
+            <ul className="columns-1 gap-8 sm:columns-2">
+              {initial.archive.map((a) => (
+                <li key={a.slug} className="block break-inside-avoid py-1.5 text-sm">
+                  <Link
+                    href={`/blog/${a.slug}`}
+                    className="text-muted-foreground transition-colors hover:text-violet-600 dark:hover:text-violet-400"
+                  >
+                    {pick(lang, a.titleEn, a.titleFa) || a.slug}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </details>
+      )}
+    </div>
+  );
+}
+
+export function BlogCard({ post }: { post: PostItem }) {
+  const { lang } = useApp();
+  return (
+    <Link
+      href={`/blog/${post.slug}`}
+      className="group block overflow-hidden rounded-2xl border border-border bg-card text-start transition-all hover:-translate-y-1 hover:border-violet-500/50 hover:shadow-lg"
+    >
+      <div className="aspect-video w-full overflow-hidden bg-muted">
+        {post.cover ? (
+          <img src={post.cover} alt="" loading="lazy" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
+        ) : (
+          <div className="flex h-full items-center justify-center">
+            <FileText className="h-10 w-10 text-muted-foreground/40" />
+          </div>
+        )}
+      </div>
+      <div className="p-4">
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          {formatDate(lang, post.date)}
+          {post.categories[0] && (
+            <>
+              <span>·</span>
+              <span className="text-violet-600 dark:text-violet-400">
+                {pick(lang, post.categories[0].nameEn, post.categories[0].nameFa)}
+              </span>
+            </>
+          )}
+          {post.readMinutes !== undefined && (
+            <span className="ms-auto inline-flex items-center gap-1">
+              <Clock className="h-3 w-3" />
+              {post.readMinutes} {ui[lang].common.minRead}
+            </span>
+          )}
+        </div>
+        <h3 className="mt-2 line-clamp-2 font-bold leading-snug transition-colors group-hover:text-violet-600 dark:group-hover:text-violet-400">
+          {pick(lang, post.titleEn, post.titleFa)}
+        </h3>
+        <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">{pick(lang, post.excerptEn, post.excerptFa)}</p>
+        {(post.tags && post.tags.length > 0) && (
+          <div className="mt-3 flex flex-wrap gap-1">
+            {post.tags.slice(0, 3).map((tg) => (
+              <span key={tg.id} className="rounded-md border border-border bg-muted/60 px-1.5 py-0.5 text-[11px] text-muted-foreground">
+                #{pick(lang, tg.nameEn, tg.nameFa)}
+              </span>
+            ))}
+            {post.tags.length > 3 && (
+              <span className="text-[11px] text-muted-foreground">+{post.tags.length - 3}</span>
+            )}
+          </div>
+        )}
+        {!!post.commentCount && (
+          <div className="mt-3 flex items-center gap-1 text-xs text-muted-foreground">
+            <MessageSquare className="h-3.5 w-3.5" />
+            {post.commentCount} {ui[lang].comments.count}
+          </div>
+        )}
+      </div>
+    </Link>
+  );
+}
+
+// ─────────────────── Post Detail (server-fed) ───────────────────
+
+interface FullPost {
+  slug: string; titleEn: string | null; titleFa: string | null;
+  excerptEn: string | null; excerptFa: string | null;
+  contentEn: string | null; contentFa: string | null;
+  cover: string | null; date: string | Date;
+  categories: CategoryItem[]; tags: TagItem[];
+}
+
+/**
+ * Article body rendered from server-provided data — the full article
+ * (title, cover, content) is present in the initial HTML response, so
+ * `curl /blog/<slug>` returns real content without any JS execution.
+ */
+export function PostDetail({ post, related, shareUrl }: { post: FullPost; related: PostItem[]; shareUrl?: string }) {
+  const { lang, closePost } = useApp();
+  const t = ui[lang];
+
+  const title = pick(lang, post.titleEn, post.titleFa);
+  const isEnMissing = lang === 'en' && !post.contentEn;
+
+  // PostHog (2026-02): the north-star engagement metric — which articles
+  // actually get read, per language. Fires once per mounted article.
+  useEffect(() => {
+    trackArticleViewed({ slug: post.slug, title, lang });
+  }, [post.slug, title, lang]);
+
+  return (
+    <article className="mx-auto w-full max-w-4xl px-4 py-10 sm:px-6">
+      <Button variant="ghost" onClick={closePost} className="mb-6 -ms-2 text-violet-600 dark:text-violet-400">
+        <ChevronLeft className="me-1 h-4 w-4 rtl:rotate-180" />
+        {t.blog.back}
+      </Button>
+
+      <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+        {post.categories.map((c) => (
+          <Badge key={c.id} variant="secondary" className="bg-violet-600/10 text-violet-600 dark:text-violet-400">
+            {pick(lang, c.nameEn, c.nameFa)}
+          </Badge>
+        ))}
+        <span>· {t.blog.published}: {formatDate(lang, post.date)}</span>
+      </div>
+
+      {post.tags && post.tags.length > 0 && (
+        <div className="mt-3 flex flex-wrap items-center gap-1.5">
+          <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{t.blog.tagsLabel}:</span>
+          {post.tags.map((tg) => (
+            <span key={tg.id} className="rounded-md border border-fuchsia-500/30 bg-fuchsia-600/5 px-2 py-0.5 text-xs text-fuchsia-700 dark:text-fuchsia-300">
+              #{pick(lang, tg.nameEn, tg.nameFa)}
+            </span>
+          ))}
+        </div>
+      )}
+
+      <h1 className="mt-4 text-3xl font-extrabold leading-tight sm:text-4xl">{title}</h1>
+
+      {isEnMissing && (
+        <div className="mt-5 flex items-start gap-2 rounded-xl border border-amber-500/40 bg-amber-500/10 p-3 text-sm text-amber-700 dark:text-amber-400">
+          <Info className="mt-0.5 h-4 w-4 shrink-0" />
+          {t.blog.aiNote}
+        </div>
+      )}
+
+      {post.cover && (
+        <img src={post.cover} alt={title} className="mt-7 w-full rounded-2xl object-cover shadow-lg" />
+      )}
+
+      <div
+        className="prose-blog mt-8"
+        dir={isEnMissing || lang === 'fa' ? 'rtl' : 'ltr'}
+        dangerouslySetInnerHTML={{ __html: pick(lang, post.contentEn, post.contentFa) || `<p>${pick(lang, post.excerptEn, post.excerptFa)}</p>` }}
+      />
+
+      <div className="mt-8 border-y border-border py-4">
+        <ShareBar url={shareUrl} title={title} label={t.common.shareArticle} />
+      </div>
+
+      <CommentsSection slug={post.slug} />
+
+      {related.length > 0 && (
+        <div className="mt-14 border-t border-border pt-8">
+          <h2 className="text-xl font-bold">{t.blog.relatedTitle}</h2>
+          <div className="mt-5 grid gap-4 sm:grid-cols-3">
+            {related.map((r) => (
+              <Link
+                key={r.slug}
+                href={`/blog/${r.slug}`}
+                className="group block rounded-xl border border-border bg-card p-3 text-start transition-colors hover:border-violet-500/50"
+              >
+                <div className="text-xs text-muted-foreground">{formatDate(lang, r.date)}</div>
+                <div className="mt-1 line-clamp-2 text-sm font-semibold transition-colors group-hover:text-violet-600 dark:group-hover:text-violet-400">
+                  {pick(lang, r.titleEn, r.titleFa)}
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+    </article>
+  );
+}

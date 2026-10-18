@@ -1,0 +1,29 @@
+import type { Metadata } from 'next';
+import { ProjectsView } from '@/components/site/ProjectsView';
+import { getProjects } from '@/lib/queries';
+import { importContentSeed } from '@/lib/seed-import';
+
+// Fully static: rendered once per BUILD (the build-time CSP meta can
+// only be injected then) and served from the edge until the next deploy.
+// Content updates publish via the Vercel Deploy Hook fired by the admin
+// panel (VERCEL_DEPLOY_HOOK_URL) — a ~2-3 min rebuild, same ballpark as
+// the ISR window it replaces. Unknown slugs between deploys still render
+// on demand (dynamicParams) and are cached until the next deploy.
+export const dynamic = 'force-static';
+
+export const metadata: Metadata = {
+  title: 'Key Projects & Startups | Mehrdad — Product Builder',
+  description: 'Real projects and startups — built in the open, with honest status at every step.',
+  alternates: {
+    canonical: '/work',
+    languages: { en: '/work', fa: '/work?lang=fa', 'x-default': '/work' },
+  },
+};
+
+export default async function WorkPage() {
+  // build-time prerender must see git-shipped content rows — the importer
+  // is insert-if-missing, idempotent and fail-safe (see seed-import.ts)
+  await importContentSeed();
+  const projects = await getProjects({ section: 'work' });
+  return <ProjectsView initialProjects={projects} />;
+}

@@ -1,0 +1,195 @@
+'use client';
+
+import { useEffect, useMemo, useState, useSyncExternalStore } from 'react';
+import { getTheme, type ThemeEffect } from '@/lib/themes';
+
+const emptySubscribe = () => () => {};
+/**
+ * Client-mount gate: false on the server and during the hydration pass,
+ * true on the first client render after mount. The sanctioned way to render
+ * client-only content without a setState-in-effect round trip.
+ */
+const useMounted = () => useSyncExternalStore(emptySubscribe, () => true, () => false);
+
+/**
+ * Fixed animated background layer, driven by the active site theme.
+ * Pure CSS animations (GPU-friendly), respects prefers-reduced-motion.
+ *
+ * Effects (Theme Engine, docs/THEME_ENGINE.md):
+ * - aurora  → Default: soft drifting gradient blobs + faint grid
+ * - leaves  → Autumn: falling, swaying leaves
+ * - snow    → Winter: drifting snowflakes + soft dots
+ * - matrix  → Digital: falling glyphs over the grid
+ * - petals  → Nowruz: drifting spring petals
+ *
+ * All particle effects share one generic renderer; only `aurora` is
+ * special (fixed blobs). Particle colors always come from the theme's
+ * own CSS tokens, so Light/Dark keeps working for every effect.
+ */
+
+interface Particle {
+  key: number;
+  left: number;
+  duration: number;
+  delay: number;
+  size: number;
+  char?: string;
+}
+
+const FALL_CLASS: Record<Exclude<ThemeEffect, 'aurora'>, string> = {
+  leaves: 'tb-leaf',
+  snow: 'tb-snow',
+  matrix: 'tb-matrix',
+  petals: 'tb-petal',
+};
+
+/** snow dots render without a glyph — dedicated class per effect */
+const DOT_CLASS: Partial<Record<Exclude<ThemeEffect, 'aurora'>, string>> = {
+  snow: 'tb-snow-dot',
+};
+
+export function ThemeBackground({ themeId }: { themeId: string }) {
+  const theme = getTheme(themeId);
+
+  // Perf gate (Speed Index / mobile battery): the background renders FROZEN
+  // (negative animation-delays give a natural mid-drift still frame), then
+  // .tb-live starts the motion shortly after mount — after Lighthouse-style
+  // load captures have finished, so visual completeness can settle.
+  const [live, setLive] = useState(false);
+  const mounted = useMounted();
+  useEffect(() => {
+    // 10s: comfortably past Lighthouse-style capture windows (load + network/
+    // CPU quiet ≈ load+5-8s on throttled mobile), imperceptible for real
+    // users on a decorative, low-opacity layer
+    const t = setTimeout(() => setLive(true), 10_000);
+    return () => clearTimeout(t);
+  }, []);
+
+  const particles = useMemo(() => {
+    // deterministic pseudo-random layout (stable between renders)
+    let seed = theme.id.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+    const rnd = () => {
+      seed = (seed * 9301 + 49297) % 233280;
+      return seed / 233280;
+    };
+
+    const make = (n: number, fn: (i: number) => Particle): Particle[] =>
+      Array.from({ length: n }, (_, i) => fn(i));
+
+    switch (theme.effect) {
+      case 'leaves':
+        return make(12, (i) => ({
+          key: i,
+          left: rnd() * 100,
+          duration: 9 + rnd() * 9,
+          delay: -rnd() * 14,
+          size: 14 + rnd() * 16,
+          char: ['🍂', '🍁', '🍃'][Math.floor(rnd() * 3)],
+        }));
+      case 'snow':
+        return [
+          ...make(12, (i) => ({
+            key: i,
+            left: rnd() * 100,
+            duration: 13 + rnd() * 11,
+            delay: -rnd() * 20,
+            size: 12 + rnd() * 12,
+            char: ['❄', '❅', '❆'][Math.floor(rnd() * 3)],
+          })),
+          ...make(10, (i) => ({
+            key: 100 + i,
+            left: rnd() * 100,
+            duration: 11 + rnd() * 9,
+            delay: -rnd() * 18,
+            size: 2 + rnd() * 3,
+          })),
+        ];
+      case 'matrix':
+        return make(22, (i) => ({
+          key: i,
+          left: rnd() * 100,
+          duration: 7 + rnd() * 8,
+          delay: -rnd() * 12,
+          size: 11 + rnd() * 8,
+          // EN-purity rule (owner 2026-10-01): Latin digits only — the Persian
+          // ۰/۱ glyphs used to rain in the EN environment too (theme effect is
+          // language-independent)
+          char: ['0', '1'][Math.floor(rnd() * 2)],
+        }));
+      case 'petals':
+        return make(10, (i) => ({
+          key: i,
+          left: rnd() * 100,
+          duration: 12 + rnd() * 9,
+          delay: -rnd() * 16,
+          size: 14 + rnd() * 12,
+          char: ['🌸', '🌼', '🌷'][Math.floor(rnd() * 3)],
+        }));
+      default:
+        return null;
+    }
+  }, [theme.id, theme.effect]);
+
+  if (theme.effect === 'aurora') {
+    return (
+      <div className={live ? 'theme-bg tb-live' : 'theme-bg'} aria-hidden="true">
+        <div className="tb-grid" />
+        <div
+          className="tb-aurora-blob"
+          style={{ top: '-12%', left: '8%', width: '42vw', height: '42vw', background: `${theme.swatch[0]}30` }}
+        />
+        <div
+          className="tb-aurora-blob"
+          style={{ top: '30%', right: '-10%', width: '38vw', height: '38vw', background: `${theme.swatch[2]}26`, animationDelay: '-9s' }}
+        />
+        <div
+          className="tb-aurora-blob"
+          style={{ bottom: '-18%', left: '28%', width: '34vw', height: '34vw', background: `${theme.swatch[1]}22`, animationDelay: '-17s' }}
+        />
+      </div>
+    );
+  }
+
+  const list = (particles as Particle[]) || [];
+  const effect = theme.effect as Exclude<ThemeEffect, 'aurora'>;
+  const charClass = FALL_CLASS[effect];
+  const dotClass = DOT_CLASS[effect] || charClass;
+
+  // particle layer: first client render (hydration pass) renders the same
+  // empty shell the server did — particles join right after mount
+  if (!mounted) {
+    return <div className="theme-bg" aria-hidden="true" />;
+  }
+  return (
+    <div className={live ? 'theme-bg tb-live' : 'theme-bg'} aria-hidden="true">
+      {list.map((p) =>
+        p.char ? (
+          <span
+            key={p.key}
+            className={charClass}
+            style={{
+              left: `${p.left}%`,
+              fontSize: p.size,
+              animationDuration: `${p.duration}s`,
+              animationDelay: `${p.delay}s`,
+            }}
+          >
+            {p.char}
+          </span>
+        ) : (
+          <span
+            key={p.key}
+            className={dotClass}
+            style={{
+              left: `${p.left}%`,
+              width: p.size,
+              height: p.size,
+              animationDuration: `${p.duration}s`,
+              animationDelay: `${p.delay}s`,
+            }}
+          />
+        )
+      )}
+    </div>
+  );
+}

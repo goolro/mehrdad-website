@@ -1,0 +1,497 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+:root {
+  --radius: 0.625rem;
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
+}
+
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.922 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.556 0 0);
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.556 0 0);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* ── Persian font support ── */
+[dir="rtl"] body,
+[dir="rtl"] input,
+[dir="rtl"] textarea,
+[dir="rtl"] button {
+  font-family: var(--font-vazirmatn), var(--font-geist-sans), system-ui, sans-serif;
+}
+
+/* ── Blog article typography ── */
+.prose-blog {
+  line-height: 1.8;
+  font-size: 1.05rem;
+  color: var(--foreground);
+  word-break: break-word;
+}
+.prose-blog h1 { font-size: 1.6rem; font-weight: 800; margin: 1.6em 0 0.6em; }
+.prose-blog h2 { font-size: 1.35rem; font-weight: 700; margin: 1.5em 0 0.5em; }
+.prose-blog h3 { font-size: 1.15rem; font-weight: 700; margin: 1.3em 0 0.4em; }
+.prose-blog p { margin: 0.9em 0; }
+.prose-blog ul, .prose-blog ol { margin: 0.9em 0; padding-inline-start: 1.5em; }
+.prose-blog ul { list-style: disc; }
+.prose-blog ol { list-style: decimal; }
+.prose-blog li { margin: 0.4em 0; }
+.prose-blog a { color: var(--color-violet-600, #7c3aed); text-decoration: underline; }
+.prose-blog strong, .prose-blog b { font-weight: 700; }
+.prose-blog blockquote {
+  border-inline-start: 3px solid var(--color-violet-400, #8b5cf6);
+  padding-inline-start: 1em;
+  margin: 1.2em 0;
+  color: rgba(var(--foreground-rgb), 0.75);
+  font-style: italic;
+}
+.prose-blog img { max-width: 100%; height: auto; border-radius: 0.75rem; margin: 1.2em auto; }
+.prose-blog table { width: 100%; border-collapse: collapse; margin: 1.2em 0; font-size: 0.95em; }
+.prose-blog th, .prose-blog td { border: 1px solid rgba(128,128,128,0.3); padding: 0.5em 0.75em; text-align: start; }
+.prose-blog th { background: color-mix(in srgb, var(--color-violet-500, #8b5cf6) 8%, transparent); font-weight: 700; }
+.prose-blog hr { margin: 2em 0; border-color: rgba(128,128,128,0.25); }
+.prose-blog iframe, .prose-blog video { max-width: 100%; border-radius: 0.75rem; }
+
+/* ═══════════ Site Theme System ═══════════
+   Each theme overrides Tailwind palette vars so every `violet-*` /
+   `fuchsia-*` utility across the site re-colors automatically. */
+
+/* 🍂 Autumn — orange / amber / rose */
+:root[data-theme="autumn"] {
+  --color-violet-50: #fff7ed;  --color-violet-100: #ffedd5;  --color-violet-200: #fed7aa;
+  --color-violet-300: #fdba74;  --color-violet-400: #fb923c;  --color-violet-500: #f97316;
+  --color-violet-600: #ea580c;  --color-violet-700: #c2410c;  --color-violet-800: #9a3412;
+  --color-violet-900: #7c2d12;  --color-violet-950: #431407;
+  --color-fuchsia-400: #fb7185; --color-fuchsia-500: #f43f5e; --color-fuchsia-600: #e11d48;
+  --color-fuchsia-700: #be123c;
+}
+
+/* ❄️ Winter — icy sky / cyan */
+:root[data-theme="winter"] {
+  --color-violet-50: #f0f9ff;  --color-violet-100: #e0f2fe;  --color-violet-200: #bae6fd;
+  --color-violet-300: #7dd3fc;  --color-violet-400: #38bdf8;  --color-violet-500: #0ea5e9;
+  --color-violet-600: #0284c7;  --color-violet-700: #0369a1;  --color-violet-800: #075985;
+  --color-violet-900: #0c4a6e;  --color-violet-950: #082f49;
+  --color-fuchsia-400: #67e8f9; --color-fuchsia-500: #22d3ee; --color-fuchsia-600: #0891b2;
+  --color-fuchsia-700: #0e7490;
+}
+
+/* ⚡ Digital — neon cyan / lime over the shared grid */
+:root[data-theme="digital"] {
+  --color-violet-50: #ecfeff;  --color-violet-100: #cffafe;  --color-violet-200: #a5f3fc;
+  --color-violet-300: #67e8f9;  --color-violet-400: #22d3ee;  --color-violet-500: #06b6d4;
+  --color-violet-600: #0891b2;  --color-violet-700: #0e7490;  --color-violet-800: #155e75;
+  --color-violet-900: #164e63;  --color-violet-950: #083344;
+  --color-fuchsia-400: #4ade80; --color-fuchsia-500: #22c55e; --color-fuchsia-600: #16a34a;
+  --color-fuchsia-700: #15803d;
+}
+
+/* 🌱 Nowruz — spring emerald / gold (haft-sin) */
+:root[data-theme="nowruz"] {
+  --color-violet-50: #ecfdf5;  --color-violet-100: #d1fae5;  --color-violet-200: #a7f3d0;
+  --color-violet-300: #6ee7b7;  --color-violet-400: #34d399;  --color-violet-500: #10b981;
+  --color-violet-600: #059669;  --color-violet-700: #047857;  --color-violet-800: #065f46;
+  --color-violet-900: #064e3b;  --color-violet-950: #022c22;
+  --color-fuchsia-400: #fbbf24; --color-fuchsia-500: #f59e0b; --color-fuchsia-600: #d97706;
+  --color-fuchsia-700: #b45309;
+}
+
+/* ═══════════ Bare surfaces (structure stays, CSS hides) ═══════════
+   The site chrome (Header/Footer/Chat/LangBanner/ThemeBackground) is
+   ALWAYS rendered by SiteChrome — JSX never branches on pathname, so
+   SSR and the first client render are structurally identical and
+   hydration can never mismatch at the dev-307 boundary ("/" →
+   "/factory"). Bare surfaces opt out visually here instead:
+   /factory      → .factory-root (content factory dashboard, preview only)
+   /play/*       → .play-root    (fullscreen game)
+   /deck/health  → .deck-root    (standalone deck address, D-034 — the
+                                   owner's deck page must show with ZERO
+                                   site template around it) */
+body:has(.factory-root) .theme-bg,
+body:has(.play-root) .theme-bg,
+body:has(.deck-root) .theme-bg,
+body:has(.factory-root) .site-header,
+body:has(.play-root) .site-header,
+body:has(.deck-root) .site-header,
+body:has(.factory-root) .site-footer,
+body:has(.play-root) .site-footer,
+body:has(.deck-root) .site-footer,
+body:has(.factory-root) .site-chat,
+body:has(.play-root) .site-chat,
+body:has(.deck-root) .site-chat,
+body:has(.factory-root) .site-langbanner,
+body:has(.play-root) .site-langbanner,
+body:has(.deck-root) .site-langbanner {
+  display: none !important;
+}
+
+/* /investors-koko/* (Koko investor funnel, D-029/D-030): fixed deck
+   palettes (paper + forest) would sit under the fixed theme-background
+   overlay — hide ONLY the background there; header/footer/chat/lang
+   banner stay visible. Same CSS opt-out pattern as bare surfaces. */
+body:has(.investors-root) .theme-bg {
+  display: none !important;
+}
+
+/* ═══════════ Animated theme backgrounds ═══════════ */
+.theme-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* — aurora (digital): soft drifting gradient blobs + faint grid — */
+.tb-aurora-blob {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(90px);
+  opacity: 0.5;
+  animation: tb-drift 26s ease-in-out infinite alternate;
+}
+@keyframes tb-drift {
+  0%   { transform: translate(0, 0) scale(1); }
+  50%  { transform: translate(6vw, -4vh) scale(1.15); }
+  100% { transform: translate(-4vw, 5vh) scale(0.92); }
+}
+.tb-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(to right, rgba(128,128,128,0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(128,128,128,0.05) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(ellipse at center, black 30%, transparent 75%);
+}
+
+/* — leaves (autumn): falling, swaying leaves — */
+.tb-leaf {
+  position: absolute;
+  top: -8vh;
+  font-size: 22px;
+  opacity: 0.75;
+  animation: tb-fall linear infinite;
+  will-change: transform;
+}
+@keyframes tb-fall {
+  0%   { transform: translateY(-8vh) translateX(0) rotate(0deg); }
+  25%  { transform: translateY(24vh) translateX(3vw) rotate(95deg); }
+  50%  { transform: translateY(52vh) translateX(-3vw) rotate(200deg); }
+  75%  { transform: translateY(80vh) translateX(2vw) rotate(290deg); }
+  100% { transform: translateY(112vh) translateX(-2vw) rotate(380deg); }
+}
+
+/* — snow (winter): drifting snowflakes + soft dots — */
+.tb-snow {
+  position: absolute;
+  top: -8vh;
+  color: var(--color-violet-300, #7dd3fc);
+  text-shadow: 0 0 6px color-mix(in srgb, var(--color-violet-300, #7dd3fc) 60%, transparent);
+  opacity: 0.8;
+  animation: tb-snowfall linear infinite;
+  will-change: transform;
+}
+.tb-snow-dot {
+  position: absolute;
+  top: -4vh;
+  border-radius: 9999px;
+  background: var(--color-violet-200, #bae6fd);
+  filter: blur(1px);
+  animation: tb-snowfall linear infinite;
+  will-change: transform;
+}
+@keyframes tb-snowfall {
+  0%   { transform: translateY(-8vh) translateX(0) rotate(0deg); }
+  30%  { transform: translateY(30vh) translateX(2.5vw) rotate(14deg); }
+  60%  { transform: translateY(60vh) translateX(-2.5vw) rotate(-10deg); }
+  100% { transform: translateY(114vh) translateX(1.5vw) rotate(6deg); }
+}
+
+/* — matrix (digital): falling glyphs over the shared grid — */
+.tb-matrix {
+  position: absolute;
+  top: -8vh;
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  color: var(--color-violet-400, #22d3ee);
+  text-shadow: 0 0 10px color-mix(in srgb, var(--color-violet-400, #22d3ee) 55%, transparent);
+  opacity: 0.4;
+  animation: tb-matrixfall linear infinite;
+  will-change: transform;
+}
+@keyframes tb-matrixfall {
+  0%   { transform: translateY(-8vh) translateX(0); }
+  50%  { transform: translateY(55vh) translateX(1.2vw); }
+  100% { transform: translateY(114vh) translateX(-1vw); }
+}
+
+/* — petals (nowruz): drifting spring petals — */
+.tb-petal {
+  position: absolute;
+  top: -8vh;
+  font-size: 20px;
+  opacity: 0.75;
+  animation: tb-fall linear infinite;
+  will-change: transform;
+}
+
+/* perf gate (see ThemeBackground): frozen during load — Lighthouse Speed
+   Index can reach visual completeness; motion starts via .tb-live after
+   mount. Reduced-motion below still wins (animation: none). */
+.theme-bg:not(.tb-live) .tb-aurora-blob,
+.theme-bg:not(.tb-live) .tb-leaf,
+.theme-bg:not(.tb-live) .tb-snow,
+.theme-bg:not(.tb-live) .tb-snow-dot,
+.theme-bg:not(.tb-live) .tb-matrix,
+.theme-bg:not(.tb-live) .tb-petal {
+  animation-play-state: paused;
+}
+
+/* respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .theme-bg * { animation: none !important; }
+}
+
+/* prose (article body) colors always follow the active theme's tokens
+   via var(--color-violet-*) / color-mix — no per-theme overrides needed */
+
+/* thin unobtrusive scrollbar for the AI chat transcript */
+.chat-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in oklab, var(--muted-foreground) 35%, transparent) transparent;
+}
+.chat-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+.chat-scroll::-webkit-scrollbar-thumb {
+  border-radius: 9999px;
+  background: color-mix(in oklab, var(--muted-foreground) 35%, transparent);
+}
+.chat-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* ── FDE pointer card: animated gradient border beam ─────────────────
+   A single violet→fuchsia light ray travels slowly around the card
+   border, marking the "beyond the loop" pointer as deliberately
+   different from the three process cards (owner request 2026-09-08).
+   @property animates the conic angle; browsers without @property show
+   the same border as a static gradient (graceful degradation). */
+@property --fde-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+.fde-beam {
+  position: relative;
+  isolation: isolate;
+}
+.fde-beam::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1.5px;
+  background: conic-gradient(
+    from var(--fde-angle),
+    transparent 0deg,
+    transparent 250deg,
+    var(--color-violet-500, #8b5cf6) 310deg,
+    var(--color-fuchsia-500, #d946ef) 340deg,
+    var(--color-violet-500, #8b5cf6) 360deg
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  animation: fde-spin 7s linear infinite;
+  pointer-events: none;
+  z-index: 1;
+}
+@keyframes fde-spin {
+  to { --fde-angle: 360deg; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fde-beam::before { animation: none; }
+}
+
+/* ── FDE card invitation word: shimmering gradient text ──────────────
+   A violet→fuchsia light sweep travels across the word continuously
+   (owner request 2026-09-08). background-clip:text keeps it a pure CSS
+   effect; reduced-motion freezes it at a readable static gradient. */
+.fde-shimmer {
+  background: linear-gradient(
+    110deg,
+    var(--color-violet-600, #7c3aed) 25%,
+    var(--color-fuchsia-500, #d946ef) 45%,
+    var(--color-violet-400, #a78bfa) 55%,
+    var(--color-violet-600, #7c3aed) 75%
+  );
+  background-size: 250% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: fde-shimmer 3s linear infinite;
+}
+@keyframes fde-shimmer {
+  from { background-position: 200% 0; }
+  to { background-position: -50% 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fde-shimmer { animation: none; }
+}
+
+/* ── FA boot guard (English-flash fix, 2026-01) ──────────────────────
+   The static build server-renders English for every visitor; a Persian
+   user used to SEE English text until JS hydration applied the persisted
+   language. The pre-paint boot script (layout.tsx) adds `lang-boot-fa`
+   when localStorage says Persian: this rule keeps the body invisible so
+   the first PAINT is the committed Persian render (SiteChrome removes
+   the class in a layout effect, i.e. before the browser paints).
+   Safety: a 0s forwards animation force-reveals the body after 1.2s, so
+   a JS failure or a stalled hydration can never leave a blank page.
+   no-JS visitors never get the class at all. */
+html.lang-boot-fa {
+  background: #09090b; /* zinc-950 — matches the default dark body */
+}
+html.lang-boot-fa.lang-boot-light {
+  background: #fafafa; /* zinc-50 — light-mode users */
+}
+html.lang-boot-fa body {
+  visibility: hidden;
+  animation: lang-boot-reveal 0s 1.2s forwards;
+}
+@keyframes lang-boot-reveal {
+  to { visibility: visible; }
+}
+
+/* ── Route-change indicator (nav feedback, 2026-09-29) ────────────────
+   Slim top bar + corner pill rendered by RouteIndicator while a client
+   navigation is in flight. Pure CSS so it works with zero deps. */
+@keyframes nav-indicator-slide {
+  0% { transform: translateX(-150%); }
+  100% { transform: translateX(400%); }
+}
+.nav-indicator-bar {
+  animation: nav-indicator-slide 1.1s ease-in-out infinite;
+}
+@keyframes nav-indicator-in {
+  from { opacity: 0; transform: translateY(-6px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.nav-indicator-pill {
+  animation: nav-indicator-in 0.18s ease-out both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .nav-indicator-bar { animation: none; opacity: 0.6; }
+  .nav-indicator-pill { animation: none; }
+}

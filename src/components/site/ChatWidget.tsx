@@ -1,0 +1,513 @@
+'use client';
+
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useApp } from './store';
+import { ui } from './i18n';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { ArrowDown, X, Send, Sparkles, Trash2, UserCheck, Hammer, Handshake } from 'lucide-react';
+
+interface Msg {
+  role: 'user' | 'assistant';
+  content: string;
+}
+
+type LeadState = 'idle' | 'form' | 'sent' | 'error';
+
+export function ChatWidget() {
+  const { lang, chatOpen, setChatOpen, view } = useApp();
+  const t = ui[lang];
+  const [messages, setMessages] = useState<Msg[]>([]);
+  const [input, setInput] = useState('');
+  const [loading, setLoading] = useState(false);
+  // live token stream: null = idle, string = assistant bubble being typed out
+  const [streamText, setStreamText] = useState<string | null>(null);
+  const sessionIdRef = useRef<string>('');
+  // owner token issued TOGETHER with the sessionId (privacy: round-3 L4).
+  // The server only continues/deletes a session for the caller that holds
+  // both — this ref is the only place the raw token ever lives client-side.
+  const sessionTokenRef = useRef<string>('');
+  // the REAL scrolling element — a plain overflow-y-auto div. Radix ScrollArea
+  // forwards its ref to the non-scrollable Root, which silently broke every
+  // auto-scroll attempt (transcript never followed the conversation).
+  const scrollRef = useRef<HTMLDivElement>(null);
+  // true while the transcript sits at (or near) the bottom — only then may we
+  // auto-scroll, otherwise we'd yank the reader away from older messages
+  const pinnedRef = useRef(true);
+  const [atBottom, setAtBottom] = useState(true);
+  const [unseen, setUnseen] = useState(false);
+
+  // lead ("reply from Mehrdad") mini-form state
+  const [lead, setLead] = useState<LeadState>('idle');
+  const [leadForm, setLeadForm] = useState({ name: '', email: '', phone: '', note: '' });
+  const [leadSending, setLeadSending] = useState(false);
+  const [leadError, setLeadError] = useState(false);
+  // mirror of sessionIdRef for render-time decisions (refs must not be read during render)
+  const [hasSession, setHasSession] = useState(false);
+  // scripted conversational flow (owner rule, latest feedback): chip tap →
+  // INSTANT canned intro (no API wait) → visitor explains → the scripted
+  // phone-ask arrives from the server → phone → lead captured → flow ends
+  const [flow, setFlow] = useState<'order' | 'partner' | null>(null);
+
+  // reset conversation when the UI language switches — deliberate one-shot
+  // reset (new session per language), not an accidental cascading render
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- deliberate one-shot reset on language change (documented)
+    setMessages([{ role: 'assistant', content: t.chat.welcome }]);
+    sessionIdRef.current = '';
+    sessionTokenRef.current = '';
+    setHasSession(false);
+    setLead('idle');
+    setFlow(null);
+  }, [lang]);
+
+  const scrollToBottom = useCallback((smooth = false) => {
+    const el = scrollRef.current;
+    if (!el) return;
+    el.scrollTo({ top: el.scrollHeight, behavior: smooth ? 'smooth' : 'auto' });
+    pinnedRef.current = true;
+    setAtBottom(true);
+    setUnseen(false);
+  }, []);
+
+  // keep the transcript pinned to the latest content while streaming —
+  // instantly, because a smooth animation re-triggered on every delta stalls
+  useEffect(() => {
+    if (pinnedRef.current) {
+      scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
+    } else {
+      // reader scrolled up: don't yank them down — flag the new reply instead
+      setUnseen(true);
+    }
+  }, [messages, loading, lead, streamText]);
+
+  // opening the panel must land on the newest message
+  useEffect(() => {
+    if (chatOpen) scrollToBottom(false);
+  }, [chatOpen, scrollToBottom]);
+
+  function handleTranscriptScroll() {
+    const el = scrollRef.current;
+    if (!el) return;
+    const distance = el.scrollHeight - el.scrollTop - el.clientHeight;
+    const pinned = distance < 64;
+    pinnedRef.current = pinned;
+    setAtBottom(pinned);
+    if (pinned) setUnseen(false);
+  }
+
+  // tap an action chip → the FIRST scripted line appears instantly (owner:
+  // «متن ابتدای را باید سریع بفرسته») — no API round-trip. The next user
+  // message carries the flow tag so the server continues the scripted
+  // conversation: idea brief → phone ask → arranged call
+  function startFlow(kind: 'order' | 'partner') {
+    if (loading) return;
+    setFlow(kind);
+    setMessages((m) => [
+      ...m,
+      { role: 'user', content: kind === 'order' ? t.chat.actionOrder : t.chat.actionPartner },
+      { role: 'assistant', content: kind === 'order' ? t.chat.orderIntro : t.chat.collabIntro },
+    ]);
+    scrollToBottom(true);
+  }
+
+  async function send(text?: string) {
+    const msg = (text ?? input).trim();
+    if (!msg || loading) return;
+    setInput('');
+    setMessages((m) => [...m, { role: 'user', content: msg }]);
+    setLoading(true);
+    setStreamText(null);
+    scrollToBottom(true);
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'text/event-stream' },
+        body: JSON.stringify({
+          message: msg,
+          lang,
+          sessionId: sessionIdRef.current,
+          sessionToken: sessionTokenRef.current,
+          stream: true,
+          context: view === 'fde' ? 'fde' : undefined,
+          flow,
+        }),
+      });
+      if (res.status === 429) {
+        setMessages((m) => [...m, { role: 'assistant', content: t.chat.tooFast }]);
+        return;
+      }
+      const ct = res.headers.get('content-type') || '';
+      // legacy JSON (or error) response — render the whole reply at once
+      if (!res.ok || !res.body || !ct.includes('text/event-stream')) {
+        const data = (await res.json().catch(() => null)) as {
+          reply?: string;
+          sessionId?: string;
+          sessionToken?: string;
+          phoneCaptured?: boolean;
+        } | null;
+        if (data?.sessionId) {
+          sessionIdRef.current = data.sessionId;
+          sessionTokenRef.current = data.sessionToken || '';
+          setHasSession(true);
+        }
+        // the phone step completes the scripted flow — the visitor is now a
+        // captured lead and further messages go back to normal AI chat
+        if (data?.phoneCaptured) setFlow(null);
+        setMessages((m) => [...m, { role: 'assistant', content: data?.reply || t.common.error }]);
+        return;
+      }
+      // ── SSE streaming: render deltas LIVE, as each event arrives ──
+      // (handling must sit inside the read loop: processing after the
+      // stream completes is exactly the "dots for the whole wait, then a
+      // wall of text" experience the owner reported)
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buf = '';
+      let acc = '';
+      let open = true; // first delta closes the typing indicator
+      const handleEvent = (raw: string) => {
+        const line = raw.split('\n').find((l) => l.startsWith('data:'));
+        if (!line) return;
+        let ev: Record<string, unknown>;
+        try {
+          ev = JSON.parse(line.slice(5).trim()) as Record<string, unknown>;
+        } catch {
+          return; // ignore malformed event
+        }
+        if (typeof ev.sessionId === 'string' && ev.sessionId) {
+          sessionIdRef.current = ev.sessionId;
+          setHasSession(true);
+        }
+        if (typeof ev.sessionToken === 'string' && ev.sessionToken) {
+          sessionTokenRef.current = ev.sessionToken;
+        }
+        if (ev.phoneCaptured === true) setFlow(null);
+        if (typeof ev.delta === 'string' && ev.delta) {
+          if (open) {
+            open = false; // first delta replaces the typing indicator
+            setStreamText('');
+          }
+          acc += ev.delta;
+          setStreamText(acc);
+        }
+        if (ev.error) {
+          acc = acc || t.common.error;
+          setStreamText(acc);
+        }
+      };
+      for (;;) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buf += decoder.decode(value, { stream: true });
+        let sep: number;
+        while ((sep = buf.indexOf('\n\n')) >= 0) {
+          handleEvent(buf.slice(0, sep));
+          buf = buf.slice(sep + 2);
+        }
+      }
+      if (buf.trim()) handleEvent(buf);
+      setMessages((m) => [...m, { role: 'assistant', content: acc || t.common.error }]);
+    } catch {
+      setMessages((m) => [...m, { role: 'assistant', content: t.common.error }]);
+    } finally {
+      setLoading(false);
+      setStreamText(null);
+    }
+  }
+
+  async function submitLead(e: React.FormEvent) {
+    e.preventDefault();
+    if (!sessionIdRef.current || leadSending) return;
+    setLeadSending(true);
+    setLeadError(false);
+    try {
+      const res = await fetch('/api/chat/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId: sessionIdRef.current, sessionToken: sessionTokenRef.current, ...leadForm }),
+      });
+      if (res.ok) {
+        setLead('sent');
+      } else {
+        setLeadError(true);
+      }
+    } catch {
+      setLeadError(true);
+    } finally {
+      setLeadSending(false);
+    }
+  }
+
+  const showSuggestions = chatOpen && view === 'fde' && !loading && !messages.some((m) => m.role === 'user');
+  // the personal-reply entry point appears once a real exchange has happened
+  const showLeadCta = lead === 'idle' && hasSession && messages.some((m) => m.role === 'user');
+  // quick-action chips (owner rule, reworked 2026-09-26): only the two real
+  // next-steps. Both are answered with the owner's ready-made scripts — and
+  // the phone number is requested by the FLOW itself once a real exchange
+  // has happened — never as a chip and never as a long AI improvisation
+  const showActions = chatOpen && lead !== 'form' && lead !== 'sent';
+  const ACTION_CHIPS = [
+    { icon: Hammer, label: t.chat.actionOrder, run: () => startFlow('order') },
+    { icon: Handshake, label: t.chat.actionPartner, run: () => startFlow('partner') },
+  ];
+
+  if (!chatOpen) {
+    return (
+      <button
+        onClick={() => setChatOpen(true)}
+        className="site-chat fixed bottom-5 end-5 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-violet-600 to-fuchsia-600 text-white shadow-xl shadow-violet-600/30 transition-transform hover:scale-105"
+        aria-label={t.chat.title}
+      >
+        <Sparkles className="h-6 w-6" />
+        <span className="absolute -top-1 -end-1 flex h-4 w-4 items-center justify-center rounded-full bg-emerald-700 text-[9px] font-bold text-white">
+          AI
+        </span>
+      </button>
+    );
+  }
+
+  return (
+    <div
+      className="site-chat fixed bottom-5 end-5 z-50 flex h-[32rem] w-[calc(100vw-2.5rem)] max-w-sm flex-col overflow-hidden rounded-2xl border border-border bg-background shadow-2xl"
+      dir={lang === 'fa' ? 'rtl' : 'ltr'}
+      role="dialog"
+      aria-label={t.chat.title}
+    >
+      <div className="flex items-center justify-between border-b border-border bg-gradient-to-r from-violet-600 to-fuchsia-600 px-4 py-3 text-white">
+        <div className="flex items-center gap-2">
+          <Sparkles className="h-5 w-5" />
+          <div>
+            <div className="text-sm font-bold">{t.chat.title}</div>
+            <div className="text-[10px] opacity-80">
+              {lang === 'fa' ? 'آنلاین · آموزش‌دیده روی محتوای سایت' : 'Online · Trained on site content'}
+            </div>
+          </div>
+        </div>
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => {
+              // server-side deletion too — the conversation should not linger in the DB
+              if (sessionIdRef.current) {
+                fetch('/api/chat', {
+                  method: 'DELETE',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    sessionId: sessionIdRef.current,
+                    sessionToken: sessionTokenRef.current,
+                  }),
+                }).catch(() => {});
+              }
+              sessionIdRef.current = '';
+              sessionTokenRef.current = '';
+              setMessages([{ role: 'assistant', content: t.chat.welcome }]);
+              setHasSession(false);
+              setLead('idle');
+              setFlow(null);
+            }}
+            className="rounded-lg p-1.5 hover:bg-white/20"
+            aria-label={t.chat.clear}
+          >
+            <Trash2 className="h-4 w-4" />
+          </button>
+          <button onClick={() => setChatOpen(false)} className="rounded-lg p-1.5 hover:bg-white/20" aria-label="Close">
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+      </div>
+
+      <div className="relative min-h-0 flex-1">
+        <div
+          ref={scrollRef}
+          onScroll={handleTranscriptScroll}
+          className="chat-scroll absolute inset-0 overflow-y-auto p-3"
+        >
+          <div className="flex flex-col gap-3">
+          {messages.map((m, i) => (
+            <div
+              key={i}
+              className={`max-w-[85%] whitespace-pre-wrap rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed ${
+                m.role === 'user'
+                  ? 'self-end bg-violet-600 text-white'
+                  : 'self-start bg-muted text-foreground'
+              }`}
+            >
+              {m.content}
+            </div>
+          ))}
+          {streamText !== null && (
+            <div className="max-w-[85%] whitespace-pre-wrap rounded-2xl bg-muted px-3.5 py-2.5 text-sm leading-relaxed text-foreground">
+              {streamText}
+              <span className="ms-0.5 inline-block h-3.5 w-1.5 animate-pulse rounded-sm bg-violet-500 align-middle" />
+            </div>
+          )}
+          {loading && streamText === null && (
+            <div className="self-start rounded-2xl bg-muted px-4 py-2.5 text-sm text-muted-foreground">
+              <span className="inline-flex gap-1">
+                <span className="h-2 w-2 animate-bounce rounded-full bg-violet-500 [animation-delay:0ms]" />
+                <span className="h-2 w-2 animate-bounce rounded-full bg-violet-500 [animation-delay:150ms]" />
+                <span className="h-2 w-2 animate-bounce rounded-full bg-violet-500 [animation-delay:300ms]" />
+              </span>
+            </div>
+          )}
+
+          {lead === 'sent' && (
+            <div className="self-start rounded-2xl border border-emerald-500/40 bg-emerald-500/10 px-3.5 py-2.5 text-sm font-medium text-emerald-700 dark:text-emerald-400">
+              {t.chat.requestSent}
+            </div>
+          )}
+
+          {lead === 'form' && (
+            <form
+              onSubmit={submitLead}
+              className="self-start w-[92%] space-y-2 rounded-2xl border border-violet-500/40 bg-violet-600/5 p-3"
+            >
+              <div className="flex items-center gap-1.5 text-xs font-bold text-violet-700 dark:text-violet-300">
+                <UserCheck className="h-3.5 w-3.5" />
+                {t.chat.leadTitle}
+              </div>
+              <p className="text-[11px] leading-relaxed text-muted-foreground">{t.chat.leadDesc}</p>
+              <Input
+                required
+                value={leadForm.name}
+                onChange={(e) => setLeadForm({ ...leadForm, name: e.target.value })}
+                placeholder={t.chat.yourName}
+                className="h-8 text-xs"
+                dir="auto"
+              />
+              <Input
+                required
+                type="email"
+                value={leadForm.email}
+                onChange={(e) => setLeadForm({ ...leadForm, email: e.target.value })}
+                placeholder={t.chat.yourEmail}
+                className="h-8 text-xs"
+                dir="ltr"
+              />
+              <Input
+                value={leadForm.phone}
+                onChange={(e) => setLeadForm({ ...leadForm, phone: e.target.value })}
+                placeholder={t.chat.yourPhone}
+                className="h-8 text-xs"
+                dir="ltr"
+              />
+              <Input
+                value={leadForm.note}
+                onChange={(e) => setLeadForm({ ...leadForm, note: e.target.value })}
+                placeholder={t.chat.leadNote}
+                className="h-8 text-xs"
+                dir="auto"
+              />
+              {leadError && <p className="text-[11px] text-red-500">{t.chat.requestError}</p>}
+              <div className="flex gap-1.5">
+                <Button
+                  type="submit"
+                  size="sm"
+                  disabled={leadSending}
+                  className="h-8 flex-1 bg-gradient-to-r from-violet-600 to-fuchsia-600 text-xs text-white"
+                >
+                  {leadSending ? t.chat.sending : t.chat.sendRequest}
+                </Button>
+                <Button type="button" size="sm" variant="outline" className="h-8 text-xs" onClick={() => setLead('idle')}>
+                  ✕
+                </Button>
+              </div>
+            </form>
+          )}
+          </div>
+        </div>
+        {!atBottom && (
+          <button
+            type="button"
+            onClick={() => scrollToBottom(true)}
+            className="absolute inset-x-0 bottom-3 mx-auto flex w-fit items-center gap-1.5 rounded-full border border-border bg-background/95 px-3 py-1.5 text-xs font-medium text-foreground shadow-lg backdrop-blur transition-transform hover:scale-105"
+            aria-label={t.chat.newMsg}
+          >
+            <ArrowDown className="h-3.5 w-3.5" />
+            {unseen && (
+              <>
+                <span>{t.chat.newMsg}</span>
+                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-violet-500" />
+              </>
+            )}
+          </button>
+        )}
+      </div>
+
+      {showLeadCta && (
+        <button
+          onClick={() => setLead('form')}
+          className="border-t border-border px-3 pt-2 text-start text-[11px] font-semibold text-violet-600 transition-colors hover:text-violet-700 dark:text-violet-400 dark:hover:text-violet-300"
+        >
+          <UserCheck className="me-1 inline h-3.5 w-3.5" />
+          {t.chat.needHuman}
+        </button>
+      )}
+
+      {showSuggestions && (
+        <div className="border-t border-border px-3 pt-2 pb-1" aria-label={lang === 'fa' ? 'پیشنهاد سوال' : 'Suggested questions'}>
+          <div className="flex max-h-24 flex-wrap gap-1.5 overflow-y-auto">
+            {t.fde.suggestions.map((q) => (
+              <button
+                key={q}
+                onClick={() => send(q)}
+                dir="auto"
+                className="rounded-full border border-violet-500/40 bg-violet-600/5 px-2.5 py-1 text-xs text-violet-700 transition-colors hover:bg-violet-600/15 dark:text-violet-300"
+              >
+                {q}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {showActions && (
+        <div className="border-t border-border px-3 pt-2 pb-1" aria-label={t.chat.actionsLabel}>
+          {/* owner rule: chips stack vertically (زیر هم) — no horizontal scroll */}
+          <div className="flex flex-col gap-1">
+            {ACTION_CHIPS.map(({ icon: ChipIcon, label, run }) => (
+              <button
+                key={label}
+                onClick={run}
+                disabled={loading}
+                dir="auto"
+                className="flex w-full items-center gap-1.5 rounded-lg border border-emerald-600/40 bg-emerald-600/10 px-2.5 py-1.5 text-start text-xs font-medium text-emerald-700 transition-colors hover:bg-emerald-600/20 disabled:opacity-50 dark:text-emerald-400"
+              >
+                <ChipIcon className="h-3 w-3 shrink-0" aria-hidden />
+                <span className="min-w-0 leading-snug">{label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <p className="border-t border-border px-3 pt-2 pb-1 text-[10px] leading-relaxed text-muted-foreground" aria-label={lang === 'fa' ? 'نکتهٔ حریم خصوصی' : 'Privacy notice'}>
+        {t.chat.privacy}
+      </p>
+
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          send();
+        }}
+        className="flex items-center gap-2 border-t border-border p-3"
+      >
+        <Input
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          placeholder={t.chat.placeholder}
+          className="flex-1"
+          dir="auto"
+        />
+        <Button
+          type="submit"
+          size="icon"
+          disabled={loading || !input.trim()}
+          className="bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white"
+        >
+          <Send className="h-4 w-4 rtl:rotate-180" />
+        </Button>
+      </form>
+    </div>
+  );
+}

@@ -1,0 +1,476 @@
+# CHANGELOG
+
+All notable changes to mehrdad.ir. Format: Keep-a-Changelog-ish, newest first.
+
+## [Unreleased]
+
+### Auto-pilot wizard: language + networks owner-selectable (2026-10-13)
+- **Owner request («این فقط فارسی می‌سازه… زبان و نوع شبکه را ویزاردی انتخاب کنم»)**:
+  the auto-pilot card was Persian+LinkedIn by construction — `PLATFORM='linkedin'`
+  was hardcoded in the API and the UI never offered language/network choice.
+  It is now a 3-step wizard: **۱ زبان** (فارسی / انگلیسی / هر دو) →
+  **۲ شبکه** (LinkedIn / Instagram / X / Telegram, multi-select with icons +
+  char limits) → **۳ اجرا** (batch size 1-6, live summary
+  «N مقاله × شبکه‌ها × زبان ≈ مجموع پیش‌نویس», run). Step chips are clickable
+  for back-navigation; Next is disabled with a hint when zero networks are
+  selected; everything is bilingual like the rest of the panel.
+- **API (`/api/admin/social/autopilot`)**: accepts `platforms: string[]`
+  (validated against `PLATFORM_SPECS`, deduped; unknown/empty → linkedin
+  fallback, back-compat). Idempotency upgraded from slug-level to
+  **(slug, platform, lang)-combo level**: rerunning fills only the missing
+  combos, never duplicates. Generation is per-combo with the same soft time
+  budget, so partial runs bail out honestly between combos. `created[]` now
+  carries `platform` and the UI lists «عنوان — شبکه (زبان)».
+- **Generator robustness fix found by the self-test**: in a real wizard run,
+  telegram/en failed TWICE in a row on malformed JSON from the model
+  (SyntaxError at positions 1223/1430 — unescaped quote inside the content
+  string) and the whole run reported a failure. `generateOne` now (a) sends a
+  JSON-specific escalation message when the rejection was a parse error, and
+  (b) has a third, parser-proof attempt: plain text between `===HOOK===` /
+  `===POST===` markers (`extractMarkedPost`, exported + unit-checked), held to
+  the same language/facts contract as the JSON path. Retest of the exact
+  failing combo (telegram/en) succeeded.
+- **Self-test before reporting (owner law #1)**: tsc ✓ lint ✓; real local
+  generations via the wizard payload — linkedin/en (fa-ratio 0.00 ✓),
+  x+telegram×both (4 combos, x drafts ≤ 280 chars ✓, fa/en ratios correct ✓),
+  rerun idempotency ✓, invalid-platform fallback ✓, unauth 401 ✓; full UI
+  walkthrough in a real browser (steps → selection → live summary → real run
+  → persistent result card), no console/page errors, mobile viewport ✓.
+  Test drafts deleted afterwards (local queue back to its pre-test state).
+
+### Deploy pipeline unfrozen + Social Studio self-test (2026-10-12)
+- **Production was frozen on 5be583a (2026-10-11) for ~a day**: every Vercel
+  deploy since e3c344e failed while GitHub CI stayed green (CI builds from the
+  SQLite schema; Vercel builds from `prisma/schema.postgres.prisma`).
+  Root causes, in order:
+  1. e3c344e carried the resurrected `src/middleware.ts` + `public/robots.txt`
+     (Next 16 fatal: middleware + proxy cannot coexist) — fixed by b316d41.
+  2. 6621293 added the `DailyProduct` model to `prisma/schema.prisma` but NOT
+     to the Postgres mirror, so the Vercel-generated Prisma client lacked
+     `db.dailyProduct` and every `next build` died in the tsc phase —
+     unfixed until now (4 failed deploys: 6621293, 4288c44, 7ed6d68, 3e2058c).
+- **Fix (e38fd64)**: `DailyProduct` added to the Postgres mirror verbatim +
+  new CI guard `scripts/check-schema-mirror.mjs` (fails fast on any model/enum
+  drift between the two schemas, wired into ci.yml before install/build).
+  This is the second incident of the drift class (studio models, 2026-10-08);
+  the guard makes it structural instead of manual.
+- **Verification**: mirror guard ✓, postgres-client `tsc --noEmit` ✓,
+  full Vercel-equivalent build (`prisma generate --schema
+  schema.postgres.prisma && next build && postbuild`) green against a real
+  wire-protocol Postgres (PGlite) ✓ — then the real deploy e38fd64 completed
+  2026-10-12T19:51Z and the live site confirms the new code
+  (JSON-LD sameAs now lists linkedin.com/in/mehrdad-ir; /admin + /blog 200;
+  admin APIs 401 unauthenticated, fail-closed).
+- **Social Studio self-test (owner order: test before inviting the owner)**:
+  local end-to-end run of the LinkedIn auto-pilot (auth → candidate scan →
+  hidden-post skip → generation → language assertion → draft save → rerun
+  idempotency) — all green; generated Persian draft scored 0.92 Persian-letter
+  ratio, no name typo, no hallucinated markers, every number traced to the
+  source article. Topic-mode gap found and documented: with an empty RAG
+  knowledge base the model can invent statistics (40% traffic claim observed
+  locally); production KB state governs — the quality contract's facts policy
+  applies to whatever context exists.
+- **Production drafts audit (read-only, via Supabase management SQL)**: 14
+  drafts, 0 language mismatches (fa 0.91–1.00, en 0.00), no hallucination
+  markers, no name typos; full snapshot archived at
+  `docs/social-drafts-backup-2026-10-12.json`. No data was modified.
+
+### Work/Lab restructure — content authenticity (2026-09-07)
+- **Honest project statuses**: canonical lifecycle `idea | concept |
+  building | testing | live | paused | archived` on the Project model
+  (+ `section` work/lab, `featured`, optional `fundingAsk` that only renders
+  when explicitly set). Badges always derive from the canonical status —
+  legacy "Seeking partners" free-text labels can no longer render.
+- **The five earlier venture-style entries** (Iran Rail Revolution, BIZPAL,
+  Smart City Waste Sorting, Investment Management Platform, KLIKA) are
+  recast as Ideas: one neutral sentence, all financial claims removed,
+  visible only under /work's non-default "Ideas & archive" tab, collapsed.
+- **Homepage**: Work section shows at most 2 featured projects + "See all
+  work →"; the investment-specific CTA is replaced by one general contact
+  card. Investment survives only as an option in the Contact form's intent
+  selector (new).
+- **/lab is a real page** now (the /lab → /fde alias is retired): Lab
+  experiments framed as curiosity-driven, no business-model language.
+  Added to sitemap + llms.txt.
+- **Admin panel**: new Projects tab (full CRUD with section/status/
+  featured/fundingAsk) — saves fire the deploy hook + IndexNow, same as
+  posts.
+- **Production data migration**: `scripts/apply-worklab-restructure.ts`
+  (dry-run default, `--apply` after owner approval).
+
+### Architecture & SEO (2026-09-05 real-routes migration)
+- **Hash routing retired — every view is now a real, indexable URL**:
+  `/` (home), `/services`, `/fde` (+ `/lab` alias), `/work`,
+  `/work/[slug]`, `/blog`, `/blog/[slug]`, `/about`, `/contact`,
+  `/admin`. Detail pages are server-rendered: `curl /blog/<slug>`
+  returns the full article HTML with no JS execution (verified).
+- Legacy deep-links keep working: middleware 301 targets now point at
+  real paths (`/#blog/<slug>` → `/blog/<slug>`, `/portfolio/*` → `/work`,
+  `/author/*` → `/about`, …) and the client upgrades old `#view` hashes
+  to their new URLs on arrival.
+- Server data layer extracted to `src/lib/queries.ts` — API routes and
+  pages share one implementation, so first-paint HTML can never drift
+  from the API.
+- Home/blog/projects/services render their content server-side (no more
+  client-fetch empty shells for crawlers); per-page Metadata API
+  (title/description/canonical/OG) on every route.
+- **`sitemap.xml` now exists for real** (dynamic, DB-driven: static
+  routes + 8 posts + 5 projects in dev), `robots.txt` references it, and
+  the README-promised `/feed.xml` RSS route shipped.
+- **Strict CSP with per-request nonce** (`src/proxy.ts`, Next 16's
+  middleware convention): `script-src 'nonce-…' 'strict-dynamic'` —
+  `'unsafe-inline'` for scripts is gone in production (verified against a
+  production build: zero console violations, hydration + navigation
+  work). `style-src 'unsafe-inline'` stays documented (React inline
+  style attributes).
+- **Optional TOTP 2FA on the admin panel** (`ADMIN_TOTP_SECRET` env):
+  password + 6-digit code; unset keeps single-factor behavior
+  (`bun scripts/generate-totp-secret.ts` to opt in).
+- GitHub hygiene: `package.json` renamed to `mehrdad-website`,
+  `z-ai-web-dev-sdk` pinned exactly (0.0.18), dead deps `next-auth` and
+  `next-intl` removed, both lockfiles synced; CI workflow
+  (`.github/workflows/ci.yml`: npm ci → lint → typecheck → build with
+  dummy env) and Dependabot config added; secret scanning, push
+  protection and Dependabot alerts/security-updates enabled via API.
+- Brand/positioning polish (review P0): removed the vanity stat block,
+  replaced the hardcoded "Seeking partners & investors" home badge with
+  each project's real status, rewrote the projects subtitle, dropped the
+  internal codename from meta keywords, updated the AI writer persona
+  ("product builder"), and softened the under-construction CTA copy.
+
+
+### Security (2026-09-05 penetration-test round 2)
+- **Deep-dive pentest harness committed**: `scripts/pentest-round2.sh` —
+  82 new black-box checks beyond round 1 (13-shape token fuzzing, cookie
+  shadowing, session isolation, admin verb tampering & path tricks,
+  Origin-spoof matrix, parser abuse, query/operator injection, XFF-
+  rotation floods on all public write endpoints, encoded stored XSS,
+  info-exposure paths, Host-header poisoning) — report in
+  `docs/PENTEST_2026-09-05-round2.md` (**82/82 green, plus 52/52 round-1
+  regression**).
+- Fixes surfaced by the round, all now covered by tests:
+  - `originAllowed()` no longer trusts client-sent `X-Forwarded-Host` —
+    `Origin` + spoofed XFH could previously satisfy the CSRF check;
+    optional `SITE_ORIGIN` env enables a hard allow-list;
+  - login route (`POST /api/admin/auth`) now enforces the same Origin
+    check (login-CSRF gate was open);
+  - SEO 301 redirects anchor to `SITE_ORIGIN` — a spoofed `Host` header
+    could previously redirect `/?p=<id>` off-site;
+  - `/api/posts?page=abc` no longer 500s (NaN reached Prisma skip/take);
+  - session tokens are `<expiry>.<nonce>.<sig>` — same-second logins used
+    to collide on one token, so logging out one revoked all of them
+    (session DoS, caught live during regression);
+  - `DELETE /api/chat` rate-limited (10/min, same as chat POST).
+
+### Security (2026-09-05 penetration-test round)
+- **Full pentest harness committed**: `scripts/pentest-local.sh` — 55
+  automated black-box checks (auth, session forgery, CSRF, rate limits,
+  DoS bodies, SQLi, stored XSS, headers, secret scan, open redirect) with
+  PASS/FAIL summary and exit code; report in `docs/PENTEST_2026-09-05.md`
+  (**55/55 green**).
+- Fixes surfaced by the recon, all now covered by tests:
+  - `clientIp()` takes the LAST `X-Forwarded-For` entry (proxy-appended) —
+    first-entry selection let attackers rotate spoofed IPs and bypass every
+    rate limit;
+  - logout now **revokes** the stateless session token (in-memory set) —
+    a stolen token no longer survives logout;
+  - `Cache-Control: no-store` on all `/api/admin/*` responses;
+  - 413 body-size guards on unauthenticated POSTs (login 8 KB,
+    chat/contact/comments 32 KB) — App Router has no default body cap and
+    multi-MB JSON was a trivial memory-DoS on the shared host.
+- Residual risks + trust model documented in the pentest report §5.
+
+### Security (2026-09-05 hardening round)
+- **Admin session cookies replace the per-request `x-admin-key` password
+  header**: `POST /api/admin/auth` now issues a stateless HMAC-signed
+  session cookie (`mehrdad_admin`, `HttpOnly`, `SameSite=Strict`,
+  `Secure` in production, 12h TTL). The raw password is typed once at
+  login and cleared from client memory; changing `ADMIN_PASSWORD`
+  instantly invalidates all sessions. No DB table needed (Turso-safe).
+  `GET /api/admin/auth` = session restore, `DELETE` = logout.
+- **CSRF defense-in-depth**: `checkAdmin` rejects state-changing requests
+  with a cross-origin `Origin` header (403), honoring `x-forwarded-host`
+  behind the cPanel proxy.
+- **Content-Security-Policy added** (`default-src 'self'`, external
+  script/style/frame/form origins blocked, `object-src 'none'`,
+  `frame-ancestors 'none'`, `base-uri 'self'`, HSTS-compliant
+  `upgrade-insecure-requests`); `unsafe-eval` only in dev for React.
+- `.env.example` added (was referenced by docs/code but missing).
+- Docs: `SECURITY.md` §2/§5 rewritten for the new model;
+  `CPANEL_DEPLOYMENT.md` notes `NODE_ENV=production` requirement for the
+  Secure cookie + new troubleshooting rows.
+- Verified: 11-step curl suite (wrong pw 401, login 200 + cookie flags,
+  restore 200, no-cookie 401, cookie 200, forged cross-origin 403,
+  same-origin 200, logout clears, forged token 401, CSP header) and full
+  browser E2E (login → dashboard 83 posts real data → session survives
+  reload → logout → 401; chat widget AI reply; mobile/desktop no
+  overflow, CSP violations 0).
+
+### Added
+- **Production deployment artifact built & verified from commit `5ace5fe` (Task 17)**:
+  first real cPanel deploy file produced by `scripts/build-production.sh` in an
+  isolated clean checkout — `dist/mehrdad-deploy-20260902-201355.tar.gz` (138 MB,
+  SHA256SUMS shipped alongside). Artifact-audit + fresh-extract E2E: server.js +
+  static + public + Prisma engine present; **zero** `.env`/`.db`/secrets inside;
+  seeded `data/production.db` + cPanel-style env vars → homepage, `/api/site`
+  (real Persian data via Prisma/SQLite), `/api/posts`, `robots.txt`, `sw.js`,
+  `manifest.json`, admin auth POST fail-closed (401/200), WP 301
+  (`/iran-ousted-from-trade-corridors` → `/#blog/…`), no `X-Powered-By`, 404 —
+  all green; a planted bad `.env` could **not** hijack `DATABASE_URL` (process
+  env wins). Script hardening found & fixed during the build: Next standalone
+  copies build-machine `.env*` into the bundle, so the pack step now excludes
+  `.env*`/`.z-ai-config` and a hygiene guard **fails the build** if any
+  env/db/secret file slips into the artifact; `/dist/` gitignored.
+
+### Added
+- **cPanel deployment readiness (no-SSH artifact flow, Task 16)**: `start`
+  script now runs the standalone server with plain `node` (Bun not needed
+  on the host); `build` runs `prisma generate` first; `engines.node
+  >=20.9.0` declared; `package-lock.json` committed (npm ci reproducible);
+  `scripts/build-production.sh` produces a DB-free deploy tarball
+  (`dist/mehrdad-deploy-<stamp>.tar.gz` + SHA256) with standalone
+  sanity checks; `.env.example` (full cPanel prod reference incl.
+  `HOSTNAME=0.0.0.0` Passenger caveat); Prisma query logging silenced to
+  error/warn in production; `X-Powered-By` header removed. Verified E2E:
+  clean npm install/build, standalone completeness (server.js + static +
+  public + Prisma engine), production start via `node` — homepage,
+  /api/site, /api/posts, PWA files, media, admin auth fail-closed,
+  WP 301 redirect, 404 — all green. Docs: `docs/CPANEL_DEPLOYMENT.md`
+  (full runbook) + `docs/DEPLOYMENT.md` rewritten to match reality.
+- **Descriptive image alt text — COMPLETE 118/118 (accessibility/SEO, D-022)**:
+  every junk alt (`Image`/`تصویر`) on in-content images was replaced with
+  concise hand-reviewed bilingual descriptions. Final audit: 242/242 img
+  tags descriptive (121 EN + 121 FA across 52 posts), junk=0, empty=0,
+  118 unique images. Provenance: Phase 1 = 16 hand-authored entries
+  (36 tags); Phase 2 = 102 agent-vision descriptions authored directly by
+  the agent's native vision while the sandbox LLM API stayed rate-limited
+  (8h+ storm, vision+text) — written into `analysis/alt_manual.json` and
+  merged through the same idempotent pipeline: `--merge-manual` →
+  `--validate` (PASS: 0 junk, 0 duplicates, 0 language mismatch, 0
+  over-length) → `--apply` (backup `db/custom.backup-20260902074251.db`,
+  marker `alt_text_descriptive_v1`, post-audit). Verified in browser:
+  article EN alts + FA/RTL Persian alts in DOM, mobile 390 no overflow,
+  zero console errors. VLM pipeline stays for future posts:
+  `analysis/fix_alts.ts` (probe-first generation with exponential
+  backoff + jitter + storm circuit-breaker, per-image persistence, failed
+  queue, QC validation) covered by 14/14 unit tests
+  (`analysis/test_rewrite.ts`); re-run docs in `docs/ALT_PIPELINE.md`.
+- **Forward Deployed Engineering service (owner directive)**: the brand's
+  new core service, built as a full experience — not a plain card:
+  - `#fde` dedicated bilingual page (`FdeView.tsx`): hero with the
+    "You don't need to know what to build — you need to know what problem
+    to solve" message, What-is-FDE, three-roles composition
+    (Product Builder / Forward Deployed Engineer / AI-Native Engineering)
+    with the `Real-World Problem → Working Solution` visual anchor,
+    interactive 8-stage process timeline (Discover→…→Iterate, click/hover/
+    keyboard), 6 "who is it for" cards, 6 transformation deliverables,
+    special AI section (`AI is not the replacement. It is the force
+    multiplier.` + Human/AI loop diagram), traditional-vs-FDE comparison
+    flows, a real scenario case flow, and a big closing CTA. Subtle
+    IntersectionObserver reveals (reduced-motion safe), RTL/LTR aware,
+    token-based dark/light.
+  - Highlighted Core-Service card in Services (gradient border, ★ badge,
+    tags `Product/Engineering/AI/Problem Solving`, `Explore this service`
+    CTA → `#fde`); record added to the DB (`analysis/add_fde_service.ts`,
+    idempotent, placed first).
+  - **Page-context-aware AI assistant (§13)**: while on `#fde` the chat
+    widget shows 6 suggested questions (bilingual) and sends
+    `context:'fde'`; `/api/chat` appends a grounded FDE briefing to the
+    system prompt (EN/FA) so "this service" questions answer about the
+    page.
+  - Per-language SEO metadata (§16): title + description switch with the
+    UI language and restore on leave.
+  - Chat resilience: short 429/5xx retry with a graceful bilingual
+    "service busy" reply instead of a raw error (LLM throttling storm
+    observed during testing).
+- **Brand positioning everywhere (Tasks 11, per BRAND_STRATEGY)**: the
+  approved slogan — «کسب‌وکار و محصولت رو با دقت طراحی می‌کنم، و با AI
+  سریع می‌سازمش» / "I design businesses and products with care, and build
+  them fast with AI." — is now the homepage H1 (both languages), the
+  metadata/OG/manifest titles ("Mehrdad — Product Builder"), the footer
+  motto, the About identity, AND the AI persona (chat system prompts EN/FA
+  + KB seed, rebuilt: 439 chunks). The banned «Designer & Researcher»
+  positioning was removed from all 7 locations.
+- **BUILD / HELP / SHARE trio + ecosystem chain**: new home section
+  rendering the three connected activities and the
+  Research → Design → Build → Learn → Share → Build again loop
+  (RTL-aware, token-colored).
+- **Language suggestion banner (D-019)**: `fa*`-browser visitors get a
+  one-time bilingual offer to view the site in Persian — fixed bottom
+  pill, zero layout shift; explicit choice/dismissal persists forever;
+  EN default untouched. E2E: 9/9 with a real fa-IR Playwright context.
+- **Curated topic tags (D-020)**: fixed 32-tag bilingual taxonomy
+  (`analysis/curated_tags.json`), Tag/PostTag schema, `?tag=` posts
+  filter, tag cloud in `/api/site`, "Topics" chip row in the blog,
+  `#tags` on cards and article pages; constrained per-post assignment
+  pipeline (`analysis/assign_tags.ts`, resumable, 429-backoff).
+- **Archive EN translation loop (D-021) — complete**: resumable batch
+  (`analysis/translate_archive.ts` + `translate_remaining2.ts`) —
+  HTML-aware chunking, 429 exponential backoff, per-post progress; every
+  published post (82) now has full English content in the DB and the AI
+  knowledge base; the content-filtered rail-corridor post was finished
+  with a manual chunk rescue (`repair_rail_translation.ts`); the only
+  Persian-only item is the draft smart-waste post (owner decision
+  pending, ROADMAP P1).
+- **E2E infrastructure**: `playwright-core` devDependency + real-locale
+  browser tests (`analysis/test_lang_banner.ts`).
+
+### Fixed
+- **FDE Services card showed a raw Persian sentence in the EN view**: the
+  core-service card's secondary line rendered the *other* language's DB
+  title, so English visitors saw «مهندسی در خط مقدم حل مسئله». The card
+  tagline is now a proper bilingual i18n string (`fde.cardTagline`):
+  EN shows the English translation "Engineering on the front line of
+  problem-solving"; FA keeps showing "Forward Deployed Engineering".
+  Verified in browser in both languages; zero console errors.
+- **PWA service worker registered in production only** (`PwaClient`);
+  cache version bumped to `mehrdad-v2`. In dev, rebuild-changing chunk
+  hashes + a cached shell SW caused full-load hydration crashes
+  (reproduced via persistent-profile browser; clean contexts were fine).
+- **Navigation hash sync + article deep links**: clicking any post card now
+  switches to the article AND writes `#blog/<slug>` to the URL (previously
+  the URL stayed stale, so articles could not be shared/bookmarked, and
+  featured-post cards on the homepage did nothing at all — `openPost` never
+  set the view). Nav links, "Back to blog" and "View all" also sync the
+  hash; Persian slugs stay percent-encoded and resolve via slugCandidates.
+  Verified: home → featured article, direct `#blog/<fa-slug>` load,
+  EN/FA (RTL) article render, zero console errors.
+- **Dark-mode / RTL first-paint flash** (Theme Engine known limitation):
+  inline synchronous boot script in `layout.tsx` applies the persisted
+  `.dark` class, `fa→rtl` direction and the last-known theme cache
+  before first paint; `page.tsx` caches the DB theme for returning
+  visitors. Verified across reloads, zero console errors.
+- **Post 7995 published with an empty body** (smart-waste financials):
+  reverted to `draft` awaiting the owner's publish decision (ROADMAP P1).
+
+### Changed
+- **Hero copy** replaced with the approved positioning; sub-line now
+  speaks honest status + documented lessons (no generic "AI solutions").
+- **AI persona** (chat EN/FA system prompts + knowledge-base seed)
+  rewritten to the brand model: independent product builder,
+  BUILD/HELP/SHARE, 83+ articles.
+
+## [1.1.0] — 2026-09-01 — Theme engine · PWA · TWA prep · security baseline
+
+### Added
+- **Theme Engine (D-014)**: one shared design-token system powering exactly
+  five themes — Default ☼ (brand violet), Autumn 🍂, Winter ❄️ (icy sky,
+  new snowfall background), Digital ⚡ (neon cyan/lime, new falling-glyph
+  background), Nowruz 🌱 (emerald/gold, new spring-petal background).
+  Themes are palette + background only — a shared CSS-variable layer
+  (`--color-violet-*` / `--color-fuchsia-*`) re-colors every component,
+  including article prose (links/blockquotes/tables now token-driven).
+  New docs: `docs/THEME_ENGINE.md` (incl. add-a-theme recipe).
+- **Light/Dark mode, independent of theme**: persisted user preference
+  (`localStorage` via the app store), header Sun/Moon toggle with
+  `aria-pressed` + localized labels; all five themes work in both modes.
+- **PWA completion**: manifest, service worker (offline shell + API/image
+  cache), AI-generated icons (192/512/180 + maskable), in-browser install
+  prompt, app shortcuts (Blog / AI Chat / Contact), iOS standalone meta.
+- **TWA preparation**: `twa-manifest.json` (package `ir.mehrdad.twa`,
+  notifications enabled) + `MOBILE_APP.md` (PWA status + Android/TWA
+  overview) + full runbook `docs/MOBILE_TWA.md` (keystore ownership,
+  Bubblewrap build, Play checklist, troubleshooting).
+- **`scripts/generate-assetlinks.ts`** — validates SHA-256 fingerprints,
+  reads the package id from `twa-manifest.json` (single source of truth)
+  and writes `public/.well-known/assetlinks.json`; no more hand-editing
+  the JSON.
+- **Signing-key guard**: `*.keystore`, `*.jks`, `*.apk`, `*.aab` and
+  Bubblewrap state dirs are gitignored — the Android signing key can
+  never be committed.
+- `docs/SECURITY.md` — secret policy, admin auth model, incident log.
+- `.env.example` — variable names only, no values.
+
+### Changed
+- **Theme roster retired → mapped (was: Default, Ocean, Forest, Sunset,
+  Midnight)**: Ocean→Winter, Forest→Nowruz, Sunset→Autumn,
+  Midnight→Digital, old violet "Digital"→Default. Stored DB value
+  migrated once with an idempotent marker
+  (`analysis/migrate_theme_setting.ts`); `getTheme()` also resolves
+  legacy ids at read time so stale values can never render unstyled.
+- **In-content legacy links internalized (Task 7)**: all 316 `mehrdad.ir`
+  occurrences inside post bodies (72 posts) now stay inside the app —
+  pages → `#contact` / `#about` / `#home`, posts → `#blog/<slug>`,
+  short-links resolved to their owner posts, web-stories → `#blog`;
+  `target`/`rel` removed from internal links. Real external links untouched.
+- **Media self-sufficiency**: 7 PDFs + 3 MP4s (~64 MB) referenced by
+  articles downloaded from the hotlink-protected legacy host into
+  `public/uploads/wp/<Y>/<M>/`; broken/dying source files (2 zero-byte
+  PDFs, 10 dead images) replaced by related-article links, download links
+  or removal; 133 malformed migration images rebuilt as real `<img>` tags.
+- **Evidence-based re-dating (Task 5)**: all 83 posts re-dated from
+  evidence (Wayback Machine CDX probes — 43 posts anchored, cover upload
+  paths, first-comment dates, in-text Jalali references, LLM estimate for
+  5 signal-less posts). Final distribution 2019:1 / 2020:6 / 2021:21 /
+  2022:6 / 2023:33 / 2024:13 / 2025:3; no post predates its first comment
+  or the site's first archive snapshot. Comment dates untouched (they are
+  genuine and support credibility). Per-post evidence: `MIGRATION_REPORT.md`.
+- **README rewritten to match the actual implementation** (hash-routed SPA,
+  EN-default + FA RTL, real API surface, env setup, media locations).
+
+### Fixed
+- **Category filters returned 500 / "No articles found" (Task 6)**: the
+  posts API filtered the many-to-many `categories` relation with
+  `{ slug }` instead of `{ some: { slug } }` — every filter click threw a
+  PrismaClientValidationError that the silent frontend catch masked.
+- **Persian category slugs were stored percent-encoded** in the DB
+  (`%d8%b1%d9%88%d8%b2%d8%a7%d9%86%d9%87`); all 14 decoded in place with a
+  collision-guarded migration script (`analysis/fix_cat_slugs.ts`).
+- **Persian-slug article pages 404ed** (Next.js decodes route params, DB
+  held encoded slugs): `src/lib/slug-lookup.ts` tries encoded + decoded
+  candidates — bug existed since the initial migration, now fixed in the
+  post and comments APIs.
+
+### Security
+- **Admin password removed from source and UI** (caught before any public
+  push): `src/lib/admin.ts` now reads `ADMIN_PASSWORD` from the
+  environment with **no fallback** (unset ⇒ fail closed); the
+  default-password hint in the admin login UI removed; password rotated.
+  Details and incident log: `docs/SECURITY.md`.
+- **Git hygiene**: `.env`, DB backup snapshots and `dev.pid` untracked and
+  gitignored; local working history squashed to a single clean baseline
+  commit before pushing (secrets never reached the public remote).
+
+## [1.0.0] — 2026-09-01 — The rebuild
+
+### Added
+- **Phase 0 — Audit** (`docs/AUDIT.md`): full forensic audit of the legacy
+  WordPress site — 82 posts, 17 comments, 441 media, 34 categories, 4,872
+  tags; confirmed the publication-date corruption with evidence.
+- **Phase 1 — Foundation**: Next.js 16 + TypeScript + Tailwind 4 + shadcn/ui
+  + Prisma/SQLite. Content model with strict `publishedAt / updatedAt /
+  migratedAt` separation and per-post `publishedPrecision` + `dateEvidence`.
+- **Phase 2 — Content migration**: 82 articles, 17 comments (original dates
+  + threading), 138 mirrored media files, 34→17 categories. Date
+  reconstruction from evidence chain (comments → upload paths → in-text
+  Jalali references). Reports: `MIGRATION_REPORT.md`, `REDIRECTS.md`.
+- **Phase 3 — Core site**: Home, Work (+project pages with honest status),
+  Writing (+articles), Lab, About, Contact. Moderated comments with
+  threading, honeypot + rate limiting. Contact funnel with intents.
+- **Phase 4 — SEO**: metadata system, canonical URLs, OG/Twitter,
+  JSON-LD (Person, WebSite, Article), `sitemap.xml`, `robots.txt`,
+  `feed.xml` (RSS), legacy 301 redirect layer (`src/proxy.ts`) covering old
+  root-level slugs (Persian-encoded included), `/services`, `/category/*`,
+  `/tag/*`, `/wp-content/uploads/*` → `/media/*`, legacy feeds.
+- **Phase 5 — QA**: browser-verified golden paths on desktop + mobile;
+  sticky-footer contract; forms verified end-to-end (DB rows); no console
+  errors.
+- **Phase 6 — Documentation**: README v2 + ARCHITECTURE, CONTENT_MIGRATION,
+  CONTENT_STRATEGY, BRAND_STRATEGY, PRODUCT_STRATEGY, SEO,
+  DEVELOPMENT_SETUP, DEPLOYMENT, ROADMAP, DECISIONS, CHANGELOG.
+
+### Fixed
+- Historical publication dates restored from evidence (2020→2025 timeline)
+  instead of the corrupted 2024-09→2025-05 re-publication stamps.
+- Legacy root-level article URLs kept alive via 301s (no broken inbound links).
+- `%d8%…` lowercase-hex slug compatibility with `encodeURIComponent` output.
+- robots.txt route conflict (static file removed in favor of programmatic).
+
+### Removed / retired
+- 4,872 junk tag archives (301 → /writing).
+- Elementor draft pages and theme-demo media from the content set.
+- «طراح و پژوهشگر / Designer & Researcher» positioning (replaced by approved
+  positioning per BRAND_STRATEGY).
+
+## [0.1.0] — earlier
+- Initial repository (README only, positioning statement).

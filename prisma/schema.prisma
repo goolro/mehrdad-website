@@ -1,0 +1,449 @@
+generator client {
+  provider      = "prisma-client-js"
+  // "native"    → build machine (debian-openssl-3.0.x)
+  // "debian-openssl-1.0.x" → cPanel host runtime (diag 2026-09-04: host
+  // resolves to debian-openssl-1.0.x — old OpenSSL). Both engines ship in
+  // the artifact; Prisma picks the right one at runtime.
+  binaryTargets = ["native", "debian-openssl-1.0.x"]
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ───────────────────────── Content Models ─────────────────────────
+
+model Category {
+  id      String @id @default(cuid())
+  slug    String @unique
+  nameEn  String
+  nameFa  String
+  wpId    Int?   @unique
+  posts   Post[]
+}
+
+/** Curated topic tags (≤50, analysis/curated_tags.json) — Task 15, D-020 */
+model Tag {
+  id     String    @id @default(cuid())
+  slug   String    @unique
+  nameEn String
+  nameFa String
+  posts  PostTag[]
+}
+
+model PostTag {
+  postId String
+  post   Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  tagId  String
+  tag    Tag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([postId, tagId])
+  @@index([tagId])
+}
+
+model Post {
+  id           String   @id @default(cuid())
+  slug         String   @unique
+  wpId         Int?     @unique
+  titleEn      String?
+  titleFa      String?
+  excerptEn    String?
+  excerptFa    String?
+  contentEn    String?
+  contentFa    String?
+  cover        String?
+  date         DateTime
+  modified     DateTime @default(now())
+  published    Boolean  @default(true)
+  featured     Boolean  @default(false)
+  source       String   @default("wordpress") // wordpress | ai
+  categories   Category[]
+  tags         PostTag[]
+  comments     Comment[]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([date])
+}
+
+model Comment {
+  id         String   @id @default(cuid())
+  postId     String
+  post       Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  wpId       Int?     @unique
+  parentWpId Int? // for threading (WP comment id)
+  parentLocalId String? // for threading (new local comment id)
+  author     String
+  content    String
+  date       DateTime @default(now())
+  approved   Boolean  @default(false) // migrated WP comments = true, new = false until moderation
+  createdAt  DateTime @default(now())
+
+  @@index([postId, date])
+}
+
+model Service {
+  id        String @id @default(cuid())
+  slug      String @unique
+  titleEn   String
+  titleFa   String
+  descEn    String
+  descFa    String
+  icon      String @default("Sparkles")
+  order     Int    @default(0)
+}
+
+model Project {
+  id         String  @id @default(cuid())
+  slug       String  @unique
+  titleEn    String
+  titleFa    String
+  summaryEn  String
+  summaryFa  String
+  cover      String?
+  // Work/Lab restructure (2026-09-07, DECISIONS.md):
+  // section — "work" (real products/tools) vs "lab" (experiments/curiosity)
+  section    String  @default("work") // work | lab
+  // honest lifecycle: idea | concept | building | testing | live | paused | archived
+  // (legacy rows may still carry under-construction | seeking | live | coming-soon —
+  // normalized in the UI layer until the content migration runs)
+  status     String  @default("idea")
+  progress   Int     @default(0) // 0-100 build progress (building/testing only)
+  // homepage Work section shows featured Work items only (max 2)
+  featured   Boolean @default(false)
+  // optional; rendered ONLY when explicitly set — never implied language like
+  // "Seeking partners" may be attached to projects by default
+  fundingAsk String?
+  // kind taxonomy badge (owner request 2026-09-29): super-app | game-online |
+  // game-offline | app — NULL means unlabeled (see src/lib/project-kind.ts
+  // for the slug bootstrap map + admin select)
+  kind       String?
+  // legacy display labels — kept for data safety, no longer rendered by default
+  statusEn   String  @default("")
+  statusFa   String  @default("")
+  order      Int     @default(0)
+}
+
+model SiteSetting {
+  key   String @id
+  value String
+}
+
+// ───────────────────────── Contact ─────────────────────────
+
+model ContactMessage {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  subject   String?
+  body      String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+// ───────────────────────── AI Chatbot ─────────────────────────
+
+model ChatSession {
+  id           String        @id @default(cuid())
+  contactName  String?
+  contactEmail String?
+  contactPhone String?
+  contactNote  String?
+  lead         Boolean       @default(false) // visitor explicitly asked Mehrdad to reply personally
+  read         Boolean       @default(false)
+  // sha256 of the visitor's owner token (round-3 L4): continuation and
+  // deletion of a session require the matching token. Null = legacy row
+  // created before ownership existed — claimed on first contact.
+  ownerHash    String?
+  createdAt    DateTime      @default(now())
+  messages     ChatMessage[]
+
+  @@index([lead, createdAt])
+}
+
+model ChatMessage {
+  id        String      @id @default(cuid())
+  sessionId String
+  session   ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  role      String // user | assistant
+  content   String
+  lang      String      @default("en")
+  createdAt DateTime    @default(now())
+}
+
+// ───────────────────────── AI Providers (admin-configurable) ─────────────────────────
+
+/// OpenAI-compatible text provider used by the public chatbot and the admin
+/// AI writer/translator. The apiKey is server-only: it never leaves the
+/// backend and is always masked in admin API responses.
+model AiProvider {
+  id        String   @id @default(cuid())
+  name      String // display label, e.g. "OpenRouter"
+  baseUrl   String // OpenAI-compatible base, e.g. https://api.openai.com/v1
+  apiKey    String // secret
+  model     String // e.g. gpt-4o-mini
+  active    Boolean  @default(false) // exactly one active at a time
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([active])
+}
+
+// ───────────────────────── RAG Knowledge Base ─────────────────────────
+
+model KbChunk {
+  id        String @id @default(cuid())
+  refType   String // post | service | project | site
+  refId     String?
+  refSlug   String?
+  title     String
+  body      String
+  tokens    Int    @default(0)
+  createdAt DateTime @default(now())
+
+  @@index([refType, refId])
+}
+
+// ───────────────────────── Admin ─────────────────────────
+
+model AdminUser {
+  id           String   @id @default(cuid())
+  username     String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+}
+
+model AiJob {
+  id        String   @id @default(cuid())
+  kind      String   // article | image | translate
+  status    String   @default("pending") // pending | running | done | failed
+  prompt    String?
+  result    String?
+  error     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ───────────────────────── Social Media Studio ─────────────────────────
+
+model SocialDraft {
+  id         String   @id @default(cuid())
+  platform   String   // linkedin | instagram | x | telegram
+  lang       String   // en | fa
+  topic      String?
+  sourceSlug String?
+  content    String
+  posted     Boolean  @default(false)
+  createdAt  DateTime @default(now())
+}
+
+// ───────────────────────── AI Content Pipeline (3-agent) ─────────────────────────
+
+/// One AI-generated content piece moving through the multi-agent pipeline:
+///   AI 1 writer → AI 2 SEO auditor + AI 3 editor (parallel) → auto-revise
+///   loop → human approval → website Post | Social Studio (LinkedIn) queue.
+/// Scalar lists are not supported by the sqlite provider, so JSON payloads
+/// live in TEXT columns (same pattern as the rest of this schema).
+model AiArticle {
+  id              String   @id @default(cuid())
+  target          String   @default("website") // website | linkedin
+  lang            String   @default("fa") // fa | en
+  topic           String
+  keyword         String?
+  brief           String? // content brief from the Brief Builder (steers writer + revisions)
+  status          String   @default("draft") // draft | needs_revision | approved | published | failed
+  titleFa         String?
+  titleEn         String?
+  slugIdea        String? // writer's slug suggestion (publish re-uniquifies)
+  excerptFa       String?
+  excerptEn       String?
+  metaTitle       String?
+  metaDescription String?
+  keywords        String? // JSON string[]
+  internalLinks   String? // JSON [{slug,title,anchor}] actually extracted from content
+  hashtags        String? // JSON string[] (linkedin target)
+  contentFa       String? // HTML (website) | post text (linkedin)
+  contentEn       String?
+  reviews         String? // JSON [{agent,score,verdict,issues[],must_fix[],notes,at}]
+  seoScore        Int?
+  editorScore     Int?
+  revision        Int      @default(1)
+  lastError       String?
+  publishedSlug   String? // Post.slug after website publish
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([status, createdAt])
+}
+
+// ───────────────────────── Daily Articles ─────────────────────────
+
+/// One bilingual original article in the daily product-analysis section
+/// (/daily). NOT a link dump and NOT sourced from any external feed — the
+/// owner writes a real editorial: short summary + full article + expert
+/// verdict, in English and Persian, about products that got it right.
+/// slug is the public URL key (/daily/[slug]).
+model DailyArticle {
+  id        String  @id @default(cuid())
+  slug      String  @unique
+  day       String // publication day 'YYYY-MM-DD' (Tehran calendar) — groups the index
+  // one of: product | ai | startup | linkedin — the daily lanes (see
+  // src/lib/daily.ts DAILY_CATEGORIES). 'linkedin' added 2026-10-13 by owner
+  // order — the fourth lane mirrors the owner's daily LinkedIn post bank
+  // (surfaces in the blog daily-box, index tabs, /daily/cat/*)
+  category  String  @default("product")
+  titleEn   String
+  titleFa   String
+  summaryEn String // short excerpt — doubles as the SEO meta description
+  summaryFa String
+  bodyEn    String // full article HTML (sanitized on save and on read)
+  bodyFa    String
+  verdictEn String // the author's expert take — rendered in its own box
+  verdictFa String
+  tagsEn    String? // JSON string[]
+  tagsFa    String? // JSON string[]
+  published Boolean @default(true)
+  publishAt DateTime? // scheduled go-live moment. NULL = already live; future = hidden until the slot (staggered publishing)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([day])
+}
+
+/// "Daily product analysis" feed items imported from the Product Hunt feed
+/// (src/lib/daily-digest.ts → /api/admin/daily/import + /api/cron/daily-import).
+/// One row per product; `order` positions it inside its `day` group.
+/// NOTE: landed 2026-10-12 — commit 8829e19 shipped the code that uses this
+/// model but never committed the model itself, which broke `next build`
+/// (tsc: "Property 'dailyProduct' does not exist on type 'PrismaClient'").
+model DailyProduct {
+  id        String   @id @default(cuid())
+  day       String // publication day 'YYYY-MM-DD' (Tehran calendar) — groups the digest
+  name      String // ≤120 chars (enforced by the importer's slice)
+  taglineEn String // ≤240 chars (enforced by the importer's slice)
+  taglineFa String? // AI-translated one-liner; null = EN-only row (admin fills by hand)
+  url       String   @unique
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([day])
+}
+
+// ───────────────────────── SEO Brief Builder ─────────────────────────
+
+/// Competitor / reference site the brief builder scans. The owner asked for
+/// the NotebookLM-style workflow (competitor URLs → extract headings → AI
+/// keeps the important ones → content brief) as a native admin tool instead.
+model BriefSource {
+  id       String  @id @default(cuid())
+  name     String
+  url      String  @unique
+  lang     String  @default("en") // en | fa
+  category String  @default("product") // product | ai | startup
+  active   Boolean @default(true)
+  // why a source may be dormant — e.g. "blocks server-side bots"
+  note     String?
+  scans    BriefScan[]
+  createdAt DateTime @default(now())
+}
+
+/// One scan of one source page — raw extracted heading outline (JSON TEXT,
+/// same pattern as every other list in this sqlite schema).
+model BriefScan {
+  id           String      @id @default(cuid())
+  sourceId     String
+  source       BriefSource @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  ok           Boolean     @default(true)
+  error        String?
+  title        String? // <title> of the fetched page
+  headings     String      @default("[]") // JSON [{tag:"h2", text:"…"}]
+  headingCount Int         @default(0)
+  createdAt    DateTime    @default(now())
+
+  @@index([sourceId, createdAt])
+}
+
+/// One generated content brief for a target page/topic — the deliverable a
+/// human writer (or the AI article pipeline) writes from.
+model Brief {
+  id          String   @id @default(cuid())
+  topic       String
+  category    String   @default("product") // product | ai | startup
+  status      String   @default("ready") // ready | used | archived
+  filtered    String   @default("[]") // JSON — AI-filtered important headings
+  structure   String? // JSON {h2:[], h3:[], topics:[], missing:[], faq:[]}
+  briefMd     String? // full human-readable brief (markdown)
+  sourceCount Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([status, createdAt])
+}
+
+// ───────────────────────── Content Studio (استودیو محتوا) ─────────────────────────
+// Instagram Reel production pipeline for @startup_mt + Mehrdad.ir (Task 55):
+// 10 reference reels → 5 similar-not-copied ideas each → AI video (CogVideoX)
+// that ends on the branded outro card → ready caption + hashtags for posting.
+
+/// One of the 10 reference Instagram reels the owner supplied. The style note
+/// feeds ideation prompts so new videos stay "مشابه نه کپی" of the original.
+model ContentSample {
+  id        String        @id @default(cuid())
+  reelId    String        @unique // Instagram shortcode, e.g. DYTZGk0gTRO
+  url       String
+  account   String // @hellopersonality …
+  styleTag  String // ai-cinematic | ai-art | nature | motivation-fa | brand | pets
+  title     String // short Persian label shown in the panel
+  note      String // Persian style description used in ideation prompts
+  likes     String // display string, e.g. "12M"
+  hashtags  String        @default("[]") // JSON string[] harvested from the reel
+  ideas     ContentIdea[]
+  createdAt DateTime      @default(now())
+}
+
+/// One of the 5 video concepts generated for a sample.
+model ContentIdea {
+  id          String        @id @default(cuid())
+  sampleId    String
+  sample      ContentSample @relation(fields: [sampleId], references: [id], onDelete: Cascade)
+  idx         Int // 1..5 within the sample
+  title       String
+  hook        String // 3-second opening line (Persian)
+  script      String // scene-by-scene shooting script (Persian)
+  videoPrompt String // English text-to-video prompt for CogVideoX
+  caption     String // ready-to-paste Instagram caption (Persian)
+  hashtags    String        @default("[]") // JSON string[]
+  status      String        @default("idea") // idea | published
+  videos      ContentVideo[]
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@unique([sampleId, idx])
+}
+
+/// One generated video for an idea. The provider URL is temporary — the panel
+/// warns to download promptly; the download endpoint proxies it via the site.
+model ContentVideo {
+  id             String      @id @default(cuid())
+  ideaId         String
+  idea           ContentIdea @relation(fields: [ideaId], references: [id], onDelete: Cascade)
+  providerTaskId String
+  status         String      @default("generating") // generating | ready | failed
+  url            String? // provider mp4 URL (temporary)
+  coverUrl       String?
+  error          String?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  @@index([ideaId, createdAt])
+}
+
+/// Editable popular-hashtag bank merged into every idea's hashtag set.
+model HashtagBank {
+  id       String @id @default(cuid())
+  tag      String @unique // without the '#'
+  lang     String @default("fa") // fa | en
+  category String @default("general") // general | startup | motivation | viral
+}
