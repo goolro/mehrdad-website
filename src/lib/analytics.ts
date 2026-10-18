@@ -7,10 +7,27 @@ import posthog from 'posthog-js';
  *
  * Every helper is a safe no-op until PostHog is initialized (SSR render,
  * missing key, Do-Not-Track browsers) — callers never need to guard.
+ *
+ * 2026-10-18 FIX (owner's live test exposed it): the old gate checked
+ * `posthog.__loaded`, which only flips true AFTER the remote config loads.
+ * On a HARD LANDING (visitor opens /mvp-sprint directly) the useEffect
+ * fires before that, the helper returned early and the event was silently
+ * DROPPED — funnels then undercount step 1. Evidence: PostHog showed the
+ * $pageview + autocapture of that exact visit but no mvp_sprint_viewed.
+ * posthog-js QUEUES capture() calls made after init() even while __loaded
+ * is false (the ungated $pageview path already proves the queue works), so
+ * the correct gate is "was init() called", not "is __loaded true".
  */
 
+let initCalled = false;
+
+/** Called by PostHogProvider immediately after posthog.init(). */
+export function markAnalyticsInitialized() {
+  initCalled = true;
+}
+
 function ready(): boolean {
-  return typeof window !== 'undefined' && posthog.__loaded === true;
+  return typeof window !== 'undefined' && initCalled;
 }
 
 /** A visitor opened a full article — the SEO/north-star engagement metric. */
