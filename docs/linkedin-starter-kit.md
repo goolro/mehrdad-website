@@ -7,21 +7,30 @@ tool → offer. Do not post more than 1/day. Reply to every comment in the first
 Profile checklist (do once, 10 minutes) — click path: linkedin.com → profile
 photo (top-right) → **View Profile** → edit with the pencil icons.
 
-**1. Headline (2 min) — copy one of these (220-char limit is fine):**
+**1. Headline (2 min) — EN is the default (EN reaches everyone, incl. Persian
+founders; LinkedIn search runs on EN keywords). 220-char limit is fine:**
 
-FA (recommended — the audience is Persian founders):
+```
+Product Builder | AI MVPs in weeks, not quarters | FDE | mehrdad.ir
+```
+
+FA alternative (only if deliberately narrowing to Persian-first branding):
 
 ```
 سازنده‌ی محصول | MVP با هوش مصنوعی در چند هفته، نه چند فصل | FDE | mehrdad.ir
 ```
 
-EN (from the kit's positioning — use if targeting global clients):
+**2. About (3 min) — copy-paste, 3 lines, zero invented numbers. EN default:**
 
 ```
-Product Builder | AI MVPs in weeks, not quarters | FDE
+I build MVPs from problem to live product — using the FDE loop: scope, build, launch, measure.
+
+Proof, not promises: Quiz of Koko is live — in the browser and on Android. The entire build story is published.
+
+Free start: the MVP Scope Builder (a one-page scope in 3 minutes) or a free 30-minute "build / don't build" call.
 ```
 
-**2. About (3 min) — copy-paste, 3 lines, zero invented numbers:**
+FA alternative:
 
 ```
 ساخت MVP از مسئله تا محصول زنده — با حلقه‌ی FDE: دامنه، ساخت، انتشار، اندازه‌گیری.
@@ -31,15 +40,15 @@ Product Builder | AI MVPs in weeks, not quarters | FDE
 شروع رایگان: ابزار Scope Builder (دامنه‌ی MVP در ۳ دقیقه) یا جلسه‌ی ۳۰ دقیقه‌ای «بساز / نساز».
 ```
 
-**3. Featured section (2 min) — add 2 links, in this order:**
+**3. Featured section (2 min) — add 2 links, in this order (EN titles):**
 
 | # | Title (paste this) | URL |
 |---|---|---|
-| 1 | اسپرینت MVP — دامنه‌ی مشخص، قیمت مشخص | `https://mehrdad.ir/mvp-sprint` |
-| 2 | Scope Builder رایگان — دامنه‌ی MVP در ۳ دقیقه | `https://mehrdad.ir/scope-builder` |
+| 1 | MVP Sprint — fixed scope, fixed price | `https://mehrdad.ir/mvp-sprint` |
+| 2 | Free MVP Scope Builder — one-page scope in 3 minutes | `https://mehrdad.ir/scope-builder` |
 
 **4. Banner (optional, +3 min):** Canva → "LinkedIn banner" (1584×396) → one
-line: «از مسئله تا محصول زنده» + `mehrdad.ir` → download PNG → upload.
+line: `From problem to live product — mehrdad.ir` → download PNG → upload.
 
 **5. Custom URL (1 min):** profile → "Edit public profile & URL" → pick a clean
 handle (e.g. `/in/mehrdad-ir`).
