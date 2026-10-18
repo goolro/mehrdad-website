@@ -50,11 +50,23 @@ export function Footer() {
           <nav className="flex flex-wrap items-center justify-center gap-4 text-sm text-muted-foreground" aria-label="Footer navigation">
             {/* real anchors (structural audit 2026-09-08): footer nav was JS
                 buttons — every page lost its simplest crawlable internal
-                links; <a> restores crawling, middle-click and link semantics */}
+                links; <a> restores crawling, middle-click and link semantics
+                — phase 1 (2026-10-18): MVP Sprint + Playbook + Investors
+                surfaced here so the money pages and the investor funnel are
+                crawlable from every page, not just one deep blog post */}
             <Link href="/services" className="hover:text-foreground">{t.nav.services}</Link>
+            <Link href="/mvp-sprint" className="font-medium text-violet-600 hover:text-violet-700 dark:text-violet-400 dark:hover:text-violet-300">
+              {lang === 'fa' ? 'اسپرینت MVP' : 'MVP Sprint'}
+            </Link>
             <Link href="/work" className="hover:text-foreground">{t.nav.projects}</Link>
             <Link href="/blog" className="hover:text-foreground">{t.nav.blog}</Link>
             <Link href="/daily" className="hover:text-foreground">{t.nav.daily}</Link>
+            <Link href="/playbook" className="hover:text-foreground">
+              {lang === 'fa' ? 'کتابچه FDE' : 'Playbook'}
+            </Link>
+            <Link href="/investors-koko" className="hover:text-foreground">
+              {lang === 'fa' ? 'سرمایه‌گذاری' : 'Investors'}
+            </Link>
             <Link href="/contact" className="hover:text-foreground">{t.nav.contact}</Link>
           </nav>
         </div>
