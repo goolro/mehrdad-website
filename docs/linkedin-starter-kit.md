@@ -20,12 +20,13 @@ FA alternative (only if deliberately narrowing to Persian-first branding):
 سازنده‌ی محصول | MVP با هوش مصنوعی در چند هفته، نه چند فصل | FDE | mehrdad.ir
 ```
 
-**2. About (3 min) — copy-paste, 3 lines, zero invented numbers. EN default:**
+**2. About (3 min) — GENERAL service framing (owner decision: no product
+stories here; proof lives on the website + Featured). EN default:**
 
 ```
-I build MVPs from problem to live product — using the FDE loop: scope, build, launch, measure.
+I help founders turn an idea into a live product — scoped honestly, built fast, shipped to real users.
 
-Proof, not promises: Quiz of Koko is live — in the browser and on Android. The entire build story is published.
+Everything runs on the FDE loop: scope, build, launch, measure. Fixed scope, fixed price — you know what you get and what it costs before we start.
 
 Free start: the MVP Scope Builder (a one-page scope in 3 minutes) or a free 30-minute "build / don't build" call.
 ```
@@ -33,9 +34,9 @@ Free start: the MVP Scope Builder (a one-page scope in 3 minutes) or a free 30-m
 FA alternative:
 
 ```
-ساخت MVP از مسئله تا محصول زنده — با حلقه‌ی FDE: دامنه، ساخت، انتشار، اندازه‌گیری.
+ساخت محصول از ایده تا انتشار — برای بنیان‌گذارها و تیم‌های کوچک.
 
-اثبات، نه ادعا: Quiz of Koko زنده است — در مرورگر و اندروید. کل مسیر ساختش هم عمومی نوشته شده.
+کارم روی حلقه‌ی FDE است: دامنه، ساخت، انتشار، اندازه‌گیری. دامنه‌ی مشخص، قیمت مشخص — قبل از شروع می‌دانی چه چیزی و با چه هزینه‌ای تحویل می‌گیری.
 
 شروع رایگان: ابزار Scope Builder (دامنه‌ی MVP در ۳ دقیقه) یا جلسه‌ی ۳۰ دقیقه‌ای «بساز / نساز».
 ```
@@ -46,6 +47,13 @@ FA alternative:
 |---|---|---|
 | 1 | MVP Sprint — fixed scope, fixed price | `https://mehrdad.ir/mvp-sprint` |
 | 2 | Free MVP Scope Builder — one-page scope in 3 minutes | `https://mehrdad.ir/scope-builder` |
+
+Optional 3rd (generic title, keeps proof one click away without owning the
+About):
+
+| # | Title (paste this) | URL |
+|---|---|---|
+| 3 | Case study — from idea to a live product | `https://mehrdad.ir/case-studies/quiz-of-koko` |
 
 **4. Banner (optional, +3 min):** Canva → "LinkedIn banner" (1584×396) → one
 line: `From problem to live product — mehrdad.ir` → download PNG → upload.
