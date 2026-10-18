@@ -71,3 +71,13 @@ export function trackPlaybookSubscribed(props: { placement: 'playbook_page' | 'f
   if (!ready()) return;
   posthog.capture('playbook_subscribed', props);
 }
+
+// ── Free tool (phase 3, 2026-10-18) ────────────────────────────────────
+// Scope Builder: the tool IS the scope-call prep — completing it is a
+// high-intent signal, one step before the lead event.
+
+/** A visitor generated their one-page scope in the MVP Scope Builder. */
+export function trackScopeBuilderCompleted(props: { lang: 'en' | 'fa'; hadSmallestVersion: boolean }) {
+  if (!ready()) return;
+  posthog.capture('scope_builder_completed', props);
+}
