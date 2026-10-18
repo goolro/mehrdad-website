@@ -13,7 +13,7 @@ export default async function Image() {
       <OgCard
         kicker="MEHRDAD.IR — MVP SPRINT"
         title="MVP Sprint"
-        titleFa="اسپرینت MVP — دامنه‌ی مشخص، قیمت مشخص"
+        titleFa="اسپرینت محصول — دامنه‌ی مشخص، قیمت مشخص"
         subtitle="Fixed scope · Fixed price · From problem to a live product"
       />
     ),
