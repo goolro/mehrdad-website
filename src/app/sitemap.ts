@@ -49,6 +49,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE}/playbook`, changeFrequency: 'monthly', priority: 0.8 },
     // phase 2 credibility
     { url: `${BASE}/case-studies/quiz-of-koko`, changeFrequency: 'monthly', priority: 0.8 },
+    // phase 3 free tool
+    { url: `${BASE}/scope-builder`, changeFrequency: 'monthly', priority: 0.8 },
     { url: `${BASE}/investors-koko`, changeFrequency: 'monthly', priority: 0.6 },
     { url: `${BASE}/investors-koko/deck`, changeFrequency: 'monthly', priority: 0.6 },
   ];

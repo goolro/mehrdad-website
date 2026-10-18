@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useApp } from './store';
 import { ui } from './i18n';
 import { Button } from '@/components/ui/button';
-import { CalendarCheck, Check, ChevronDown, Sparkles } from 'lucide-react';
+import { CalendarCheck, Check, ChevronDown, Sparkles, Wrench } from 'lucide-react';
 import { trackMvpSprintViewed, trackMvpSprintCta } from '@/lib/analytics';
 
 /**
@@ -145,6 +145,28 @@ export function MvpSprintView() {
               </Button>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* ── free tool bridge (phase 3) ── */}
+      <section className="mt-10 rounded-2xl border border-violet-500/30 bg-gradient-to-br from-violet-600/5 to-fuchsia-600/5 p-6" aria-labelledby="tool-title">
+        <h2 id="tool-title" className="text-xl font-bold" dir={rtl}>
+          {m.toolTitle}
+        </h2>
+        <p className="mt-2 text-sm text-muted-foreground" dir={rtl}>
+          {m.toolSub}
+        </p>
+        <div className="mt-4">
+          <Button
+            asChild
+            size="sm"
+            className="bg-violet-600 text-white hover:bg-violet-700"
+          >
+            <Link href="/scope-builder">
+              <Wrench className="me-1.5 h-4 w-4" />
+              {m.toolCta}
+            </Link>
+          </Button>
         </div>
       </section>
 
