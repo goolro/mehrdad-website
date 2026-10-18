@@ -13,7 +13,7 @@ export default async function Image() {
       <OgCard
         kicker="MEHRDAD.IR — FREE TOOL"
         title="MVP Scope Builder"
-        titleFa="ابزار رایگان — دامنه‌ی محصول در سه دقیقه"
+        titleFa="ابزار رایگان — دامنه‌ی MVP در ۳ دقیقه"
         subtitle="Five honest questions → a one-page scope. No signup."
       />
     ),

@@ -19,7 +19,20 @@ export type OgCardProps = {
   domain?: string;
 };
 
+/**
+ * satori shapes RTL words correctly glyph-by-glyph but lays multi-word FA
+ * lines out in LTR order (no RTL base direction support). Fix: split the FA
+ * sentence into words and render them in reversed order inside an LTR row —
+ * the visual result reads correctly right-to-left. Deterministic, no satori
+ * bidi reliance; Latin/digit tokens are fine because each word is its own
+ * text run.
+ */
+function faWordsReversed(titleFa: string): string[] {
+  return titleFa.split(/\s+/).filter(Boolean).reverse();
+}
+
 export function OgCard({ kicker, title, titleFa, subtitle, domain = 'mehrdad.ir' }: OgCardProps) {
+  const faWords = faWordsReversed(titleFa);
   return (
     <div
       style={{
@@ -57,8 +70,15 @@ export function OgCard({ kicker, title, titleFa, subtitle, domain = 'mehrdad.ir'
       {/* middle: title + FA line + subtitle */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
         <div style={{ display: 'flex', fontSize: 92, fontWeight: 700, color: OG.text }}>{title}</div>
-        <div style={{ display: 'flex', fontSize: 38, fontWeight: 700, color: OG.violetSoft }}>
-          {titleFa}
+        <div style={{ display: 'flex', flexDirection: 'row', gap: 18, alignItems: 'center' }}>
+          {faWords.map((word, i) => (
+            <div
+              key={`${i}-${word}`}
+              style={{ display: 'flex', fontSize: 38, fontWeight: 700, color: OG.violetSoft }}
+            >
+              {word}
+            </div>
+          ))}
         </div>
         <div style={{ display: 'flex', fontSize: 30, color: OG.muted }}>{subtitle}</div>
       </div>
