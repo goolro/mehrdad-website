@@ -4,11 +4,45 @@ Copy-paste ready. Post order below is deliberate: problem → method → proof �
 tool → offer. Do not post more than 1/day. Reply to every comment in the first
 2 hours (the algorithm's real test).
 
-Profile checklist (do once, 10 minutes):
-- [ ] Headline: `Product Builder | AI MVPs in weeks, not quarters | FDE` (EN) or keep FA audience version
-- [ ] Featured section: pin mehrdad.ir/mvp-sprint + mehrdad.ir/scope-builder
-- [ ] About: 3 lines — what you build, the loop you use, the free scope call
-- [ ] Banner: simple — site URL + «از مسئله تا محصول زنده»
+Profile checklist (do once, 10 minutes) — click path: linkedin.com → profile
+photo (top-right) → **View Profile** → edit with the pencil icons.
+
+**1. Headline (2 min) — copy one of these (220-char limit is fine):**
+
+FA (recommended — the audience is Persian founders):
+
+```
+سازنده‌ی محصول | MVP با هوش مصنوعی در چند هفته، نه چند فصل | FDE | mehrdad.ir
+```
+
+EN (from the kit's positioning — use if targeting global clients):
+
+```
+Product Builder | AI MVPs in weeks, not quarters | FDE
+```
+
+**2. About (3 min) — copy-paste, 3 lines, zero invented numbers:**
+
+```
+ساخت MVP از مسئله تا محصول زنده — با حلقه‌ی FDE: دامنه، ساخت، انتشار، اندازه‌گیری.
+
+اثبات، نه ادعا: Quiz of Koko زنده است — در مرورگر و اندروید. کل مسیر ساختش هم عمومی نوشته شده.
+
+شروع رایگان: ابزار Scope Builder (دامنه‌ی MVP در ۳ دقیقه) یا جلسه‌ی ۳۰ دقیقه‌ای «بساز / نساز».
+```
+
+**3. Featured section (2 min) — add 2 links, in this order:**
+
+| # | Title (paste this) | URL |
+|---|---|---|
+| 1 | اسپرینت MVP — دامنه‌ی مشخص، قیمت مشخص | `https://mehrdad.ir/mvp-sprint` |
+| 2 | Scope Builder رایگان — دامنه‌ی MVP در ۳ دقیقه | `https://mehrdad.ir/scope-builder` |
+
+**4. Banner (optional, +3 min):** Canva → "LinkedIn banner" (1584×396) → one
+line: «از مسئله تا محصول زنده» + `mehrdad.ir` → download PNG → upload.
+
+**5. Custom URL (1 min):** profile → "Edit public profile & URL" → pick a clean
+handle (e.g. `/in/mehrdad-ir`).
 
 ---
 
@@ -79,3 +113,20 @@ Take it to a free 30-minute scope call, or just use it and go build. Both are wi
 - Week 2+ follows docs/content-calendar-30d.md (owner-approved version)
 - Re-post the best performer with a new hook after 21 days
 - When a real testimonial lands, it replaces Post 3's spot in the rotation
+
+---
+
+## Publish runbook — Post 1 (day 1)
+
+1. Desktop is easier than mobile (copy-paste + typing Persian).
+2. Home feed → **Start a post** → paste Post 1 → **Post**.
+   The link is already inside the text — do NOT add a second link.
+3. Not Tue–Thu 9–11 (Tehran time)? Use the **clock icon** next to the Post
+   button to schedule instead of posting now.
+4. Once live: **⋯ menu (top-right of the post) → Copy link to post** → keep
+   it (paste it to the builder chat for tracking).
+5. Reply to every comment within the first 2 hours. Max 1 post/day.
+6. First signals: impressions/views shown under the post (LinkedIn) +
+   PostHog events on the linked pages (`mvp_sprint_viewed`,
+   `scope_builder_completed`). No likes-obsession — this is a funnel, not a
+   popularity contest.
