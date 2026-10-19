@@ -30,13 +30,19 @@
  *       [--schedule 2026-10-20T09:00:00Z] [--now] [--dry]
  *
  *   - default (no --schedule/--now): creates a DRAFT in Publora
+ *   - OWNER ORDER 2026-10-18 «فقط برای لینکدین استفاده کنیم»: without
+ *     --platforms the script targets LINKEDIN ONLY — Instagram (connected but
+ *     unused) is never touched unless explicitly requested via --platforms
  *   - --platforms takes platform PREFIXES (resolved via list) or full
- *     connection IDs; omitted → all active connections
+ *     connection IDs; omitted → LinkedIn connections
  *   - --dry builds and prints the exact payload without sending
  */
 const SITE = 'https://mehrdad.ir';
 const API = 'https://api.publora.com/api/v1';
 const KEY = process.env.PUBLORA_KEY;
+// OWNER ORDER 2026-10-18: «فقط برای لینکدین استفاده کنیم» — LinkedIn is the
+// only default target. Other platforms require an explicit --platforms flag.
+const DEFAULT_PLATFORM = 'linkedin';
 
 if (!KEY) {
   console.error('PUBLORA_KEY env var is required (Publora dashboard API key)');
@@ -162,11 +168,7 @@ async function listConnections(): Promise<Connection[]> {
 function resolvePlatforms(all: Connection[], flagVal?: string): string[] {
   const active = all.filter((c) => c.connectionStatus === 'active' && c.tokenStatus === 'valid');
   if (!flagVal) {
-    if (active.length === 0)
-      throw new Error(
-        'no active connections — connect channels in the Publora dashboard first (manual OAuth step)'
-      );
-    return active.map((c) => c.platformId);
+    return resolvePlatforms(all, DEFAULT_PLATFORM); // owner order: LinkedIn-only default
   }
   const prefixes = flagVal.split(',').map((s) => s.trim().toLowerCase()).filter(Boolean);
   return prefixes.map((p) => {
@@ -232,6 +234,9 @@ if (cmd === 'show' || cmd === 'push') {
   }
   const media = absolutMedia(post.cover);
   const mode = publishNow ? 'publish-now' : schedule ? 'scheduled' : 'draft';
+  console.log(`targets: ${platforms.join(' · ')} (default = ${DEFAULT_PLATFORM} per owner order 2026-10-18)`);
+  console.log(`mode: ${mode}${media ? ` · media: ${media.join(', ')}` : ''}`);
+  console.log();
 
   for (const c of copies) {
     console.log(`── ${c.lang} copy (${c.content.length} chars) ──`);

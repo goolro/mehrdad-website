@@ -979,3 +979,9 @@ platforms + whether Starter (free, no X) or Pro.
 Vivora series pushed as TWO drafts (fa + en), each targeted at BOTH channels;
 cover PNG ingested server-side (status ready). Verified via list-posts +
 get-post APIs. Owner schedules from the dashboard. Allowance used: 2 of 15.
+
+**Amendment (same day, owner order «فقط برای لینکدین استفاده کنیم»):** LinkedIn
+is now the ONLY Publora target — script default changed (DEFAULT_PLATFORM =
+linkedin; explicit --platforms still allows others) and both existing slide-01
+drafts retargeted via the update-post API (Instagram removed). Verified via
+get-post: both drafts now show a single LinkedIn target.
