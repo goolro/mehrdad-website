@@ -985,3 +985,13 @@ is now the ONLY Publora target — script default changed (DEFAULT_PLATFORM =
 linkedin; explicit --platforms still allows others) and both existing slide-01
 drafts retargeted via the update-post API (Instagram removed). Verified via
 get-post: both drafts now show a single LinkedIn target.
+
+**Daily series staged (owner order «اولی را بفرست ولی مابقی فقط برای لینکدین
+باشه هر روز یکی», 2026-10-19):** slide 01 published on LinkedIn (fa + en,
+status published). Slides 02–04 scheduled daily at 10:00 Asia/Tehran
+(06:30 UTC), fa only, LinkedIn only. Starter plan's real queue limit confirmed
+empirically: 3 active scheduled posts (SCHEDULED_POST_LIMIT_REACHED at the 4th)
+— so slides 05–19 are staged as 15 ready drafts (drafts consume neither the
+queue nor the monthly allowance). Daily renewal: flip one draft to scheduled
+per day (dashboard or via publora-push.ts with --schedule). fa-only daily fits
+the 15-post monthly allowance across the Oct/Nov boundary.
