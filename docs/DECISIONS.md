@@ -931,3 +931,45 @@ all `published=true featured=false source=ai`, dates staggered −1min
 Vercel API token was tested and returned `403 invalidToken` on every endpoint —
 so the rebuild was triggered the usual way: this documentation commit pushed to
 main → Vercel auto-deploy (the mechanism that shipped every prior change).
+
+## D-044 — Publora as the social-media bridge (2026-10-18)
+
+**Owner order:** «از طریق این سایت می‌خواهیم https://app.publora.com/dashboard/quickstart
+به شبکه‌های اجتماعی وصل بشیم» + API key provided inline.
+
+**Investigation:** Publora = social scheduler with REST API + MCP (docs.publora.com,
+LLM-friendly .md pages). REST base `https://api.publora.com/api/v1` with header
+`x-publora-key`. Connecting social channels is BY DESIGN a manual dashboard OAuth
+step — the API cannot do it. Free Starter plan: 3 accounts / 15 posts per month /
+X (Twitter) requires Pro ($5.99/mo first account).
+
+**Key tested:** owner's key valid — `GET /platform-connections` →
+`{"success":true,"connections":[]}` (zero channels connected as of this writing).
+
+**What was built:** `scripts/publora-push.ts` — the site→social bridge:
+- `list` — connected channels + token health + plan hints when empty
+- `show --slug S [--lang fa|en|both] [--tags ...]` — preview exact social copy
+- `push --slug S [--lang ...] [--schedule ISO|--now] [--platforms linkedin,instagram] [--dry]`
+  — creates ONE Publora post PER language (never a merged fa+en blob; the owner's
+  own practice is separate fa/en posts), default mode DRAFT (safe: nothing goes
+  out until scheduled/published from the dashboard)
+- Content source: the site's own public `/api/posts/:slug` (production truth,
+  zero tokens). Copy = post's own title/excerpt/category + link; cover PNG via
+  `mediaUrls` (Publora downloads it server-side). NO invented facts, NO
+  auto-translated text, hashtags only from `--tags` or the post's real category.
+- Standing rule enforced: Persian copy zero «،» — incoming text normalised
+  «،»→«؛» + fail-loud assert (verified on koko-investor-overview: 3 source
+  commas → 0 in output).
+- Secrets: PUBLORA_KEY env-only, inline, never stored (repo-wide policy).
+
+**Self-test evidence:** eslint clean. `list` against live API: NONE + guidance.
+`show` on vivora-deck-01-cover (both langs): correct bilingual copy, cover media
+URL resolved, 0 «،». `show --tags` on vivora-deck-13: tags + category hashtag.
+`push` without channels fails loud with the dashboard instruction (cannot
+silently no-op). Full end-to-end push test is BLOCKED on the owner connecting
+channels (manual OAuth) — the moment channels exist: `list` → `show` → `push`
+`--dry` → real `push` draft → owner schedules from dashboard.
+
+**Next step (owner, ~5 min):** dashboard → Channels → Add Channel → OAuth for
+each platform (LinkedIn first per his drafts history). Then tell me which
+platforms + whether Starter (free, no X) or Pro.
