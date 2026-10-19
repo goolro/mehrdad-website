@@ -973,3 +973,9 @@ channels (manual OAuth) — the moment channels exist: `list` → `show` → `pu
 **Next step (owner, ~5 min):** dashboard → Channels → Add Channel → OAuth for
 each platform (LinkedIn first per his drafts history). Then tell me which
 platforms + whether Starter (free, no X) or Pro.
+
+**First real push (2026-10-18, same day):** owner connected LinkedIn
+(Mehrdad Heidari) + Instagram (startup_mt) — both token valid. Slide-01 of the
+Vivora series pushed as TWO drafts (fa + en), each targeted at BOTH channels;
+cover PNG ingested server-side (status ready). Verified via list-posts +
+get-post APIs. Owner schedules from the dashboard. Allowance used: 2 of 15.
