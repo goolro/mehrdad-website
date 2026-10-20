@@ -1039,3 +1039,54 @@ eslint clean.
 **Deployment:** rebased onto remote main (D-044 line) and pushed with the
 owner's inline PAT (token never stored); Vercel auto-deploy verified by polling
 the production URL after push.
+
+## D-046 — Deck page: top button = «Back to website» + the site's online chat ON the deck (2026-10-22)
+
+**Owner order:** «دکمه بالای پیج دک فقط بذار بازگشت به وب‌سایت را داشته باشه …
+هر کسی اینو دید — باید با گرافیک بخونه؛ همچنین چت آنلاین روی پیج دک روی این
+صفحه هم نمایش داده شود.»
+
+**Context:** the standalone Health & Wellness deck (/deck/health + /fa) is
+served by route handlers that bypass the root layout (byte-exact owner upload,
+D-041/D-042). Consequences: the deck's top nav ended in «Invest → /
+سرمایه‌گذاری ←» (an in-page anchor, meaningless as an escape hatch to anyone
+receiving the shared deck link), and the site's online AI chat physically
+could not reach the page — the React ChatWidget lives in the layout the deck
+bypasses.
+
+**What was built (src/app/deck/health/site-chat.ts, new; both route handlers
+chained after the existing D-038/D-039/D-042 swaps):**
+1. Nav button swap (asserted unique in each landing): «Invest →» →
+   «Back to website ↗» / «سرمایه‌گذاری ←» → «بازگشت به وب‌سایت ↗», same
+   `.btn sm` slot — same animated gradient pill, same size, same `.ar` arrow
+   span, so it reads natively with the deck graphics (↗ is the deck's own
+   established "go to Mehrdad.ir" arrow from the founder CTA). Same-tab
+   navigation to https://mehrdad.ir/ — a true "return".
+2. Online chat: a self-contained vanilla-JS twin of the site ChatWidget
+   injected as ONE inline <script> before </body> — same visual identity
+   (violet→fuchsia launcher + green AI badge, 384px panel, streaming
+   transcript, typing dots, privacy note, clear via DELETE /api/chat), same
+   /api/chat SSE contract (session/token capture, delta rendering, 429 + JSON
+   fallbacks). Bilingual by page: EN deck → EN chat, FA deck → FA chat
+   (texts adapted to the zero-«،» standing rule). Body written as a raw
+   string (not a stringified function) so dev and production builds inject
+   byte-identical widget code; config keys are UPPERCASE (serialization
+   contract, minifier-proof). The widget keeps the deck's single-file
+   property and runs under the D-035 deck CSP (script-src 'unsafe-inline',
+   connect-src 'self') — no config change needed.
+
+**Freeze discipline:** landing-en.ts / landing-fa.ts untouched; both swaps
+asserted unique and fail loud (cs-scroll pattern); round-trip proof run —
+undoing exactly the two swaps returns the pre-D-046 HTML byte-exact for both
+languages. ORDER_RE/PARTNER_RE lead-flow logic deliberately NOT touched
+(site-wide owner design; questions containing «سرمایه‌گذاری»/invest still
+enter the partnership script, same as the main site).
+
+**Self-test evidence:** eslint clean; Agent Browser E2E on both languages —
+button present in nav (native slot), chat opens, real questions answered from
+the deck's own content («Two AI assistants are live…», Persian wellness-family
+answer), streaming verified, clear/close/Escape work, fab↔panel toggle proven
+(open → fab hidden, close → fab back), RTL panel correct, mobile 390px panel
+full-width, zero console errors; clicking the button navigates to
+https://mehrdad.ir/; regression curl: / , /investors-koko/deck ,
+/s/kilika.html , /deck/health(/fa) all 200/307 as before; dev.log clean.
