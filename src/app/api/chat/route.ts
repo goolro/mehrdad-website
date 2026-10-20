@@ -361,12 +361,14 @@ PAGE CONTEXT (important): The user is RIGHT NOW on the "Forward Deployed Enginee
 - Services: Forward Deployed Engineering (FDE) — solving real business/product problems end to end with product thinking + engineering + AI; fast MVP building; AI adoption for businesses.
 - Games: Traffic Tempo — a traffic-puzzle Android game on Cafe Bazaar: 50 handcrafted levels, endless solver-verified stage machine, fully offline, lightweight (~20MB), no forced mid-game ads. Plus a quiz game project.
 - Startups and experiments: BIZPAL, KLIKA, smart city and rail corridor research, smart waste startup; 83+ articles of real research and lessons on the site.
+- KLIKA one-pager: the KLIKA investor pitch page (super-app — one platform for dozens of online services: transport, shopping, travel, daily services) is live at https://mehrdad.ir/s/kilika.html; pitch for investors and partners: 1M+ target users in year one, 20+ service categories, $4M requested funding; contact admin@mehrdad.ir.
 - Ordering rule: to order a project the visitor first describes the idea in 1–2 lines; THEN the flow asks for a phone number WITH country code; calls are always ARRANGED at a mutually agreed time — never promise an immediate call. Cost and timeline are announced only AFTER the idea is reviewed — NEVER invent prices or deadlines. If asked about cost, say exactly that.
 - Partnership/investment rule: ask what kind of cooperation or investment they have in mind; after they explain, collect their phone number with country code.`;
     const baseFa = `حقایق پایه (همیشه درست است حتی وقتی دانش زیر خالی است):
 - خدمات: مهندسی در خط مقدم حل مسئله (FDE) — حل مسئله‌های واقعی کسب‌وکار و محصول از ابتدا تا انتها با تفکر محصول و مهندسی و AI؛ ساخت MVP سریع؛ به‌کارگیری AI در کسب‌وکار.
 - بازی‌ها: ترافیک تمپو — بازی پازل ترافیک اندروید در کافه‌بازار: ۵۰ مرحله دست‌ساز و موتور مراحل بی‌نهایت تأییدشده با حل‌کننده و کاملاً آفلاین و کم‌حجم (~۲۰ مگابایت) و بدون تبلیغ اجباری وسط بازی. به‌علاوه یک پروژه بازی کوییز.
 - استارتاپ‌ها و آزمایش‌ها: BIZPAL و کلیکا و پژوهش شهر هوشمند و کریدور ریلی و استارتاپ مدیریت زباله هوشمند؛ بیش از ۸۳ مقاله از پژوهش‌ها و درس‌های واقعی در سایت.
+- صفحه تک‌تصویری کلیکا: صفحه ارائه سرمایه‌گذاری کلیکا (سوپر اپلیکیشن — یک پلتفرم برای ده‌ها سرویس آنلاین: حمل‌ونقل و خرید و سفر و خدمات روزمره) در https://mehrdad.ir/s/kilika.html فعال است؛ ارائه برای سرمایه‌گذاران و شرکا: هدف بیش از ۱ میلیون کاربر در سال اول و ۲۰+ دسته‌بندی خدمات و سرمایه درخواستی ۴ میلیون دلار؛ تماس: admin@mehrdad.ir
 - قاعدهٔ سفارش: برای سفارش پروژه بازدیدکننده اول ایده را در ۱–۲ خط توضیح می‌دهد؛ بعد از آن شماره تماس با کد کشور خواسته می‌شود؛ تماس همیشه «با هماهنگی» و در زمانی که هر دو راحت باشیم انجام می‌شود — هرگز تماس فوری وعده نده. هزینه و زمان فقط بعد از بررسی ایده اعلام می‌شود — هرگز قیمت یا زمان حدسی نگو. اگر پرسیدند دقیقاً همین را بگو.
 - قاعدهٔ همکاری و سرمایه‌گذاری: بپرس چه نوع همکاری یا سرمایه‌گذاری در نظر دارد؛ بعد از توضیح او شماره تماس با کد کشور را بخواه.`;
 
