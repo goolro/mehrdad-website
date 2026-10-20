@@ -1,9 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse, after } from 'next/server';
 import { db } from '@/lib/db';
 import { retrieveContext, buildContextBlock } from '@/lib/rag';
 import { chatCompletion, chatCompletionStream, getProviderChain, zaiComplete, type ChatTurn } from '@/lib/ai-provider';
 import { clientIp, readJsonBody, jsonBodyError, rateLimit, tooManyRequests } from '@/lib/rate-limit';
 import { resolveOwnedSession, isSessionOwner } from '@/lib/chat-owner';
+import { ensureKbPages } from '@/lib/kb';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -118,6 +119,12 @@ const PHONE_ASK_MARK_RE = /شماره تماس|phone number with country code/i;
 
 export async function POST(req: NextRequest) {
   purgeOldChats();
+  // owner order 2026-10-20 («چت گفتگو همه صفحات را مطالعه کنه»): the page
+  // corpus self-bootstraps via `after()` — official post-response work (a
+  // guaranteed execution window on Vercel), zero added latency on this
+  // request; the NEXT message already retrieves from pages. Throttled +
+  // idempotent inside lib/kb.ts.
+  after(() => ensureKbPages());
 
   // AI-cost guard: 10 messages per IP per minute
   const rl = rateLimit(`chat:${clientIp(req)}`, 10, 60 * 1000);

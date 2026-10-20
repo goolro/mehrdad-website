@@ -110,6 +110,116 @@ export async function rebuildKb() {
     },
   });
 
+  await ingestPages();
+
   invalidateKbCache();
   return db.kbChunk.count();
+}
+
+// ─────────── full-page ingestion (owner order 2026-10-20: «چت گفتگو همه
+// صفحات را مطالعه کنه») ───────────
+// The posts/services/projects chunks above only cover DATABASE content. The
+// assistant must also know the site's REAL rendered pages — home, about,
+// contact, fde, lab, daily, the listing pages, the deck landings and the
+// restored /s/kilika.html one-pager. Pages are fetched from the live origin
+// (production truth — the same SITE_ORIGIN convention as the index-ping
+// cron; self-fetch is an established pattern here, cf. daily-generate's
+// after() self-chain), stripped to text and chunked as refType 'page'.
+const KB_PAGES: { url: string; title: string }[] = [
+  { url: '/', title: 'Home — mehrdad.ir / خانه' },
+  { url: '/about', title: 'About Mehrdad / درباره مهرداد' },
+  { url: '/contact', title: 'Contact / تماس با مهرداد' },
+  { url: '/fde', title: 'Forward Deployed Engineering / مهندسی در خط مقدم حل مسئله' },
+  { url: '/lab', title: 'Lab / آزمایشگاه' },
+  { url: '/daily', title: 'Daily / روزنوشت' },
+  { url: '/blog', title: 'Blog index / فهرست مقاله‌ها' },
+  { url: '/work', title: 'Work & projects index / کارها و پروژه‌ها' },
+  { url: '/services', title: 'Services index / خدمات' },
+  { url: '/deck/health', title: 'Health & Wellness deck (EN) / ارائه ویوورا' },
+  { url: '/deck/health/fa', title: 'Health & Wellness deck (FA) / ارائه ویوورا فارسی' },
+  { url: '/s/kilika.html', title: 'KLIKA one-pager / صفحه تک‌تصویری کلیکا' },
+];
+
+/** rendered HTML → plain text (scripts/styles/svg/meta-attr noise removed) */
+function pageText(html: string): string {
+  return stripHtml(
+    html
+      .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+      .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+      .replace(/<noscript[\s\S]*?<\/noscript>/gi, ' ')
+      .replace(/<svg[\s\S]*?<\/svg>/gi, ' ')
+  );
+}
+
+/** fetch every KB page from the live origin and store its text chunks. */
+async function ingestPages(): Promise<number> {
+  await db.kbChunk.deleteMany({ where: { refType: 'page' } }); // idempotent re-runs
+  const base = (process.env.SITE_ORIGIN || 'https://mehrdad.ir').replace(/\/+$/, '');
+  const fetched = await Promise.allSettled(
+    KB_PAGES.map(async (page) => {
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), 25000);
+      try {
+        const res = await fetch(base + page.url, { signal: ctrl.signal, cache: 'no-store' });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const text = pageText(await res.text());
+        if (text.length < 200) throw new Error(`text too short (${text.length})`);
+        return { page, text };
+      } finally {
+        clearTimeout(timer);
+      }
+    }),
+  );
+  let count = 0;
+  for (let i = 0; i < fetched.length; i++) {
+    const r = fetched[i];
+    if (r.status !== 'fulfilled') {
+      console.warn(`kb pages: ${KB_PAGES[i].url} skipped (${r.reason instanceof Error ? r.reason.message : r.reason})`);
+      continue;
+    }
+    for (const part of chunkText(r.value.text, 900)) {
+      await db.kbChunk.create({
+        data: {
+          refType: 'page',
+          refId: r.value.page.url,
+          refSlug: r.value.page.url,
+          title: r.value.page.title,
+          body: part,
+          tokens: Math.ceil(part.length / 4),
+        },
+      });
+      count++;
+    }
+  }
+  if (count > 0) invalidateKbCache();
+  return count;
+}
+
+// One-shot bootstrap for the chat hot path: the production KB predates the
+// pages phase, so the first chat message after this deploy self-bootstraps
+// the page corpus. The chat route calls this inside `after()` (official
+// post-response work — a guaranteed execution window on Vercel, zero added
+// latency on the request itself; the 5-min RAG cache is invalidated on
+// success so the NEXT message already retrieves from pages). Safe to race:
+// ingestPages() deletes its own refType first. Throttled to one attempt per
+// 10 minutes until it succeeds.
+let kbPagesReady = false;
+let kbPagesLastAttempt = 0;
+
+export async function ensureKbPages(): Promise<void> {
+  if (kbPagesReady) return;
+  if (Date.now() - kbPagesLastAttempt < 10 * 60 * 1000) return;
+  kbPagesLastAttempt = Date.now();
+  try {
+    const existing = await db.kbChunk.count({ where: { refType: 'page' } });
+    if (existing > 0) {
+      kbPagesReady = true;
+      return;
+    }
+    const n = await ingestPages();
+    kbPagesReady = true;
+    console.log(`kb bootstrap: ingested ${n} page chunks`);
+  } catch (e) {
+    console.error('kb bootstrap failed (will retry later):', e instanceof Error ? e.message : e);
+  }
 }
