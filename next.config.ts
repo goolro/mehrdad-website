@@ -146,6 +146,16 @@ const nextConfig: NextConfig = {
         headers: deckSecurityHeaders,
       },
       {
+        // /s/kilika.html restored one-pager (KLIKA — owner MHTML upload,
+        // 2026-10-20): the page loads Google Fonts (Inter + Vazirmatn) via
+        // @import exactly like the deck, so it receives the SAME
+        // Google-Fonts-allowing CSP (D-035 pattern reused). public/s/ is a
+        // static file — no per-page <meta> CSP is injected there, so this
+        // header alone governs. MUST stay after the global "/:path*" rule.
+        source: "/s/:path*",
+        headers: deckSecurityHeaders,
+      },
+      {
         // admin responses are private — never let any cache store them
         source: "/api/admin/:path*",
         headers: [{ key: "Cache-Control", value: "no-store" }],
