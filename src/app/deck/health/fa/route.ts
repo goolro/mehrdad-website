@@ -13,9 +13,14 @@
 // the LEFT edge (page opens cut off). mobileSafeCsTable() wraps it in a
 // neutral overflow-x:auto container; the RTL container starts right-anchored,
 // so the first (rightmost) Persian column is visible on load.
+// D-046 (owner order): nav button «سرمایه‌گذاری ←» becomes «بازگشت به
+// وب‌سایت» (same .btn sm slot — Vazirmatn font chain from D-039 still
+// applies) and the site's ONLINE CHAT (Persian twin, zero «،») is injected —
+// see site-chat.ts. Both swaps asserted unique.
 import { LANDING_FA } from '../landing-fa';
 import { BADGE_FA, navLangToggle } from '../lang-toggle';
 import { mobileSafeCsTable } from '../cs-scroll';
+import { deckSiteChat } from '../site-chat';
 
 export const dynamic = 'force-static';
 
@@ -31,21 +36,25 @@ const BTN_FONT_OLD = 'font:600 15.5px Inter';
 const BTN_FONT_NEW = 'font:600 15.5px Vazirmatn,Inter,system-ui,sans-serif';
 
 export async function GET() {
-  // Three deterministic, asserted-unique swaps; every other byte stays frozen:
+  // Four deterministic, asserted-unique swaps; every other byte stays frozen:
   // 1) nav «عنوان موقت» badge → language toggle (D-038)
   // 2) .btn hardcoded Inter → the FA content-font chain (D-039)
   // 3) .cs sensitivity table → neutral internal-scroll container (D-042)
-  const html = mobileSafeCsTable(
-    LANDING_FA.replace(
-      BADGE_FA,
-      navLangToggle({
-        label: 'EN',
-        href: '/deck/health',
-        ariaLabel: 'تغییر به نسخه انگلیسی',
-        title: 'English',
-        fontFamily: 'Vazirmatn',
-      }),
-    ).replace(BTN_FONT_OLD, BTN_FONT_NEW),
+  // 4) nav «سرمایه‌گذاری» button → «بازگشت به وب‌سایت» + online chat (D-046)
+  const html = deckSiteChat(
+    mobileSafeCsTable(
+      LANDING_FA.replace(
+        BADGE_FA,
+        navLangToggle({
+          label: 'EN',
+          href: '/deck/health',
+          ariaLabel: 'تغییر به نسخه انگلیسی',
+          title: 'English',
+          fontFamily: 'Vazirmatn',
+        }),
+      ).replace(BTN_FONT_OLD, BTN_FONT_NEW),
+    ),
+    'fa',
   );
   return new Response(html, {
     headers: { 'content-type': 'text/html; charset=utf-8' },
