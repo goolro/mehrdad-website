@@ -99,7 +99,15 @@ function lookup(rawPath: string, searchParams: URLSearchParams): string | null {
   if (n.startsWith('/category') || n.startsWith('/tag') || n.startsWith('/web-stories')) return '/blog';
   if (n.startsWith('/author')) return '/about';
   if (n.startsWith('/portfolio')) return '/work';
-  if (n.startsWith('/s/')) return '/';
+  // /s/kilika.html is a REAL restored static one-pager (KLIKA — owner
+  // uploaded its MHTML on 2026-10-20; original source was the owner's
+  // figma.site page). It lives in public/s/ and must be served as-is,
+  // together with its asset folder /s/assets/. Every other legacy WP-era
+  // /s/* one-pager still redirects home.
+  if (n.startsWith('/s/')) {
+    if (n === '/s/kilika.html' || n.startsWith('/s/assets/')) return null;
+    return '/';
+  }
   if (n.startsWith('/wp-json') || n.startsWith('/xmlrpc.php')) return '/';
 
   return null;
