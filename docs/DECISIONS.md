@@ -995,3 +995,47 @@ empirically: 3 active scheduled posts (SCHEDULED_POST_LIMIT_REACHED at the 4th)
 queue nor the monthly allowance). Daily renewal: flip one draft to scheduled
 per day (dashboard or via publora-push.ts with --schedule). fa-only daily fits
 the 15-post monthly allowance across the Oct/Nov boundary.
+
+## D-045 — KLIKA one-pager restored at its original URL /s/kilika.html (2026-10-20)
+
+**Owner order:** owner uploaded upload/kilika.mhtml (Blink snapshot of his Figma
+Make page mehrdad-skp.figma.site) with: «اینو بررسی کن بعنوان پیج دک فقط صفحه را
+بساز هیچ تعییری توی گرافیک نده و فقط لینک بشه به دامنه اصلی سایت».
+
+**Context:** the WP-era URL mehrdad.ir/s/kilika.html (linked from the old
+«مشارکت در طرح‌ها و پروژه‌ها» page — evidence in analysis/wp_content.json: the
+Elementor carousel slide «استارتاپ مالی بانکی کلیکا» pointed there and its
+lightbox decoded to wp-content/uploads/2026/02/kilika.png, id 8081) was lost in
+the Vercel migration — absent from the repo, from full git history, and from the
+migrated WP uploads (public/uploads/wp holds 2022–2025 only; the 2026/02 assets
+were never copied). Owner recovered his own Figma render as MHTML and supplied it.
+
+**What was built:**
+- public/s/kilika.html (195,493 B) + public/s/assets/kilika-figma.css (165,557 B
+  verbatim) — byte-faithful static restoration; zero graphic/content change.
+  HTML rewrites were infra-only: the 4 cid stylesheet links inlined in their
+  original cascade order; the figma.site CSS link repointed to the local asset;
+  3 inert figma runtime preloads removed; og:url + twitter:url repointed to
+  https://mehrdad.ir/s/kilika.html (owner's "link to main domain" directive);
+  canonical added. Body links already pointed at mehrdad.ir + admin@mehrdad.ir.
+- src/proxy.ts — the legacy WP rule redirected ALL /s/* → / (root cause of the
+  observed 301). Now /s/kilika.html and /s/assets/* pass through to the static
+  files; every other legacy /s/* still redirects home.
+- next.config.ts — /s/:path* receives the same Google-Fonts-allowing CSP as the
+  deck (D-035 pattern; deckSecurityHeaders reused) so Inter + Vazirmatn load.
+  Placed after the global rule (last-match-wins).
+- Chat knowledge (src/app/api/chat/route.ts): base facts (EN + FA) now include
+  the live one-pager URL plus the page's own figures (1M+ year-one users, 20+
+  service categories, $4M requested funding, admin@mehrdad.ir) — owner's page
+  text only, zero invented facts; the FA line respects the zero-«،» rule.
+
+**Self-test evidence:** sha256 served == disk for both files (html 3066530b…,
+css a7b4253a…). Agent Browser: desktop 1440 + mobile 390 full-page renders
+verified (hero, orbit icons, stat cards, gradient CTA, footer buttons); zero
+console errors / CSP violations; document.fonts.check('16px Vazirmatn') = true;
+legacy /s/* redirect intact; /deck/health untouched (byte-freeze respected);
+eslint clean.
+
+**Deployment:** rebased onto remote main (D-044 line) and pushed with the
+owner's inline PAT (token never stored); Vercel auto-deploy verified by polling
+the production URL after push.
