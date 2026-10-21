@@ -29,10 +29,13 @@ export const PROJECT_LINK_CTA: Record<string, { labelEn: string; labelFa: string
  * Optional SECOND live link per project slug — for products that exist in
  * more than one place. quiz-of-koko plays on the web (quizofkoko.com) AND
  * ships as an Android app on Cafe Bazaar (owner link, verified HTTP 200
- * 2026-10-13). Rendered by ProjectDetail as a secondary button beside the
- * primary CTA so both distribution channels read as one system — the same
- * one-product-story pattern traffic-tempo uses for its Bazaar link + browser
- * demo. Every other project stays untouched.
+ * 2026-10-13). driving-exam is on Cafe Bazaar (primary CTA) AND on Myket
+ * (owner link 2026-10-22: «اینو برای برنامه مرتبط بزار در صفحه خودش»,
+ * verified HTTP 200 on 2026-10-22). Rendered by ProjectDetail as a
+ * secondary button beside the primary CTA so all distribution channels
+ * read as one system — the same one-product-story pattern traffic-tempo
+ * uses for its Bazaar link + browser demo. Every other project stays
+ * untouched.
  */
 export const PROJECT_EXTRA_LINKS: Record<
   string,
@@ -42,6 +45,11 @@ export const PROJECT_EXTRA_LINKS: Record<
     href: 'https://cafebazaar.ir/app/com.quizofkoko.game',
     labelEn: 'Get it on Cafe Bazaar',
     labelFa: 'دریافت از بازار',
+  },
+  'driving-exam': {
+    href: 'https://myket.ir/app/mix.azmon.app',
+    labelEn: 'Get it on Myket',
+    labelFa: 'دریافت از مایکت',
   },
 };
 

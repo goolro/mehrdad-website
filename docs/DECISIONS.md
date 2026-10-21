@@ -1090,3 +1090,46 @@ answer), streaming verified, clear/close/Escape work, fab↔panel toggle proven
 full-width, zero console errors; clicking the button navigates to
 https://mehrdad.ir/; regression curl: / , /investors-koko/deck ,
 /s/kilika.html , /deck/health(/fa) all 200/307 as before; dev.log clean.
+
+## D-047 — Driving-exam: Myket link beside the Cafe Bazaar CTA (owner order 2026-10-22)
+
+**Owner order (verbatim):** «https://myket.ir/app/mix.azmon.app اینو برای برنامه
+مرتبط بزار در صفحه خودش» + confirmation «اینجاس».
+
+**Context:** /work/driving-exam (آزمون آیین‌نامه رانندگی, the Android app
+published as mix.azmon.app) had a single store CTA — «Get it on Cafe Bazaar /
+دریافت از بازار» (D-030-era PROJECT_LINKS + PROJECT_LINK_CTA override). The app
+is ALSO published on Myket; the owner supplied the store URL and ordered it on
+the app's own page.
+
+**Decision:**
+1. The Myket link (https://myket.ir/app/mix.azmon.app — verified HTTP 200 on
+   2026-10-22) is added as the SECOND live link for the driving-exam slug only,
+   via the existing pure-code second-channel map PROJECT_EXTRA_LINKS
+   (src/lib/project-links.ts) — the exact D-033 mechanism quiz-of-koko uses for
+   its Cafe Bazaar button. No DB column, no component change: ProjectDetail
+   already renders the extra link as the secondary outline button (Smartphone
+   icon) beside the primary CTA. Cafe Bazaar stays primary («دریافت از بازار»,
+   gradient); Myket joins as «دریافت از مایکت» / "Get it on Myket".
+2. The map's doc comment now records both usages (quiz-of-koko 2026-10-13,
+   driving-exam 2026-10-22) so the pattern's history travels with the code.
+3. Local QA fixture: the local SQLite DB lacked the quiz-of-koko row
+   (production-DB-only), so the D-033 local-only fixture was re-inserted with
+   the exact production RSC values (zero invented copy; uncommitted). The
+   traffic-tempo 404 seen during QA is the owner's own 2026-10-05 display
+   kill-switch (src/lib/project-visibility.ts) — correct behavior, not a
+   regression.
+
+**Rationale:** same one-product-story pattern already shipped twice (Bazaar link
++ browser demo on traffic-tempo; web CTA + Bazaar on quiz-of-koko): multi-channel
+distribution reads as one system, the primary CTA is not demoted, and every
+other project page stays byte-identical because the slug-keyed map returns null
+without an entry.
+
+**Self-test evidence:** eslint clean; Agent Browser E2E — /work/driving-exam EN
++ FA: both store buttons render with correct hrefs (cafebazaar.ir/app/mix.azmon.app
+primary, myket.ir/app/mix.azmon.app secondary), desktop 1440 + mobile 390 fits
+one row, RTL correct; /work/quiz-of-koko FA still shows exactly «بازی کن» +
+«دریافت از بازار» (no Myket — untouched); code delta confined to
+src/lib/project-links.ts (+ this doc). Push pending the owner's PAT
+(transient, never stored).
