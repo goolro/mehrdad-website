@@ -1189,3 +1189,13 @@ same socials data (one source of truth). Card title «کوکو در شبکه‌�
 mobile in one box with links below, eslint clean, driving-exam untouched
 (the «تلگرام» string its SSR payload carries is the site-wide ShareBar i18n,
 pre-existing).
+
+**Amendment 2 (same day, owner order «این رنگ را جایگزین قبلی کن برای
+اینستاگرام» + black Instagram QR upload):** the Instagram QR inside the
+socials box was swapped for the owner's BLACK version (QR + QUIZOFKOKO
+caption, 2350×2700, sha256 7eafe5f5…, byte-identical copy at
+/media/quizofkoko-instagram-qr.png). Pure asset swap — no code change: the
+socials data and view reference the media path, so Telegram, layout, links
+and alt text stay exactly as amended. Verified: local+production serve the
+new bytes (hash match), link-below-DOM proof re-run, driving-exam regression
+clean.
