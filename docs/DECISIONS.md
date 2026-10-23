@@ -1216,3 +1216,10 @@ clean.
 **Rationale:** the owner announced the Telegram bot publicly; the blog is the site's announcement surface and its force-static SEO pipeline (JSON-LD + hreflang + sitemap + feed) is already built. Reusing the seeded-post channel keeps the owner-managed DB state safe.
 
 **Standing rule honored:** owner-facing links carry the full mehrdad.ir domain; the article itself uses absolute URLs so internal equity stays with https://mehrdad.ir.
+
+**D-049 publish note (2026-10-23):** the post was seeded into the production
+Supabase Postgres (supabase Management API channel; id cmvljz93zw9w2l9ilkt;
+published=true; 4/4 tag links koko/quiz/telegram/word-game; verification block
+passed) and the article page already renders on demand at
+https://mehrdad.ir/blog/quiz-of-koko-telegram-app — this commit triggers the
+rebuild that also surfaces it in /blog + sitemap.xml + feed.xml.
