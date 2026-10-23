@@ -1175,3 +1175,17 @@ img loads (1560×1641) and serves byte-identical off /media; desktop 1440 +
 mobile 390 screenshots (buttons row → stack, RTL correct); zero console
 errors; regression — /work/driving-exam still exactly its two store buttons,
 no Telegram.
+
+**Amendment (same day, owner order «https://www.instagram.com/quizofkoko/ پس
+اینستاگرام هم در همین باکسی که تلگرام را گذاشتی بزار» + Instagram QR upload):**
+the socials box became a TWO-channel card — Instagram (verified HTTP 200,
+https://www.instagram.com/quizofkoko/) joined Telegram in the same box, each
+with the owner's official QR (byte-identical, sha256 8d0a765f…) and its own
+clickable URL directly under its QR, side by side (grid-cols-2, w-32 on mobile
+/ w-44 on desktop). Data model generalized: PROJECT_TELEGRAM → PROJECT_SOCIALS
+(array per slug); the Telegram CTA button stays and is now driven from the
+same socials data (one source of truth). Card title «کوکو در شبکه‌های اجتماعی»
+/ "Koko on social media". Verified: both QRs render 176px desktop / 128px
+mobile in one box with links below, eslint clean, driving-exam untouched
+(the «تلگرام» string its SSR payload carries is the site-wide ShareBar i18n,
+pre-existing).
