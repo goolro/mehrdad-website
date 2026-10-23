@@ -68,38 +68,47 @@ export function getProjectExtraLink(
 }
 
 /**
- * Optional Telegram channel per project slug — the product's own broadcast
- * channel (owner order 2026-10-23: «https://t.me/quizofkoko ادرس کانال تلگرام
- * را توی سایت بزار» + the official @QUIZOFKOKO QR image he uploaded). Rendered
- * by ProjectDetail as a third CTA button (paper-plane icon) inside the
- * live-links card, with the QR thumbnail underneath so desktop visitors can
- * scan it straight into their phone. Same pure-code pattern as every map in
- * this file: content travels with git, no DB column, other projects untouched.
+ * Optional social channels with scannable QR per project slug — the
+ * product's own broadcast/community surfaces (owner orders 2026-10-23:
+ * «https://t.me/quizofkoko ادرس کانال تلگرام را توی سایت بزار» + Telegram QR,
+ * then «https://www.instagram.com/quizofkoko/ پس اینستاگرام هم در همین باکسی
+ * که تلگرام را گذاشتی بزار» + the Instagram QR). Rendered by ProjectDetail as
+ * ONE social card inside the live-links box: one big QR per channel, the
+ * channel URL as a selectable link directly under its QR (owner feedback:
+ * QR big, link below it). Same pure-code pattern as every map in this file:
+ * content travels with git, no DB column, other projects untouched.
  * NOTE: currently rendered inside the playLink card — every slug listed here
  * must therefore also have a PROJECT_LINKS entry until the card is decoupled.
  */
-export const PROJECT_TELEGRAM: Record<
+export const PROJECT_SOCIALS: Record<
   string,
-  { href: string; labelEn: string; labelFa: string; handle: string; qr: string }
+  Array<{ href: string; titleEn: string; titleFa: string; qr: string }>
 > = {
-  'quiz-of-koko': {
-    href: 'https://t.me/quizofkoko',
-    labelEn: 'Telegram channel',
-    labelFa: 'کانال تلگرام',
-    handle: '@quizofkoko',
-    qr: '/media/quizofkoko-telegram-qr.png',
-  },
+  'quiz-of-koko': [
+    {
+      href: 'https://t.me/quizofkoko',
+      titleEn: 'Telegram channel',
+      titleFa: 'کانال تلگرام',
+      qr: '/media/quizofkoko-telegram-qr.png',
+    },
+    {
+      href: 'https://www.instagram.com/quizofkoko/',
+      titleEn: 'Instagram',
+      titleFa: 'اینستاگرام',
+      qr: '/media/quizofkoko-instagram-qr.png',
+    },
+  ],
 };
 
-/** validated Telegram channel info for a slug, or null when the project has none */
-export function getProjectTelegram(
+/** validated social channels for a slug, or null when the project has none */
+export function getProjectSocials(
   slug: string,
-): { href: string; labelEn: string; labelFa: string; handle: string; qr: string } | null {
-  const tg = PROJECT_TELEGRAM[slug];
-  if (!tg) return null;
+): Array<{ href: string; titleEn: string; titleFa: string; qr: string }> | null {
+  const socials = PROJECT_SOCIALS[slug];
+  if (!socials || socials.length === 0) return null;
   try {
     // parse once here — a malformed entry must never render as an href
-    return { ...tg, href: new URL(tg.href).toString() };
+    return socials.map((s) => ({ ...s, href: new URL(s.href).toString() }));
   } catch {
     return null;
   }

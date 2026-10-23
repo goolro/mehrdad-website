@@ -44,7 +44,7 @@ import {
   getProjectLinkCta,
   getProjectLinkHost,
   getProjectPitchDecks,
-  getProjectTelegram,
+  getProjectSocials,
 } from '@/lib/project-links';
 import {
   getProjectProfile,
@@ -446,10 +446,13 @@ export function ProjectDetail({ project, shareUrl }: { project: ProjectDetailRow
   // without an entry in PROJECT_EXTRA_LINKS keep the single-button layout
   // untouched
   const extraLink = getProjectExtraLink(project.slug);
-  // product's own Telegram broadcast channel (quiz-of-koko, owner order
-  // 2026-10-23) — third CTA button + scannable QR thumbnail inside the same
-  // live-links card; null for every other project so pages stay untouched
-  const telegram = getProjectTelegram(project.slug);
+  // product's own social channels with scannable QRs (quiz-of-koko: Telegram
+  // + Instagram, owner orders 2026-10-23) — one social card inside the
+  // live-links box; null for every other project so pages stay untouched
+  const socials = getProjectSocials(project.slug);
+  // the Telegram channel also keeps its own button in the CTA row (D-048);
+  // driven by the same socials data so there is one source of truth
+  const telegram = socials?.find((s) => s.href.includes('t.me')) ?? null;
   // fuller story (features + tech) — only when the slug has a profile in
   // src/lib/project-profiles.ts; amber accents echo the building-status
   // system so the whole detail page reads as one
@@ -640,41 +643,50 @@ export function ProjectDetail({ project, shareUrl }: { project: ProjectDetailRow
                 className="inline-flex h-12 items-center justify-center gap-2 rounded-xl border border-amber-500/40 bg-background/70 px-6 font-bold text-amber-700 shadow-sm transition-all hover:-translate-y-0.5 hover:border-amber-500 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 focus-visible:ring-offset-background dark:text-amber-300"
               >
                 <Send className="h-5 w-5" aria-hidden />
-                {pick(lang, telegram.labelEn, telegram.labelFa)}
+                {pick(lang, telegram.titleEn, telegram.titleFa)}
                 <ExternalLink className="h-4 w-4 opacity-80" aria-hidden />
               </a>
             )}
           </div>
-          {/* owner-supplied official QR (media dir, byte-identical copy) —
-              owner feedback 2026-10-23: BIG QR, link BELOW it (vertical,
-              centered) so the block reads like a proper join card; the URL
-              stays selectable text so the ADDRESS the owner ordered is on
-              the page itself, not only in the pixels */}
-          {telegram?.qr && (
-            <div className="mt-4 flex flex-col items-center gap-2 rounded-xl border border-amber-500/30 bg-background/60 px-4 py-5 text-center">
+          {/* owner-supplied official QRs (media dir, byte-identical copies) —
+              owner orders/feedback 2026-10-23: ONE social box, BIG QR per
+              channel, link BELOW its QR, channels side by side; the URLs stay
+              selectable text so the ADDRESSES the owner ordered are on the
+              page itself, not only in the pixels */}
+          {socials && (
+            <div className="mt-4 flex flex-col items-center gap-3 rounded-xl border border-amber-500/30 bg-background/60 px-4 py-5 text-center">
               <p className="text-sm font-bold" dir={rtl ? 'rtl' : 'ltr'}>
-                {pick(lang, "Koko's Telegram channel", 'کانال تلگرام کوکو')}
+                {pick(lang, 'Koko on social media', 'کوکو در شبکه‌های اجتماعی')}
               </p>
-              <img
-                src={telegram.qr}
-                alt={pick(
-                  lang,
-                  'QR code of the Koko Telegram channel',
-                  'کد QR کانال تلگرام کوکو',
-                )}
-                className="mt-1 w-44 rounded-lg sm:w-48"
-                loading="lazy"
-              />
-              <a
-                href={telegram.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                dir="ltr"
-                className="mt-1 inline-flex items-center gap-1.5 text-sm font-bold text-amber-700 transition-colors hover:text-amber-600 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 focus-visible:ring-offset-background dark:text-amber-300 dark:hover:text-amber-200"
-              >
-                {telegram.href}
-                <ExternalLink className="h-3.5 w-3.5 opacity-80" aria-hidden />
-              </a>
+              <div className="grid w-full grid-cols-2 items-start justify-items-center gap-4">
+                {socials.map((s) => (
+                  <div key={s.href} className="flex flex-col items-center gap-2">
+                    <p className="text-xs font-semibold text-muted-foreground">
+                      {pick(lang, s.titleEn, s.titleFa)}
+                    </p>
+                    <img
+                      src={s.qr}
+                      alt={pick(
+                        lang,
+                        `QR code of Koko's ${s.titleEn}`,
+                        `کد QR ${s.titleFa} کوکو`,
+                      )}
+                      className="w-32 rounded-lg sm:w-44"
+                      loading="lazy"
+                    />
+                    <a
+                      href={s.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      dir="ltr"
+                      className="inline-flex items-center gap-1 text-xs font-bold text-amber-700 transition-colors hover:text-amber-600 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:text-sm dark:text-amber-300 dark:hover:text-amber-200"
+                    >
+                      {s.href.replace(/^https:\/\//, '')}
+                      <ExternalLink className="h-3 w-3 shrink-0 opacity-80" aria-hidden />
+                    </a>
+                  </div>
+                ))}
+              </div>
               <p className="text-xs text-muted-foreground" dir={rtl ? 'rtl' : 'ltr'}>
                 {pick(
                   lang,
