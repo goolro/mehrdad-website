@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useApp, pick } from './store';
-import { ui } from './i18n';
+import { pct, ui } from './i18n';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ArrowRight, Sparkles, ChevronLeft, ChevronRight, FolderKanban, FileText, Hammer, HeartHandshake, Share2, Search, GraduationCap, Repeat, PenTool } from 'lucide-react';
@@ -163,7 +163,7 @@ export function HomeView({ initial }: { initial: HomeInitialData }) {
                   <div className="mt-4">
                     <div className="mb-1.5 flex items-center justify-between text-xs font-medium text-muted-foreground">
                       <span>{t.projects.progress}</span>
-                      <span className="font-bold text-amber-600 dark:text-amber-400">{p.progress}%</span>
+                      <span className="font-bold text-amber-600 dark:text-amber-400">{pct(lang, p.progress)}</span>
                     </div>
                     <ProgressBar value={p.progress} barCls={STATUS_STYLE[st].barCls} />
                   </div>

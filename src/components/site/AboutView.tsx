@@ -97,7 +97,7 @@ export function AboutView() {
           <Button variant="secondary" className="bg-white text-violet-700 hover:bg-white/90" asChild>
             <Link href="/mvp-sprint">
               <Sparkles className="ms-1 h-4 w-4" />
-              MVP Sprint
+              {lang === 'fa' ? 'اسپرینت MVP' : 'MVP Sprint'}
             </Link>
           </Button>
           <Button variant="secondary" className="bg-white/15 text-white hover:bg-white/25" asChild>

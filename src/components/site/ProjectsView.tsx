@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useApp, pick } from './store';
-import { ui } from './i18n';
+import { pct, ui } from './i18n';
 import { Badge } from '@/components/ui/badge';
 import {
   AppWindow,
@@ -283,7 +283,7 @@ export function ProjectsView({ initialProjects }: { initialProjects: ProjectItem
                             <HardHat className="h-3.5 w-3.5 text-amber-500" />
                             {t.projects.progress}
                           </span>
-                          <span className="font-bold text-amber-600 dark:text-amber-400">{p.progress}%</span>
+                          <span className="font-bold text-amber-600 dark:text-amber-400">{pct(lang, p.progress)}</span>
                         </div>
                         <ProgressBar value={animate ? p.progress : 0} barCls={cfg.barCls} />
                       </div>
@@ -473,7 +473,7 @@ export function ProjectDetail({ project, shareUrl }: { project: ProjectDetailRow
         />
         {showsProgress(st) && (
           <span className="text-sm font-semibold text-amber-600 dark:text-amber-400">
-            {project.progress}%
+            {pct(lang, project.progress)}
           </span>
         )}
       </div>
@@ -837,7 +837,7 @@ export function ProjectDetail({ project, shareUrl }: { project: ProjectDetailRow
                 profile?.progressLabelFa ?? t.projects.progress,
               )}
             </span>
-            <span className="font-extrabold text-amber-600 dark:text-amber-400">{project.progress}%</span>
+            <span className="font-extrabold text-amber-600 dark:text-amber-400">{pct(lang, project.progress)}</span>
           </div>
           <ProgressBar value={project.progress} barCls={cfg.barCls} />
         </div>

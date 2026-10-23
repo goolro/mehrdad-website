@@ -2293,3 +2293,19 @@ export const ui = {
 } as const;
 
 export type UIStrings = (typeof ui)['en'];
+
+/**
+ * 35 → «۳۵» — Persian-digit rendering for the fa UI (P1 translation-sync
+ * 2026-10-23): progress %, counters and any Latin-digit leak now render with
+ * Persian digits + «٪» when lang=fa, matching the Jalali dates elsewhere.
+ */
+const FA_DIGITS = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'] as const;
+
+export function faDigits(n: number | string): string {
+  return String(n).replace(/\d/g, (d) => FA_DIGITS[Number(d)]);
+}
+
+/** «۳۵٪» for fa, «35%» for en — one-liner for progress-style numbers */
+export function pct(lang: 'en' | 'fa', n: number | string): string {
+  return lang === 'fa' ? `${faDigits(n)}٪` : `${n}%`;
+}
