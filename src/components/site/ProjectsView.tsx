@@ -31,6 +31,7 @@ import {
   Rocket,
   Route,
   ScanSearch,
+  Send,
   Smartphone,
   Sparkles,
   Store,
@@ -43,6 +44,7 @@ import {
   getProjectLinkCta,
   getProjectLinkHost,
   getProjectPitchDecks,
+  getProjectTelegram,
 } from '@/lib/project-links';
 import {
   getProjectProfile,
@@ -440,9 +442,14 @@ export function ProjectDetail({ project, shareUrl }: { project: ProjectDetailRow
     : t.projects.playCta;
   const CtaIcon = ctaOverride ? Smartphone : Gamepad2;
   // optional second distribution channel (quiz-of-koko Android app on Cafe
-  // Bazaar) — renders beside the primary CTA; slugs without an entry in
-  // PROJECT_EXTRA_LINKS keep the single-button layout untouched
+  // Bazaar; driving-exam on Myket) — renders beside the primary CTA; slugs
+  // without an entry in PROJECT_EXTRA_LINKS keep the single-button layout
+  // untouched
   const extraLink = getProjectExtraLink(project.slug);
+  // product's own Telegram broadcast channel (quiz-of-koko, owner order
+  // 2026-10-23) — third CTA button + scannable QR thumbnail inside the same
+  // live-links card; null for every other project so pages stay untouched
+  const telegram = getProjectTelegram(project.slug);
   // fuller story (features + tech) — only when the slug has a profile in
   // src/lib/project-profiles.ts; amber accents echo the building-status
   // system so the whole detail page reads as one
@@ -625,7 +632,52 @@ export function ProjectDetail({ project, shareUrl }: { project: ProjectDetailRow
                 <ExternalLink className="h-4 w-4 opacity-80" aria-hidden />
               </a>
             )}
+            {telegram && (
+              <a
+                href={telegram.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex h-12 items-center justify-center gap-2 rounded-xl border border-amber-500/40 bg-background/70 px-6 font-bold text-amber-700 shadow-sm transition-all hover:-translate-y-0.5 hover:border-amber-500 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 focus-visible:ring-offset-background dark:text-amber-300"
+              >
+                <Send className="h-5 w-5" aria-hidden />
+                {pick(lang, telegram.labelEn, telegram.labelFa)}
+                <ExternalLink className="h-4 w-4 opacity-80" aria-hidden />
+              </a>
+            )}
           </div>
+          {/* owner-supplied official QR (media dir, byte-identical copy) —
+              desktop visitors scan it straight into their phone; the handle
+              stays selectable text so the ADDRESS the owner ordered is on the
+              page itself, not only in the pixels */}
+          {telegram?.qr && (
+            <div className="mt-4 flex flex-wrap items-center gap-4 rounded-xl border border-amber-500/30 bg-background/60 p-4">
+              <img
+                src={telegram.qr}
+                alt={pick(
+                  lang,
+                  'QR code of the Koko Telegram channel',
+                  'کد QR کانال تلگرام کوکو',
+                )}
+                className="h-24 w-auto shrink-0 rounded-lg"
+                loading="lazy"
+              />
+              <div className="min-w-0">
+                <p className="text-sm font-bold" dir={rtl ? 'rtl' : 'ltr'}>
+                  {pick(lang, "Koko's Telegram channel", 'کانال تلگرام کوکو')}
+                </p>
+                <p className="mt-0.5 text-xs text-muted-foreground" dir="ltr">
+                  {telegram.href}
+                </p>
+                <p className="mt-1 text-xs text-muted-foreground" dir={rtl ? 'rtl' : 'ltr'}>
+                  {pick(
+                    lang,
+                    'Scan it with your phone camera to join.',
+                    'با دوربین گوشی اسکن کنید و عضو شوید.',
+                  )}
+                </p>
+              </div>
+            </div>
+          )}
           {playHost && (
             <p className="mt-2.5 text-xs text-muted-foreground">
               {playHost} — {t.projects.playNote}

@@ -68,6 +68,44 @@ export function getProjectExtraLink(
 }
 
 /**
+ * Optional Telegram channel per project slug — the product's own broadcast
+ * channel (owner order 2026-10-23: «https://t.me/quizofkoko ادرس کانال تلگرام
+ * را توی سایت بزار» + the official @QUIZOFKOKO QR image he uploaded). Rendered
+ * by ProjectDetail as a third CTA button (paper-plane icon) inside the
+ * live-links card, with the QR thumbnail underneath so desktop visitors can
+ * scan it straight into their phone. Same pure-code pattern as every map in
+ * this file: content travels with git, no DB column, other projects untouched.
+ * NOTE: currently rendered inside the playLink card — every slug listed here
+ * must therefore also have a PROJECT_LINKS entry until the card is decoupled.
+ */
+export const PROJECT_TELEGRAM: Record<
+  string,
+  { href: string; labelEn: string; labelFa: string; handle: string; qr: string }
+> = {
+  'quiz-of-koko': {
+    href: 'https://t.me/quizofkoko',
+    labelEn: 'Telegram channel',
+    labelFa: 'کانال تلگرام',
+    handle: '@quizofkoko',
+    qr: '/media/quizofkoko-telegram-qr.png',
+  },
+};
+
+/** validated Telegram channel info for a slug, or null when the project has none */
+export function getProjectTelegram(
+  slug: string,
+): { href: string; labelEn: string; labelFa: string; handle: string; qr: string } | null {
+  const tg = PROJECT_TELEGRAM[slug];
+  if (!tg) return null;
+  try {
+    // parse once here — a malformed entry must never render as an href
+    return { ...tg, href: new URL(tg.href).toString() };
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Investor pitch deck per project slug (owner order 2026-10-16: on
  * /work/health-app say the pitch deck is live and link BOTH language
  * versions — «بگی پیچ دک داریم و … و اینم لینکشه»). Same pure-code pattern
