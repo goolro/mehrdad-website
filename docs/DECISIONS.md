@@ -1199,3 +1199,20 @@ socials data and view reference the media path, so Telegram, layout, links
 and alt text stay exactly as amended. Verified: local+production serve the
 new bytes (hash match), link-below-DOM proof re-run, driving-exam regression
 clean.
+
+## D-049 — Blog article: «کوکو به تلگرام آمد» — the Koko Telegram bot announced as an SEO post (owner order 2026-10-23)
+
+**Owner order (verbatim):** «یه مقاله بنویس و بزن که ما کوکو را توی تلگرام بصورت اپ اوردیم بالا @quizkokobot مقاله خوبی بنویس سئو شده باشه لینک داخلی هم بساز و qr»
+
+**What shipped:**
+- Blog post `quiz-of-koko-telegram-app` (source `ai`, published, non-featured) — bilingual FA/EN: title «کوکو به تلگرام آمد — بازی کوییز واژگان بدون نصب با بات @quizkokobot» / "Koko is now on Telegram — play the word quiz instantly with @quizkokobot".
+- Content structure: strong announcement lead → what Koko is (grounded in the production project summary) → how to play in 3 steps → why Telegram → bot link + QR figure (owner upload, byte-identical, sha256 1fafcdb0…) → bot-vs-channel difference → all-channels list → 3-question FAQ.
+- SEO: canonical + hreflang en/fa/x-default + OG article with cover; JSON-LD BlogPosting (author/publisher Person, dates, keywords from tags); 4 curated tags (telegram/koko/quiz/word-game) feeding keywords + blog filter row; internal links FOLLOWED (project page, blog index), external links auto-nofollow by the site's sanitizer policy.
+- Internal links: /work/quiz-of-koko (×2 + FAQ) and /blog. External: t.me/quizkokobot (×9) + quizofkoko.com + Cafe Bazaar + t.me/quizofkoko + instagram.com/quizofkoko.
+- Zero «،» in Persian text (programmatic check on rendered page = 0 hits) — standing rule.
+- Channel: new scripts/seed-koko-telegram-post-supabase.ts (idempotent upsert-by-slug; content-only refresh; owner-managed date/published/featured untouched on re-run) over the established Supabase Management API path; data single-sourced in scripts/koko-telegram-post-data.ts.
+- Verification: local SQLite seed + full local E2E (JSON-LD, meta, link rel policy, QR 420px, index/sitemap/feed refs, FA desktop+mobile screenshots, eslint clean). Production insert awaits the owner's SUPABASE_TOKEN (env-only, never stored).
+
+**Rationale:** the owner announced the Telegram bot publicly; the blog is the site's announcement surface and its force-static SEO pipeline (JSON-LD + hreflang + sitemap + feed) is already built. Reusing the seeded-post channel keeps the owner-managed DB state safe.
+
+**Standing rule honored:** owner-facing links carry the full mehrdad.ir domain; the article itself uses absolute URLs so internal equity stays with https://mehrdad.ir.
