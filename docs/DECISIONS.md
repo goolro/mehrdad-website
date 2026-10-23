@@ -1133,3 +1133,45 @@ one row, RTL correct; /work/quiz-of-koko FA still shows exactly «بازی کن�
 «دریافت از بازار» (no Myket — untouched); code delta confined to
 src/lib/project-links.ts (+ this doc). Push pending the owner's PAT
 (transient, never stored).
+
+## D-048 — Quiz of Koko: Telegram channel link + official QR on its project page (owner order 2026-10-23)
+
+**Owner order (verbatim):** «https://t.me/quizofkoko ادرس کانال تلگرام را توی
+سایت بزار» + the official @QUIZOFKOKO QR image (upload/pasted_image_…png,
+1560×1641 PNG).
+
+**Context:** /work/quiz-of-koko told a two-channel story (web play CTA +
+Cafe Bazaar button, D-033). The game's Telegram broadcast channel
+(@quizofkoko — verified HTTP 200, title «Telegram: View @quizofkoko») had no
+surface on the site.
+
+**Decision:**
+1. New pure-code map `PROJECT_TELEGRAM` + `getProjectTelegram()` in
+   src/lib/project-links.ts — the same slug-keyed pattern as
+   PROJECT_LINKS/PROJECT_EXTRA_LINKS (D-033/D-047): content travels with git,
+   no DB column, slugs without an entry stay byte-identical.
+2. ProjectDetail renders a THIRD CTA button in the live-links card —
+   «کانال تلگرام» / "Telegram channel", paper-plane (Send) icon, same outline
+   style as the store button — href https://t.me/quizofkoko.
+3. The owner's QR image is committed byte-identical (sha256
+   8f30c9a0f763410d…) to public/media/quizofkoko-telegram-qr.png (D-008 media
+   convention) and shown as a thumbnail card under the buttons with the
+   channel URL as SELECTABLE TEXT (the ordered "address" lives on the page
+   itself, not only in pixels) + a bilingual scan caption. Desktop visitors
+   scan it straight into their phone.
+4. Standing rule honored: the channel is presented with its full address
+   https://t.me/quizofkoko (owner instruction: always send links with the
+   complete mehrdad.ir-domain context — never bare relative paths).
+
+**Rationale:** completes the one-product-story pattern (play web → get
+Android → join community) with the channel the owner announced; pure-code map
+keeps every other project page untouched; the QR upload is used verbatim as
+the owner supplied it.
+
+**Self-test evidence:** eslint clean; local Agent Browser E2E — EN: three
+buttons "Play now"/"Get it on Cafe Bazaar"/"Telegram channel" (href
+https://t.me/quizofkoko); FA: «بازی کن»/«دریافت از بازار»/«کانال تلگرام»; QR
+img loads (1560×1641) and serves byte-identical off /media; desktop 1440 +
+mobile 390 screenshots (buttons row → stack, RTL correct); zero console
+errors; regression — /work/driving-exam still exactly its two store buttons,
+no Telegram.
