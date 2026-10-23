@@ -646,11 +646,15 @@ export function ProjectDetail({ project, shareUrl }: { project: ProjectDetailRow
             )}
           </div>
           {/* owner-supplied official QR (media dir, byte-identical copy) —
-              desktop visitors scan it straight into their phone; the handle
-              stays selectable text so the ADDRESS the owner ordered is on the
-              page itself, not only in the pixels */}
+              owner feedback 2026-10-23: BIG QR, link BELOW it (vertical,
+              centered) so the block reads like a proper join card; the URL
+              stays selectable text so the ADDRESS the owner ordered is on
+              the page itself, not only in the pixels */}
           {telegram?.qr && (
-            <div className="mt-4 flex flex-wrap items-center gap-4 rounded-xl border border-amber-500/30 bg-background/60 p-4">
+            <div className="mt-4 flex flex-col items-center gap-2 rounded-xl border border-amber-500/30 bg-background/60 px-4 py-5 text-center">
+              <p className="text-sm font-bold" dir={rtl ? 'rtl' : 'ltr'}>
+                {pick(lang, "Koko's Telegram channel", 'کانال تلگرام کوکو')}
+              </p>
               <img
                 src={telegram.qr}
                 alt={pick(
@@ -658,24 +662,26 @@ export function ProjectDetail({ project, shareUrl }: { project: ProjectDetailRow
                   'QR code of the Koko Telegram channel',
                   'کد QR کانال تلگرام کوکو',
                 )}
-                className="h-24 w-auto shrink-0 rounded-lg"
+                className="mt-1 w-44 rounded-lg sm:w-48"
                 loading="lazy"
               />
-              <div className="min-w-0">
-                <p className="text-sm font-bold" dir={rtl ? 'rtl' : 'ltr'}>
-                  {pick(lang, "Koko's Telegram channel", 'کانال تلگرام کوکو')}
-                </p>
-                <p className="mt-0.5 text-xs text-muted-foreground" dir="ltr">
-                  {telegram.href}
-                </p>
-                <p className="mt-1 text-xs text-muted-foreground" dir={rtl ? 'rtl' : 'ltr'}>
-                  {pick(
-                    lang,
-                    'Scan it with your phone camera to join.',
-                    'با دوربین گوشی اسکن کنید و عضو شوید.',
-                  )}
-                </p>
-              </div>
+              <a
+                href={telegram.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                dir="ltr"
+                className="mt-1 inline-flex items-center gap-1.5 text-sm font-bold text-amber-700 transition-colors hover:text-amber-600 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 focus-visible:ring-offset-background dark:text-amber-300 dark:hover:text-amber-200"
+              >
+                {telegram.href}
+                <ExternalLink className="h-3.5 w-3.5 opacity-80" aria-hidden />
+              </a>
+              <p className="text-xs text-muted-foreground" dir={rtl ? 'rtl' : 'ltr'}>
+                {pick(
+                  lang,
+                  'Scan it with your phone camera to join.',
+                  'با دوربین گوشی اسکن کنید و عضو شوید.',
+                )}
+              </p>
             </div>
           )}
           {playHost && (
