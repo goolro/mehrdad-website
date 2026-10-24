@@ -1362,6 +1362,23 @@ API route follows /api/contact verbatim (force-dynamic, Next `after`).
 fake-ok, no row ✓. Agent Browser: EN submit → "✓ Got it — I'll get
 back to you soon."; FA submit → «✓ ثبت شد — به‌زودی جواب می‌دهم.»;
 390px mobile stacks correctly, no horizontal scroll.
+
+**Lead trace note (2026-10-24, growth-agent session):** the owner received
+the notification email "mehrdad.ir — new lead from article_cta (article:
+angel-investor-for-mvp-portfolio)" with reader address
+`growth-agent-check@mehrdad.ir` at 15:09 Tehran (= 11:39 UTC) — six minutes
+after this feature's deploy (commit 28b5649 pushed 11:33 UTC). Verified to be
+that session's own production smoke test of the end-to-end pipeline
+(form → Lead row → SMTP forward), NOT an external lead and NOT spam: the
+reader address is a self-describing test name, the From header matches the
+site template exactly, and the test row was deleted from the Supabase `Lead`
+table right after verification (hence the table reads empty). Side effect:
+this confirmed the whole live pipeline works — real reader leads arrive in
+the owner's inbox the same way. Standing rule for future sessions: any
+production test that lands an email in the owner's inbox MUST be announced
+in chat first (OWNER_RULES #10 اطلاع‌رسانی) and MUST use an address that
+is unmistakably a test.
+
 ## D-053 — KLIKA deck connected from /work/kilika-fintech (2026-10-25)
 
 **Owner order:** «چرا پیج دک کلیکا که بهت دادم روی این صفحه متصل نکردی و توضیح
