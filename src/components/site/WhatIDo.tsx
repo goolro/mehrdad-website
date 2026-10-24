@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useApp } from './store';
+import { useLang } from './lang-context';
 import { ui } from './i18n';
 import { PenTool, Hammer, Share2, ChevronRight, Workflow, ArrowRight } from 'lucide-react';
 
@@ -13,7 +13,8 @@ import { PenTool, Hammer, Share2, ChevronRight, Workflow, ArrowRight } from 'luc
  * 8-card service grid (2026-01).
  */
 export function WhatIDo({ headingLevel = 'h2' }: { headingLevel?: 'h1' | 'h2' }) {
-  const { lang } = useApp();
+  // route-aware language (lang-context.tsx): 'fa' is forced on /fa* routes
+  const lang = useLang();
   const t = ui[lang];
   const Heading = headingLevel;
 

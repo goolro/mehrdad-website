@@ -187,3 +187,12 @@ Perplexity, Google AI) can discover, understand and cite the site:
 Already in place before this layer: per-page metadata + canonicals,
 dynamic sitemap + RSS feed, full SSR (no JS required to read content),
 PWA manifest.
+
+### UPDATE 2026-10-23 (fact correction): mehrdad.ir IS served by Vercel
+
+The "Custom domain: NONE" note above is outdated. Live headers today show
+`server: Vercel` + `x-vercel-cache: HIT` on https://mehrdad.ir, and the page
+source carries the `x-build` commit fingerprint that matches the Vercel
+deployment — the domain has been attached to the project since (Git
+auto-deploy from `main` is connected; commits deploy to production
+automatically). cPanel remains the documented fallback path.

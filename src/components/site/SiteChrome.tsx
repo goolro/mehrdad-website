@@ -3,6 +3,7 @@
 import { useEffect, useLayoutEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useApp, registerNavigate, viewFromPathname } from './store';
+import { LangProvider, useLang } from './lang-context';
 import { Header } from './Header';
 import { Footer } from './Footer';
 import { ChatWidget } from './ChatWidget';
@@ -29,7 +30,11 @@ const useIsoLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : use
 export function SiteChrome({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
-  const { theme, mode, lang } = useApp();
+  const { theme, mode } = useApp();
+  // route-aware language (lang-context.tsx): 'fa' is forced on /fa* routes
+  // so the <html> lang/dir effect matches the SSR'd Persian content there;
+  // every other route keeps the persisted store language (unchanged)
+  const lang = useLang();
 
   // Full-screen game routes (/play/*) and the content factory (/factory,
   // preview-workspace only) are BARE surfaces: no header, footer, chat
@@ -147,15 +152,20 @@ export function SiteChrome({ children }: { children: React.ReactNode }) {
     // anything else (e.g. in-page anchors) is left untouched
   }, [router]);
 
+  // LangProvider pins lang='fa' on /fa* (static Persian routes) for EVERY
+  // consumer below — header, footer, chat and the page content all render
+  // the same language the server rendered (lang-context.tsx).
   return (
-    <div className="relative isolate flex min-h-screen flex-col text-foreground">
-      <ThemeBackground themeId={theme} />
-      <Header />
-      <main className="relative z-10 flex-1">{children}</main>
-      <Footer />
-      <ChatWidget />
-      <LangBanner />
-      <RouteIndicator />
-    </div>
+    <LangProvider>
+      <div className="relative isolate flex min-h-screen flex-col text-foreground">
+        <ThemeBackground themeId={theme} />
+        <Header />
+        <main className="relative z-10 flex-1">{children}</main>
+        <Footer />
+        <ChatWidget />
+        <LangBanner />
+        <RouteIndicator />
+      </div>
+    </LangProvider>
   );
 }

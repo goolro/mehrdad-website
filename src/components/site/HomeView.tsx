@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useApp, pick } from './store';
+import { useLang } from './lang-context';
 import { pct, ui } from './i18n';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -35,10 +36,14 @@ export interface HomeInitialData {
  * for crawlers (real-routes SEO migration).
  */
 export function HomeView({ initial }: { initial: HomeInitialData }) {
+  // route-aware language (lang-context.tsx): 'fa' is forced on /fa* routes,
+  // so the SAME view renders the static Persian page at /fa (SSR) and the
+  // store-driven EN home at '/' — one source of truth for the markup
+  const lang = useLang();
   // navigation is real <Link>s now (structural audit 2026-09-08) — cards and
   // CTAs render as anchors: crawlable, middle-clickable, keyboard-link
   // semantics. Only genuine ACTIONS (AI chat) stay buttons.
-  const { lang, setChatOpen } = useApp();
+  const { setChatOpen } = useApp();
   const t = ui[lang];
 
   const projects = initial.projects;

@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { Instagram, Linkedin } from 'lucide-react';
-import { useApp } from './store';
+import { useLang } from './lang-context';
 import { ui } from './i18n';
 
 // Social profiles (owner request 2026-09-30): the official Instagram page.
@@ -29,7 +29,8 @@ const SOCIAL_LINKS = [
 ] as const;
 
 export function Footer() {
-  const { lang } = useApp();
+  // route-aware language (lang-context.tsx): 'fa' is forced on /fa* routes
+  const lang = useLang();
   const t = ui[lang];
   const year = new Date().getFullYear();
 

@@ -1,7 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { usePathname } from 'next/navigation';
 import { useApp } from './store';
+import { isFaPath } from './lang-context';
 import { Languages, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -22,11 +24,15 @@ const DISMISS_KEY = 'mehrdad-lang-banner';
  */
 export function LangBanner() {
   const { setLang } = useApp();
+  const pathname = usePathname();
   const [show, setShow] = useState(false);
 
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout> | undefined;
     try {
+      // pointless on the static Persian routes (/fa) — the visitor is ALREADY
+      // reading Persian (lang-context.tsx)
+      if (isFaPath(pathname)) return;
       const locale = (navigator.language || '').toLowerCase();
       const isFaBrowser = locale.startsWith('fa');
       const chosen = localStorage.getItem(CHOSEN_KEY);
@@ -38,9 +44,9 @@ export function LangBanner() {
       /* storage unavailable → never show */
     }
     return () => clearTimeout(timer);
-  }, []);
+  }, [pathname]);
 
-  if (!show) return null;
+  if (!show || isFaPath(pathname)) return null;
 
   const accept = () => {
     try {
