@@ -1291,3 +1291,41 @@ Jalali dates render; desktop 1280 AND 390px mobile correct, no horizontal
 scroll; EN toggle on /fa → navigates to `/` in EN; `/?lang=fa` client flip
 regression-clean; /fa → /services continuity keeps Persian via persisted
 store; direct /services with a fa store behaves exactly as before.
+
+## D-051 — Blog article CTA: every /blog article ends with the next step — MVP Sprint offer + direct contact (growth-agent session 2026-10-24, P1 sales action)
+
+**What:** a new `ArticleCta` component renders once per blog article,
+between the article body and ShareBar: a violet-gradient card (same visual
+language as BuildLikeCta, D-042 era) with the productized offer
+(«آماده‌ای این را به محصول تبدیل کنی؟» / "Ready to turn this into a
+product?") linking to `/mvp-sprint` (primary) and `/contact` (secondary).
+Bilingual strings live under `blog.cta` in i18n.ts (EN + FA, strict
+language separation preserved via `pick()`).
+
+**Why:** the growth-agent P1 audit (2026-10) flagged that articles — the
+top of the funnel — end with zero conversion path: body → ShareBar →
+comments. The owner rule of 2026-09-26 says every placement must invite
+the next step; project pages had BuildLikeCta but blog articles never got
+one. This adds the missing sales surface to EVERY article (past and
+future, since it lives in the shared PostDetail template) with zero
+content edits.
+
+**Scope notes:**
+- BlogView `PostDetail` only (used exclusively by /blog/[slug]) — the
+  /daily editorial section is deliberately CTA-free (ArticleDetail header
+  note: "No outbound links: the section exists to publish the owner's own
+  analysis") and stays untouched.
+- Links are crawlable `<a>` (Next `Link`), not JS-push buttons — the raw
+  static HTML of every article now carries an internal link to
+  /mvp-sprint, which also strengthens its crawl priority.
+- No DB, no metadata, no language-routing changes (D-050 scope freeze
+  intact).
+
+**Self-test evidence:** `tsc --noEmit` clean; eslint clean on all three
+touched files; full `next build` succeeds (116 pages, CSP 164 hashes).
+Raw-HTML check on the production build: EN card + both links present in
+the initial HTML of /blog/*. Agent Browser on the standalone prod server:
+`?lang=fa` flip renders the Persian card («اسپرینت MVP را ببین») with
+correct RTL, desktop 1280 and 390px mobile verified; the earlier local
+"flip broken" symptom was a stale next-server on port 3100 serving an old
+build (new chunk names 404 → no hydration), not a code bug.

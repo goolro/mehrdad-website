@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { CommentsSection } from './CommentsSection';
 import { ShareBar } from './ShareBar';
+import { ArticleCta } from './ArticleCta';
 import { trackArticleViewed } from '@/lib/analytics';
 import { Search, FileText, ChevronLeft, ChevronRight, Clock, Info, MessageSquare, Newspaper } from 'lucide-react';
 import { DAILY_CATEGORIES } from '@/lib/daily';
@@ -398,6 +399,11 @@ export function PostDetail({ post, related, shareUrl }: { post: FullPost; relate
         dir={isEnMissing || lang === 'fa' ? 'rtl' : 'ltr'}
         dangerouslySetInnerHTML={{ __html: pick(lang, post.contentEn, post.contentFa) || `<p>${pick(lang, post.excerptEn, post.excerptFa)}</p>` }}
       />
+
+      {/* P1 sales (agent, 2026-10-24): every article ends with the next
+          step — the productized offer and a direct contact line (owner
+          rule 2026-09-26: every placement invites the next step) */}
+      <ArticleCta className="mt-10" />
 
       <div className="mt-8 border-y border-border py-4">
         <ShareBar url={shareUrl} title={title} label={t.common.shareArticle} />

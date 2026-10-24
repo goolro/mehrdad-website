@@ -316,6 +316,12 @@ export const ui = {
       faNote: 'این مقاله در دسترس است.',
       published: 'Published',
       relatedTitle: 'Related articles',
+      cta: {
+        title: 'Ready to turn this into a product?',
+        sub: 'In one AI MVP Sprint I take your idea from first sketch to a live product — in weeks, not months.',
+        btn: 'See the MVP Sprint',
+        alt: 'Or tell me about your idea',
+      },
       dailyBox: {
         badge: 'Daily section',
         title: 'Daily analysis',
@@ -1460,6 +1466,12 @@ export const ui = {
       faNote: 'این مقاله در دسترس است.',
       published: 'انتشار',
       relatedTitle: 'مقالات مرتبط',
+      cta: {
+        title: 'آماده‌ای این را به محصول تبدیل کنی؟',
+        sub: 'در یک اسپرینت MVP ایده‌ات را از اولین طرح تا محصول زنده می‌برم — در هفته‌ها، نه ماه‌ها.',
+        btn: 'اسپرینت MVP را ببین',
+        alt: 'یا ایده‌ات را مستقیم به من بگو',
+      },
       dailyBox: {
         badge: 'بخش روزانه',
         title: 'تحلیل روزانهٔ',
