@@ -119,13 +119,20 @@ export function getProjectSocials(
  * /work/health-app say the pitch deck is live and link BOTH language
  * versions — «بگی پیچ دک داریم و … و اینم لینکشه»). Same pure-code pattern
  * as every map in this file: content travels with git, production Postgres
- * stays untouched. The deck pages are the standalone /deck/* surfaces
- * (D-035/D-036) — they have no site chrome and no back link, so they open
- * in a new tab and the project page stays open.
+ * stays untouched. The deck pages are the standalone /deck/* and /s/*
+ * surfaces (D-035/D-036/D-045) — they have no site chrome and no back link,
+ * so they open in a new tab and the project page stays open.
+ *
+ * deckFa is OPTIONAL: health-app has two standalone language versions
+ * (EN + FA mirror), so both buttons render with language labels. A product
+ * with ONE deck page (kilika-fintech — the owner's restored KLIKA one-pager,
+ * owner order 2026-10-20 «اینو بررسی کن بعنوان پیج دک … و فقط لینک بشه به
+ * دامنه اصلی سایت», connected from /work/kilika-fintech per owner order
+ * 2026-10-25) omits deckFa and gets a single unlabelled button.
  */
 export const PROJECT_PITCH_DECKS: Record<
   string,
-  { deckEn: string; deckFa: string; noteEn: string; noteFa: string }
+  { deckEn: string; deckFa?: string; noteEn: string; noteFa: string }
 > = {
   'health-app': {
     deckEn: 'https://mehrdad.ir/deck/health',
@@ -133,12 +140,17 @@ export const PROJECT_PITCH_DECKS: Record<
     noteEn: 'The full pitch deck of this product is live — in both Persian and English:',
     noteFa: 'پیچ دک کامل این محصول منتشر شده است — به هر دو زبان فارسی و انگلیسی:',
   },
+  'kilika-fintech': {
+    deckEn: 'https://mehrdad.ir/s/kilika.html',
+    noteEn: 'The full pitch deck of this product is live:',
+    noteFa: 'پیچ دک کامل این محصول منتشر شده است:',
+  },
 };
 
 /** validated pitch-deck links for a slug, or null when the project has none */
 export function getProjectPitchDecks(
   slug: string,
-): { deckEn: string; deckFa: string; noteEn: string; noteFa: string } | null {
+): { deckEn: string; deckFa: string | null; noteEn: string; noteFa: string } | null {
   const deck = PROJECT_PITCH_DECKS[slug];
   if (!deck) return null;
   try {
@@ -146,7 +158,7 @@ export function getProjectPitchDecks(
     return {
       ...deck,
       deckEn: new URL(deck.deckEn).toString(),
-      deckFa: new URL(deck.deckFa).toString(),
+      deckFa: deck.deckFa ? new URL(deck.deckFa).toString() : null,
     };
   } catch {
     return null;

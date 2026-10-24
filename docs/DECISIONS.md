@@ -1362,3 +1362,41 @@ API route follows /api/contact verbatim (force-dynamic, Next `after`).
 fake-ok, no row ✓. Agent Browser: EN submit → "✓ Got it — I'll get
 back to you soon."; FA submit → «✓ ثبت شد — به‌زودی جواب می‌دهم.»;
 390px mobile stacks correctly, no horizontal scroll.
+## D-053 — KLIKA deck connected from /work/kilika-fintech (2026-10-25)
+
+**Owner order:** «چرا پیج دک کلیکا که بهت دادم روی این صفحه متصل نکردی و توضیح
+ندادی؟ https://mehrdad.ir/work/kilika-fintech» — a legitimate catch: D-045
+shipped the owner's KLIKA deck page at /s/kilika.html (order there was «فقط
+صفحه را بساز … و فقط لینک بشه به دامنه اصلی سایت») but the deck was never
+linked FROM the project's own work page — the exact connection the health-app
+got via D-040. Missed step, admitted; closed here with the same pattern.
+
+**What shipped (pure code, slug-keyed, production DB untouched):**
+- src/lib/project-links.ts — PROJECT_PITCH_DECKS: `deckFa` becomes OPTIONAL
+  (single-deck products) + new entry `kilika-fintech` → deckEn
+  https://mehrdad.ir/s/kilika.html with bilingual note («پیچ دک کامل این محصول
+  منتشر شده است:» — no «،»); getter returns `deckFa: string | null`, URL-
+  validating whichever links exist.
+- src/components/site/ProjectsView.tsx — the amber investor box now renders
+  TWO language-labelled buttons when deckFa exists (health-app unchanged:
+  «پیچ دک — فارسی» / «پیچ دک — انگلیسی») or ONE unlabelled button («پیچ دک» /
+  "Pitch deck") for a single deck page; shared button classes extracted to
+  `deckBtnCls` (identical string — health-app renders pixel-identical).
+  target=_blank + noopener noreferrer as before: /s/* is a standalone surface,
+  the project page stays open.
+
+**Self-test evidence (local):** eslint clean; fixture rows for kilika-fintech
++ health-app upserted into local SQLite mirroring production values (prod row
+NEVER written); /work/kilika-fintech EN → note "The full pitch deck of this
+product is live:" + single button → https://mehrdad.ir/s/kilika.html,
+target=_blank, 1 button; FA (?lang=fa) → dir=rtl, Persian note + «پیچ دک»;
+click opens the deck in a NEW TAB (tab list verified); 390px mobile — button
+h=44px, box fits, zero horizontal overflow; regressions: health-app still
+renders both deck buttons + contact CTA, traffic-tempo still renders zero deck
+box; byte-freeze proof: sha256 public/s/kilika.html == production
+(3066530b…) and kilika-figma.css == production (a7b4253a…).
+
+**Rationale:** the D-040 amber box is the established "this product has a
+pitch deck" surface; reusing it keeps one visual language for investor links
+across all work pages. deckFa-optional is the minimal generalization that
+fits one-deck products without per-slug label maps.
