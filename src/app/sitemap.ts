@@ -28,7 +28,22 @@ const BASE = (process.env.SITE_ORIGIN || 'https://mehrdad.ir').replace(/\/+$/, '
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // real, indexable routes (hash-routing retired — see DECISIONS.md)
   const statics: MetadataRoute.Sitemap = [
-    { url: `${BASE}/`, changeFrequency: 'weekly', priority: 1 },
+    {
+      url: `${BASE}/`,
+      changeFrequency: 'weekly',
+      priority: 1,
+      // hreflang pair for the bilingual homepage (D-050): EN static default
+      // + the real static Persian homepage at /fa
+      alternates: { languages: { en: `${BASE}/`, fa: `${BASE}/fa` } },
+    },
+    // static Persian homepage (D-050, 2026-10-23): SSR'd Persian content at
+    // a real, crawlable URL — the hreflang=fa target
+    {
+      url: `${BASE}/fa`,
+      changeFrequency: 'weekly',
+      priority: 1,
+      alternates: { languages: { en: `${BASE}/`, fa: `${BASE}/fa` } },
+    },
     { url: `${BASE}/services`, changeFrequency: 'monthly', priority: 0.8 },
     { url: `${BASE}/fde`, changeFrequency: 'monthly', priority: 0.8 },
     { url: `${BASE}/work`, changeFrequency: 'weekly', priority: 0.8 },

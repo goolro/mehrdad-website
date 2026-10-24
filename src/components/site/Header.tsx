@@ -1,25 +1,38 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter, usePathname } from 'next/navigation';
 import { useApp, pick, VIEW_PATH } from './store';
+import { isFaPath, useLang } from './lang-context';
 import { ui } from './i18n';
 import type { Lang } from './i18n';
 import { Button } from '@/components/ui/button';
 import { Moon, Sun } from 'lucide-react';
 
 export function Header() {
-  const { lang, setLang, view, setChatOpen, mode, setMode } = useApp();
+  const router = useRouter();
+  const pathname = usePathname();
+  const { setLang, view, setChatOpen, mode, setMode } = useApp();
+  // route-aware language (lang-context.tsx): 'fa' is forced on /fa*
+  const lang = useLang();
   const t = ui[lang];
 
   /**
    * Explicit language choice — remembered so the browser-locale
    * suggestion banner (LangBanner.tsx) never appears again.
+   *
+   * /fa routes (static Persian pages, lang-context.tsx): the route pins
+   * 'fa' regardless of the store, so switching to EN must LEAVE /fa —
+   * navigate to the EN home ('/') after clearing the store language.
+   * Switching to fa on /fa is a no-op (already Persian); on EN routes
+   * the store flip behaves exactly as before.
    */
   const chooseLang = (l: Lang) => {
     try {
       localStorage.setItem('mehrdad-lang-chosen', '1');
     } catch {}
     setLang(l);
+    if (isFaPath(pathname) && l === 'en') router.push('/');
   };
 
   const navItems: { key: 'home' | 'services' | 'projects' | 'blog' | 'about' | 'contact'; label: string }[] = [

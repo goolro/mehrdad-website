@@ -1223,3 +1223,71 @@ published=true; 4/4 tag links koko/quiz/telegram/word-game; verification block
 passed) and the article page already renders on demand at
 https://mehrdad.ir/blog/quiz-of-koko-telegram-app — this commit triggers the
 rebuild that also surfaces it in /blog + sitemap.xml + feed.xml.
+
+## D-050 — Static Persian homepage `/fa`: real SSR Persian for crawlers + route-aware language (growth-agent session 2026-10-23, authorized via owner-provided GitHub/Vercel credentials)
+
+**Context (owner order):** the owner opened the growth session by providing the
+GitHub PAT + Vercel token for this repo, following the P1 translation-sync
+audit (2026-10-23) whose #1 finding (🔴A) was: `?lang=fa` serves byte-identical
+ENGLISH HTML to every crawler — the Persian experience existed only as a
+post-hydration client flip, so the hreflang=fa variant had no server-rendered
+Persian content for Bing / AI crawlers (ChatGPT, Perplexity), and the page
+source never contains a single Persian word. The P1 fix pack called for
+server-side Persian. This decision implements it for the #1 surface (the
+homepage) inside the existing static architecture, WITHOUT touching the
+EN-purity rule or the client-flip mechanism.
+
+**What shipped:**
+- `src/components/site/lang-context.tsx` (NEW): `LangProvider` + `useLang()` —
+  route-aware language resolution. On `/fa*` routes lang is FORCED to 'fa' for
+  server render, first client render and hydration alike (usePathname is
+  request-aware during SSR → no hydration mismatch). On every other route it
+  falls back to the persisted store language — the previous behavior, unchanged.
+- `src/app/fa/page.tsx` (NEW): the static Persian homepage — same data contract
+  as `/` (same queries, same NO-catch-to-empty build policy, same force-static),
+  rendered AT BUILD TIME in Persian. Persian metadata (title «مهرداد — سازنده
+  مستقل محصول | طراحی و ساخت سریع با هوش مصنوعی», description from the site's
+  own fa.hero copy, OG `fa_IR` + `alternateLocale en_US`, twitter card) and a
+  Persian WebSite JSON-LD node tied to the same Person entity.
+- hreflang swap: `/` and `/fa` both declare `en: /`, `fa: /fa`,
+  `x-default: /` — the fa variant now points at REAL Persian HTML instead of
+  `/?lang=fa` (byte-identical EN). `sitemap.xml` carries the /fa URL with the
+  same hreflang pair (priority 1).
+- Boot script (layout.tsx): `/fa*` paths get `<html lang=fa dir=rtl>` pre-paint
+  and persist `lang=fa` (route continuity for inner EN-route pages) — but do
+  NOT set `lang-boot-fa`, because the SSR body is already Persian; hiding it
+  would only delay correct content.
+- Route-aware consumers (scope-frozen list): SiteChrome (provider + doc
+  lang/dir effect), Header (useLang; the EN toggle on /fa now navigates to `/`
+  because the route pins fa regardless of store), Footer, ChatWidget (also
+  sends the route language to /api/chat), RouteIndicator, LangBanner (suppressed
+  on /fa — suggesting "the site has a Persian version" to someone ALREADY
+  reading Persian is nonsense), HomeView + WhatIDo (render Persian at build
+  time on /fa; `/` unchanged).
+- NOT changed (scope freeze): all other views (BlogView, ProjectsView,
+  ServicesView, …) keep store-driven language; `?lang=fa` flip + boot-script
+  body-hiding on EN routes; EN metadata on EN routes (EN-purity rule);
+  route groups / root layout untouched (`<html>` stays lang=en in static HTML
+  — dir/lang arrive pre-paint on /fa via the boot script; a per-route `<html>`
+  would require moving every page into route groups = separate decision).
+
+**Rationale:** closes the only P0 from the live audit at minimal architectural
+risk. The static Persian homepage is generated once per build (zero runtime
+cost, owner's static-first rule intact), is fully crawlable without JS, and
+gives Google/Bing/LLM crawlers a real Persian surface to attach to the
+existing hreflang graph. `?lang=fa` remains the human in-page flip; `/fa`
+becomes its canonical crawlable target.
+
+**Self-test evidence:** `tsc --noEmit` clean; `eslint .` clean; full
+`next build` succeeds (`/fa` listed as static ○, CSP injected 114/114 pages).
+Raw-HTML checks on the production build (no JS): Persian title/description,
+«کسب‌وکار و محصولت رو با دقت طراحی می‌کنم» + nav «خانه» + «چه کاری انجام
+می‌دهم» all present in the initial HTML; canonical `/fa`; hreflang
+en→`/`, fa→`/fa`, x-default→`/` on BOTH home and /fa; og:locale fa_IR;
+JSON-LD inLanguage fa-IR; EN home shows zero Persian leak. Agent Browser
+(live server): /fa paints Persian instantly (`lang=fa dir=rtl`, NO
+lang-boot-fa, body visible), footer «اسپرینت MVP» + Persian digits «٪» +
+Jalali dates render; desktop 1280 AND 390px mobile correct, no horizontal
+scroll; EN toggle on /fa → navigates to `/` in EN; `/?lang=fa` client flip
+regression-clean; /fa → /services continuity keeps Persian via persisted
+store; direct /services with a fa store behaves exactly as before.

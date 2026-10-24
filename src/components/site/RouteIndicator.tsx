@@ -3,7 +3,7 @@
 import { useEffect, useSyncExternalStore } from 'react';
 import { usePathname } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
-import { useApp } from './store';
+import { useLang } from './lang-context';
 import {
   subscribeRouteIndicator,
   isRouteNavPending,
@@ -42,7 +42,8 @@ function isInternalNavClick(target: EventTarget | null): boolean {
 
 export function RouteIndicator() {
   const pending = useSyncExternalStore(subscribeRouteIndicator, isRouteNavPending, () => false);
-  const { lang } = useApp();
+  // route-aware language (lang-context.tsx): 'fa' is forced on /fa* routes
+  const lang = useLang();
   const pathname = usePathname();
 
   // global triggers: internal anchor clicks (capture) + back/forward

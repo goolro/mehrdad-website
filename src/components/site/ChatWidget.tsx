@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useApp } from './store';
+import { useLang } from './lang-context';
 import { ui } from './i18n';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,7 +16,10 @@ interface Msg {
 type LeadState = 'idle' | 'form' | 'sent' | 'error';
 
 export function ChatWidget() {
-  const { lang, chatOpen, setChatOpen, view } = useApp();
+  const { chatOpen, setChatOpen, view } = useApp();
+  // route-aware language (lang-context.tsx): 'fa' is forced on /fa* routes —
+  // the chat UI AND the lang sent to /api/chat follow the route language
+  const lang = useLang();
   const t = ui[lang];
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState('');

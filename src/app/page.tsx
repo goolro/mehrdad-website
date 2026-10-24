@@ -17,12 +17,15 @@ export const metadata: Metadata = {
     'I design businesses and products with care, and build them fast with AI. Real projects, honest status, lessons from real work.',
   alternates: {
     canonical: '/',
-    // hreflang: EN is the static, server-rendered default; the Persian
-    // variant is the same URL + ?lang=fa (pre-paint switch in layout boot
-    // script — Google's renderer executes it, so the variant is indexable)
+    // hreflang: EN is the static, server-rendered default; since D-050
+    // (2026-10-23) the Persian variant is the REAL static Persian homepage
+    // at /fa (SSR'd Persian content — lang-context.tsx). The old
+    // /?lang=fa target had byte-identical EN HTML (no Persian content for
+    // crawlers); it remains the in-page flip mechanism, but the hreflang
+    // graph now points to the crawlable Persian surface.
     languages: {
       en: '/',
-      fa: '/?lang=fa',
+      fa: '/fa',
       'x-default': '/',
     },
   },
