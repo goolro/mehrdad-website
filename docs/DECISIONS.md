@@ -1329,3 +1329,36 @@ the initial HTML of /blog/*. Agent Browser on the standalone prod server:
 correct RTL, desktop 1280 and 390px mobile verified; the earlier local
 "flip broken" symptom was a stale next-server on port 3100 serving an old
 build (new chunk names 404 → no hydration), not a code bug.
+
+## D-052 — Article CTA lead capture: one-field email form → /api/leads → Supabase `Lead` table (growth-agent session 2026-10-24, P1 sales phase 2)
+
+**What:** the ArticleCta card (D-051) now ships a one-field lead form:
+email → POST `/api/leads` → Prisma `Lead` row (source/lang/slug tagged)
+→ best-effort SMTP forward to CONTACT_TO_EMAIL → server-side PostHog
+`lead_captured` event (email = PostHog person id). Success collapses the
+form to a thank-you line; failures show an inline retry message.
+
+**Why:** D-051 gave every article a next step, but the capture was
+click-only. A reader who is not ready to open /mvp-sprint or /contact
+now has a zero-friction path — the missing piece of the lead follow-up
+P1 (growth-agent action plan 2026-10).
+
+**Security/spam:** 5 req/IP/10 min rate limit (rate-limit lib), 32 KB
+body cap (readJsonBody), server-side email regex, lowercase+trim
+normalization, and a hidden honeypot `website` field — bots get a
+fake `{ok:true}` and no row. No new env vars required (reuses
+SMTP_*/CONTACT_TO_EMAIL; when unset the DB row is still the source of
+truth, same as /api/contact).
+
+**Infra:** `model Lead` added to BOTH prisma schemas (mirror-check ✓ 27
+models). Production table created via the Management-API SQL endpoint by
+`scripts/create-lead-table-supabase.ts` (idempotent, shape-verified,
+same channel as migrate-sqlite-to-supabase.ts — no direct PG in CI).
+API route follows /api/contact verbatim (force-dynamic, Next `after`).
+
+**Self-test evidence:** tsc + eslint clean; production build succeeds
+(80/80 CSP). Local standalone server: valid POST → row
+(lowercased, fa/en/slugged) ✓; invalid email → 400 ✓; honeypot →
+fake-ok, no row ✓. Agent Browser: EN submit → "✓ Got it — I'll get
+back to you soon."; FA submit → «✓ ثبت شد — به‌زودی جواب می‌دهم.»;
+390px mobile stacks correctly, no horizontal scroll.

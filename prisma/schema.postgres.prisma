@@ -150,6 +150,24 @@ model ContactMessage {
   createdAt DateTime @default(now())
 }
 
+/// Growth-agent P1 (2026-10-24, D-052): lightweight lead captured by the
+/// article CTA form — a reader not ready to click /mvp-sprint or /contact
+/// leaves just an email. Mirror of schema.prisma Lead; the table itself is
+/// created on Supabase via the Management API SQL endpoint (scripts/
+/// create-lead-table-supabase.ts), same channel as migrate-sqlite-to-
+/// supabase.ts — no direct PG connection exists in CI.
+model Lead {
+  id        String   @id @default(cuid())
+  email     String
+  source    String   @default("article_cta")
+  lang      String?
+  slug      String?
+  createdAt DateTime @default(now())
+
+  @@index([email])
+  @@index([createdAt])
+}
+
 // ───────────────────────── AI Chatbot ─────────────────────────
 
 model ChatSession {

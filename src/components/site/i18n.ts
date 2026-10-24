@@ -321,6 +321,11 @@ export const ui = {
         sub: 'In one AI MVP Sprint I take your idea from first sketch to a live product — in weeks, not months.',
         btn: 'See the MVP Sprint',
         alt: 'Or tell me about your idea',
+        emailLabel: 'Prefer email? Drop it here — I reply within 24h.',
+        emailPlaceholder: 'you@company.com',
+        emailBtn: 'Send',
+        emailOk: "Got it — I'll get back to you soon.",
+        emailErr: "Didn't go through — please try again.",
       },
       dailyBox: {
         badge: 'Daily section',
@@ -1471,6 +1476,11 @@ export const ui = {
         sub: 'در یک اسپرینت MVP ایده‌ات را از اولین طرح تا محصول زنده می‌برم — در هفته‌ها، نه ماه‌ها.',
         btn: 'اسپرینت MVP را ببین',
         alt: 'یا ایده‌ات را مستقیم به من بگو',
+        emailLabel: 'ایمیل راحت‌تر است؟ همین‌جا بگذار — تا ۲۴ ساعت جواب می‌دهم.',
+        emailPlaceholder: 'you@company.com',
+        emailBtn: 'ارسال',
+        emailOk: 'ثبت شد — به‌زودی جواب می‌دهم.',
+        emailErr: 'ارسال نشد — لطفاً دوباره امتحان کن.',
       },
       dailyBox: {
         badge: 'بخش روزانه',

@@ -401,9 +401,10 @@ export function PostDetail({ post, related, shareUrl }: { post: FullPost; relate
       />
 
       {/* P1 sales (agent, 2026-10-24): every article ends with the next
-          step — the productized offer and a direct contact line (owner
-          rule 2026-09-26: every placement invites the next step) */}
-      <ArticleCta className="mt-10" />
+          step — the productized offer, a one-field lead form (D-052) and a
+          direct contact line (owner rule 2026-09-26: every placement
+          invites the next step) */}
+      <ArticleCta slug={post.slug} />
 
       <div className="mt-8 border-y border-border py-4">
         <ShareBar url={shareUrl} title={title} label={t.common.shareArticle} />
