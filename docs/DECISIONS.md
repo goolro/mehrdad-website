@@ -1497,3 +1497,54 @@ link present in both languages); local E2E: FA page renders 12 h2 + 44 li,
 9,389 rendered chars, deck boxes ×2 (first+last per D-054), deck link inside
 the text → /s/kilika.html; EN LTR 12 sections; 390px mobile zero horizontal
 overflow; full-page screenshots (desktop top/mid + mobile full).
+
+## D-056 — Blog post: KLIKA short SEO edition with internal link building (owner order 2026-10-25)
+
+**Owner order (verbatim):** «یک نسخه کوتاه سئو شده توی بلاگ بزار --- حتما لینک
+این فحات مرتبط با کلیکا داخلش باشه سئو حرفه ای انجام بده با لینک سازی داخلی»
+
+**What shipped:**
+- Blog post `klika-fintech-superapp` (source `ai`, published, non-featured,
+  investment category) — bilingual FA/EN SHORT, rewritten, keyword-focused
+  edition of the KLIKA story. Deliberately NOT a copy of the D-055 long-form
+  (hub-and-spoke: short post → long hub → deck page).
+- Data single-sourced in scripts/klika-seo-post-data.ts; production seeder
+  scripts/seed-klika-seo-post-supabase.ts (koko channel + vivora category
+  pattern; idempotent upsert-by-slug; content-only refresh; owner-managed
+  date/published/featured untouched).
+- Purpose-built cover public/media/klika-superapp-seo-cover.png (1344×768,
+  violet/amber super-app visual, no text) — the production Project row has
+  cover NULL and no deck image asset exists, so a non-factual cover was
+  generated instead of inventing a fake product screenshot.
+- Facts policy: every number traces to public/s/kilika.html (trace table in
+  the data file header): WeChat 1.3B / Paytm 450M / Gojek 190M / Iran 85M no
+  national super-app; $11.4B (2026) → $27.3B (2031) 19.1% CAGR; 850 trillion
+  toman (1404); 45M mobile users; 75% YoY online-tx growth; 65% unified-wallet
+  preference; product definition «یک اپ و همه سرویس‌ها» + capabilities
+  (unified account, top-ups from all banks, one-click payment). Zero invented
+  numbers; programmatic 11-point FA + 11-point EN spot-checks all pass.
+- Internal link building (all followed by the sanitizer, full-domain absolute
+  URLs): /work/kilika-fintech ×5 (lead + market + deck section + FAQ + list),
+  /s/kilika.html ×4 (lead + deck section + FAQ + list), /work ×2, /blog ×2,
+  /contact ×2. SEO pipeline auto-applies: canonical + hreflang en/fa/x-default
+  + JSON-LD BlogPosting (keywords from the 4 tags) + OG article with cover.
+- Tags: 4 pre-existing production tags only (fintech / neo-bank / pitch-deck /
+  startup) — no new tag invented; category = سرمایه-گذاری (same as the vivora
+  deck series) via _CategoryToPost.
+- Standing rules: zero «،» in Persian copy (one lead-paragraph slip was caught
+  by the programmatic guard and fixed before deploy); EN content Persian-free;
+  cover ships in the repo so the seeded /media path resolves after rebuild.
+
+**Self-test evidence (local):** eslint clean; tsc clean (root-caused a stale
+local Prisma client that pre-dated this task — `prisma generate` fixed it, no
+code change); local SQLite seed → article renders with 9 h2, 15 internal
+links, cover visible, JSON-LD BlogPosting+BreadcrumbList, canonical
+https://mehrdad.ir/blog/klika-fintech-superapp, hreflang en/fa/x-default,
+og:image → /media/klika-superapp-seo-cover.png, D-052 lead form present;
+FA: dir=rtl, 1,713 FA chars, «،»=0 in article, numbers intact; 390px mobile
+zero horizontal overflow; /blog index lists the post with its cover.
+
+**Rationale:** the owner asked for the SEO surface as a blog post, not a code
+page — the seeded-post channel (D-049 precedent) keeps owner-managed DB state
+safe while the short edition funnels both readers and crawlers to the two
+canonical KLIKA surfaces (work page + deck) via followed internal links.
