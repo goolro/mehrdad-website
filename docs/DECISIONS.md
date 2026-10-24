@@ -1450,3 +1450,50 @@ Both surfaces share the same amber card + the same bilingual note from
 project-links.ts, so future decks (or future series) need exactly one map
 entry. Explanations to the owner now ship with every deck/CTA change (the
 «توضیحات کامل» rule), in plain Persian.
+
+## D-055 — KLIKA work page: the deck's full story written out (2026-10-25)
+
+**Owner order:** «اسکول؟ از روی پیج دک توضیحاتی بردارد متن طولانی با توضیحات
+کامل بنویس این چیه گذاشتی؟» — the /work/kilika-fintech page was a two-sentence
+skeleton (DB summary only) while the owner's deck page /s/kilika.html carries
+the complete investor pitch; the thin page (plus the newly added deck box)
+read as unfinished. Order: take the explanations FROM the deck page and write
+a LONG, fully-explained text.
+
+**What shipped (src/lib/project-profiles.ts — new `kilika-fintech` profile,
+marketStory block; pure code; production DB untouched):**
+- LONG bilingual investor story — 12 sections / 44 bullets, ~9.4K chars FA +
+  ~10.0K chars EN: the problem (fragmented digital life + hidden costs +
+  business pains) → the ecosystem gap (WeChat 1.3B / Paytm 450M / Gojek 190M
+  vs Iran 85M with no national super-app) → the solution + Iranian/
+  international version strategy → market opportunity ($11.4B→$27.3B 19.1%
+  CAGR; Iran 850 trillion toman/1404; 45M mobile users; 65% unified-wallet
+  preference) → platform capabilities → four-stream revenue model (55/25/15/5
+  split; 18B toman/month at 1M users; unit metrics AOV 250K / commission
+  1,500 / 12 tx/user/month / ARPU 18K / CAC 150K / payback 8.3 months; float
+  100B→3B at 3%) → B2B partnership gains (+35% satisfaction; −40% support
+  cost; −50% support load; +60% usefulness; 90% faster API; +45% revenue) →
+  competitive position (vs Blubank 20× capabilities; vs App 30–50% migration;
+  70% lower CAC; 3–5× valuation) → next-gen neobank/movement/legal protection
+  → the 1M-user year-one guarantee (11 B2B categories; 15M+ reach; 125K+ in
+  pursuit; 144M annual transactions; network effect) → bank-partner advantage
+  (+50–200% gateway; +10–100% banking) → for investors ($4M ask; Feb 2026
+  deck; 3-year Blubank-overrun projection; internal link to the deck page).
+- ZERO invented facts: every sentence and number re-flowed from the owner's
+  deck page text (D-055 profile JSDoc documents the direction reversal vs
+  health-app: FA = owner's own deck copy re-flowed; EN = faithful rendering).
+- Standing rules applied: zero «،» in the Persian prose (deck punctuation
+  normalized to «؛»/«و»; programmatic check on rendered page = 0 hits);
+  EN string Persian-free; internal deck link uses the full
+  https://mehrdad.ir/s/kilika.html domain.
+- Render position: D-054's first deck box sits above the story; the story
+  fills the marketStory slot (right under the summary); D-054's closing deck
+  box ends the page — deck opens and closes the full text, as the owner's
+  D-054 order already prescribed.
+
+**Self-test evidence:** eslint clean; programmatic guards (FA «،»=0; EN
+Persian-chars=0; 12 FA + 15 EN number spot-checks vs the deck all found; deck
+link present in both languages); local E2E: FA page renders 12 h2 + 44 li,
+9,389 rendered chars, deck boxes ×2 (first+last per D-054), deck link inside
+the text → /s/kilika.html; EN LTR 12 sections; 390px mobile zero horizontal
+overflow; full-page screenshots (desktop top/mid + mobile full).
