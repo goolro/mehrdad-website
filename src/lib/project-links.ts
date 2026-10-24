@@ -165,6 +165,31 @@ export function getProjectPitchDecks(
   }
 }
 
+/**
+ * Blog series that ARE a pitch deck, published one slide per post (owner
+ * order 2026-10-25: «پیج دک هم اول و اخر متن معرفی بشه» — the pitch-deck
+ * page must be introduced at the beginning AND the end of the text). The
+ * vivora-deck-* posts ARE the health-app deck slide by slide, and the
+ * owner's own first paragraph already introduces the interactive deck at
+ * the TOP of every post in the series (live-verified 2026-10-25), so the
+ * site completes that system with the END-of-text deck box (PostDetail).
+ * Keyed by slug prefix; each entry maps to the PROJECT_PITCH_DECKS entry
+ * that owns the deck URLs + bilingual note — ONE source of truth for deck
+ * copy across work pages and blog series (D-054).
+ */
+export const BLOG_SERIES_PITCH_DECKS: Array<{ prefix: string; projectSlug: string }> = [
+  { prefix: 'vivora-deck-', projectSlug: 'health-app' },
+];
+
+/** pitch deck of the series a blog-post slug belongs to, or null when the post is not part of a deck series */
+export function getSeriesPitchDeck(
+  slug: string,
+): { deckEn: string; deckFa: string | null; noteEn: string; noteFa: string } | null {
+  const series = BLOG_SERIES_PITCH_DECKS.find((s) => slug.startsWith(s.prefix));
+  if (!series) return null;
+  return getProjectPitchDecks(series.projectSlug);
+}
+
 /** validated external link for a slug, or null when the project has none */
 export function getProjectLink(slug: string): string | null {
   const link = PROJECT_LINKS[slug];

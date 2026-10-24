@@ -11,8 +11,9 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { CommentsSection } from './CommentsSection';
 import { ShareBar } from './ShareBar';
 import { ArticleCta } from './ArticleCta';
+import { getSeriesPitchDeck } from '@/lib/project-links';
 import { trackArticleViewed } from '@/lib/analytics';
-import { Search, FileText, ChevronLeft, ChevronRight, Clock, Info, MessageSquare, Newspaper } from 'lucide-react';
+import { Search, FileText, ChevronLeft, ChevronRight, Clock, Info, MessageSquare, Newspaper, Presentation, ExternalLink } from 'lucide-react';
 import { DAILY_CATEGORIES } from '@/lib/daily';
 
 interface CategoryItem { id: string; slug: string; nameEn: string; nameFa: string; count?: number }
@@ -347,6 +348,15 @@ export function PostDetail({ post, related, shareUrl }: { post: FullPost; relate
 
   const title = pick(lang, post.titleEn, post.titleFa);
   const isEnMissing = lang === 'en' && !post.contentEn;
+  // pitch-deck series (owner order 2026-10-25, D-054: «پیج دک هم اول و اخر
+  // متن معرفی بشه») — vivora-deck-* posts ARE the health-app deck, one slide
+  // per post; the owner's own first paragraph already introduces the
+  // interactive deck at the TOP of the text (live-verified), so the site
+  // completes that system with the END-of-text deck box in the same amber
+  // language as the work pages. Null for every other post → untouched.
+  const deck = getSeriesPitchDeck(post.slug);
+  const deckBtnCls =
+    'inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-amber-500/40 bg-background/70 px-5 text-sm font-bold text-amber-700 shadow-sm transition-all hover:-translate-y-0.5 hover:border-amber-500 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 focus-visible:ring-offset-background dark:text-amber-300';
 
   // PostHog (2026-02): the north-star engagement metric — which articles
   // actually get read, per language. Fires once per mounted article.
@@ -399,6 +409,32 @@ export function PostDetail({ post, related, shareUrl }: { post: FullPost; relate
         dir={isEnMissing || lang === 'fa' ? 'rtl' : 'ltr'}
         dangerouslySetInnerHTML={{ __html: pick(lang, post.contentEn, post.contentFa) || `<p>${pick(lang, post.excerptEn, post.excerptFa)}</p>` }}
       />
+
+      {/* pitch deck — «آخر متن» (owner order 2026-10-25, D-054): the closing
+          deck mention for deck-series posts, in the same amber language as
+          the work pages so «پیچ دک» reads as one system site-wide */}
+      {deck && (
+        <div
+          className="mt-10 rounded-2xl border border-amber-500/30 bg-gradient-to-br from-amber-500/10 to-orange-500/10 p-5"
+          dir={isEnMissing || lang === 'fa' ? 'rtl' : 'ltr'}
+        >
+          <p className="text-sm leading-relaxed">{pick(lang, deck.noteEn, deck.noteFa)}</p>
+          <div className="mt-4 flex flex-wrap items-center gap-3">
+            {deck.deckFa && (
+              <a href={deck.deckFa} target="_blank" rel="noopener noreferrer" className={deckBtnCls}>
+                <Presentation className="h-4 w-4" aria-hidden />
+                {pick(lang, 'Pitch deck — Persian', 'پیچ دک — فارسی')}
+                <ExternalLink className="h-4 w-4 opacity-80" aria-hidden />
+              </a>
+            )}
+            <a href={deck.deckEn} target="_blank" rel="noopener noreferrer" className={deckBtnCls}>
+              <Presentation className="h-4 w-4" aria-hidden />
+              {pick(lang, 'Pitch deck — English', 'پیچ دک — انگلیسی')}
+              <ExternalLink className="h-4 w-4 opacity-80" aria-hidden />
+            </a>
+          </div>
+        </div>
+      )}
 
       {/* P1 sales (agent, 2026-10-24): every article ends with the next
           step — the productized offer, a one-field lead form (D-052) and a

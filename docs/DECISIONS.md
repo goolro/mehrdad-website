@@ -1400,3 +1400,53 @@ box; byte-freeze proof: sha256 public/s/kilika.html == production
 pitch deck" surface; reusing it keeps one visual language for investor links
 across all work pages. deckFa-optional is the minimal generalization that
 fits one-deck products without per-slug label maps.
+
+## D-054 — Pitch deck introduced at the BEGINNING and END of the text (2026-10-25)
+
+**Owner order:** «چزا توضیحات درستی نمیدی پیج دک چیه تو باید توضیحات کاملی بدی
+پیج دک هم اول و اخر متن معرفی بشه» — continuing the D-053 thread: the owner
+also wants the pitch-deck page INTRODUCED AT THE BEGINNING AND THE END of the
+text, not buried mid-story, plus complete explanations of what the pitch deck
+is (the owner's recurring «توضیح ندادی» complaint — every deck change must now
+ship with a plain-Persian explanation of what/where/why).
+
+**Live evidence before this change:**
+- /work/kilika-fintech + /work/health-app: the amber deck box sat MID-page
+  (after Market & Growth, before the contact CTA) — neither at the beginning
+  nor at the end of the متن (grep: exactly 1 deck link per page).
+- vivora-deck-* blog posts: the owner's OWN first paragraph already
+  introduces the interactive deck at the TOP of the text («نسخه‌ی تعاملی دک
+  در mehrdad.ir/deck/health/fa زنده است» — live-verified in raw HTML), but
+  the END of the text had nothing.
+
+**What shipped (pure code, slug-keyed, production DB untouched):**
+- src/lib/project-links.ts — new `BLOG_SERIES_PITCH_DECKS` map (slug-prefix →
+  PROJECT_PITCH_DECKS entry) + `getSeriesPitchDeck(slug)` getter; vivora-deck-*
+  → health-app. One source of truth for deck URLs + bilingual note across work
+  pages and blog series.
+- src/components/site/ProjectsView.tsx — the deck box extracted to a local
+  `deckCard` const (identical markup/classes, margin applied by wrapper) and
+  rendered TWICE: «اول متن» right after the summary, BEFORE the Market &
+  Growth section (mt-6) + «آخر متن» after the last content block, before the
+  share bar (mt-8). The mid-page instance was REMOVED (moved, not duplicated:
+  2 mentions per page, exactly first + last).
+- src/components/site/BlogView.tsx — PostDetail renders the same amber deck
+  card at «آخر متن» (after the body, before the D-052 lead-form CTA) ONLY for
+  slugs matching BLOG_SERIES_PITCH_DECKS prefixes; «اول متن» for these posts
+  is already the owner's own paragraph, so no duplicate box was added on top.
+  Every non-series post and every deck-less project stays byte-identical.
+
+**Self-test evidence:** tsc + eslint clean; production build 116 pages;
+local standalone on :3100 → /work/kilika-fintech EN shows the amber deck box
+twice (top after summary, bottom before share bar), ?lang=fa RTL identical;
+/blog/vivora-deck-01-cover EN+FA show the closing deck box with both
+language buttons; a non-series article (no deck) renders unchanged; 390px
+mobile no horizontal overflow.
+
+**Rationale:** the owner's order is a SYSTEM, not a one-off: every relevant
+text now OPENS and CLOSES with the pitch-deck offer — work pages via the
+slug-keyed PROJECT_PITCH_DECKS box, deck-series posts via the series map.
+Both surfaces share the same amber card + the same bilingual note from
+project-links.ts, so future decks (or future series) need exactly one map
+entry. Explanations to the owner now ship with every deck/CTA change (the
+«توضیحات کامل» rule), in plain Persian.

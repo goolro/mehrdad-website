@@ -465,6 +465,47 @@ export function ProjectDetail({ project, shareUrl }: { project: ProjectDetailRow
   // always rendered — extracted so the single-deck branch reuses it verbatim)
   const deckBtnCls =
     'inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-amber-500/40 bg-background/70 px-5 text-sm font-bold text-amber-700 shadow-sm transition-all hover:-translate-y-0.5 hover:border-amber-500 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 focus-visible:ring-offset-background dark:text-amber-300';
+  // the deck card itself (owner order 2026-10-25, D-054: «پیج دک هم اول و
+  // اخر متن معرفی بشه» — the pitch deck must be introduced at the BEGINNING
+  // and the END of the page's text, not buried mid-story) — note + deck
+  // buttons, slug-keyed via PROJECT_PITCH_DECKS. Two language-labelled
+  // buttons when the deck has both versions (deckFa present); ONE
+  // unlabelled button when the product has a single deck page
+  // (kilika-fintech → /s/kilika.html, D-045). New tab on purpose: the
+  // /deck/* and /s/* pages are standalone (no site chrome, no back link) so
+  // the project page stays open. Margin is applied by the wrapper at each
+  // placement so both copies stay identical; the blog deck-series box
+  // (PostDetail) reuses the same amber language — one visual system for
+  // investor decks site-wide.
+  const deckCard = pitch ? (
+    <div className="rounded-2xl border border-amber-500/30 bg-gradient-to-br from-amber-500/10 to-orange-500/10 p-5">
+      <p className="text-sm leading-relaxed" dir={rtl ? 'rtl' : 'ltr'}>
+        {pick(lang, pitch.noteEn, pitch.noteFa)}
+      </p>
+      <div className="mt-4 flex flex-wrap items-center gap-3">
+        {pitch.deckFa ? (
+          <>
+            <a href={pitch.deckFa} target="_blank" rel="noopener noreferrer" className={deckBtnCls}>
+              <Presentation className="h-4 w-4" aria-hidden />
+              {pick(lang, 'Pitch deck — Persian', 'پیچ دک — فارسی')}
+              <ExternalLink className="h-4 w-4 opacity-80" aria-hidden />
+            </a>
+            <a href={pitch.deckEn} target="_blank" rel="noopener noreferrer" className={deckBtnCls}>
+              <Presentation className="h-4 w-4" aria-hidden />
+              {pick(lang, 'Pitch deck — English', 'پیچ دک — انگلیسی')}
+              <ExternalLink className="h-4 w-4 opacity-80" aria-hidden />
+            </a>
+          </>
+        ) : (
+          <a href={pitch.deckEn} target="_blank" rel="noopener noreferrer" className={deckBtnCls}>
+            <Presentation className="h-4 w-4" aria-hidden />
+            {pick(lang, 'Pitch deck', 'پیچ دک')}
+            <ExternalLink className="h-4 w-4 opacity-80" aria-hidden />
+          </a>
+        )}
+      </div>
+    </div>
+  ) : null;
 
   return (
     <article className="mx-auto w-full max-w-4xl px-4 py-12 sm:px-6">
@@ -497,6 +538,13 @@ export function ProjectDetail({ project, shareUrl }: { project: ProjectDetailRow
         <p>{summary}</p>
       </div>
 
+      {/* pitch deck — «اول متن» (owner order 2026-10-25, D-054): introduced
+          in the first lines of the text, right after the summary, BEFORE the
+          market story — the investor sees the deck exists before reading
+          anything else. The same card closes the page at the very end
+          (آخر متن) right before the share bar. */}
+      {pitch && <div className="mt-6">{deckCard}</div>}
+
       {/* MARKET & GROWTH (owner order 2026-10-04: «ابتدای متن بیار یعنی
           فنی بره بعد») — EN = the owner's "Market & Growth Section (final
           copy)" memo verbatim (bracket rules applied per the memo itself);
@@ -510,61 +558,6 @@ export function ProjectDetail({ project, shareUrl }: { project: ProjectDetailRow
             __html: pick(lang, profile.marketStory.htmlEn, profile.marketStory.htmlFa),
           }}
         />
-      )}
-
-      {/* Investor pitch deck (owner order 2026-10-16: «بگی پیچ دک داریم و
-          … و اینم لینکشه» — health-app; owner order 2026-10-25: connect the
-          KLIKA deck on /work/kilika-fintech) — note + deck buttons, slug-keyed
-          via PROJECT_PITCH_DECKS. Two language-labelled buttons when the deck
-          has both versions (deckFa present); ONE unlabelled button when the
-          product has a single deck page (kilika-fintech → /s/kilika.html,
-          D-045). New tab on purpose: the /deck/* and /s/* pages are
-          standalone (no site chrome, no back link) so the project page stays
-          open. Placed right before the contact CTA so they read as one
-          investor closing. Slugs without an entry keep the page untouched. */}
-      {pitch && (
-        <div className="mt-6 rounded-2xl border border-amber-500/30 bg-gradient-to-br from-amber-500/10 to-orange-500/10 p-5">
-          <p className="text-sm leading-relaxed" dir={rtl ? 'rtl' : 'ltr'}>
-            {pick(lang, pitch.noteEn, pitch.noteFa)}
-          </p>
-          <div className="mt-4 flex flex-wrap items-center gap-3">
-            {pitch.deckFa ? (
-              <>
-                <a
-                  href={pitch.deckFa}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={deckBtnCls}
-                >
-                  <Presentation className="h-4 w-4" aria-hidden />
-                  {pick(lang, 'Pitch deck — Persian', 'پیچ دک — فارسی')}
-                  <ExternalLink className="h-4 w-4 opacity-80" aria-hidden />
-                </a>
-                <a
-                  href={pitch.deckEn}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={deckBtnCls}
-                >
-                  <Presentation className="h-4 w-4" aria-hidden />
-                  {pick(lang, 'Pitch deck — English', 'پیچ دک — انگلیسی')}
-                  <ExternalLink className="h-4 w-4 opacity-80" aria-hidden />
-                </a>
-              </>
-            ) : (
-              <a
-                href={pitch.deckEn}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={deckBtnCls}
-              >
-                <Presentation className="h-4 w-4" aria-hidden />
-                {pick(lang, 'Pitch deck', 'پیچ دک')}
-                <ExternalLink className="h-4 w-4 opacity-80" aria-hidden />
-              </a>
-            )}
-          </div>
-        </div>
       )}
 
       {/* "Request an intro meeting" CTA — the memo's For Investors closing
@@ -877,6 +870,11 @@ export function ProjectDetail({ project, shareUrl }: { project: ProjectDetailRow
           </p>
         </div>
       )}
+
+      {/* pitch deck — «آخر متن» (owner order 2026-10-25, D-054): the closing
+          deck mention, after the last content block and before the share
+          bar, so the page both opens and closes with the deck offer */}
+      {pitch && <div className="mt-8">{deckCard}</div>}
 
       <div className="mt-8 border-y border-border py-4">
         <ShareBar url={shareUrl} title={title} label={t.common.shareProject} />
