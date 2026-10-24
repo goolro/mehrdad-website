@@ -457,9 +457,14 @@ export function ProjectDetail({ project, shareUrl }: { project: ProjectDetailRow
   // src/lib/project-profiles.ts; amber accents echo the building-status
   // system so the whole detail page reads as one
   const profile = getProjectProfile(project.slug);
-  // investor pitch deck (health-app) — slug-keyed in src/lib/project-links.ts;
-  // null for every other project so their pages stay byte-identical
+  // investor pitch deck (health-app two-button / kilika-fintech single-button)
+  // — slug-keyed in src/lib/project-links.ts; null for every other project so
+  // their pages stay byte-identical
   const pitch = getProjectPitchDecks(project.slug);
+  // shared styling of the deck buttons (same classes the health-app block has
+  // always rendered — extracted so the single-deck branch reuses it verbatim)
+  const deckBtnCls =
+    'inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-amber-500/40 bg-background/70 px-5 text-sm font-bold text-amber-700 shadow-sm transition-all hover:-translate-y-0.5 hover:border-amber-500 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 focus-visible:ring-offset-background dark:text-amber-300';
 
   return (
     <article className="mx-auto w-full max-w-4xl px-4 py-12 sm:px-6">
@@ -508,8 +513,12 @@ export function ProjectDetail({ project, shareUrl }: { project: ProjectDetailRow
       )}
 
       {/* Investor pitch deck (owner order 2026-10-16: «بگی پیچ دک داریم و
-          … و اینم لینکشه») — note + BOTH deck language versions, slug-keyed
-          via PROJECT_PITCH_DECKS. New tab on purpose: the /deck/* pages are
+          … و اینم لینکشه» — health-app; owner order 2026-10-25: connect the
+          KLIKA deck on /work/kilika-fintech) — note + deck buttons, slug-keyed
+          via PROJECT_PITCH_DECKS. Two language-labelled buttons when the deck
+          has both versions (deckFa present); ONE unlabelled button when the
+          product has a single deck page (kilika-fintech → /s/kilika.html,
+          D-045). New tab on purpose: the /deck/* and /s/* pages are
           standalone (no site chrome, no back link) so the project page stays
           open. Placed right before the contact CTA so they read as one
           investor closing. Slugs without an entry keep the page untouched. */}
@@ -519,26 +528,41 @@ export function ProjectDetail({ project, shareUrl }: { project: ProjectDetailRow
             {pick(lang, pitch.noteEn, pitch.noteFa)}
           </p>
           <div className="mt-4 flex flex-wrap items-center gap-3">
-            <a
-              href={pitch.deckFa}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-amber-500/40 bg-background/70 px-5 text-sm font-bold text-amber-700 shadow-sm transition-all hover:-translate-y-0.5 hover:border-amber-500 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 focus-visible:ring-offset-background dark:text-amber-300"
-            >
-              <Presentation className="h-4 w-4" aria-hidden />
-              {pick(lang, 'Pitch deck — Persian', 'پیچ دک — فارسی')}
-              <ExternalLink className="h-4 w-4 opacity-80" aria-hidden />
-            </a>
-            <a
-              href={pitch.deckEn}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-amber-500/40 bg-background/70 px-5 text-sm font-bold text-amber-700 shadow-sm transition-all hover:-translate-y-0.5 hover:border-amber-500 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 focus-visible:ring-offset-background dark:text-amber-300"
-            >
-              <Presentation className="h-4 w-4" aria-hidden />
-              {pick(lang, 'Pitch deck — English', 'پیچ دک — انگلیسی')}
-              <ExternalLink className="h-4 w-4 opacity-80" aria-hidden />
-            </a>
+            {pitch.deckFa ? (
+              <>
+                <a
+                  href={pitch.deckFa}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={deckBtnCls}
+                >
+                  <Presentation className="h-4 w-4" aria-hidden />
+                  {pick(lang, 'Pitch deck — Persian', 'پیچ دک — فارسی')}
+                  <ExternalLink className="h-4 w-4 opacity-80" aria-hidden />
+                </a>
+                <a
+                  href={pitch.deckEn}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={deckBtnCls}
+                >
+                  <Presentation className="h-4 w-4" aria-hidden />
+                  {pick(lang, 'Pitch deck — English', 'پیچ دک — انگلیسی')}
+                  <ExternalLink className="h-4 w-4 opacity-80" aria-hidden />
+                </a>
+              </>
+            ) : (
+              <a
+                href={pitch.deckEn}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={deckBtnCls}
+              >
+                <Presentation className="h-4 w-4" aria-hidden />
+                {pick(lang, 'Pitch deck', 'پیچ دک')}
+                <ExternalLink className="h-4 w-4 opacity-80" aria-hidden />
+              </a>
+            )}
           </div>
         </div>
       )}
