@@ -1565,3 +1565,47 @@ zero horizontal overflow; /blog index lists the post with its cover.
 page — the seeded-post channel (D-049 precedent) keeps owner-managed DB state
 safe while the short edition funnels both readers and crawlers to the two
 canonical KLIKA surfaces (work page + deck) via followed internal links.
+
+## D-057 — Admin Leads tab + CSV export: close the funnel loop (growth pipeline, 2026-10-25)
+
+**Context:** D-052 shipped the article-CTA lead capture (Lead table +
+per-lead email forward) but the leads themselves had no home in the admin
+panel — the owner only saw them one email at a time. Capture without
+visibility is a leaky funnel; this is the "manage the leads" step of the
+growth pipeline (see Task 17 next-step notes in the growth worklog).
+
+**What shipped:**
+- `GET /api/admin/leads` (new, `checkAdmin`-gated like every admin API):
+  JSON list (newest first, capped 500) + stats `{total, last7, last30,
+  unique}` (unique counts case-insensitive emails).
+- `GET /api/admin/leads?format=csv`: full-table CSV download — UTF-8 BOM
+  (Excel-safe Persian slugs), quoted cells with `""` escaping and leading-=
+  neutralised (formula injection), `Content-Disposition: attachment;
+  filename="mehrdad-leads-<date>.csv"`, `Cache-Control: no-store`.
+- AdminView: new **Leads** tab (between Messages and Comments) — 4 stat
+  cards, one-click CSV download anchor (the HttpOnly session cookie
+  authenticates the download; no token plumbing needed), scrollable lead
+  list (email + source badge + lang badge + date + link to the capturing
+  article). Bilingual copy in i18n EN + FA (zero «،» per the standing rule).
+- Lead rows use `dir="ltr"` so emails stay readable inside the RTL panel.
+
+**Deliberate scope:** read-only. Leads are a contact surface — the owner
+replies by email (the D-052 SMTP forward already sets reply-to), so no
+edit/delete UI, no status workflow, no second source of truth. The dashboard
+"new leads" bell (chat leads) is untouched — chat leads and article leads
+remain two distinct surfaces on purpose.
+
+**Self-test evidence (local):** tsc + eslint clean; seeded 3 leads (2
+unique) → unauthenticated GET = 401; login → JSON `{total:3, last7:3,
+last30:3, unique:2}`; CSV headers `text/csv; charset=utf-8` +
+`attachment; filename="mehrdad-leads-2026-10-25.csv"`, 3 rows intact with
+BOM; browser test: login → Leads tab → stat cards + list + CSV button all
+render (screenshot shots/admin-leads-2.png); prod build clean. Note: the
+`ADD COLUMN IF NOT EXISTS` raw shim (project-kind.ts) fails on the local
+SQLite file but works on the production libSQL/Postgres — pre-existing,
+unrelated.
+
+**Rationale:** the fastest safe surface for lead management is the admin
+panel the owner already uses with a working auth/TOTP flow — no new auth
+surface, no new public endpoint (the API is admin-gated; the public POST
+/api/leads stays the only unauthenticated lead write path).
