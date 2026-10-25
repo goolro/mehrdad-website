@@ -178,3 +178,22 @@ export const INSTAGRAM_CAMPAIGN: InstagramCampaignPost[] = [
 #همکاری #سفارش_اپلیکیشن #طراحی_سایت #استارتاپ #اپلیکیشن_موبایل #دِک_سرمایه_گذاری #فناوری #کارآفرینی #startup #letsbuild`,
   },
 ];
+
+// ─────────── D-062: reel videos (D-061 impact standard) ───────────
+// Days that already have a produced reel (scripts/reels/build_dayXX.sh —
+// 2-second hook captions + animated Persian typography via libass/Vazirmatn +
+// baked royalty-free synth music + whoosh cuts, loudness −14 LUFS; see
+// docs/INSTAGRAM_GROWTH_PLAN.md §11). Publishing prefers the reel and falls
+// back to the campaign image. Produce more reels with the reproducible
+// pipeline and add them here — seeding + publishing pick them up by topic.
+export const CAMPAIGN_REELS: Record<number, string> = {
+  2: '/media/instagram/reels/day-02-reel.mp4',
+  4: '/media/instagram/reels/day-04-reel.mp4',
+};
+
+/** Public /media path of the reel for a campaign topic, or null. */
+export function campaignReelForTopic(topic: string): string | null {
+  const match = /^ig-campaign-day-(\d{2})/.exec(topic);
+  if (!match) return null;
+  return CAMPAIGN_REELS[Number(match[1])] ?? null;
+}

@@ -1787,3 +1787,40 @@ Owner will supply the Composio key; content quality is on us.
 **Rationale:** with a 46-follower page the hook + saveability + sound design
 matter more than volume; this standard makes every future reel consistent
 and lets auto-publish ship finished AV content, not naked images.
+
+---
+
+## D-062 (2026-10-25): Reel-aware Instagram publishing + language layering
+
+**Context:** the owner confirmed the Composio key is on its way and asked
+whether English AI generation is better/acceptable for the content
+(«اگر زبان انگلیسی هم باشد مسئله‌ای نیست؟ آیا انگلیسی بهتر تولید می‌کند؟»).
+
+- **Reel-aware publish (code):** SocialDraft gains a `videoUrl` column
+  (both prisma schemas + lazy ALTER shims in ensureSocialDraftTable /
+  ensureInstagramDraftsReady). `publishInstagramDraft` prefers the reel:
+  `media_type=REELS` + `video_url` + `share_to_feed`, then publishes with a
+  retry loop (6 × 8s) because Meta renders video containers asynchronously;
+  image drafts keep the single-attempt photo flow. The daily auto-publish
+  picks drafts chronologically and ships reel-carrying drafts as REELS
+  automatically (detail string tags `reel` vs `photo`).
+- **Backfill:** `campaignReelForTopic()` maps campaign day → produced reel
+  (day-02, day-04 today; `CAMPAIGN_REELS` grows as more reels are built).
+  The campaign seed button now stamps videoUrl on fresh creates AND repairs
+  previously seeded unposted drafts (posted ones are never touched) — so
+  even drafts created before this deploy go out as reels.
+- **Language layering (the owner's question, answered as standing policy):**
+  English for the generation layer — AI prompts (image generation, TTS
+  control samples) because models are trained predominantly on English
+  (our own TTS→ASR round-trip: English near-perfect, Persian garbled);
+  Persian for the audience layer — captions, hooks, reel subtitles,
+  on-video text, since @startup_mt's audience is Iranian and the Persian
+  copy is first-party, not model-limited. AI-image rendered text is avoided
+  entirely: Persian typography is burned in with libass + Vazirmatn
+  (verified frame-by-frame). Technical English terms (MVP, AI, Deck) stay
+  natural inside Persian copy. Documented in INSTAGRAM_GROWTH_PLAN.md §12.
+
+**Rationale:** generation quality belongs to the tooling (English), brand
+connection belongs to the audience (Persian); and once the key arrives the
+queue ships finished AV content (reels) with zero extra clicks — naked-image
+posts only remain for the days no reel exists yet.
