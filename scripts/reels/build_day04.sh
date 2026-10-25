@@ -30,30 +30,47 @@ scene 4 3.6 '1.0+0.07*on/108'
 scene 5 3.6 '1.07-0.07*on/108'
 scene 6 5.8 '1.0+0.05*on/174'
 
-echo "--- concat+subs ---"
-ffmpeg -y -i "$WORK/s0.mp4" -i "$WORK/s1.mp4" -i "$WORK/s2.mp4" -i "$WORK/s3.mp4" \
-  -i "$WORK/s4.mp4" -i "$WORK/s5.mp4" -i "$WORK/s6.mp4" -filter_complex \
+if [ ! -f "$WORK/silent.mp4" ] || [ $(stat -c%s "$WORK/silent.mp4" 2>/dev/null || echo 0) -lt 1000000 ]; then
+  echo "--- concat+subs ---"
+  ffmpeg -y -i "$WORK/s0.mp4" -i "$WORK/s1.mp4" -i "$WORK/s2.mp4" -i "$WORK/s3.mp4" \
+    -i "$WORK/s4.mp4" -i "$WORK/s5.mp4" -i "$WORK/s6.mp4" -filter_complex \
 "[0:v][1:v]xfade=transition=fade:duration=0.4:offset=3.2[x1];[x1][2:v]xfade=transition=fade:duration=0.4:offset=6.4[x2];[x2][3:v]xfade=transition=fade:duration=0.4:offset=9.6[x3];[x3][4:v]xfade=transition=fade:duration=0.4:offset=12.8[x4];[x4][5:v]xfade=transition=fade:duration=0.4:offset=16.0[x5];[x5][6:v]xfade=transition=fade:duration=0.4:offset=19.2[x6];[x6]subtitles=$ASS:fontsdir=$FONTS,format=yuv420p[vout]" \
-  -map "[vout]" -c:v libx264 -preset faster -crf 26 -r 30 "$WORK/silent.mp4" -v error
+    -map "[vout]" -c:v libx264 -preset faster -crf 26 -r 30 "$WORK/silent.mp4" -v error
+fi
 echo "concat ok"
 
-echo "--- music ---"
-ffmpeg -y -f lavfi -i "sine=frequency=220:duration=29" \
- -f lavfi -i "sine=frequency=261.63:duration=29" \
- -f lavfi -i "sine=frequency=329.63:duration=29" \
- -f lavfi -i "sine=frequency=110:duration=29" \
- -f lavfi -i "anoisesrc=color=pink:duration=29:amplitude=0.35" -filter_complex \
+if [ ! -f "$WORK/music.wav" ]; then
+  echo "--- music ---"
+  ffmpeg -y -f lavfi -i "sine=frequency=220:duration=29" \
+   -f lavfi -i "sine=frequency=261.63:duration=29" \
+   -f lavfi -i "sine=frequency=329.63:duration=29" \
+   -f lavfi -i "sine=frequency=110:duration=29" \
+   -f lavfi -i "anoisesrc=color=pink:duration=29:amplitude=0.35" -filter_complex \
 "[0:a]tremolo=f=0.22:d=0.5,lowpass=f=900,volume=0.5[p0];[1:a]tremolo=f=0.22:d=0.5,lowpass=f=900,volume=0.5[p1];[2:a]tremolo=f=0.22:d=0.5,lowpass=f=900,volume=0.5[p2];[3:a]tremolo=f=0.11:d=0.6,lowpass=f=400,volume=0.42[p3];[4:a]lowpass=f=380,volume=0.10[air];[p0][p1][p2][p3][air]amix=inputs=5:normalize=0,aecho=0.7:0.55:60:0.22,afade=t=in:d=1.2,afade=t=out:st=25:d=4,aformat=sample_rates=44100:channel_layouts=stereo[out]" \
  -map "[out]" -c:a pcm_s16le "$WORK/music.wav" -v error
-ffmpeg -y -f lavfi -i "anoisesrc=color=white:duration=0.5:amplitude=0.8" \
+fi
+if [ ! -f "$WORK/whoosh.wav" ]; then
+  ffmpeg -y -f lavfi -i "anoisesrc=color=white:duration=0.5:amplitude=0.8" \
  -af "highpass=f=350,lowpass=f=1500,afade=t=in:d=0.1,afade=t=out:st=0.18:d=0.3,volume=0.9,aformat=sample_rates=44100:channel_layouts=stereo" \
  -c:a pcm_s16le "$WORK/whoosh.wav" -v error
+fi
 echo "music ok"
 
-echo "--- final mix ---"
-ffmpeg -y -i "$WORK/silent.mp4" -i "$WORK/music.wav" -i "$WORK/whoosh.wav" -filter_complex \
-"[1:a]volume=0.30[m];[2:a]asplit=6[w0][w1][w2][w3][w4][w5];[w0]volume=0.40,adelay=3200|3200[d0];[w1]volume=0.40,adelay=6400|6400[d1];[w2]volume=0.40,adelay=9600|9600[d2];[w3]volume=0.40,adelay=12800|12800[d3];[w4]volume=0.40,adelay=16000|16000[d4];[w5]volume=0.40,adelay=19200|19200[d5];[m][d0][d1][d2][d3][d4][d5]amix=inputs=7:normalize=0,loudnorm=I=-14:TP=-1.5:LRA=11,aformat=sample_rates=44100:channel_layouts=stereo[aout]" \
+echo "--- narration (Edge TTS fa-IR-FaridNeural — cached per line) ---"
+mkdir -p "$WORK/voice"
+if command -v bun >/dev/null 2>&1; then bun "$ASSETS/voice.mjs" day04 "$WORK/voice" | tail -1; else node "$ASSETS/voice.mjs" day04 "$WORK/voice" | tail -1; fi
+
+echo "voice ok"
+
+if [ ! -f "$OUT" ]; then
+echo "--- final mix (voice + music + whoosh) ---"
+ffmpeg -y -i "$WORK/silent.mp4" -i "$WORK/music.wav" -i "$WORK/whoosh.wav" \
+ -i "$WORK/voice/vday04-0.mp3" -i "$WORK/voice/vday04-1.mp3" -i "$WORK/voice/vday04-2.mp3" \
+ -i "$WORK/voice/vday04-3.mp3" -i "$WORK/voice/vday04-4.mp3" -i "$WORK/voice/vday04-5.mp3" \
+ -i "$WORK/voice/vday04-6.mp3" -filter_complex \
+"[1:a]volume=0.16[m];[2:a]asplit=6[w0][w1][w2][w3][w4][w5];[w0]volume=0.40,adelay=3200|3200[d0];[w1]volume=0.40,adelay=6400|6400[d1];[w2]volume=0.40,adelay=9600|9600[d2];[w3]volume=0.40,adelay=12800|12800[d3];[w4]volume=0.40,adelay=16000|16000[d4];[w5]volume=0.40,adelay=19200|19200[d5];[3:a]aresample=44100,aformat=channel_layouts=stereo,adelay=180|180[v0];[4:a]aresample=44100,aformat=channel_layouts=stereo,adelay=3380|3380[v1];[5:a]aresample=44100,aformat=channel_layouts=stereo,adelay=6580|6580[v2];[6:a]aresample=44100,aformat=channel_layouts=stereo,adelay=9780|9780[v3];[7:a]aresample=44100,aformat=channel_layouts=stereo,adelay=12980|12980[v4];[8:a]aresample=44100,aformat=channel_layouts=stereo,adelay=16180|16180[v5];[9:a]aresample=44100,aformat=channel_layouts=stereo,adelay=19380|19380[v6];[m][d0][d1][d2][d3][d4][d5][v0][v1][v2][v3][v4][v5][v6]amix=inputs=14:normalize=0,loudnorm=I=-14:TP=-1.5:LRA=11,aformat=sample_rates=44100:channel_layouts=stereo[aout]" \
  -map 0:v -map "[aout]" -shortest -c:v copy -c:a aac -b:a 160k "$OUT" -v error
+fi
 echo "REEL DONE"
 ffprobe -v error -show_entries format=duration,size -of default=noprint_wrappers=1 "$OUT"
 for t in 1.5 11.0 22.0; do

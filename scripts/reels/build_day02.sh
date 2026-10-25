@@ -52,10 +52,18 @@ if [ ! -f "$WORK/d2-music.wav" ]; then
 fi
 echo "music ok"
 
+echo "--- narration (Edge TTS fa-IR-FaridNeural — cached per line) ---"
+mkdir -p "$WORK/voice"
+if command -v bun >/dev/null 2>&1; then bun "$ASSETS/voice.mjs" day02 "$WORK/voice" | tail -1; else node "$ASSETS/voice.mjs" day02 "$WORK/voice" | tail -1; fi
+
+echo "voice ok"
+
 if [ ! -f "$OUT" ]; then
-  echo "--- final mix ---"
-  ffmpeg -y -i "$WORK/d2-silent.mp4" -i "$WORK/d2-music.wav" -i "$WORK/d2-whoosh.wav" -filter_complex \
-"[1:a]volume=0.30[m];[2:a]asplit=5[w0][w1][w2][w3][w4];[w0]volume=0.40,adelay=3200|3200[d0];[w1]volume=0.40,adelay=6400|6400[d1];[w2]volume=0.40,adelay=9600|9600[d2];[w3]volume=0.40,adelay=12800|12800[d3];[w4]volume=0.40,adelay=16000|16000[d4];[m][d0][d1][d2][d3][d4]amix=inputs=6:normalize=0,loudnorm=I=-14:TP=-1.5:LRA=11,aformat=sample_rates=44100:channel_layouts=stereo[aout]" \
+  echo "--- final mix (voice + music + whoosh) ---"
+  ffmpeg -y -i "$WORK/d2-silent.mp4" -i "$WORK/d2-music.wav" -i "$WORK/d2-whoosh.wav" \
+   -i "$WORK/voice/vday02-0.mp3" -i "$WORK/voice/vday02-1.mp3" -i "$WORK/voice/vday02-2.mp3" \
+   -i "$WORK/voice/vday02-3.mp3" -i "$WORK/voice/vday02-4.mp3" -i "$WORK/voice/vday02-5.mp3" -filter_complex \
+"[1:a]volume=0.16[m];[2:a]asplit=5[w0][w1][w2][w3][w4];[w0]volume=0.40,adelay=3200|3200[d0];[w1]volume=0.40,adelay=6400|6400[d1];[w2]volume=0.40,adelay=9600|9600[d2];[w3]volume=0.40,adelay=12800|12800[d3];[w4]volume=0.40,adelay=16000|16000[d4];[3:a]aresample=44100,aformat=channel_layouts=stereo,adelay=180|180[v0];[4:a]aresample=44100,aformat=channel_layouts=stereo,adelay=3380|3380[v1];[5:a]aresample=44100,aformat=channel_layouts=stereo,adelay=6580|6580[v2];[6:a]aresample=44100,aformat=channel_layouts=stereo,adelay=9780|9780[v3];[7:a]aresample=44100,aformat=channel_layouts=stereo,adelay=12980|12980[v4];[8:a]aresample=44100,aformat=channel_layouts=stereo,adelay=16180|16180[v5];[m][d0][d1][d2][d3][d4][v0][v1][v2][v3][v4][v5]amix=inputs=12:normalize=0,loudnorm=I=-14:TP=-1.5:LRA=11,aformat=sample_rates=44100:channel_layouts=stereo[aout]" \
    -map 0:v -map "[aout]" -shortest -c:v copy -c:a aac -b:a 160k "$OUT" -v error -nostats
 fi
 echo "REEL DONE"

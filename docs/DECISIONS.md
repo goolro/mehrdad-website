@@ -1824,3 +1824,38 @@ whether English AI generation is better/acceptable for the content
 connection belongs to the audience (Persian); and once the key arrives the
 queue ships finished AV content (reels) with zero extra clicks — naked-image
 posts only remain for the days no reel exists yet.
+
+---
+
+## D-063 (2026-10-25): Persian narration inside the reels — subtitles now have a voice
+
+**Context:** owner order: «زیرنویس هم اگر متن گفتاری داری داشته باشه» — a reel's
+subtitle text must also be SPOKEN. D-061 had chosen music-only because the
+z-ai TTS voices garble Persian (TTS→ASR round-trip proof).
+
+- **Voice found:** Microsoft Edge neural voice `fa-IR-FaridNeural` via the
+  `msedge-tts` package (devDependency) — passes the same TTS→ASR round-trip
+  near-perfectly («این پنج اشتباه ایده‌های خوب را می‌کشد کدامش مال تو است»
+  came back intact where the z-ai voices returned garbage). Persian narration
+  is production-grade at zero cost.
+- **Pipeline:** scripts/reels/voice.mjs — one spoken line per subtitle cue,
+  timings mirror dayXX.ass, per-line cache; adaptive SSML rate (max +20%)
+  fits each line inside its 3.2s scene window; spoken text is a compressed
+  variant of the subtitle (subtitle keeps the full line — voice speaks the
+  core so nothing spills into the next cue).
+- **Mix:** voice full-level + music ducked 0.30 → 0.16 + whoosh on cuts,
+  loudnorm −14 LUFS. Objective check: speech window −18.0dB mean vs
+  music-only −36.2dB → ~18dB SNR, speech clearly dominant.
+- **Verification honesty:** the z-ai ASR is itself flaky on Persian (it
+  misreads CLEAN audio too — «قدم یک» → «کدام یک» on the raw voice file) —
+  so final-mix ASR results were cross-checked with raw-line controls and
+  volumedetect; day-04 hook and CTA read back through the full mix.
+- **Reels rebuilt in place:** day-02-reel.mp4 (21.8s), day-04-reel.mp4
+  (25s) — same public paths, `CAMPAIGN_REELS` untouched, video stream
+  rebuilt from the same cached scenes (frames re-verified: subtitles, RTL
+  shaping, watermark intact). Build scripts gained narration + cache guards
+  (concat/music/mix/frames) — fully resumable.
+
+**Rationale:** spoken narration is the single biggest AV upgrade after
+hooks; a real Persian neural voice closes the «تأثیرگذاری» gap while the
+owner's own voice-over remains the authentic upgrade path.
