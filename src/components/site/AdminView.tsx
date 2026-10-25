@@ -1078,7 +1078,7 @@ function MessagesTab({ t }: { t: T }) {
 // D-057: the article CTA (D-052) stores captured emails in the Lead table;
 // this tab closes the funnel loop — every lead at a glance with 7/30-day
 // momentum and a one-click CSV export for outreach.
-interface LeadItem { id: string; email: string; source: string; lang: string | null; slug: string | null; createdAt: string }
+interface LeadItem { id: string; email: string; source: string; lang: string | null; slug: string | null; nurtureStep: number; createdAt: string }
 
 function LeadsTab({ t, lang }: { t: T; lang: 'en' | 'fa' }) {
   const [leads, setLeads] = useState<LeadItem[]>([]);
@@ -1139,6 +1139,10 @@ function LeadsTab({ t, lang }: { t: T; lang: 'en' | 'fa' }) {
                 <span className="font-semibold">{l.email}</span>
                 <Badge variant="secondary" className="text-[10px]">{l.source}</Badge>
                 {l.lang && <Badge variant="outline" className="text-[10px] uppercase">{l.lang}</Badge>}
+                {/* D-058 nurture state — max two emails per lead, ever */}
+                <Badge variant={l.nurtureStep >= 2 ? 'secondary' : 'outline'} className="text-[10px]">
+                  {l.nurtureStep >= 2 ? t.admin.leads.nurture.followup : l.nurtureStep === 1 ? t.admin.leads.nurture.welcome : t.admin.leads.nurture.pending}
+                </Badge>
                 <span className="ms-auto text-xs text-muted-foreground">{formatDate(lang, l.createdAt)}</span>
               </div>
               {l.slug && (

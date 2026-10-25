@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { checkAdmin } from '@/lib/admin';
+import { ensureLeadNurtureColumn } from '@/lib/lead-nurture';
 
 export const dynamic = 'force-dynamic';
 
@@ -21,6 +22,9 @@ export async function GET(req: NextRequest) {
   const denied = checkAdmin(req);
   if (denied) return denied;
   try {
+    // D-058: the remote Lead table may predate nurtureStep — the memoized
+    // shim makes the column exist before the first SELECT that reads it
+    await ensureLeadNurtureColumn();
     const leads = await db.lead.findMany({ orderBy: { createdAt: 'desc' } });
 
     const now = Date.now();
@@ -42,12 +46,13 @@ export async function GET(req: NextRequest) {
           l.source,
           l.lang ?? '',
           l.slug ?? '',
+          String(l.nurtureStep ?? 0),
           new Date(l.createdAt).toISOString(),
         ]
           .map(csvCell)
           .join(','),
       );
-      const csv = '\uFEFF' + ['id,email,source,lang,slug,createdAt', ...rows].join('\r\n');
+      const csv = '\uFEFF' + ['id,email,source,lang,slug,nurtureStep,createdAt', ...rows].join('\r\n');
       return new NextResponse(csv, {
         headers: {
           'Content-Type': 'text/csv; charset=utf-8',
@@ -64,6 +69,7 @@ export async function GET(req: NextRequest) {
         source: l.source,
         lang: l.lang,
         slug: l.slug,
+        nurtureStep: l.nurtureStep ?? 0,
         createdAt: l.createdAt,
       })),
       stats,

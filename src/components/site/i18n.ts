@@ -570,6 +570,7 @@ export const ui = {
         download: 'Download CSV',
         empty: 'No leads yet — the moment a reader leaves an email it shows up here.',
         article: 'Article',
+        nurture: { pending: 'no email yet', welcome: 'welcome sent', followup: 'follow-up sent' },
       },
       brief: {
         title: 'SEO brief builder',
@@ -1735,6 +1736,7 @@ export const ui = {
         download: 'دانلود CSV',
         empty: 'هنوز لیدی ثبت نشده — همین که خواننده‌ای ایمیل بگذارد اینجا دیده می‌شود.',
         article: 'مقاله',
+        nurture: { pending: 'هنوز ایمیلی نرفته', welcome: 'خوش‌آمد رفت', followup: 'پیگیری رفت' },
       },
       brief: {
         title: 'بریف‌ساز سئو',

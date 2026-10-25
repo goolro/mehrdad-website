@@ -3,6 +3,7 @@ import { dailyGenerateStep } from '@/lib/daily-generator';
 import { indexNowKey } from '@/lib/indexnow';
 import { clientIp, rateLimit, tooManyRequests } from '@/lib/rate-limit';
 import { safeEqual } from '@/lib/admin';
+import { processLeadNurture } from '@/lib/lead-nurture';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 300;
@@ -57,6 +58,14 @@ export async function GET(req: NextRequest) {
         fetch(`${origin}/api/cron/daily-generate`, { headers, cache: 'no-store' }).catch(() => {});
       });
     }
+
+    // D-058 piggyback: the morning cron is the only registered schedule
+    // (Vercel Hobby caps cron jobs at 2, both slots taken) — so the lead
+    // nurture state machine rides along AFTER the response. Idempotent;
+    // failures must never touch the generator itself.
+    after(() => {
+      processLeadNurture().catch((e) => console.error('lead nurture (piggyback) failed:', e));
+    });
 
     return NextResponse.json({ ok: true, ...result });
   } catch (e) {

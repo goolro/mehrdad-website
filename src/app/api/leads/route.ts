@@ -3,6 +3,7 @@ import nodemailer from 'nodemailer';
 import { db } from '@/lib/db';
 import { clientIp, readJsonBody, jsonBodyError, rateLimit, tooManyRequests } from '@/lib/rate-limit';
 import { trackServerEvent } from '@/lib/server-analytics';
+import { ensureLeadNurtureColumn, sendLeadWelcome } from '@/lib/lead-nurture';
 
 export const dynamic = 'force-dynamic';
 
@@ -93,6 +94,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid email' }, { status: 400 });
     }
 
+    // D-058: the remote Lead table may predate nurtureStep — make sure the
+    // column exists before the first INSERT that includes it (memoized shim)
+    await ensureLeadNurtureColumn();
+
     const lead = await db.lead.create({ data: { email, source, lang, slug } });
     const emailed = await notifyOwner({ email, source, lang, slug });
     // server-side PostHog event — the validated DB row is the source of
@@ -107,6 +112,12 @@ export async function POST(req: NextRequest) {
         $set: { email },
       })
     );
+    // D-058 nurture: best-effort welcome TO the reader, after the response —
+    // never blocks the capture and never fails it when SMTP is down (the
+    // daily cron retries welcome-less leads younger than 48h)
+    after(() => {
+      sendLeadWelcome(lead).catch(() => {});
+    });
     return NextResponse.json({ ok: true, emailed, id: lead.id });
   } catch (e) {
     console.error('lead api error:', e);
