@@ -1609,3 +1609,59 @@ unrelated.
 panel the owner already uses with a working auth/TOTP flow — no new auth
 surface, no new public endpoint (the API is admin-gated; the public POST
 /api/leads stays the only unauthenticated lead write path).
+
+## D-058 — Lead nurture automation: welcome + one 48h follow-up, max 2 emails ever (growth pipeline, 2026-10-25)
+
+**Context:** D-052 captures leads and emails the OWNER per lead; D-057 made
+them visible in the admin panel. Nothing ever wrote BACK to the reader — a
+lead could leave an email and hear silence. This closes the last gap of the
+capture → notify → manage → **nurture** pipeline.
+
+**What shipped:**
+- `Lead.nurtureStep Int @default(0)` in BOTH schema files (sqlite local +
+  postgres-mirror for the Vercel build). Remote DB migrated by a lazy
+  runtime shim `ensureLeadNurtureColumn()` (ADD COLUMN IF NOT EXISTS +
+  fallback) — the exact proven pattern of ensureProjectKindColumn; called
+  before every query that touches the column (lead POST, admin leads GET,
+  cron).
+- State machine (idempotent, `processLeadNurture()` in lib/lead-nurture.ts):
+  step 0 + age <48h → welcome; step ≤1 + age ≥48h → follow-up (a ≥48h-old
+  lead skips the welcome entirely — a two-day-old "hi!" reads like a
+  glitch); step 2 → never emailed again. SMTP failure leaves the step
+  untouched → the next daily run retries; with SMTP unset it is a no-op so
+  state is never burned by a broken setup.
+- Welcome sent immediately at capture: /api/leads runs `sendLeadWelcome()`
+  inside `after()` (post-response, never blocks/fails the capture).
+- Daily trigger = the EXISTING morning cron: vercel.json Hobby plan caps
+  cron jobs at 2 (both slots taken), so /api/cron/daily-generate piggybacks
+  `processLeadNurture()` in `after()` — failures are logged and can never
+  break the generator. A standalone /api/cron/leads-nurture endpoint (same
+  auth contract: Bearer $CRON_SECRET / ?key=<IndexNow key> / rate-limited
+  open) exists for on-demand runs and is NOT registered in vercel.json.
+- Emails: bilingual (lead.lang), text + HTML, RTL-aware FA wrapper, absolute
+  mehrdad.ir links, zero «،» in FA copy, from "Mehrdad — mehrdad.ir",
+  reply-to the owner inbox (so a reader reply lands in the same thread the
+  notifications use). Welcome = what an MVP Sprint is + two ways to
+  continue (/mvp-sprint or reply). Follow-up = the real KLIKA example
+  (/work/kilika-fintech) + /mvp-sprint + an explicit "this was my last
+  email" opt-out-by-silence line.
+- Admin Leads tab (D-057): each row now shows the nurture state badge
+  (no email yet / welcome sent / follow-up sent) and the CSV gained a
+  nurtureStep column.
+
+**Deliberate scope:** no unsubscribe link (2 emails total, the second says
+it is the last — proportionate for a one-field form), no HTML tracking
+pixel, no scheduler dependency beyond the existing cron, no new env vars.
+
+**Self-test evidence (local):** tsc + eslint clean; local SMTP sink on
+127.0.0.1:2525 captured every send. Seeded 4 leads → cron run 1
+`{checked:4, welcomed:1, followed:2, failed:0}` (fresh→welcome; old step0→
+follow-up only; old step1→follow-up; step2→skipped); run 2 idempotent
+(0/0); POST /api/leads → capture ok + welcome in sink + step=1 via the
+after() path; base64-decoded FA mail confirmed kilika + mvp-sprint links
+intact; admin JSON rows carry nurtureStep; browser: badges render
+(shots/admin-leads-nurture.png); prod build clean.
+
+**Rationale:** the owner's funnel needed the reader-facing follow-up to be
+automatic — but spam is the fastest way to burn a personal brand, so the
+design is capped at two purposeful emails per lead with a stated ending.

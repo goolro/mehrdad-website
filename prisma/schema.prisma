@@ -153,6 +153,7 @@ model Lead {
   source    String   @default("article_cta")
   lang      String?
   slug      String?
+  nurtureStep Int    @default(0)
   createdAt DateTime @default(now())
 
   @@index([email])
