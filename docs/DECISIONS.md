@@ -1751,3 +1751,39 @@ story alternating order/collab. Rationale: 2 of 3 proposed pillars are
 **Rationale:** sustainable cadence beats burst volume for a 46-follower
 page; the strategy keeps every existing artifact (campaign content, images,
 publish plumbing) and adds the missing collab pillar without code churn.
+
+## D-061 — Content impact standard: kinetic Persian reels with baked audio (2026-10-25)
+
+Owner's bar: content must be impactful — short videos with fitting
+background music, full audio-visual treatment, and audience hooks.
+Owner will supply the Composio key; content quality is on us.
+
+- **Pilot reels shipped** (committed): public/media/instagram/reels/
+  day-04-reel.mp4 (25s, educational "5 mistakes") and day-02-reel.mp4
+  (21.8s, order-driven "MVP sprint"). Format: kinetic Persian typography
+  (libass + Vazirmatn Bold, RTL shaping verified frame-by-frame) over the
+  brand image — blurred background plate + sharp centered card, alternating
+  Ken Burns zoom, fade transitions, persistent @startup_mt watermark.
+- **Audio:** royalty-free SYNTHESIZED ambient bed (chord pad + sub + noise
+  texture; A-minor for serious topics, C-major for energetic) at 30% under
+  whoosh SFX on every cut, mastered loudnorm -14 LUFS (Instagram norm).
+  Zero copyright risk since it is original synthesis, not a licensed track.
+- **Hooks:** 14 hook lines (one per campaign day) documented in
+  docs/INSTAGRAM_GROWTH_PLAN.md §11.2 — number/contradiction in the first
+  2 seconds, no preamble, same line opens the caption.
+- **TTS verdict:** z-ai TTS voices mangle Persian — proven via a TTS→ASR
+  round-trip control (English transcript came back near-perfect, Persian
+  came back garbage). Text-driven reel format chosen instead; owner's own
+  voice-over is the authentic upgrade path for the personal brand.
+- **Trending-audio tradeoff:** Instagram trending sounds cannot be attached
+  via the official API — reels auto-published through Composio carry the
+  baked original music; posts intended for trending audio must be published
+  manually from the app.
+- **Reproducibility:** the pipeline is committed under scripts/reels/
+  (build_day04.sh, build_day02.sh, day04.ass, day02.ass, Vazirmatn fonts),
+  resumable per-scene (cache guards) — sandbox kills long CPU-bound calls,
+  artifacts persist between calls.
+
+**Rationale:** with a 46-follower page the hook + saveability + sound design
+matter more than volume; this standard makes every future reel consistent
+and lets auto-publish ship finished AV content, not naked images.
