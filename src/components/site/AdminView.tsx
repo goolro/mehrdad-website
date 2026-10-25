@@ -17,7 +17,7 @@ import {
   LayoutDashboard, FileText, Sparkles, Mail, Lock, Trash2, Languages,
   RefreshCw, ImageIcon, Eye, Loader2, LogOut, Globe, MessageSquare, Check, X, Palette,
   Bot, MessagesSquare, Phone, KeyRound, PlayCircle, Pencil, BadgeCheck, UserCheck,
-  FolderKanban, Share2, Workflow, Bell, Newspaper, ListTree,
+  FolderKanban, Share2, Workflow, Bell, Newspaper, ListTree, UserPlus, Download,
 } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { PROJECT_STATUSES, normalizeStatus } from '@/lib/project-status';
@@ -203,6 +203,7 @@ export function AdminView() {
           <TabsTrigger value="projects" className="gap-1.5"><FolderKanban className="h-4 w-4" />{t.admin.tabs.projects}</TabsTrigger>
           <TabsTrigger value="writer" className="gap-1.5"><Sparkles className="h-4 w-4" />{t.admin.tabs.writer}</TabsTrigger>
           <TabsTrigger value="messages" className="gap-1.5"><Mail className="h-4 w-4" />{t.admin.tabs.messages}</TabsTrigger>
+          <TabsTrigger value="leads" className="gap-1.5"><UserPlus className="h-4 w-4" />{t.admin.tabs.leads}</TabsTrigger>
           <TabsTrigger value="comments" className="gap-1.5"><MessageSquare className="h-4 w-4" />{t.admin.tabs.comments}</TabsTrigger>
           <TabsTrigger value="theme" className="gap-1.5"><Palette className="h-4 w-4" />{t.admin.tabs.theme}</TabsTrigger>
           <TabsTrigger value="ai" className="gap-1.5"><Bot className="h-4 w-4" />{t.admin.tabs.ai}</TabsTrigger>
@@ -218,6 +219,7 @@ export function AdminView() {
         <TabsContent value="projects"><ProjectsTab lang={lang} /></TabsContent>
         <TabsContent value="writer"><WriterTab t={t} lang={lang} /></TabsContent>
         <TabsContent value="messages"><MessagesTab t={t} /></TabsContent>
+        <TabsContent value="leads"><LeadsTab t={t} lang={lang} /></TabsContent>
         <TabsContent value="comments"><CommentsTab t={t} /></TabsContent>
         <TabsContent value="theme"><ThemeTab t={t} lang={lang} /></TabsContent>
         <TabsContent value="ai"><AiProvidersTab t={t} lang={lang} /></TabsContent>
@@ -1068,6 +1070,90 @@ function MessagesTab({ t }: { t: T }) {
         ))}
       </div>
     </ScrollArea>
+  );
+}
+
+// ─────────── Leads ───────────
+
+// D-057: the article CTA (D-052) stores captured emails in the Lead table;
+// this tab closes the funnel loop — every lead at a glance with 7/30-day
+// momentum and a one-click CSV export for outreach.
+interface LeadItem { id: string; email: string; source: string; lang: string | null; slug: string | null; createdAt: string }
+
+function LeadsTab({ t, lang }: { t: T; lang: 'en' | 'fa' }) {
+  const [leads, setLeads] = useState<LeadItem[]>([]);
+  const [stats, setStats] = useState<{ total: number; last7: number; last30: number; unique: number } | null>(null);
+
+  const load = useCallback(() => {
+    fetch('/api/admin/leads')
+      .then((r) => r.json())
+      .then((d) => {
+        setLeads(d.leads || []);
+        setStats(d.stats || null);
+      })
+      .catch(() => {});
+  }, []);
+
+  useEffect(load, [load]);
+
+  const cards = stats
+    ? [
+        { label: t.admin.leads.total, value: stats.total },
+        { label: t.admin.leads.last7, value: stats.last7 },
+        { label: t.admin.leads.last30, value: stats.last30 },
+        { label: t.admin.leads.unique, value: stats.unique },
+      ]
+    : [];
+
+  return (
+    <div>
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h3 className="text-sm font-semibold">{t.admin.leads.title}</h3>
+          <p className="text-xs text-muted-foreground">{t.admin.leads.sub}</p>
+        </div>
+        {/* plain anchor — the HttpOnly session cookie authenticates the download */}
+        <a
+          href="/api/admin/leads?format=csv"
+          download
+          className="inline-flex items-center gap-1.5 rounded-md border border-border px-3 py-2 text-xs font-medium hover:bg-accent"
+        >
+          <Download className="h-3.5 w-3.5" />
+          {t.admin.leads.download}
+        </a>
+      </div>
+      <div className="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+        {cards.map((c) => (
+          <div key={c.label} className="rounded-xl border border-border p-3">
+            <div className="text-xl font-bold text-violet-600 dark:text-violet-400">{c.value}</div>
+            <div className="text-xs text-muted-foreground">{c.label}</div>
+          </div>
+        ))}
+      </div>
+      <ScrollArea className="h-[55vh] rounded-xl border border-border">
+        <div className="divide-y divide-border">
+          {leads.length === 0 && <div className="p-8 text-center text-sm text-muted-foreground">{t.admin.leads.empty}</div>}
+          {leads.map((l) => (
+            <div key={l.id} className="p-4 text-start" dir="ltr">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="font-semibold">{l.email}</span>
+                <Badge variant="secondary" className="text-[10px]">{l.source}</Badge>
+                {l.lang && <Badge variant="outline" className="text-[10px] uppercase">{l.lang}</Badge>}
+                <span className="ms-auto text-xs text-muted-foreground">{formatDate(lang, l.createdAt)}</span>
+              </div>
+              {l.slug && (
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {t.admin.leads.article}:{' '}
+                  <a href={`/blog/${l.slug}`} target="_blank" rel="noreferrer" className="underline underline-offset-2 hover:text-foreground">
+                    {l.slug}
+                  </a>
+                </p>
+              )}
+            </div>
+          ))}
+        </div>
+      </ScrollArea>
+    </div>
   );
 }
 
