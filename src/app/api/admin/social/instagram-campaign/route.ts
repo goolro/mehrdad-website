@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { checkAdmin } from '@/lib/admin';
 import { db } from '@/lib/db';
 import { ensureSocialDraftTable } from '@/lib/social-drafts';
-import { INSTAGRAM_CAMPAIGN } from '@/lib/instagram-campaign';
+import { INSTAGRAM_CAMPAIGN, campaignReelForTopic } from '@/lib/instagram-campaign';
 
 export const dynamic = 'force-dynamic';
 
@@ -37,9 +37,21 @@ export async function POST(req: NextRequest) {
           sourceSlug: null,
           content: post.content,
           imageUrl: post.image,
+          videoUrl: campaignReelForTopic(post.topic),
         },
       });
       created++;
+    }
+    // D-062: repair drafts seeded before the reels existed — attach the
+    // produced reel video to every unposted campaign draft that lacks one
+    // (posted drafts are never touched; the button stays the one-click fix).
+    for (const post of INSTAGRAM_CAMPAIGN) {
+      const reel = campaignReelForTopic(post.topic);
+      if (!reel) continue;
+      await db.socialDraft.updateMany({
+        where: { platform: 'instagram', topic: post.topic, posted: false, videoUrl: null },
+        data: { videoUrl: reel },
+      });
     }
     const total = INSTAGRAM_CAMPAIGN.length;
     return NextResponse.json({ ok: true, created, skipped: total - created, total });

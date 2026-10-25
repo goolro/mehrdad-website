@@ -24,6 +24,7 @@ export function ensureSocialDraftTable(): Promise<void> {
           "sourceSlug" TEXT,
           "content" TEXT NOT NULL,
           "imageUrl" TEXT,
+          "videoUrl" TEXT,
           "posted" BOOLEAN NOT NULL DEFAULT false,
           "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
           CONSTRAINT "SocialDraft_pkey" PRIMARY KEY ("id")
@@ -35,6 +36,14 @@ export function ensureSocialDraftTable(): Promise<void> {
         .catch(async () => {
           await db
             .$executeRawUnsafe(`ALTER TABLE "SocialDraft" ADD COLUMN "imageUrl" TEXT`)
+            .catch(() => {});
+        });
+      // D-062: same lazy shim for the reel video column
+      await db
+        .$executeRawUnsafe(`ALTER TABLE "SocialDraft" ADD COLUMN IF NOT EXISTS "videoUrl" TEXT`)
+        .catch(async () => {
+          await db
+            .$executeRawUnsafe(`ALTER TABLE "SocialDraft" ADD COLUMN "videoUrl" TEXT`)
             .catch(() => {});
         });
     })().catch((e) => {

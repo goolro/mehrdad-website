@@ -262,6 +262,7 @@ model SocialDraft {
   sourceSlug String?
   content    String
   imageUrl   String?  // D-059: campaign/attached image (public /media path — also the URL Composio publishes)
+  videoUrl   String?  // D-062: reel video (public /media path) — published as media_type=REELS
   posted     Boolean  @default(false)
   createdAt  DateTime @default(now())
 }

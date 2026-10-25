@@ -1,10 +1,19 @@
 import { db } from '@/lib/db';
+import { campaignReelForTopic } from '@/lib/instagram-campaign';
 
 // D-059 (owner order 2026-10-25: «دو هفته پست بزاری … از طریق composio»):
 // publish Instagram drafts through Composio's Instagram toolkit — the
 // official Meta content-publishing flow, abstracted by Composio:
-//   1. INSTAGRAM_CREATE_MEDIA_CONTAINER { image_url, caption } → container id
-//   2. INSTAGRAM_POST_IG_USER_MEDIA_PUBLISH { container_id }     → media id
+//   1. INSTAGRAM_CREATE_MEDIA_CONTAINER { image_url | video_url, caption } → container id
+//   2. INSTAGRAM_POST_IG_USER_MEDIA_PUBLISH { container_id }              → media id
+//
+// D-062 (impact standard): drafts that carry a reel video publish as
+// media_type=REELS. The video URL comes from SocialDraft.videoUrl or — for
+// drafts seeded before the reels existed — is backfilled from the campaign
+// reel map by topic (and persisted once). Meta renders video containers
+// asynchronously, so the publish step retries while the container is still
+// processing; photo containers publish on the first attempt.
+//
 // Env-gated fail-closed, exactly like the LinkedIn publisher: without
 // COMPOSIO_API_KEY + COMPOSIO_INSTAGRAM_CONNECTED_ACCOUNT_ID the callers
 // get a 503 with the exact setup steps — copy-to-clipboard stays the
@@ -76,25 +85,95 @@ function pickId(data: Record<string, unknown>): string {
 export interface InstagramPublishOutcome {
   ok: boolean;
   mediaId?: string;
+  video?: boolean;
   error?: string;
 }
 
-/** Publish one draft (must have content + imageUrl). Returns ok + media id. */
+// Meta needs time to render REELS containers — these phrases in the publish
+// error mean "try again in a few seconds"; anything else is a hard failure.
+const PENDING_CONTAINER_HINTS = ['not available', 'in_progress', 'processing', 'pending', 'not ready'];
+
+function isPendingContainerError(error: string): boolean {
+  const e = error.toLowerCase();
+  return PENDING_CONTAINER_HINTS.some((h) => e.includes(h));
+}
+
+/** Publish a created container; retries while Meta is still rendering the video. */
+async function publishContainer(
+  containerId: string,
+  attempts: number,
+): Promise<{ ok: boolean; mediaId?: string; error?: string }> {
+  for (let attempt = 1; attempt <= attempts; attempt++) {
+    const publish = await composioExecute('INSTAGRAM_POST_IG_USER_MEDIA_PUBLISH', {
+      container_id: containerId,
+      ig_user_id: undefined,
+    });
+    if (publish.ok) return { ok: true, mediaId: pickId(publish.data) || containerId };
+    if (attempt === attempts || !isPendingContainerError(publish.error)) {
+      return { ok: false, error: publish.error };
+    }
+    await new Promise((resolve) => setTimeout(resolve, 8000));
+  }
+  return { ok: false, error: 'Instagram publish retries exhausted' };
+}
+
+/** The reel for a draft: explicit column first, then the campaign topic map (D-062 backfill). */
+function reelForDraft(draft: { topic?: string | null; videoUrl?: string | null }): string | null {
+  return draft.videoUrl || (draft.topic ? campaignReelForTopic(draft.topic) : null);
+}
+
+/** Publish one draft — reel video when one exists, campaign image otherwise. */
 export async function publishInstagramDraft(draft: {
+  id?: string;
+  topic?: string | null;
   content: string;
   imageUrl: string | null;
+  videoUrl?: string | null;
   lang: string;
 }): Promise<InstagramPublishOutcome> {
-  if (!draft.imageUrl) {
-    return { ok: false, error: 'draft has no image — Instagram needs an image to publish' };
-  }
   const base = process.env.NEXT_PUBLIC_SITE_URL || 'https://mehrdad.ir';
+  const caption = draft.content.slice(0, 2200);
+  const reelPath = reelForDraft(draft);
+
+  if (reelPath) {
+    // persist the backfill once — the studio and later runs see the reel too
+    if (!draft.videoUrl && draft.id) {
+      await db.socialDraft.update({ where: { id: draft.id }, data: { videoUrl: reelPath } }).catch(() => {});
+    }
+    const videoUrl = reelPath.startsWith('http') ? reelPath : `${base}${reelPath}`;
+
+    // 1) media container as a reel
+    const container = await composioExecute('INSTAGRAM_CREATE_MEDIA_CONTAINER', {
+      media_type: 'REELS',
+      video_url: videoUrl,
+      caption,
+      share_to_feed: true,
+    });
+    if (!container.ok) return { ok: false, error: container.error, video: true };
+    const containerId = pickId(container.data);
+    if (!containerId) {
+      return {
+        ok: false,
+        video: true,
+        error: `Composio did not return a container id: ${JSON.stringify(container.data).slice(0, 300)}`,
+      };
+    }
+
+    // 2) publish — video containers render asynchronously (6 × 8s patience)
+    const publish = await publishContainer(containerId, 6);
+    if (!publish.ok) return { ok: false, error: publish.error, video: true };
+    return { ok: true, mediaId: publish.mediaId || containerId, video: true };
+  }
+
+  if (!draft.imageUrl) {
+    return { ok: false, error: 'draft has no image — Instagram needs a reel video or an image to publish' };
+  }
   const imageUrl = draft.imageUrl.startsWith('http') ? draft.imageUrl : `${base}${draft.imageUrl}`;
 
   // 1) media container with the caption
   const container = await composioExecute('INSTAGRAM_CREATE_MEDIA_CONTAINER', {
     image_url: imageUrl,
-    caption: draft.content.slice(0, 2200),
+    caption,
   });
   if (!container.ok) return { ok: false, error: container.error };
   const containerId = pickId(container.data);
@@ -102,14 +181,10 @@ export async function publishInstagramDraft(draft: {
     return { ok: false, error: `Composio did not return a container id: ${JSON.stringify(container.data).slice(0, 300)}` };
   }
 
-  // 2) publish the container
-  const publish = await composioExecute('INSTAGRAM_POST_IG_USER_MEDIA_PUBLISH', {
-    container_id: containerId,
-    ig_user_id: undefined,
-  });
+  // 2) publish the container (photos need no processing — single attempt)
+  const publish = await publishContainer(containerId, 1);
   if (!publish.ok) return { ok: false, error: publish.error };
-  const mediaId = pickId(publish.data);
-  return { ok: true, mediaId: mediaId || containerId };
+  return { ok: true, mediaId: publish.mediaId || containerId };
 }
 
 // ─────────── daily auto-publish (cron piggyback) ───────────
@@ -121,7 +196,8 @@ const LAST_AUTO_KEY = 'ig:lastAutoPublish';
  * the two-week cadence the owner asked for. Called from the morning cron
  * (piggyback, like the lead nurture); a SiteSetting day-guard keeps the
  * cron's repeated chain calls from burning the queue in one morning.
- * Not configured → silent no-op.
+ * Not configured → silent no-op. D-062: reel-carrying drafts go out as
+ * REELS automatically; chronological order is preserved.
  */
 export async function autoPublishInstagramToday(now = new Date()): Promise<{ published: boolean; detail?: string }> {
   if (!instagramPublishConfigured()) return { published: false };
@@ -131,7 +207,11 @@ export async function autoPublishInstagramToday(now = new Date()): Promise<{ pub
   if (last?.value === today) return { published: false, detail: 'already ran today' };
 
   const draft = await db.socialDraft.findFirst({
-    where: { platform: 'instagram', posted: false, imageUrl: { not: null } },
+    where: {
+      platform: 'instagram',
+      posted: false,
+      OR: [{ imageUrl: { not: null } }, { videoUrl: { not: null } }],
+    },
     orderBy: { createdAt: 'asc' },
   });
   if (!draft) return { published: false, detail: 'queue empty' };
@@ -148,14 +228,21 @@ export async function autoPublishInstagramToday(now = new Date()): Promise<{ pub
     update: { value: today },
     create: { key: LAST_AUTO_KEY, value: today },
   });
-  return { published: true, detail: `mediaId=${outcome.mediaId}` };
+  return {
+    published: true,
+    detail: `${outcome.video ? 'reel' : 'photo'} mediaId=${outcome.mediaId}`,
+  };
 }
 
 async function ensureInstagramDraftsReady(): Promise<void> {
-  // imageUrl column may be missing on the remote table (D-059 shim)
-  await db
-    .$executeRawUnsafe(`ALTER TABLE "SocialDraft" ADD COLUMN IF NOT EXISTS "imageUrl" TEXT`)
-    .catch(async () => {
-      await db.$executeRawUnsafe(`ALTER TABLE "SocialDraft" ADD COLUMN "imageUrl" TEXT`).catch(() => {});
-    });
+  // imageUrl / videoUrl columns may be missing on the remote table (D-059 / D-062 shims)
+  const addColumn = async (name: string): Promise<void> => {
+    await db
+      .$executeRawUnsafe(`ALTER TABLE "SocialDraft" ADD COLUMN IF NOT EXISTS "${name}" TEXT`)
+      .catch(async () => {
+        await db.$executeRawUnsafe(`ALTER TABLE "SocialDraft" ADD COLUMN "${name}" TEXT`).catch(() => {});
+      });
+  };
+  await addColumn('imageUrl');
+  await addColumn('videoUrl');
 }
