@@ -4,6 +4,7 @@ import { indexNowKey } from '@/lib/indexnow';
 import { clientIp, rateLimit, tooManyRequests } from '@/lib/rate-limit';
 import { safeEqual } from '@/lib/admin';
 import { processLeadNurture } from '@/lib/lead-nurture';
+import { autoPublishInstagramToday } from '@/lib/instagram-publish';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 300;
@@ -65,6 +66,17 @@ export async function GET(req: NextRequest) {
     // failures must never touch the generator itself.
     after(() => {
       processLeadNurture().catch((e) => console.error('lead nurture (piggyback) failed:', e));
+    });
+    // D-059 piggyback: one queued Instagram draft per day via Composio
+    // (owner's 14-day @startup_mt campaign) — env-gated no-op until the
+    // Composio credentials exist; a day-guard keeps chain calls from
+    // burning the queue in one morning
+    after(() => {
+      autoPublishInstagramToday()
+        .then((r) => {
+          if (r.published) console.log('instagram autopublish:', r.detail);
+        })
+        .catch((e) => console.error('instagram autopublish (piggyback) failed:', e));
     });
 
     return NextResponse.json({ ok: true, ...result });

@@ -1665,3 +1665,58 @@ intact; admin JSON rows carry nurtureStep; browser: badges render
 **Rationale:** the owner's funnel needed the reader-facing follow-up to be
 automatic — but spam is the fastest way to burn a personal brand, so the
 design is capped at two purposeful emails per lead with a stated ending.
+
+## D-059 — 14-day Instagram campaign for @startup_mt: content + images + Composio publishing (owner order 2026-10-25)
+
+**Owner order (verbatim):** «https://www.instagram.com/startup_mt/ برای این می
+خواهم دو هفته پست بزاری برای دعوت به همکاری و دریافت سفارشات اپلیکیشن و وب
+سایت و غیره … از طریق composio»
+
+**What shipped:**
+- `src/lib/instagram-campaign.ts`: 14 Persian captions (intro → MVP Sprint →
+  KLIKA case → 5 mistakes → Vivora deck → why-2-weeks → engagement question →
+  websites → validation → behind-the-scenes → investor decks → track record →
+  FAQ → final CTA), each with hook-first structure, 10 hashtags, CTA +
+  mehrdad.ir links. Facts trace to public site content (MVP Sprint promise,
+  KLIKA story from the deck facts, Vivora 19-article series, 12+ projects /
+  100+ articles indexes); zero invented numbers; zero «،».
+- 14 brand-consistent images shipped in `public/media/instagram/day-01..14.png`
+  (1024×1024, dark navy + violet/amber flat-vector style, no text) — repo
+  ships them so the /media URLs resolve in prod AND serve as the public
+  image_url Composio needs for the Meta media container.
+- `SocialDraft.imageUrl String?` in BOTH schemas + lazy ALTER shim inside
+  ensureSocialDraftTable (existing remote tables get the column on first
+  touch).
+- POST /api/admin/social/instagram-campaign (admin-gated, idempotent by
+  ig-campaign-day-* topics) + a «کمپین ۱۴ روزه» button in the Social Studio
+  drafts header — one click loads/tops up the campaign.
+- Instagram publishing via Composio: src/lib/instagram-publish.ts executes
+  INSTAGRAM_CREATE_MEDIA_CONTAINER → INSTAGRAM_POST_IG_USER_MEDIA_PUBLISH
+  (Composio REST v3 POST /tools/execute/{slug}, X-API-Key +
+  connectedAccountId). /api/admin/social/publish now dispatches
+  linkedin | instagram; the instagram branch needs COMPOSIO_API_KEY +
+  COMPOSIO_INSTAGRAM_CONNECTED_ACCOUNT_ID — missing → 503 with the exact
+  4-step setup (fail-closed house pattern). Publish button now shows for
+  instagram drafts too; the 503 setup steps render in the existing amber box.
+- Daily auto-publish: the morning cron (only registered schedule — Hobby caps
+  crons at 2) piggybacks autoPublishInstagramToday() — ONE queued instagram
+  draft per calendar day (SiteSetting ig:lastAutoPublish day-guard), oldest
+  first, env-gated no-op until credentials exist; failures retry next call
+  without burning the day-guard.
+
+**Deliberate scope:** no story/reel support (feed photo posts only — what the
+official API allows reliably), no invented prices in FAQ («بعد از یک گفتگوی
+۱۵ دقیقه‌ای عدد شفاف می‌گیری»), automation stays OFF until the owner connects
+Composio so no post ever goes out unconfigured.
+
+**Self-test evidence (local):** tsc + eslint clean; campaign POST →
+{created:14}, re-click → {created:0, skipped:14}; 14 drafts all instagram +
+imageUrl; publish without Composio env → 503 + 4 setup steps; images 200;
+browser: campaign button + draft cards with thumbnails render
+(shots/studio-campaign.png); prod build clean.
+
+**Rationale:** the owner asked for the campaign to go out via Composio — the
+content, images and publish plumbing are ready end-to-end, and the two
+credentials (Composio API key + connected Instagram account id) are the only
+missing pieces, which only the account owner can supply (Meta requires an
+Instagram Business/Creator account linked to a Facebook Page).

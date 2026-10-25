@@ -50,6 +50,7 @@ interface DraftItem {
   topic: string | null;
   sourceSlug: string | null;
   content: string;
+  imageUrl: string | null;
   posted: boolean;
   createdAt: string;
 }
@@ -128,6 +129,7 @@ export function SocialStudio() {
   const [platformFilter, setPlatformFilter] = useState<string>('all');
   const [publishingId, setPublishingId] = useState('');
   const [linkedinSetup, setLinkedinSetup] = useState<string[] | null>(null);
+  const [campaignLoading, setCampaignLoading] = useState(false);
   // Deleting a draft is permanent — route it through a confirm dialog.
   const [draftToDelete, setDraftToDelete] = useState<DraftItem | null>(null);
 
@@ -318,7 +320,7 @@ export function SocialStudio() {
       });
       const d = await res.json();
       if (d.ok) {
-        toast({ title: L('در لینکدین منتشر شد ✓', 'Published to LinkedIn ✓') });
+        toast({ title: L('منتشر شد ✓', 'Published ✓') });
         loadDrafts();
       } else if (res.status === 503 && Array.isArray(d.setup)) {
         setLinkedinSetup(d.setup as string[]);
@@ -329,6 +331,30 @@ export function SocialStudio() {
       toast({ title: L('انتشار ناموفق', 'Publish failed'), variant: 'destructive' });
     } finally {
       setPublishingId('');
+    }
+  }
+
+  // D-059: one click loads the owner's 14-day @startup_mt Instagram campaign
+  // as unposted drafts (idempotent — re-clicks top up what is missing)
+  async function loadInstagramCampaign() {
+    setCampaignLoading(true);
+    try {
+      const res = await fetch('/api/admin/social/instagram-campaign', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
+      });
+      const d = await res.json();
+      if (d.ok) {
+        toast({ title: L(`${d.created} پست ساخته شد — ${d.skipped} قبلاً بوده`, `${d.created} posts created — ${d.skipped} already there`) });
+        loadDrafts();
+      } else {
+        toast({ title: d.error || 'Failed', variant: 'destructive' });
+      }
+    } catch {
+      toast({ title: L('بارگذاری کمپین ناموفق', 'Campaign load failed'), variant: 'destructive' });
+    } finally {
+      setCampaignLoading(false);
     }
   }
 
@@ -586,7 +612,7 @@ export function SocialStudio() {
           <div className="mt-4 rounded-xl border border-amber-500/40 bg-amber-500/10 p-4 text-sm">
             <div className="mb-2 flex items-center gap-2 font-bold text-amber-700 dark:text-amber-400">
               <Globe className="h-4 w-4" />
-              {L('انتشار مستقیم لینکدین هنوز فعال نشده — یک‌بار این مراحل را طی کن:', 'Direct LinkedIn publishing is not configured yet — one-time setup:')}
+              {L('انتشار مستقیم هنوز فعال نشده — یک‌بار این مراحل را طی کن:', 'Direct publishing is not configured yet — one-time setup:')}
             </div>
             <ol className="list-inside list-decimal space-y-1 text-xs text-muted-foreground" dir="ltr">
               {linkedinSetup.map((s, i) => (
@@ -773,17 +799,30 @@ export function SocialStudio() {
               </Badge>
             )}
           </h3>
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => {
-              setLoadingDrafts(true);
-              loadDrafts();
-            }}
-            disabled={loadingDrafts}
-          >
-            {loadingDrafts ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
-          </Button>
+          <div className="flex items-center gap-1">
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-8 gap-1 border-violet-500/40 text-xs"
+              disabled={campaignLoading}
+              onClick={loadInstagramCampaign}
+              title={L('۱۴ پست اینستاگرام برای کمپین دو هفته‌ای @startup_mt', 'The 14 Instagram posts of the two-week @startup_mt campaign')}
+            >
+              {campaignLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Zap className="h-3.5 w-3.5" />}
+              {L('کمپین ۱۴ روزه', '14-day campaign')}
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => {
+                setLoadingDrafts(true);
+                loadDrafts();
+              }}
+              disabled={loadingDrafts}
+            >
+              {loadingDrafts ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+            </Button>
+          </div>
         </div>
 
         {/* platform filter */}
@@ -828,7 +867,7 @@ export function SocialStudio() {
                       </Badge>
                     )}
                     <div className="ms-auto flex gap-1">
-                      {d.platform === 'linkedin' && !d.posted && (
+                      {(d.platform === 'linkedin' || d.platform === 'instagram') && !d.posted && (
                         <Button
                           size="sm"
                           variant="outline"
@@ -859,6 +898,20 @@ export function SocialStudio() {
                       </Button>
                     </div>
                   </div>
+                  {/* D-059: campaign image (Instagram posts are visual) */}
+                  {d.imageUrl && (
+                    <div className="mb-2 flex items-center gap-3">
+                      <img
+                        src={d.imageUrl}
+                        alt=""
+                        className="h-24 w-24 shrink-0 rounded-lg border border-border object-cover"
+                        loading="lazy"
+                      />
+                      <span className="text-xs text-muted-foreground">
+                        {L('تصویر کمپین — همراه پست منتشر می‌شود', 'Campaign image — published with the post')}
+                      </span>
+                    </div>
+                  )}
                   {/* context row: source article, language guard, size, date */}
                   <div className="mb-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
                     {d.sourceSlug ? (
