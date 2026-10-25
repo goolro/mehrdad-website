@@ -1720,3 +1720,34 @@ content, images and publish plumbing are ready end-to-end, and the two
 credentials (Composio API key + connected Instagram account id) are the only
 missing pieces, which only the account owner can supply (Meta requires an
 Instagram Business/Creator account linked to a Facebook Page).
+
+## D-060 — Instagram growth cadence: 3 daily touches, not 3 daily posts (2026-10-25)
+
+Owner proposed 3 posts/day (collab invite / educational / order + project
+showcase). Composio's page audit (@startup_mt: 46 followers, 230 following,
+9 posts, 30-day reach 1,014, engagement ~10.7%, top post = humorous AI reel)
+names inconsistency + niche blur as the killers and recommends 4-5
+reels/week. Decision: keep ONE feed post per day (the shipped D-059 campaign
+is the 14-day engine + morning-cron auto-publish) and deliver the owner's
+"3/day" as 3 DAILY TOUCHES: 1 feed post + 1-2 engagement stories + 1 CTA
+story alternating order/collab. Rationale: 2 of 3 proposed pillars are
+"asks" -> 3 posts/day would make ~66% of content self-promotional (violates
+80/20) and repeats the burnout pattern after the 20-month posting gap.
+
+- docs/INSTAGRAM_GROWTH_PLAN.md: pillar mapping of the 14 campaign days,
+  repeatable weekly rhythm, story scripts, profile-fix gate (bio niche,
+  trim 230 following, kill #stratup/#starupmt hashtags, no full AI prompts
+  in captions, highlights), healthy hashtag set, Friday KPI ritual
+  (46 -> 150+ followers / saves+shares 3x / DM conversations).
+- Collab pillar gap (only day-14 touches it): 2 ready collab captions added
+  in the plan (agency white-label + freelancer invite) — usable as day-6/7
+  replacements before drafts are created or as week-3 posts.
+- Stories stay manual: the official Instagram API cannot publish stories;
+  feed posts go via Composio (D-059 plumbing) once the owner supplies
+  COMPOSIO_API_KEY + COMPOSIO_INSTAGRAM_CONNECTED_ACCOUNT_ID. Their own
+  Composio insights pull proves the account is Graph-grade
+  (Business/Creator), so only the API key is outstanding.
+
+**Rationale:** sustainable cadence beats burst volume for a 46-follower
+page; the strategy keeps every existing artifact (campaign content, images,
+publish plumbing) and adds the missing collab pillar without code churn.
