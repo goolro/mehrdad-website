@@ -79,3 +79,6 @@ tool-results/
 
 # internal session notes — local only, never publish
 worklog.md
+
+# reel build scratch
+scripts/reels/tmp/
