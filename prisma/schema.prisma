@@ -252,6 +252,7 @@ model SocialDraft {
   topic      String?
   sourceSlug String?
   content    String
+  imageUrl   String?  // D-059: campaign/attached image (public /media path — also the URL Composio publishes)
   posted     Boolean  @default(false)
   createdAt  DateTime @default(now())
 }

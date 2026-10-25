@@ -23,11 +23,20 @@ export function ensureSocialDraftTable(): Promise<void> {
           "topic" TEXT,
           "sourceSlug" TEXT,
           "content" TEXT NOT NULL,
+          "imageUrl" TEXT,
           "posted" BOOLEAN NOT NULL DEFAULT false,
           "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
           CONSTRAINT "SocialDraft_pkey" PRIMARY KEY ("id")
         )
       `);
+      // D-059: tables created before imageUrl need the column added lazily
+      await db
+        .$executeRawUnsafe(`ALTER TABLE "SocialDraft" ADD COLUMN IF NOT EXISTS "imageUrl" TEXT`)
+        .catch(async () => {
+          await db
+            .$executeRawUnsafe(`ALTER TABLE "SocialDraft" ADD COLUMN "imageUrl" TEXT`)
+            .catch(() => {});
+        });
     })().catch((e) => {
       ensured = null; // allow retry on the next request
       throw e;
