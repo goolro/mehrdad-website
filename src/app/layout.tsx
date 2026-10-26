@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import { GeistSans } from "geist/font/sans";
-import { GeistMono } from "geist/font/mono";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { Analytics } from "@vercel/analytics/react";
@@ -142,7 +141,12 @@ export default function RootLayout({
       // --default-font-family resolves var(--font-geist-sans) at :root —
       // on body it never reached the html element, silently falling back
       // to the system font stack (pre-existing bug, fixed 2026-09-07)
-      className={`${GeistSans.variable} ${GeistMono.variable} ${vazirmatn.variable}`}
+      // PERF 2026-10-27: GeistMono dropped from the global tree — it was
+      // preloaded (~70KB) on EVERY page but almost no page renders mono
+      // (admin/agency/decks only). font-mono now resolves to a system mono
+      // stack (globals.css); decks/agency still look right and ship 70KB less
+      // on the critical path for every visitor.
+      className={`${GeistSans.variable} ${vazirmatn.variable}`}
       suppressHydrationWarning
     >
       <body className="antialiased bg-background text-foreground">
