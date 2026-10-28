@@ -1,4 +1,5 @@
 import { db } from '@/lib/db';
+import { HIDDEN_POST_SLUGS, isHiddenPostSlug } from '@/lib/hidden-post-slugs';
 import { ensureProjectKindColumn } from '@/lib/project-kind';
 import { isProjectHidden, visibleProjects } from '@/lib/project-visibility';
 import { slugCandidates } from '@/lib/slug-lookup';
@@ -18,14 +19,12 @@ import { sanitizePostHtml, sanitizeExcerpt } from '@/lib/sanitize';
  *     product/build content — must not represent "what Mehrdad builds"
  *   - the two legacy WP posts render broken (raw src="/media/…" markup in
  *     the body) — unpublished until someone rewrites them properly.
- * To republish a rewritten post: remove its slug here (or flip `published`
- * on the row) and rebuild.
+ * To republish a rewritten post: remove its slug from
+ * src/lib/hidden-post-slugs.ts (the SINGLE source of truth, also consumed
+ * by src/proxy.ts so the posts' old WP URLs land on /blog instead of a 404
+ * target) — or flip `published` on the row — and rebuild.
  */
-const UNPUBLISHED_POST_SLUGS: string[] = [
-  'iran-ousted-from-trade-corridors',
-  'مسله-هاستینگ-دو-فروشگاه',
-  'logo',
-];
+const UNPUBLISHED_POST_SLUGS: readonly string[] = HIDDEN_POST_SLUGS;
 
 /** Startup-pitch posts (BIZPAL / rail-corridor series): real history, so they
  * stay in the blog archive — but they are never surfaced in the homepage
@@ -45,12 +44,7 @@ const UNPUBLISHED_POST_SLUG_SET: ReadonlySet<string> = new Set(
 );
 
 export function isUnpublishedPostSlug(slug: string): boolean {
-  if (UNPUBLISHED_POST_SLUG_SET.has(slug)) return true;
-  try {
-    return slugCandidates(slug).some((c) => UNPUBLISHED_POST_SLUG_SET.has(c));
-  } catch {
-    return false;
-  }
+  return isHiddenPostSlug(slug);
 }
 
 /** All hidden (kill-switch) slugs in their Prisma-comparable forms — for

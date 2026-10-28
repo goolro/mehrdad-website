@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import redirects from '@/lib/wp-redirects.json';
+import { isHiddenPostSlug } from '@/lib/hidden-post-slugs';
 
 /**
  * Proxy (Next 16 name for middleware) — SEO redirects only, since the
@@ -137,7 +138,17 @@ export function proxy(req: NextRequest) {
       // off-site redirect. When SITE_ORIGIN is configured (production),
       // redirects always anchor to it; dev falls back to the request origin.
       const base = process.env.SITE_ORIGIN || req.nextUrl.origin;
-      return NextResponse.redirect(`${base}${toRealPath(target)}`, 301);
+      const real = toRealPath(target);
+      // Kill-switched posts 404 on their real route by design (owner
+      // decision, see src/lib/hidden-post-slugs.ts) — an old WP URL that
+      // resolves to one of them must NOT dead-end on a 404 target: send it
+      // to the /blog index instead so legacy backlink equity is preserved
+      // and GSC's «Not found (404)» bucket drains (owner order 2026-10-25:
+      // «وضعیت نمره منفی داره باید ارتقا بدهیم»).
+      if (real.startsWith('/blog/') && isHiddenPostSlug(real.slice('/blog/'.length))) {
+        return NextResponse.redirect(`${base}/blog`, 301);
+      }
+      return NextResponse.redirect(`${base}${real}`, 301);
     }
   }
 

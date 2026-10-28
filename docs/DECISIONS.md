@@ -1859,3 +1859,42 @@ z-ai TTS voices garble Persian (TTS→ASR round-trip proof).
 **Rationale:** spoken narration is the single biggest AV upgrade after
 hooks; a real Persian neural voice closes the «تأثیرگذاری» gap while the
 owner's own voice-over remains the authentic upgrade path.
+
+## D-064 — Legacy WP URLs of kill-switched posts now 301 to /blog (GSC 404-bucket cleanup; owner order 2026-10-25)
+
+**Owner order:** after the Search Console analysis the owner said «خوب وضعیت
+نمره منفی داره باید ارتقا بدهیم» — approving the improvement proposed in the
+GSC report: the old WordPress URLs of the kill-switched posts must not
+dead-end on a 404 target.
+
+**Before:** old WP URL → 301 /blog/<hidden-slug> → 404 (the page-level
+kill-switch). GSC saw "Page with redirect" chains ending in "Not found
+(404)" — the 8-URL 404 bucket plus wasted crawl equity on every legacy
+backlink to those posts.
+
+**What shipped (3 files, redirect logic only — pages and content frozen):**
+- src/lib/hidden-post-slugs.ts (NEW, pure, no db import): single source of
+  truth for the kill-switch slug list + isHiddenPostSlug() — importable from
+  BOTH the server runtime (Prisma) and the proxy/edge runtime.
+- src/lib/queries.ts: the local UNPUBLISHED_POST_SLUGS array replaced by an
+  import from the leaf module; isUnpublishedPostSlug() now delegates to
+  isHiddenPostSlug() (identical semantics — slugCandidates forms on both
+  sides). Behavior bit-identical; one list instead of two.
+- src/proxy.ts: at the single 301 exit point, a target that translates to
+  /blog/<hidden-slug> now redirects to /blog instead. Visible-post targets,
+  special-cased map entries (e.g. /logo → /), and the page-level 404 for
+  direct /blog/<hidden-slug> access are all untouched.
+
+**Self-test evidence:** eslint clean; tsc clean (after regenerating the
+stale local Prisma client — D-058/D-062 models, not this change). Local:
+/iran-ousted-from-trade-corridors → 301 /blog (final 200); encoded Persian
+hidden slug → 301 /blog; /logo → / per the map (200, deliberate); visible
+/iran-railway-technology-startup → 301 its real page (unchanged);
+/blog/iran-ousted… direct → still 404 (kill-switch preserved);
+/blog/blockquote → 200 (unchanged); /category/* → 301 /blog (unchanged).
+
+**Rationale:** the kill-switch stays 100% intact (rows kept; pages still
+404; no surface lists these posts) — only the LEGACY URL handoff changes,
+so old backlinks land on the live blog index instead of a dead end. GSC's
+404 bucket drains as Google recrawls; the redirect bucket keeps behaving
+by design.
