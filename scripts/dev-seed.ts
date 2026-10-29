@@ -85,7 +85,7 @@ async function main() {
     { slug: 'bizpal', titleEn: 'BIZPAL', titleFa: 'بیزپل', order: 1 },
     { slug: 'smart-city-waste-sorting', titleEn: 'Smart City Waste Sorting', titleFa: 'تفکیک پسماند هوشمند شهری', order: 2 },
     { slug: 'investment-management-platform', titleEn: 'Investment Management Platform', titleFa: 'پلتفرم مدیریت سرمایه‌گذاری', order: 3 },
-    { slug: 'klika', titleEn: 'KLIKA', titleFa: 'کلیکا', order: 4 },
+    { slug: 'klika', titleEn: 'kilika', titleFa: 'کلیکا', order: 4 },
   ];
   for (const p of five) {
     await db.project.upsert({

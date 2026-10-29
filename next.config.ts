@@ -146,7 +146,7 @@ const nextConfig: NextConfig = {
         headers: deckSecurityHeaders,
       },
       {
-        // /s/kilika.html restored one-pager (KLIKA — owner MHTML upload,
+        // /s/kilika.html restored one-pager (kilika — owner MHTML upload,
         // 2026-10-20): the page loads Google Fonts (Inter + Vazirmatn) via
         // @import exactly like the deck, so it receives the SAME
         // Google-Fonts-allowing CSP (D-035 pattern reused). public/s/ is a

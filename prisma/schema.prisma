@@ -105,7 +105,7 @@ model Project {
   // Work/Lab restructure (2026-09-07, DECISIONS.md):
   // section — "work" (real products/tools) vs "lab" (experiments/curiosity)
   section    String  @default("work") // work | lab
-  // honest lifecycle: idea | concept | building | testing | live | paused | archived
+  // honest lifecycle: idea | concept | building | testing | mvp | live | paused | archived
   // (legacy rows may still carry under-construction | seeking | live | coming-soon —
   // normalized in the UI layer until the content migration runs)
   status     String  @default("idea")

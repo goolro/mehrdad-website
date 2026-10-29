@@ -22,7 +22,7 @@ async function translateMeta(zai, posts) {
     title: p.title_fa,
     excerpt: (p.excerpt_fa || '').slice(0, 300),
   }));
-  const prompt = `Translate each Persian title and excerpt to natural English (business/tech tone). Brand names (BIZPAL, KLIKA, Mehrdad, Iran, B2B, SaaS) stay as-is. Respond with a JSON array of objects: [{"i": <index>, "title": "...", "excerpt": "..."}]. Items:\n${JSON.stringify(items)}`;
+  const prompt = `Translate each Persian title and excerpt to natural English (business/tech tone). Brand names (BIZPAL, kilika, Mehrdad, Iran, B2B, SaaS) stay as-is. Respond with a JSON array of objects: [{"i": <index>, "title": "...", "excerpt": "..."}]. Items:\n${JSON.stringify(items)}`;
   const completion = await zai.chat.completions.create({
     messages: [
       { role: 'assistant', content: TITLES_SYS },
@@ -58,7 +58,7 @@ function chunkHtml(html, maxLen = 7000) {
 
 const CONTENT_SYS = `You are a professional translator (Persian to English) for a designer/researcher's blog about startups, smart cities, AI, and investment. Rules:
 1. Preserve ALL HTML tags exactly as given (only translate visible text inside them).
-2. Keep brand names unchanged: BIZPAL, KLIKA, Mehrdad, Iran, SaaS, IoT, AI, B2B, MVP.
+2. Keep brand names unchanged: BIZPAL, kilika, Mehrdad, Iran, SaaS, IoT, AI, B2B, MVP.
 3. Numbers may stay in either script but prefer Western digits.
 4. Return ONLY the translated HTML. No explanations, no markdown fences.`;
 
@@ -106,7 +106,7 @@ async function processPost(zai, p) {
         { role: 'assistant', content: TITLES_SYS },
         {
           role: 'user',
-          content: `Translate each Persian title and excerpt to natural English (business/tech tone). Brand names (BIZPAL, KLIKA, Mehrdad, Iran, B2B, SaaS) stay as-is. Respond with a JSON array of objects: [{"i": <index>, "title": "...", "excerpt": "..."}]. Items:\n${JSON.stringify([{ i: 0, title: p.title_fa, excerpt: (p.excerpt_fa || '').slice(0, 300) }])}`,
+          content: `Translate each Persian title and excerpt to natural English (business/tech tone). Brand names (BIZPAL, kilika, Mehrdad, Iran, B2B, SaaS) stay as-is. Respond with a JSON array of objects: [{"i": <index>, "title": "...", "excerpt": "..."}]. Items:\n${JSON.stringify([{ i: 0, title: p.title_fa, excerpt: (p.excerpt_fa || '').slice(0, 300) }])}`,
         },
       ]);
       let text = (metas.choices[0]?.message?.content || '').replace(/```json|```/g, '').trim();

@@ -1980,3 +1980,27 @@ dependabot will re-propose against future main when relevant.
 
 **Restore window:** all 21 deleted tip SHAs archived in local (gitignored)
 worklog; GitHub unreachable-object GC ≈ 90 days.
+
+## D-068 — kilika naming + MVP project status (owner order 2026-10-29)
+
+Owner flagged two facts: (1) the brand name is «kilika» — not «KLIKA»;
+(2) the project stage is no longer idea — «رسیدیم به MVP و پیج دک داریم».
+
+**Name:** all user-visible EN occurrences KLIKA → kilika (project-profiles
+story blocks, chat base facts, KB entries, lead-nurture emails, SEO post
+title/excerpt/content, dev-seed + migration script defaults, internal
+comments). Persian «کلیکا» unchanged; slugs and URLs unchanged
+(/work/kilika-fintech, /s/kilika.html, blog slug klika-fintech-superapp).
+
+**Status vocabulary extended:** canonical lifecycle gains `mvp`
+(idea | concept | building | testing | mvp | live | paused | archived) —
+bilingual labels added in project-status.ts STATUS_LABELS + site i18n
+(en: MVP / fa: MVP) + STATUS_STYLE badge (Presentation icon, fuchsia).
+Production Project row kilika-fintech: status idea → mvp, titleEn
+KLIKA → kilika (Supabase Management API, token inline-only). The SEO post
+(D-056) re-seeded with corrected naming — date/published/featured untouched
+(idempotent contract).
+
+Note: without the vocabulary addition, normalizeStatus would have folded
+the unknown 'mvp' back to 'idea' — the label and the value were shipped
+together deliberately.

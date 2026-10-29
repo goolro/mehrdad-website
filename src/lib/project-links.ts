@@ -125,7 +125,7 @@ export function getProjectSocials(
  *
  * deckFa is OPTIONAL: health-app has two standalone language versions
  * (EN + FA mirror), so both buttons render with language labels. A product
- * with ONE deck page (kilika-fintech — the owner's restored KLIKA one-pager,
+ * with ONE deck page (kilika-fintech — the owner's restored kilika one-pager,
  * owner order 2026-10-20 «اینو بررسی کن بعنوان پیج دک … و فقط لینک بشه به
  * دامنه اصلی سایت», connected from /work/kilika-fintech per owner order
  * 2026-10-25) omits deckFa and gets a single unlabelled button.

@@ -168,7 +168,7 @@ function followupMail(lang: MailLang): LeadMail {
         '',
         'Two days ago your email reached me. Here is a real example of how this path works end to end:',
         '',
-        'KLIKA — a fintech super-app pitch for Iran: a full investor deck plus a project page telling the whole product story:',
+        'kilika — a fintech super-app pitch for Iran: a full investor deck plus a project page telling the whole product story:',
         `${SITE}/work/kilika-fintech`,
         '',
         `And if you would rather jump straight to your own idea:`,
@@ -184,7 +184,7 @@ function followupMail(lang: MailLang): LeadMail {
         [
           `Hi again!`,
           `Two days ago your email reached me. Here is a <b>real example</b> of how this path works end to end:`,
-          `KLIKA — a fintech super-app pitch for Iran: a full investor deck plus a project page telling the whole product story.`,
+          `kilika — a fintech super-app pitch for Iran: a full investor deck plus a project page telling the whole product story.`,
           `If you would rather jump straight to your own idea: open the MVP Sprint page or simply reply to this email.`,
           `If the timing is not right — no problem; this was my last email.`,
         ],

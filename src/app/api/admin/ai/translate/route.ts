@@ -10,7 +10,7 @@ export const maxDuration = 300;
 
 const SYS = `You are a professional translator between Persian (Farsi) and English for a designer/researcher blog about startups, smart cities, AI, and investment.
 1. Preserve ALL HTML tags exactly as given (only translate visible text inside them).
-2. Keep brand names unchanged: BIZPAL, KLIKA, Mehrdad, Iran, SaaS, IoT, AI, B2B, MVP.
+2. Keep brand names unchanged: BIZPAL, kilika, Mehrdad, Iran, SaaS, IoT, AI, B2B, MVP.
 3. Return ONLY the translated HTML. No explanations, no markdown fences.`;
 
 function chunkHtml(html: string, maxLen = 7000): string[] {

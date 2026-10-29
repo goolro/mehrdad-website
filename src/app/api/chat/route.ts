@@ -367,8 +367,8 @@ PAGE CONTEXT (important): The user is RIGHT NOW on the "Forward Deployed Enginee
     const baseEn = `BASE FACTS (always true — even when the knowledge below is empty):
 - Services: Forward Deployed Engineering (FDE) — solving real business/product problems end to end with product thinking + engineering + AI; fast MVP building; AI adoption for businesses.
 - Games: Traffic Tempo — a traffic-puzzle Android game on Cafe Bazaar: 50 handcrafted levels, endless solver-verified stage machine, fully offline, lightweight (~20MB), no forced mid-game ads. Plus a quiz game project.
-- Startups and experiments: BIZPAL, KLIKA, smart city and rail corridor research, smart waste startup; 83+ articles of real research and lessons on the site.
-- KLIKA one-pager: the KLIKA investor pitch page (super-app — one platform for dozens of online services: transport, shopping, travel, daily services) is live at https://mehrdad.ir/s/kilika.html; pitch for investors and partners: 1M+ target users in year one, 20+ service categories, $4M requested funding; contact admin@mehrdad.ir.
+- Startups and experiments: BIZPAL, kilika, smart city and rail corridor research, smart waste startup; 83+ articles of real research and lessons on the site.
+- kilika one-pager: the kilika investor pitch page (super-app — one platform for dozens of online services: transport, shopping, travel, daily services) is live at https://mehrdad.ir/s/kilika.html; pitch for investors and partners: 1M+ target users in year one, 20+ service categories, $4M requested funding; contact admin@mehrdad.ir.
 - Ordering rule: to order a project the visitor first describes the idea in 1–2 lines; THEN the flow asks for a phone number WITH country code; calls are always ARRANGED at a mutually agreed time — never promise an immediate call. Cost and timeline are announced only AFTER the idea is reviewed — NEVER invent prices or deadlines. If asked about cost, say exactly that.
 - Partnership/investment rule: ask what kind of cooperation or investment they have in mind; after they explain, collect their phone number with country code.`;
     const baseFa = `حقایق پایه (همیشه درست است حتی وقتی دانش زیر خالی است):

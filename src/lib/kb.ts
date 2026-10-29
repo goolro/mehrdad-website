@@ -106,7 +106,7 @@ export async function rebuildKb() {
       refType: 'site',
       title: 'About Mehrdad / درباره مهرداد',
       body:
-        'Mehrdad is an independent product builder: "I design businesses and products with care, and build them fast with AI." Three connected activities — BUILD: AI-powered products, software, tools, experiments (BIZPAL AI marketing SaaS, KLIKA fintech, smart city & rail corridor research, smart waste management startup, investment platform). HELP: businesses using AI for measurable value — product design, sales & marketing, business consulting, invention commercialization. SHARE: 83+ articles of real research, decisions, failures and lessons. Contact: the contact form at mehrdad.ir/contact. | فارسی: مهرداد سازنده مستقل محصول است: «کسب‌وکار و محصولت رو با دقت طراحی می‌کنم، و با AI سریع می‌سازمش.» سه فعالیت به‌هم‌پیوسته — ساخت: محصولات و ابزارهای AI (BIZPAL، کلیکا، شهر هوشمند، کریدور ریلی، مدیریت زباله هوشمند، پلتفرم سرمایه‌گذاری). همراهی: به‌کارگیری AI با نتیجه قابل اندازه‌گیری — طراحی محصول، فروش و بازاریابی، مشاوره کسب‌وکار، تجاری‌سازی اختراع. به‌اشتراک‌گذاری: بیش از ۸۳ مقاله از پژوهش‌ها، تصمیم‌ها و درس‌های واقعی. تماس: فرم تماس در mehrdad.ir/contact.',
+        'Mehrdad is an independent product builder: "I design businesses and products with care, and build them fast with AI." Three connected activities — BUILD: AI-powered products, software, tools, experiments (BIZPAL AI marketing SaaS, kilika fintech, smart city & rail corridor research, smart waste management startup, investment platform). HELP: businesses using AI for measurable value — product design, sales & marketing, business consulting, invention commercialization. SHARE: 83+ articles of real research, decisions, failures and lessons. Contact: the contact form at mehrdad.ir/contact. | فارسی: مهرداد سازنده مستقل محصول است: «کسب‌وکار و محصولت رو با دقت طراحی می‌کنم، و با AI سریع می‌سازمش.» سه فعالیت به‌هم‌پیوسته — ساخت: محصولات و ابزارهای AI (BIZPAL، کلیکا، شهر هوشمند، کریدور ریلی، مدیریت زباله هوشمند، پلتفرم سرمایه‌گذاری). همراهی: به‌کارگیری AI با نتیجه قابل اندازه‌گیری — طراحی محصول، فروش و بازاریابی، مشاوره کسب‌وکار، تجاری‌سازی اختراع. به‌اشتراک‌گذاری: بیش از ۸۳ مقاله از پژوهش‌ها، تصمیم‌ها و درس‌های واقعی. تماس: فرم تماس در mehrdad.ir/contact.',
     },
   });
 
@@ -137,7 +137,7 @@ const KB_PAGES: { url: string; title: string }[] = [
   { url: '/services', title: 'Services index / خدمات' },
   { url: '/deck/health', title: 'Health & Wellness deck (EN) / ارائه ویوورا' },
   { url: '/deck/health/fa', title: 'Health & Wellness deck (FA) / ارائه ویوورا فارسی' },
-  { url: '/s/kilika.html', title: 'KLIKA one-pager / صفحه تک‌تصویری کلیکا' },
+  { url: '/s/kilika.html', title: 'kilika one-pager / صفحه تک‌تصویری کلیکا' },
 ];
 
 /** rendered HTML → plain text (scripts/styles/svg/meta-attr noise removed) */

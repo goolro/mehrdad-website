@@ -41,7 +41,7 @@ const FIVE: { keys: string[]; titleEn: string; titleFa: string }[] = [
   { keys: ['bizpal', 'بیزپل'], titleEn: 'BIZPAL', titleFa: 'بیزپل' },
   { keys: ['waste', 'smart-city', 'smart city', 'پسماند', 'شهر هوشمند'], titleEn: 'Smart City Waste Sorting', titleFa: 'تفکیک پسماند هوشمند شهری' },
   { keys: ['investment-management', 'investment management', 'مدیریت سرمایه'], titleEn: 'Investment Management Platform', titleFa: 'پلتفرم مدیریت سرمایه‌گذاری' },
-  { keys: ['klika', 'کلیکا'], titleEn: 'KLIKA', titleFa: 'کلیکا' },
+  { keys: ['klika', 'کلیکا'], titleEn: 'kilika', titleFa: 'کلیکا' },
 ];
 
 /** the four new entries (owner confirms exact names/statuses before publish) */

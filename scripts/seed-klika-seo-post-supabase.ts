@@ -1,5 +1,5 @@
 /**
- * Seed the KLIKA short SEO post (D-056) into the PRODUCTION Supabase
+ * Seed the kilika short SEO post (D-056) into the PRODUCTION Supabase
  * Postgres database (project ref gcaksemjwkhqkyhaseui) — same channel and
  * same safety contract as scripts/seed-koko-telegram-post-supabase.ts,
  * plus the investment-category link pattern from

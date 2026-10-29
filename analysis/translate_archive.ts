@@ -23,7 +23,7 @@ const db = new PrismaClient();
 
 const SYS = `You are a professional translator between Persian (Farsi) and English for an independent product builder's blog about startups, smart cities, AI, rail corridors, and investment.
 1. Preserve ALL HTML tags exactly as given (only translate visible text inside them).
-2. Keep brand names unchanged: BIZPAL, KLIKA, Mehrdad, Iran, SaaS, IoT, AI, B2B, MVP.
+2. Keep brand names unchanged: BIZPAL, kilika, Mehrdad, Iran, SaaS, IoT, AI, B2B, MVP.
 3. Return ONLY the translated HTML. No explanations, no markdown fences.`;
 
 const PROGRESS_FILE = 'analysis/translate_archive_progress.json';

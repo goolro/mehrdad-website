@@ -1,5 +1,5 @@
 /**
- * Content source for the KLIKA short SEO post (D-056) — owner order:
+ * Content source for the kilika short SEO post (D-056) — owner order:
  * «یک نسخه کوتاه سئو شده توی بلاگ بزار --- حتما لینک این فحات مرتبط با کلیکا
  * داخلش باشه سئو حرفه ای انجام بده با لینک سازی داخلی».
  *
@@ -9,7 +9,7 @@
  *   - local dev SQLite insert → used by the pre-deploy E2E
  *
  * FACTS POLICY (OWNER_RULES #5 / D-029): every statement and every number
- * below traces to the owner's KLIKA deck page (public/s/kilika.html,
+ * below traces to the owner's kilika deck page (public/s/kilika.html,
  * extracted verbatim 2026-10-25):
  *   - "WeChat چین بیش از 1.3 میلیارد کاربر فعال پرداخت و شبکه اجتماعی و خرید
  *     و حمل‌ونقل / Paytm هند بیش از 450 میلیون کاربر / Gojek اندونزی بیش از
@@ -48,12 +48,12 @@ export const KLIKA_POST = {
   slug: KLIKA_POST_SLUG,
 
   titleFa: 'کلیکا چیست؟ سوپر اپلیکیشن فینتک ایرانی — یک اپ و همه سرویس‌ها',
-  titleEn: "What Is KLIKA? Iran's Fintech Super-App — One App, All Services",
+  titleEn: "What Is kilika? Iran's Fintech Super-App — One App, All Services",
 
   excerptFa:
     'کلیکا یک سوپر اپلیکیشن فینتک برای زندگی دیجیتال است — پرداخت یک‌کلیکه و کیف پول یکپارچه و ده‌ها سرویس آنلاین در یک اپ ساده و امن. در این نسخه کوتاه شکاف بازار سوپراپ در ایران و اعداد بازار فینتک را می‌خوانی و لینک متن کامل معرفی و دک سرمایه‌گذاری کلیکا یک‌جا جلوی توست.',
   excerptEn:
-    "KLIKA is a fintech super-app for digital life — one-click payments, a unified wallet and dozens of online services in one simple, secure app. This short edition covers the super-app gap in Iran and the fintech market numbers, with direct links to the full product story and the KLIKA pitch deck.",
+    "kilika is a fintech super-app for digital life — one-click payments, a unified wallet and dozens of online services in one simple, secure app. This short edition covers the super-app gap in Iran and the fintech market numbers, with direct links to the full product story and the kilika pitch deck.",
 
   // listing thumbnail + OG card: purpose-built cover (public/media, ships with the repo)
   cover: '/media/klika-superapp-seo-cover.png',
@@ -105,21 +105,21 @@ export const KLIKA_POST = {
 `,
 
   contentEn: `
-<p><strong>KLIKA is a unified super-app for digital life — an intelligent platform that brings dozens of online services into one simple, secure application.</strong> The pitch is one sentence: one app, all services. If you want just the primary sources without a long read, both the <a href="https://mehrdad.ir/work/kilika-fintech">full KLIKA product story</a> and the <a href="https://mehrdad.ir/s/kilika.html">KLIKA investor pitch deck</a> are published on this site.</p>
+<p><strong>kilika is a unified super-app for digital life — an intelligent platform that brings dozens of online services into one simple, secure application.</strong> The pitch is one sentence: one app, all services. If you want just the primary sources without a long read, both the <a href="https://mehrdad.ir/work/kilika-fintech">full kilika product story</a> and the <a href="https://mehrdad.ir/s/kilika.html">kilika investor pitch deck</a> are published on this site.</p>
 
 <h2>Why a super-app? Iran's giant market gap</h2>
-<p>The world's leading markets have moved toward unification: WeChat in China serves over 1.3 billion active users across payments and social and shopping and transport; Paytm in India serves over 450 million; Gojek in Indonesia over 190 million. Iran — with 85 million internet users — still has no national super-app. Per the KLIKA deck, that gap is a rare opportunity to create multi-billion-dollar economic value.</p>
+<p>The world's leading markets have moved toward unification: WeChat in China serves over 1.3 billion active users across payments and social and shopping and transport; Paytm in India serves over 450 million; Gojek in Indonesia over 190 million. Iran — with 85 million internet users — still has no national super-app. Per the kilika deck, that gap is a rare opportunity to create multi-billion-dollar economic value.</p>
 
 <h2>The fintech market in four numbers</h2>
 <ul>
 <li>Global digital wallet market: $11.4B in 2026 — projected $27.3B by 2031 at a 19.1% CAGR</li>
 <li>Iran's annual digital transactions: 850 trillion toman in 1404</li>
 <li>45 million active mobile-internet users in Iran — with 75% online-transaction growth year over year</li>
-<li>65% preference for a unified wallet, based on the KLIKA product survey</li>
+<li>65% preference for a unified wallet, based on the kilika product survey</li>
 </ul>
-<p>The full analysis of these numbers — plus the Iranian and international edition strategy — lives on the <a href="https://mehrdad.ir/work/kilika-fintech">KLIKA product page</a>.</p>
+<p>The full analysis of these numbers — plus the Iranian and international edition strategy — lives on the <a href="https://mehrdad.ir/work/kilika-fintech">kilika product page</a>.</p>
 
-<h2>What does KLIKA do?</h2>
+<h2>What does kilika do?</h2>
 <ul>
 <li><strong>One single entry point</strong> — every everyday service from one application; fast and simple.</li>
 <li><strong>Unified account management</strong> — centralized balance and transaction management with top-ups from all banks.</li>
@@ -127,20 +127,20 @@ export const KLIKA_POST = {
 <li><strong>Security and simplicity</strong> — one simple, secure app instead of dozens of scattered ones.</li>
 </ul>
 
-<h2>The KLIKA investor pitch deck</h2>
-<p>The complete investor narrative is published as an interactive page: <a href="https://mehrdad.ir/s/kilika.html">KLIKA pitch deck — mehrdad.ir/s/kilika.html</a>. Market path and revenue model and roadmap and B2B partnerships are all in the deck; for a quick synthesis read the <a href="https://mehrdad.ir/work/kilika-fintech">full KLIKA story in the work section</a>.</p>
+<h2>The kilika investor pitch deck</h2>
+<p>The complete investor narrative is published as an interactive page: <a href="https://mehrdad.ir/s/kilika.html">kilika pitch deck — mehrdad.ir/s/kilika.html</a>. Market path and revenue model and roadmap and B2B partnerships are all in the deck; for a quick synthesis read the <a href="https://mehrdad.ir/work/kilika-fintech">full kilika story in the work section</a>.</p>
 
 <h2>Frequently asked questions</h2>
 <dl>
-<dt>What is KLIKA?</dt>
-<dd>A fintech super-app for digital life — payments and a unified wallet and dozens of online services in one simple, secure app; the full definition is on the <a href="https://mehrdad.ir/work/kilika-fintech">KLIKA product page</a>.</dd>
-<dt>Where can I see the KLIKA pitch deck?</dt>
+<dt>What is kilika?</dt>
+<dd>A fintech super-app for digital life — payments and a unified wallet and dozens of online services in one simple, secure app; the full definition is on the <a href="https://mehrdad.ir/work/kilika-fintech">kilika product page</a>.</dd>
+<dt>Where can I see the kilika pitch deck?</dt>
 <dd>Directly at this address: <a href="https://mehrdad.ir/s/kilika.html">mehrdad.ir/s/kilika.html</a> — the interactive, complete product deck.</dd>
 <dt>Where are the related products and articles?</dt>
 <dd>All products are listed in the <a href="https://mehrdad.ir/work">work section</a> and investment analyses are published on the <a href="https://mehrdad.ir/blog">blog</a>; for collaboration the <a href="https://mehrdad.ir/contact">contact page</a> is open.</dd>
 </dl>
 
-<h2>KLIKA-related links</h2>
+<h2>kilika-related links</h2>
 <ul>
 <li>Full story — <a href="https://mehrdad.ir/work/kilika-fintech">mehrdad.ir/work/kilika-fintech</a></li>
 <li>Investor deck — <a href="https://mehrdad.ir/s/kilika.html">mehrdad.ir/s/kilika.html</a></li>

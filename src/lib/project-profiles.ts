@@ -691,7 +691,7 @@ export const PROJECT_PROFILES: Record<string, ProjectProfile> = {
   },
 
   /**
-   * KLIKA (kilika-fintech) — full investor story (owner order 2026-10-25:
+   * kilika (kilika-fintech) — full investor story (owner order 2026-10-25:
    * «از روی پیج دک توضیحاتی بردار و متن طولانی با توضیحات کامل بنویس» —
    * the work page was a two-sentence skeleton while the owner's deck page
    * /s/kilika.html carries the complete pitch; D-055).
@@ -816,7 +816,7 @@ export const PROJECT_PROFILES: Record<string, ProjectProfile> = {
         '<p>سرمایه درخواستی <strong>۴ میلیون دلار</strong>؛ ارائه رسمی فوریه ۲۰۲۶. پیش‌بینی: با توجه به تنوع درآمدی (کارمزد؛ تبلیغات؛ اشتراک؛ API) و حجم بالای کاربران؛ درآمد کلیکا در سه سال اول از بلوبانک پیشی می‌گیرد — مدل کسب‌وکار چند لایه؛ جریان نقدینگی سریع؛ ارزش‌گذاری بالاتر. این متن کامل‌تر شدهٔ همان ارائه است؛ <a href="https://mehrdad.ir/s/kilika.html">نسخه اصلی پیج دک کلیکا</a> نیز روی دامنه اصلی سایت فعال است.</p>',
       ].join(''),
       htmlEn: [
-        '<blockquote><p>KLIKA is a super-app and middleware platform — one platform for access to dozens of online services; a simple, unified experience for transport, shopping, travel and everyday services.</p></blockquote>',
+        '<blockquote><p>kilika is a super-app and middleware platform — one platform for access to dozens of online services; a simple, unified experience for transport, shopping, travel and everyday services.</p></blockquote>',
         '<h2>The Problem We Solve</h2>',
         '<p><strong>The digital world is fragmented.</strong> In an era where technology should simplify life, users are still drowning in unnecessary complexity:</p>',
         '<ul>',
@@ -847,7 +847,7 @@ export const PROJECT_PROFILES: Record<string, ProjectProfile> = {
         '</ul>',
         '<p><strong>Iran — with 85 million internet users — still has no national super-app.</strong> This is a unique opportunity to create multi-billion-dollar economic value.</p>',
         '<h2>The Solution: One App; Every Service</h2>',
-        '<p>KLIKA is an intelligent platform that puts dozens of online services behind one simple, secure app:</p>',
+        '<p>kilika is an intelligent platform that puts dozens of online services behind one simple, secure app:</p>',
         '<ul>',
         '<li><strong>One app; every service</strong> — all everyday services behind a single entry point.</li>',
         '<li><strong>Speed and simplicity</strong> — no more installing multiple apps and constant switching.</li>',
@@ -858,7 +858,7 @@ export const PROJECT_PROFILES: Record<string, ProjectProfile> = {
         '<li><strong>Iranian version (Phase 1):</strong> local services (Snapp; Digikala; Alibaba.ir); integration with Iranian banks; full Persian-language support; compliance with domestic regulations; launch in the Iranian market.</li>',
         '<li><strong>International version (Phase 2):</strong> global services (Uber; Amazon; Booking); international-currency support; multilingual (English; Arabic; Turkish and more); global standards compliance; expansion into the Middle East and Central Asia.</li>',
         '</ul>',
-        '<p>How it works is simple: the user installs KLIKA; gets access to every service; KLIKA connects to the partner services.</p>',
+        '<p>How it works is simple: the user installs kilika; gets access to every service; kilika connects to the partner services.</p>',
         '<h2>Market Opportunity</h2>',
         '<p>The global super-app market is moving at extraordinary speed:</p>',
         '<ul>',
@@ -885,7 +885,7 @@ export const PROJECT_PROFILES: Record<string, ProjectProfile> = {
         '<p><strong>Key metrics:</strong> average transaction value 250K toman; average commission per transaction 1,500 toman; 12 transactions per user per month; monthly revenue per user 18K toman; customer-acquisition cost (CAC) 150K toman; payback 8.3 months.</p>',
         '<p><strong>Why it is sustainable:</strong> four independent revenue streams (lower dependency risk) + recurring, predictable income + a net profit margin above 65%.</p>',
         '<h2>B2B Partnerships and the Developer API</h2>',
-        '<p>Why should established apps like Snapp; Tapsi and Digikala use KLIKA\'s services?</p>',
+        '<p>Why should established apps like Snapp; Tapsi and Digikala use kilika\'s services?</p>',
         '<ul>',
         '<li><strong>User satisfaction +35%</strong> — unified services and a better experience.</li>',
         '<li><strong>Support costs −40%</strong> — a sharp drop in support calls and tickets.</li>',
@@ -896,11 +896,11 @@ export const PROJECT_PROFILES: Record<string, ProjectProfile> = {
         '</ul>',
         '<p>Deck conclusion: partner apps — with +35% satisfaction and −40% support costs — reach positive ROI in the first month of cooperation.</p>',
         '<h2>Competitive Position</h2>',
-        '<p><strong>KLIKA vs Blubank:</strong> Blubank offers limited banking services — payments-only focus; no integration with everyday services; a traditional digital-banking approach. KLIKA offers 20+ integrated service categories (banking + shopping + transport + travel) — 20× more capabilities; a powerful developer API; a next-generation super-app; and an international version: launching in Persian-Gulf countries in year one — a financial bridge between Iran and the world.</p>',
-        '<p><strong>KLIKA vs App:</strong> App is capped at payments and money transfer — years without notable innovation; an outdated, complicated UI; weak phone-call-only support. KLIKA is an innovative next-gen super-app — a modern interface; smart 24/7 support (chat; voice; video); payments + banking + shopping + transport + travel in one place; connections to every major national platform; a complete developer ecosystem (SDK & API). User journey: ~10 minutes in App with switching between several apps; ~1 minute in KLIKA — everything in one place.</p>',
+        '<p><strong>kilika vs Blubank:</strong> Blubank offers limited banking services — payments-only focus; no integration with everyday services; a traditional digital-banking approach. kilika offers 20+ integrated service categories (banking + shopping + transport + travel) — 20× more capabilities; a powerful developer API; a next-generation super-app; and an international version: launching in Persian-Gulf countries in year one — a financial bridge between Iran and the world.</p>',
+        '<p><strong>kilika vs App:</strong> App is capped at payments and money transfer — years without notable innovation; an outdated, complicated UI; weak phone-call-only support. kilika is an innovative next-gen super-app — a modern interface; smart 24/7 support (chat; voice; video); payments + banking + shopping + transport + travel in one place; connections to every major national platform; a complete developer ecosystem (SDK & API). User journey: ~10 minutes in App with switching between several apps; ~1 minute in kilika — everything in one place.</p>',
         '<p><strong>Migration potential:</strong> a projected 30–50% of App users moving in year one; a 10× value proposition at a 70% lower acquisition cost; super-apps command 3–5× the valuation of single-purpose apps; 100+ integrated features from day one; 80% of budget on marketing; 2–3× user lifetime value (LTV).</p>',
         '<h2>Next-Gen Neobanks and the Digital Movement</h2>',
-        '<p>KLIKA has three layers: a <strong>next-generation neobank</strong> (complete digital banking + advanced financial services + everyday-life integration — beyond Blubank and Digipay); a <strong>true middleware</strong> (connections to every service and platform without leaving the KLIKA environment); a <strong>smart super-app</strong> (AI + personalized suggestions + a unified experience). With 80% of the budget allocated to marketing, KLIKA is not just an app but a digital movement that will set a new standard for neobanks and middleware super-apps in the region — the primary ad target is Generations Z & Y; market leadership within two years. The innovations are legally protected too: patents (novel algorithms and technologies); trademarks (brand and visual identity); NDA contracts with partners; software rights (source code and system architecture).</p>',
+        '<p>kilika has three layers: a <strong>next-generation neobank</strong> (complete digital banking + advanced financial services + everyday-life integration — beyond Blubank and Digipay); a <strong>true middleware</strong> (connections to every service and platform without leaving the kilika environment); a <strong>smart super-app</strong> (AI + personalized suggestions + a unified experience). With 80% of the budget allocated to marketing, kilika is not just an app but a digital movement that will set a new standard for neobanks and middleware super-apps in the region — the primary ad target is Generations Z & Y; market leadership within two years. The innovations are legally protected too: patents (novel algorithms and technologies); trademarks (brand and visual identity); NDA contracts with partners; software rights (source code and system architecture).</p>',
         '<h2>The 1-Million-User Year-One Guarantee</h2>',
         '<p>Access to 15M+ potential users through 11 B2B customer categories:</p>',
         '<ul>',
@@ -910,7 +910,7 @@ export const PROJECT_PROFILES: Record<string, ProjectProfile> = {
         '<li><strong>Mobile operators:</strong> MCI 55M; Irancell 48M; Rightel 12M subscribers.</li>',
         '<li><strong>Other categories:</strong> travel & ticketing (Alibaba 12M; SnappTrip 4M); cafés & restaurants; professional services; offline retail (10M local stores); banking & finance; social networks; government & public sector.</li>',
         '</ul>',
-        '<p>125K+ potential customers in active pursuit; 144M annual transactions with 1M users. <strong>Network effect: one customer; every customer.</strong> Landing one big customer (say Snapp or Digikala) forces the competitors and complements to join too, just to stay competitive: land one big platform → rivals need KLIKA → exponential network growth.</p>',
+        '<p>125K+ potential customers in active pursuit; 144M annual transactions with 1M users. <strong>Network effect: one customer; every customer.</strong> Landing one big customer (say Snapp or Digikala) forces the competitors and complements to join too, just to stay competitive: land one big platform → rivals need kilika → exponential network growth.</p>',
         '<h2>The Bank-Partner Advantage</h2>',
         '<ul>',
         '<li><strong>Payment-gateway transactions +50% to +200%</strong> in the first two years — with full service integration, every transport/shopping/travel/services payment runs through the partner bank\'s gateway.</li>',
@@ -918,7 +918,7 @@ export const PROJECT_PROFILES: Record<string, ProjectProfile> = {
         '</ul>',
         '<p>The goal: turning the partner bank into the digital-payments market leader — with access to the country\'s largest online-transaction ecosystem.</p>',
         '<h2>For Investors</h2>',
-        '<p>Requested funding: <strong>$4M</strong>; official presentation February 2026. Projection: given the revenue diversity (commissions; advertising; subscriptions; API) and the large user base, KLIKA\'s revenue surpasses Blubank\'s within the first three years — a multi-layer business model; fast cash flow; a higher valuation. This text is the deck itself, written out in full; <a href="https://mehrdad.ir/s/kilika.html">the original KLIKA pitch-deck page</a> is live on the site\'s main domain.</p>',
+        '<p>Requested funding: <strong>$4M</strong>; official presentation February 2026. Projection: given the revenue diversity (commissions; advertising; subscriptions; API) and the large user base, kilika\'s revenue surpasses Blubank\'s within the first three years — a multi-layer business model; fast cash flow; a higher valuation. This text is the deck itself, written out in full; <a href="https://mehrdad.ir/s/kilika.html">the original kilika pitch-deck page</a> is live on the site\'s main domain.</p>',
       ].join(''),
     },
   },

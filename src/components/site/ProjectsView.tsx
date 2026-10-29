@@ -119,6 +119,12 @@ export const STATUS_STYLE: Record<ProjectStatus, StatusStyle> = {
     barCls: 'bg-gradient-to-r from-teal-500 to-emerald-500',
     labelKey: 'testing',
   },
+  mvp: {
+    icon: Presentation,
+    badgeCls: 'bg-fuchsia-600/10 text-fuchsia-700 dark:text-fuchsia-400',
+    barCls: 'bg-gradient-to-r from-fuchsia-600 to-pink-500',
+    labelKey: 'mvp',
+  },
   live: {
     icon: Rocket,
     badgeCls: 'bg-emerald-600/15 text-emerald-600 dark:text-emerald-400',

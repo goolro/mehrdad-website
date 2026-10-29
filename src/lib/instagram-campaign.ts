@@ -5,7 +5,7 @@
 //
 // FACTS POLICY (same as social-studio.ts): every claim traces to public
 // mehrdad.ir content — MVP Sprint promise («idea → live product in ~2
-// weeks», the /mvp-sprint page), the KLIKA fintech super-app story
+// weeks», the /mvp-sprint page), the kilika fintech super-app story
 // (public/s/kilika.html: unified account, one-click payment, top-ups from
 // all banks, no Iranian national super-app), the Vivora deck series
 // (19 bilingual articles), the work/blog indexes (12+ projects, 100+
