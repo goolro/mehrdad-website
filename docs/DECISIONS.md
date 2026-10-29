@@ -1948,3 +1948,35 @@ by design.
 **No content change:** zero code/page/deployment changes — Vercel redeploys an identical site (docs-only diffs).
 
 **Post-record correction (same day, honest trail):** the D-066 commit itself briefly re-introduced the three prefixes by quoting the replacement table verbatim — caught by the same sweep method. A second filter-repo pass redacted those intermediate blobs, main was force-pushed again (adb612c→ab1d505), and a SECOND fresh mirror clone re-verified: 0 matches across all heads + tags, every blob and every commit message.
+
+## D-067 — Public-repo hardening: topics + MIT LICENSE + verified branch cleanup (2026-10-29)
+
+Owner ordered all three pending public-readiness items with full caution.
+
+**1. Topics (12):** nextjs, typescript, tailwindcss, shadcn-ui, prisma, supabase,
+vercel, blog, portfolio, rtl, seo, pwa — set via API, verified.
+
+**2. LICENSE:** MIT added (commit b5246b7), copyright «Mehrdad (mehrdad.ir)».
+GitHub sidebar now detects MIT. Swap to a legal name on owner request.
+
+**3. Branch cleanup — 21 branches deleted, only main remains.**
+Methodology per branch before deletion: (a) merge-base ancestry check,
+(b) commit-subject matching against main's 346 unique subjects,
+(c) file-level superset diffs (branch tip vs main). Key verdicts:
+- arena/* → same round-3 security work merged via PR #12
+- backup/pre-phase0 → D-043 subject present in main
+- phase-0/1, phase-2, phase-3, linkedin trio → merged via PRs #19–#23; kit file on
+  main is the final evolution (owner's general-About decision intentionally replaced
+  the older product-story copy found in old branch tips)
+- team-room × 2 → team-room page + API + maxDuration 300 all live in main
+- og chain × 3 → final fixed OG files byte-identical in main; only wording
+  evolution differed («اسپرینت محصول»→«اسپرینت MVP», «پلی‌بوک»→«پلی‌بوک FDE»)
+- dependabot × 11 → bumps trivially recreatable; deleting closed 7 open PRs
+  (2 targeted packages no longer in the project; 5 major bumps never applied)
+
+**Consequence to revisit:** prisma 7 / recharts 3 / tanstack-table 9 /
+react-resizable-panels 4 / lucide-react 1.45 majors were never applied —
+dependabot will re-propose against future main when relevant.
+
+**Restore window:** all 21 deleted tip SHAs archived in local (gitignored)
+worklog; GitHub unreachable-object GC ≈ 90 days.
