@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { checkAdmin } from '@/lib/admin';
+import { checkAdmin, scrubError } from '@/lib/admin';
 import { notifyIndexNow } from '@/lib/indexnow';
 import { PROJECT_STATUSES, PROJECT_SECTIONS, isProjectStatus } from '@/lib/project-status';
 import { ensureProjectKindColumn, isProjectKind } from '@/lib/project-kind';
@@ -88,7 +88,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     await fireDeployHook();
     return NextResponse.json({ project });
   } catch (e) {
-    return NextResponse.json({ error: e instanceof Error ? e.message : 'Failed to update project' }, { status: 400 });
+    console.error('project update error:', e); // detail stays server-side; client gets the scrubbed message
+    return NextResponse.json({ error: scrubError(e, 'Failed to update project') }, { status: 400 });
   }
 }
 

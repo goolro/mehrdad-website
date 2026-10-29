@@ -3,9 +3,8 @@ import { db } from '@/lib/db';
 import { isUnpublishedPostSlug } from '@/lib/queries';
 import { isProjectHidden } from '@/lib/project-visibility';
 import { dailyVisibleWhere } from '@/lib/daily';
-import { submitIndexNow, indexNowKey } from '@/lib/indexnow';
+import { submitIndexNow } from '@/lib/indexnow';
 import { googleIndexingEnabled, notifyGoogleBatch } from '@/lib/google-indexing';
-import { clientIp, rateLimit, tooManyRequests } from '@/lib/rate-limit';
 import { safeEqual } from '@/lib/admin';
 
 /**
@@ -19,10 +18,11 @@ import { safeEqual } from '@/lib/admin';
  *
  * Schedule: vercel.json crons → daily 03:00 UTC (≈06:30 Tehran).
  *   - Vercel calls with `Authorization: Bearer $CRON_SECRET` when the
- *     CRON_SECRET env is set on Vercel. Manual runs use ?key=<IndexNow key>.
- *   - If CRON_SECRET is not configured the endpoint stays open but is
- *     rate-limited: worst abuse is pinging the site's OWN public URLs —
- *     harmless by construction.
+ *     CRON_SECRET env is set on Vercel.
+ * Auth (phase-1 security fix): ONLY the bearer secret. The old manual
+ * `?key=<IndexNow key>` fallback is GONE (that key is PUBLIC by protocol)
+ * and the no-secret open-but-rate-limited mode is GONE — without a
+ * configured secret this endpoint refuses to run (fail-closed, 503).
  *
  * Cadence policy (be a polite citizen, not a spammer):
  *   - EVERY run: home + /blog + /work + posts modified in the last 72h
@@ -55,22 +55,19 @@ const STATICS = [
 // instead of being pinged every morning (owner asked: «باعث مشکل نشه؟»).
 
 export async function GET(req: NextRequest) {
-  // auth: Vercel cron bearer, manual indexnow key, or open-if-unset
+  // auth: Vercel cron bearer — fail-closed without CRON_SECRET (phase-1)
   const secret = process.env.CRON_SECRET;
-  if (secret) {
-    const auth = req.headers.get('authorization') || '';
-    const key = req.nextUrl.searchParams.get('key') || '';
-    // timing-safe compares (round-3 follow-up) — same contract as the
-    // daily-generate cron: no microsecond oracle on the secret bytes
-    const authOk = safeEqual(auth, `Bearer ${secret}`);
-    const keyOk = safeEqual(key, indexNowKey());
-    if (!authOk && !keyOk) {
-      return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
-    }
-  } else {
-    // no cron secret configured: light guard against hammering
-    const rl = rateLimit(`cronping:${clientIp(req)}`, 4, 60 * 1000);
-    if (!rl.ok) return tooManyRequests(rl.retryAfter);
+  if (!secret) {
+    console.error('cron auth misconfigured: CRON_SECRET is not set — refusing to run (fail-closed)');
+    return NextResponse.json(
+      { error: 'CRON_SECRET is not configured — set it in the hosting environment' },
+      { status: 503 },
+    );
+  }
+  // timing-safe compare — same contract as the daily-generate cron: no
+  // microsecond oracle on the secret bytes
+  if (!safeEqual(req.headers.get('authorization') || '', `Bearer ${secret}`)) {
+    return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   }
 
   const full =

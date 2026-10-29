@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { checkAdmin } from '@/lib/admin';
+import { checkAdmin, scrubError } from '@/lib/admin';
 import { generateSocialPosts } from '@/lib/social-studio';
 
 export const dynamic = 'force-dynamic';
@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true, posts });
   } catch (e) {
     console.error('social generate error:', e);
-    const msg = e instanceof Error ? e.message : 'Generation failed';
+    const msg = scrubError(e, 'Generation failed');
     return NextResponse.json({ error: msg }, { status: 500 });
   }
 }

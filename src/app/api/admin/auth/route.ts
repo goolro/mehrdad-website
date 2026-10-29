@@ -8,6 +8,7 @@ import {
   verifyAdminSessionToken,
 } from '@/lib/admin-session';
 import { clientIp, readJsonBody, payloadTooLarge, rateLimit, tooManyRequests } from '@/lib/rate-limit';
+import { durableLimit } from '@/lib/durable-limit';
 import { totpEnabled, verifyTotp } from '@/lib/admin-totp';
 
 export const dynamic = 'force-dynamic';
@@ -39,6 +40,13 @@ export async function POST(req: NextRequest) {
   if (!rl.ok) return tooManyRequests(rl.retryAfter);
   const rlGlobal = rateLimit('login:__global__', 60, 15 * 60 * 1000);
   if (!rlGlobal.ok) return tooManyRequests(rlGlobal.retryAfter);
+  // phase-1 fix: the global bucket above is per-process in memory — on
+  // Vercel each cold-started lambda resets it, so a distributed brute
+  // force scaled with instance count. The durable bucket counts the SAME
+  // ceiling in the shared DB and cannot be reset by IP rotation or
+  // restarts (fails open only if the DB itself is unreachable).
+  const rlGlobalDurable = await durableLimit('login:__global__', 60, 15 * 60 * 1000);
+  if (!rlGlobalDurable.ok) return tooManyRequests(rlGlobalDurable.retryAfter);
 
   // tiny bodies only — the login payload is a single short password.
   // readJsonBody enforces the cap while streaming, so a chunked request

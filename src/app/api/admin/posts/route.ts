@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { checkAdmin } from '@/lib/admin';
-import { sanitizePostHtml } from '@/lib/sanitize';
+import { sanitizePostHtml, sanitizeExcerpt } from '@/lib/sanitize';
+import { readJsonBody, payloadTooLarge, badRequest } from '@/lib/rate-limit';
 import { notifyIndexNow } from '@/lib/indexnow';
 
 export const dynamic = 'force-dynamic';
@@ -37,8 +38,13 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   const denied = checkAdmin(req);
   if (denied) return denied;
+  // bounded body (phase-1): article HTML can be large (legacy WP posts run
+  // up to ~77KB) — 256KB is generous headroom while still capping the
+  // memory a stolen-cookie request can pin on the shared host.
+  const parsed = await readJsonBody(req, 256);
+  if (!parsed.ok) return parsed.error === 'payload-too-large' ? payloadTooLarge() : badRequest();
   try {
-    const b = await req.json();
+    const b = parsed.data || {};
     const slug = (b.slug || '')
       .trim()
       .toLowerCase()
@@ -55,8 +61,8 @@ export async function POST(req: NextRequest) {
         slug,
         titleEn: b.titleEn || null,
         titleFa: b.titleFa || null,
-        excerptEn: b.excerptEn || null,
-        excerptFa: b.excerptFa || null,
+        excerptEn: sanitizeExcerpt(b.excerptEn) || null,
+        excerptFa: sanitizeExcerpt(b.excerptFa) || null,
         // XSS guard before save: nothing unsanitized ever reaches the DB
         contentEn: sanitizePostHtml(b.contentEn) || null,
         contentFa: sanitizePostHtml(b.contentFa) || null,

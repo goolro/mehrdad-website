@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { checkAdmin } from '@/lib/admin';
-import { sanitizePostHtml } from '@/lib/sanitize';
+import { sanitizePostHtml, sanitizeExcerpt } from '@/lib/sanitize';
+import { readJsonBody, payloadTooLarge, badRequest } from '@/lib/rate-limit';
 import { notifyIndexNow } from '@/lib/indexnow';
 
 export const dynamic = 'force-dynamic';
@@ -13,7 +14,11 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: strin
   if (denied) return denied;
   try {
     const { id } = await ctx.params;
-    const b = await req.json();
+    // bounded body (phase-1): same contract as POST /api/admin/posts —
+    // 256KB headroom for full article HTML, still a hard cap
+    const parsed = await readJsonBody(req, 256);
+    if (!parsed.ok) return parsed.error === 'payload-too-large' ? payloadTooLarge() : badRequest();
+    const b = parsed.data || {};
     const data: Record<string, unknown> = {};
     for (const k of ['titleEn', 'titleFa', 'excerptEn', 'excerptFa', 'contentEn', 'contentFa', 'cover']) {
       if (!(k in b)) continue;
@@ -21,11 +26,14 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: strin
       // XSS guard on UPDATE, matching POST (round-3 finding M1): the admin
       // panel renders contentEn with dangerouslySetInnerHTML, so nothing
       // unsanitized may reach the DB through this path either. Null/undefined
-      // still clears a field, exactly as before.
+      // still clears a field, exactly as before. Excerpts get the plain-text
+      // scrub (phase-1) — they render verbatim on public surfaces.
       data[k] =
         (k === 'contentEn' || k === 'contentFa') && typeof v === 'string' && v.length > 0
           ? sanitizePostHtml(v)
-          : v;
+          : (k === 'excerptEn' || k === 'excerptFa') && typeof v === 'string' && v.length > 0
+            ? sanitizeExcerpt(v)
+            : v;
     }
     if ('published' in b) data.published = Boolean(b.published);
     if ('featured' in b) data.featured = Boolean(b.featured);

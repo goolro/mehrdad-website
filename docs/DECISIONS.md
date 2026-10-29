@@ -2031,3 +2031,41 @@ bun.lock and installs with bun. npm's regenerated lockfile was discarded.
 at MVP stage — the full pitch deck is published on this site." FA mirrors it;
 zero invented facts, zero financial claims (the D-0xx authenticity rule
 holds — numbers stay only on the deck-sourced story page).
+
+## D-070 — Phase-1 security hardening: cron fail-closed, durable budgets, XSS/error-scrub (2026-10-30)
+
+External phase-1 security audit (owner-commissioned, code + live site) found
+four remotely exploitable gaps. All closed in one commit:
+
+1. **Cron auth bypass (critical).** All `/api/cron/*` routes accepted the
+   PUBLIC IndexNow key as an alternative credential (`?key=`), and stayed
+   open-but-rate-limited when `CRON_SECRET` was unset. The IndexNow key is
+   served from `/<key>.txt` by protocol — anyone could read it and trigger
+   real lead emails, paid AI generation, deploy hooks and index pings.
+   Fix: bearer-only, timing-safe; no secret → 503 fail-closed with an
+   actionable message; `?key=` fallback removed everywhere. The
+   daily-generate self-chain now anchors to `SITE_ORIGIN` (a Host-controlled
+   request can no longer receive the bearer). **Deploy requirement: set
+   `CRON_SECRET` in Vercel env — Vercel cron then auto-sends the bearer;
+   without it the daily jobs stop by design.**
+2. **In-memory ceilings reset on Vercel cold starts.** Login brute-force
+   global, chat per-minute/per-day AI budgets and (new) team-room budget
+   now count in the shared DB via `lib/durable-limit.ts` — one atomic
+   UPSERT (`RateBucket` table, runtime-DDL bootstrap, BIGINT epoch-millis;
+   fails OPEN only if the DB is unreachable). Per-IP in-memory buckets stay
+   as the cheap first layer. Verified against real SQLite: trip, window
+   reset, 10-parallel atomicity.
+3. **team-room hardening.** The last public route reading unbounded
+   `req.json()` now uses `readJsonBody(8KB)` (413 path verified), plus a
+   durable 20-missions/day global ceiling (×7 LLM calls each).
+4. **Stored XSS + error leaks.** `BlogView` excerpt fallback rendered
+   verbatim into the HTML sink (excerpts never pass the write-time
+   sanitizer) — now a React text node, plus write-time `sanitizeExcerpt` on
+   the admin post create/update paths. Admin routes no longer echo raw
+   `e.message` (round-3 L2 closed): `scrubError()` keeps short provider
+   messages (owner needs "Gemini 429 quota" to fix config) and replaces
+   anything SQL/path/URL-like; full detail stays in server logs. Admin
+   post/settings bodies now bounded (256KB/16KB).
+
+Auth contract change is the only operator-visible behavior change: crons
+require `CRON_SECRET` (D-070 is the deploy note for it).

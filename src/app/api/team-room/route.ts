@@ -5,7 +5,8 @@ import {
   zaiComplete,
   type ChatTurn,
 } from '@/lib/ai-provider';
-import { clientIp, rateLimit, tooManyRequests } from '@/lib/rate-limit';
+import { clientIp, rateLimit, tooManyRequests, readJsonBody, jsonBodyError } from '@/lib/rate-limit';
+import { durableLimit } from '@/lib/durable-limit';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 300;
@@ -138,17 +139,24 @@ function parsePlan(raw: string): Plan | null {
 }
 
 export async function POST(req: NextRequest) {
-  // abuse guard: هر IP حداکثر ۵ مأموریت در ساعت (هر اجرا ۷ فراخوانی LLM است)
+  // abuse guard layer 1 — per IP: حداکثر ۵ مأموریت در ساعت (هر اجرا ۷ فراخوانی LLM است)
   const rl = rateLimit(`teamroom:${clientIp(req)}`, 5, 60 * 60 * 1000);
   if (!rl.ok) return tooManyRequests(rl.retryAfter);
+  // layer 2 — GLOBAL daily budget, durable in the shared DB (phase-1 fix):
+  // the per-IP bucket above is per-process in memory, so on Vercel every
+  // cold-started lambda instance resets it and IP rotation lifts it
+  // entirely. 20 missions/day × 7 LLM calls = a hard site-wide ceiling.
+  const rlDaily = await durableLimit('teamroom:__daily__', 20, 24 * 60 * 60 * 1000);
+  if (!rlDaily.ok) return tooManyRequests(rlDaily.retryAfter);
 
+  // bounded body (phase-1 fix): this was the ONLY public route still
+  // reading `await req.json()` directly — an unbounded chunked body on a
+  // memory-capped host is a trivial DoS. The mission itself is ≤ 600 chars.
+  const parsed = await readJsonBody(req, 8);
+  if (!parsed.ok) return jsonBodyError(parsed.error);
   let mission = '';
-  try {
-    const body = (await req.json()) as { mission?: unknown };
-    if (typeof body?.mission === 'string') mission = body.mission.trim().slice(0, 600);
-  } catch {
-    return Response.json({ error: 'بدنه‌ی درخواست نامعتبر است.' }, { status: 400 });
-  }
+  const body = (parsed.data || {}) as { mission?: unknown };
+  if (typeof body?.mission === 'string') mission = body.mission.trim().slice(0, 600);
   if (mission.length < 5) {
     return Response.json({ error: 'مأموریت را کامل بنویس (حداقل ۵ حرف).' }, { status: 400 });
   }

@@ -3,6 +3,7 @@ import { db } from '@/lib/db';
 import { retrieveContext, buildContextBlock } from '@/lib/rag';
 import { chatCompletion, chatCompletionStream, getProviderChain, zaiComplete, type ChatTurn } from '@/lib/ai-provider';
 import { clientIp, readJsonBody, jsonBodyError, rateLimit, tooManyRequests } from '@/lib/rate-limit';
+import { durableLimit } from '@/lib/durable-limit';
 import { resolveOwnedSession, isSessionOwner } from '@/lib/chat-owner';
 import { ensureKbPages } from '@/lib/kb';
 
@@ -131,10 +132,13 @@ export async function POST(req: NextRequest) {
   if (!rl.ok) return tooManyRequests(rl.retryAfter);
   // Global ceilings (round-3 finding M4): this endpoint spends money on a
   // paid AI provider, so it also gets a site-wide per-minute and per-day
-  // budget that no amount of IP rotation can lift.
-  const rlGlobal = rateLimit('chat:__global__', 120, 60 * 1000);
+  // budget that no amount of IP rotation can lift. phase-1 fix: both
+  // buckets are DURABLE (shared DB) now — the in-memory versions reset on
+  // every Vercel cold start, multiplying the real ceiling by instance
+  // count. The per-IP bucket above stays in-memory (first-line guard).
+  const rlGlobal = await durableLimit('chat:__global__', 120, 60 * 1000);
   if (!rlGlobal.ok) return tooManyRequests(rlGlobal.retryAfter);
-  const rlDaily = rateLimit('chat:__daily__', 2000, 24 * 60 * 60 * 1000);
+  const rlDaily = await durableLimit('chat:__daily__', 2000, 24 * 60 * 60 * 1000);
   if (!rlDaily.ok) return tooManyRequests(rlDaily.retryAfter);
 
   // memory guard on the shared host: real messages are ≤ 2000 chars.

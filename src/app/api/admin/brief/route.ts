@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { checkAdmin } from '@/lib/admin';
+import { checkAdmin, scrubError } from '@/lib/admin';
 import {
   ensureBriefTables,
   isBriefCategory,
@@ -87,6 +87,6 @@ export async function POST(req: NextRequest) {
     });
   } catch (e) {
     console.error('brief generate error:', e);
-    return NextResponse.json({ error: e instanceof Error ? e.message : 'Brief generation failed' }, { status: 500 });
+    return NextResponse.json({ error: scrubError(e, 'Brief generation failed') }, { status: 500 });
   }
 }

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { checkAdmin } from '@/lib/admin';
+import { checkAdmin, scrubError } from '@/lib/admin';
 import { db } from '@/lib/db';
 import { ensureSocialDraftTable } from '@/lib/social-drafts';
 import { generateSocialPosts, PLATFORM_SPECS } from '@/lib/social-studio';
@@ -122,7 +122,7 @@ export async function POST(req: NextRequest) {
           console.error(`social autopilot: ${post.slug} ${combo.platform}/${combo.lang} failed:`, e);
           failed.push({
             slug: `${post.slug} (${combo.platform}/${combo.lang})`,
-            error: e instanceof Error ? e.message : 'generation failed',
+            error: scrubError(e, 'generation failed'),
           });
         }
       }
@@ -131,6 +131,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true, created, skipped, failed });
   } catch (e) {
     console.error('social autopilot error:', e);
-    return NextResponse.json({ error: e instanceof Error ? e.message : 'Autopilot failed' }, { status: 500 });
+    return NextResponse.json({ error: scrubError(e, 'Autopilot failed') }, { status: 500 });
   }
 }

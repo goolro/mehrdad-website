@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { checkAdmin } from '@/lib/admin';
 import { THEMES } from '@/lib/themes';
+import { readJsonBody, payloadTooLarge, badRequest } from '@/lib/rate-limit';
 
 export const dynamic = 'force-dynamic';
 
@@ -22,7 +23,10 @@ export async function PATCH(req: NextRequest) {
   const denied = checkAdmin(req);
   if (denied) return denied;
 
-  const body = await req.json();
+  // bounded body (phase-1): settings payloads are tiny key/value pairs
+  const parsed = await readJsonBody(req, 16);
+  if (!parsed.ok) return parsed.error === 'payload-too-large' ? payloadTooLarge() : badRequest();
+  const body = parsed.data || {};
 
   if (body.theme) {
     if (!THEMES.some((t) => t.id === body.theme)) {

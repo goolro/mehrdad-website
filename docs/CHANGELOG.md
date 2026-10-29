@@ -4,6 +4,35 @@ All notable changes to mehrdad.ir. Format: Keep-a-Changelog-ish, newest first.
 
 ## [Unreleased]
 
+### Phase-1 security hardening: cron fail-closed, durable budgets, XSS/error-scrub (2026-10-30)
+- **Cron auth fixed (critical)**: every `/api/cron/*` route accepted the
+  PUBLIC IndexNow key (`?key=`) as an alternative credential and stayed open
+  when `CRON_SECRET` was unset — anyone could trigger lead emails, paid AI
+  generation and deploy hooks. Now bearer-only + timing-safe, fail-closed
+  503 without the secret, `?key=` fallback removed, self-chain anchored to
+  `SITE_ORIGIN`. **Operator action: set `CRON_SECRET` in Vercel env vars**
+  (Vercel cron auto-sends it as a bearer header).
+- **Durable global budgets** (`src/lib/durable-limit.ts`, new): the admin
+  login global brute-force ceiling, the chat AI-spend per-minute/per-day
+  budgets and a new team-room daily budget now count in the shared DB
+  (atomic UPSERT into a runtime-bootstrapped `RateBucket` table) — in-memory
+  counters reset on every Vercel cold start, which multiplied the real
+  ceiling by instance count. Verified with an SQLite smoke test (trip /
+  window reset / 10-way parallel atomicity).
+- **team-room hardening**: bounded JSON body (8KB → 413) + durable
+  20-missions/day global ceiling; it was the only public route still
+  reading unbounded `req.json()`.
+- **Stored XSS closed (BlogView)**: the excerpt fallback was interpolated
+  into the HTML sink verbatim (excerpts bypass the write-time sanitizer);
+  now rendered as an auto-escaped React text node. Excerpts are also
+  scrubbed at write time (`sanitizeExcerpt`) on admin post create/update.
+- **Internal error text no longer echoed (round-3 L2 closed)**: 11 admin
+  routes now answer with `scrubError()` — short provider messages survive
+  (owner-facing), SQL/paths/stacks replaced by generic text; detail stays
+  in server logs.
+- **Admin bodies bounded**: posts create/update (256KB), settings (16KB)
+  now stream through `readJsonBody` like every other write path.
+
 ### Auto-pilot wizard: language + networks owner-selectable (2026-10-13)
 - **Owner request («این فقط فارسی می‌سازه… زبان و نوع شبکه را ویزاردی انتخاب کنم»)**:
   the auto-pilot card was Persian+LinkedIn by construction — `PLATFORM='linkedin'`

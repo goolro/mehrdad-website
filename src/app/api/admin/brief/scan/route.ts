@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { checkAdmin } from '@/lib/admin';
+import { checkAdmin, scrubError } from '@/lib/admin';
 import { scanSources, isBriefCategory } from '@/lib/brief';
 
 export const dynamic = 'force-dynamic';
@@ -42,6 +42,6 @@ export async function POST(req: NextRequest) {
     });
   } catch (e) {
     console.error('brief scan error:', e);
-    return NextResponse.json({ error: e instanceof Error ? e.message : 'Scan failed' }, { status: 500 });
+    return NextResponse.json({ error: scrubError(e, 'Scan failed') }, { status: 500 });
   }
 }

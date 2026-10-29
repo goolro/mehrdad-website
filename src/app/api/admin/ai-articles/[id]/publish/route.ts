@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { checkAdmin } from '@/lib/admin';
+import { checkAdmin, scrubError } from '@/lib/admin';
 import { ensureAiArticleTable, pipelinePublish } from '@/lib/ai-articles';
 
 export const dynamic = 'force-dynamic';
@@ -24,6 +24,6 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
     return NextResponse.json({ ok: true, ...result });
   } catch (e) {
     console.error(`ai-articles publish ${id} error:`, e);
-    return NextResponse.json({ error: e instanceof Error ? e.message : 'Publish failed' }, { status: 500 });
+    return NextResponse.json({ error: scrubError(e, 'Publish failed') }, { status: 500 });
   }
 }

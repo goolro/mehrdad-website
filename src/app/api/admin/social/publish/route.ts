@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse, after } from 'next/server';
-import { checkAdmin } from '@/lib/admin';
+import { checkAdmin, scrubError } from '@/lib/admin';
 import { db } from '@/lib/db';
 import { ensureSocialDraftTable } from '@/lib/social-drafts';
 import { trackServerEvent } from '@/lib/server-analytics';
@@ -137,6 +137,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true, linkedInPostId: data.id || null });
   } catch (e) {
     console.error('social publish error:', e);
-    return NextResponse.json({ error: e instanceof Error ? e.message : 'Publish failed' }, { status: 500 });
+    return NextResponse.json({ error: scrubError(e, 'Publish failed') }, { status: 500 });
   }
 }

@@ -36,6 +36,33 @@ export function safeEqual(a: string, b: string): boolean {
 }
 
 /**
+ * Round-3 finding L2 (phase-1 fix): admin error responses echoed raw
+ * `e.message` to the client. The audience is admin-only — but Prisma/DB
+ * errors embed SQL fragments and connection details, and stack-ish strings
+ * hand an attacker with a stolen session cookie a free internals map.
+ *
+ * scrubError keeps short, human-readable provider messages (the owner
+ * genuinely needs "Gemini API error 429: quota exceeded" to fix a
+ * misconfigured provider) and replaces anything that smells like SQL,
+ * file paths, URLs or stack frames with the route's fallback text. The
+ * full error is already going to the server log via console.error.
+ */
+export function scrubError(e: unknown, fallback: string): string {
+  const raw = e instanceof Error ? e.message : typeof e === 'string' ? e : '';
+  if (!raw) return fallback;
+  const msg = raw.replace(/[\r\n\t]+/g, ' ').trim();
+  if (!msg || msg.length > 240) return fallback;
+  if (
+    /prisma|sqlite|postgres|\bsql\b|table|column|constraint|ECONN|ENOTFOUND|EAI_AGAIN|fetch failed|socket|:\/\/|\/(home|var|usr|app|root)\//i.test(
+      msg,
+    )
+  ) {
+    return fallback;
+  }
+  return msg.slice(0, 200) || fallback;
+}
+
+/**
  * CSRF defense-in-depth: for state-changing methods, reject requests whose
  * Origin header points at another site. Browser fetches always send Origin
  * on mutations; non-browser clients (curl/health checks) may omit it.

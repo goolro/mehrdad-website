@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { processLeadNurture } from '@/lib/lead-nurture';
-import { indexNowKey } from '@/lib/indexnow';
-import { clientIp, rateLimit, tooManyRequests } from '@/lib/rate-limit';
 import { safeEqual } from '@/lib/admin';
 
 export const dynamic = 'force-dynamic';
@@ -15,25 +13,25 @@ export const maxDuration = 300;
  * registered there. It exists so the owner (or a future plan upgrade)
  * can run the same idempotent state machine on demand.
  *
- * Auth mirrors /api/cron/daily-generate exactly: Vercel-style
- * `Authorization: Bearer $CRON_SECRET`, manual runs use ?key=<IndexNow
- * key>; if CRON_SECRET is unset the endpoint stays open but rate-limited
- * (bounded abuse: the state machine sends at most one welcome + one
- * follow-up per lead, ever).
+ * Auth (phase-1 security fix): ONLY `Authorization: Bearer $CRON_SECRET` —
+ * Vercel cron sends it automatically once the env var exists. The old
+ * manual `?key=<IndexNow key>` fallback is GONE: that key is PUBLIC by
+ * protocol (served at /<key>.txt), so accepting it let anyone on the
+ * internet trigger real emails to real leads. No secret configured → the
+ * route FAILS CLOSED with an actionable 503 instead of staying open.
  */
 export async function GET(req: NextRequest) {
   const secret = process.env.CRON_SECRET;
-  if (secret) {
-    const auth = req.headers.get('authorization') || '';
-    const key = req.nextUrl.searchParams.get('key') || '';
-    const authOk = safeEqual(auth, `Bearer ${secret}`);
-    const keyOk = safeEqual(key, indexNowKey());
-    if (!authOk && !keyOk) {
-      return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
-    }
-  } else {
-    const rl = rateLimit(`nurture:${clientIp(req)}`, 4, 60 * 1000);
-    if (!rl.ok) return tooManyRequests(rl.retryAfter);
+  if (!secret) {
+    console.error('cron auth misconfigured: CRON_SECRET is not set — refusing to run (fail-closed)');
+    return NextResponse.json(
+      { error: 'CRON_SECRET is not configured — set it in the hosting environment' },
+      { status: 503 },
+    );
+  }
+  // timing-safe compare — same contract as /api/cron/daily-generate
+  if (!safeEqual(req.headers.get('authorization') || '', `Bearer ${secret}`)) {
+    return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   }
 
   try {

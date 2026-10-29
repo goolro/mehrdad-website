@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { checkAdmin } from '@/lib/admin';
+import { checkAdmin, scrubError } from '@/lib/admin';
 import { db } from '@/lib/db';
 import { ensureAiArticleTable, pipelineReview, serializeArticle } from '@/lib/ai-articles';
 
@@ -22,6 +22,6 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
     return NextResponse.json({ ok: true, result, article: row ? serializeArticle(row) : null });
   } catch (e) {
     console.error(`ai-articles review ${id} error:`, e);
-    return NextResponse.json({ error: e instanceof Error ? e.message : 'Review failed' }, { status: 500 });
+    return NextResponse.json({ error: scrubError(e, 'Review failed') }, { status: 500 });
   }
 }

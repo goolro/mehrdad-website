@@ -404,11 +404,22 @@ export function PostDetail({ post, related, shareUrl }: { post: FullPost; relate
         <img src={post.cover} alt={title} className="mt-7 w-full rounded-2xl object-cover shadow-lg" />
       )}
 
-      <div
-        className="prose-blog mt-8"
-        dir={isEnMissing || lang === 'fa' ? 'rtl' : 'ltr'}
-        dangerouslySetInnerHTML={{ __html: pick(lang, post.contentEn, post.contentFa) || `<p>${pick(lang, post.excerptEn, post.excerptFa)}</p>` }}
-      />
+      {pick(lang, post.contentEn, post.contentFa) ? (
+        <div
+          className="prose-blog mt-8"
+          dir={isEnMissing || lang === 'fa' ? 'rtl' : 'ltr'}
+          dangerouslySetInnerHTML={{ __html: pick(lang, post.contentEn, post.contentFa) }}
+        />
+      ) : (
+        // XSS fix (phase-1): the excerpt fallback used to be interpolated
+        // into the HTML sink as `<p>${excerpt}</p>` — but excerpts never
+        // pass the write-time sanitizer (admin/AI write paths only sanitize
+        // contentEn/Fa), so a crafted excerpt was stored XSS on the public
+        // blog. Rendered as a React TEXT node now: auto-escaped, zero sink.
+        <div className="prose-blog mt-8" dir={isEnMissing || lang === 'fa' ? 'rtl' : 'ltr'}>
+          <p>{pick(lang, post.excerptEn, post.excerptFa)}</p>
+        </div>
+      )}
 
       {/* pitch deck — «آخر متن» (owner order 2026-10-25, D-054): the closing
           deck mention for deck-series posts, in the same amber language as
