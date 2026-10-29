@@ -1932,7 +1932,7 @@ by design.
 
 **Operation (non-destructive; backup first):**
 - Backup: full bundle of ALL refs → `/home/z/mehrdad-pre-purge-20261029.bundle` (156 MB, outside the repo, never committed).
-- Replacement table (byte-literal): `ghp_[REDACTED]→ghp_[REDACTED]`, `sbp_[REDACTED]→sbp_[REDACTED]`, `vcp_[REDACTED]→vcp_[REDACTED]`, `[REDACTED]→[REDACTED]`.
+- Replacement table (byte-literal): the three 8-char token prefixes (GitHub PAT / Vercel token / Supabase PAT — values not reproduced here by design) each → `<their-prefix>_[REDACTED]`, plus the deploy-watch.sh placeholder `[REDACTED]` → `[REDACTED]`.
 - Tool: `git filter-repo --replace-text` over ALL refs (main + 7 tags idempotent — same SHAs; 383 commits remapped, incl. all 26 non-main remote branches fetched locally for the purge). Commit messages were already clean (no prefix ever appeared in one).
 - Force-pushed: main + all 27 branches + all 7 tags; a SHA-comparison loop verified remote == local for every ref.
 
