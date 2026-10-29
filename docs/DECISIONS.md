@@ -2004,3 +2004,13 @@ KLIKA → kilika (Supabase Management API, token inline-only). The SEO post
 Note: without the vocabulary addition, normalizeStatus would have folded
 the unknown 'mvp' back to 'idea' — the label and the value were shipped
 together deliberately.
+
+## D-069 — CI/deploy unblocked: npm lockfile desync since D-063 (2026-10-29)
+
+CI had been red on every commit since D-063 (f867ced, 2026-10-25): msedge-tts
+entered package.json via bun without regenerating package-lock.json, so
+`npm ci` failed on "Missing: msedge-tts@2.1.1 from lock file" (Install
+dependencies step, both jobs). Vercel installs were almost certainly failing
+the same way, which is why post-D-063 content pushes did not reach the live
+site. Fix: `npm install --package-lock-only` + `npm ci --dry-run` proof;
+package-lock.json committed. Deploys resume with the kilika/MVP changes.
