@@ -23,7 +23,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   await importContentSeed();
   const { cat } = await params;
   if (!(DAILY_CATEGORIES as readonly string[]).includes(cat)) {
-    return { title: 'Not found | Mehrdad' };
+    return { title: { absolute: 'Not found | Mehrdad' } };
   }
   const titles: Record<string, string> = {
     product: 'Daily analysis — Products | Mehrdad',
@@ -41,13 +41,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       'My daily LinkedIn posts, mirrored here in full — build-in-public notes on shipping products. The LinkedIn lane of the daily section.',
   };
   return {
-    title: titles[cat],
+    title: { absolute: titles[cat] },
     description: descriptions[cat],
     alternates: {
       canonical: `/daily/cat/${cat}`,
       languages: {
         en: `/daily/cat/${cat}`,
-        fa: `/daily/cat/${cat}?lang=fa`,
         'x-default': `/daily/cat/${cat}`,
       },
     },

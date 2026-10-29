@@ -57,17 +57,16 @@ type Props = { params: Promise<{ slug: string }> };
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const a = await safeFindArticle(slug);
-  if (!a || !isArticleLive(a)) return { title: 'Article not found | Mehrdad' };
+  if (!a || !isArticleLive(a)) return { title: { absolute: 'Article not found | Mehrdad' } };
   const tagsEn = tagsOf(a.tagsEn);
   return {
-    title: `${a.titleEn} | Mehrdad — Daily Analysis`,
+    title: { absolute: `${a.titleEn} | Mehrdad — Daily Analysis` },
     description: a.summaryEn,
     keywords: tagsEn,
     alternates: {
       canonical: `/daily/${a.slug}`,
       languages: {
         en: `/daily/${a.slug}`,
-        fa: `/daily/${a.slug}?lang=fa`,
         'x-default': `/daily/${a.slug}`,
       },
     },

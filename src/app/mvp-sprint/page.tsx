@@ -22,12 +22,12 @@ const faqSchema = {
 };
 
 export const metadata: Metadata = {
-  title: 'AI MVP Sprint — fixed scope, fixed quote | Mehrdad — Product Builder',
+  title: { absolute: 'AI MVP Sprint — fixed scope, fixed quote | Mehrdad — Product Builder' },
   description:
     'From a real problem to a working, testable product in one focused sprint. Free 30-minute scope call, three fixed-scope entry points, no hourly billing. Forward Deployed Engineering as a productized service.',
   alternates: {
     canonical: '/mvp-sprint',
-    languages: { en: '/mvp-sprint', fa: '/mvp-sprint?lang=fa', 'x-default': '/mvp-sprint' },
+    languages: { en: '/mvp-sprint', 'x-default': '/mvp-sprint' },
   },
   openGraph: {
     title: 'AI MVP Sprint — fixed scope, fixed quote',

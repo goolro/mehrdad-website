@@ -66,6 +66,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE}/case-studies/quiz-of-koko`, changeFrequency: 'monthly', priority: 0.8 },
     // phase 3 free tool
     { url: `${BASE}/scope-builder`, changeFrequency: 'monthly', priority: 0.8 },
+    // interactive game (phase-2 SEO gap fix): real content page that was
+    // missing from the map — crawlers only found it via the /lab listing
+    { url: `${BASE}/play/traffic-tempo`, changeFrequency: 'monthly', priority: 0.5 },
     { url: `${BASE}/investors-koko`, changeFrequency: 'monthly', priority: 0.6 },
     { url: `${BASE}/investors-koko/deck`, changeFrequency: 'monthly', priority: 0.6 },
   ];

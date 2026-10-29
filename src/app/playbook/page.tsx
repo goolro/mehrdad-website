@@ -6,12 +6,12 @@ import { PlaybookView } from '@/components/site/PlaybookView';
 export const dynamic = 'force-static';
 
 export const metadata: Metadata = {
-  title: 'The FDE Playbook — from problem to product in 10 steps | Mehrdad — Product Builder',
+  title: { absolute: 'The FDE Playbook — from problem to product in 10 steps | Mehrdad — Product Builder' },
   description:
     'A free practical checklist: from a real problem to a working product in 10 steps — the exact loop behind every project on this site. Get the full version with worksheets by email.',
   alternates: {
     canonical: '/playbook',
-    languages: { en: '/playbook', fa: '/playbook?lang=fa', 'x-default': '/playbook' },
+    languages: { en: '/playbook', 'x-default': '/playbook' },
   },
   openGraph: {
     title: 'The FDE Playbook — from problem to product in 10 steps',

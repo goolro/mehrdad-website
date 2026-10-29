@@ -36,7 +36,7 @@ type Props = { params: Promise<{ slug: string }> };
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const detail = await getPostDetail(slug).catch(() => null);
-  if (!detail) return { title: 'Article not found | Mehrdad' };
+  if (!detail) return { title: { absolute: 'Article not found | Mehrdad' } };
 
   const { post } = detail;
   const title = post.titleEn || post.titleFa || 'Article';
@@ -45,14 +45,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const published = typeof post.date === 'string' ? post.date : post.date.toISOString();
 
   return {
-    title: `${title} | Mehrdad`,
+    title: { absolute: `${title} | Mehrdad` },
     description,
     alternates: {
       canonical: `/blog/${post.slug}`,
-      // hreflang variants (EN static default / FA pre-paint ?lang=fa)
+      // hreflang (phase-2): en + x-default only — no real fa variant exists
       languages: {
         en: `/blog/${post.slug}`,
-        fa: `/blog/${post.slug}?lang=fa`,
         'x-default': `/blog/${post.slug}`,
       },
     },

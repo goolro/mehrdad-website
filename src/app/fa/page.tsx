@@ -28,7 +28,7 @@ export const dynamic = 'force-static';
 // dictionary (src/components/site/i18n.ts fa.hero) so the SERP entry matches
 // what the visitor sees on the page.
 export const metadata: Metadata = {
-  title: 'مهرداد — سازنده مستقل محصول | طراحی و ساخت سریع با هوش مصنوعی',
+  title: { absolute: 'مهرداد — سازنده مستقل محصول | طراحی و ساخت سریع با هوش مصنوعی' },
   description:
     'کسب‌وکار و محصولت را با دقت طراحی می‌کنم و با هوش مصنوعی سریع می‌سازم. پروژه‌های واقعی با وضعیت صادقانه و درس‌های مستندشده از کار واقعی — پژوهش، طراحی، اجرا.',
   alternates: {

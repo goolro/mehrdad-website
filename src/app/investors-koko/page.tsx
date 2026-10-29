@@ -8,12 +8,12 @@ import { InvestorsView } from '@/components/site/InvestorsView';
 export const dynamic = 'force-static';
 
 export const metadata: Metadata = {
-  title: 'Investors — Quiz of Koko | Mehrdad',
+  title: { absolute: 'Investors — Quiz of Koko | Mehrdad' },
   description:
     'Investor overview for Quiz of Koko: a live web word-quiz game with an AI-validated question pool in 10 languages, a 12-month validation plan with decision gates, and evidence-gated Stage-1 funding. Request a private briefing.',
   alternates: {
     canonical: '/investors-koko',
-    languages: { en: '/investors-koko', fa: '/investors-koko?lang=fa', 'x-default': '/investors-koko' },
+    languages: { en: '/investors-koko', 'x-default': '/investors-koko' },
   },
 };
 

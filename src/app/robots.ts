@@ -60,7 +60,10 @@ export default function robots(): MetadataRoute.Robots {
       // Disallow keeps well-behaved crawlers and vulnerability scanners from
       // even fetching it (the login route lives under /api/admin too).
       // /agency (Task 54) is the owner's private AI panel — same policy.
-      { userAgent: '*', disallow: ['/admin', '/api/admin', '/agency', '/api/agency'] },
+      // /team-room (phase-2 SEO): interactive 6-agent missions tool — no
+      // standalone content for searchers, and each mission burns LLM calls;
+      // bots probing it only waste budget. Meta noindex set on the page too.
+      { userAgent: '*', disallow: ['/admin', '/api/admin', '/agency', '/api/agency', '/team-room', '/api/team-room'] },
     ],
     sitemap: `${base}/sitemap.xml`,
   };

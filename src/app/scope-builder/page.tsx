@@ -6,12 +6,12 @@ import { ScopeBuilderView } from '@/components/site/ScopeBuilderView';
 export const dynamic = 'force-static';
 
 export const metadata: Metadata = {
-  title: 'Free MVP Scope Builder — your one-page scope in 3 minutes | Mehrdad',
+  title: { absolute: 'Free MVP Scope Builder — your one-page scope in 3 minutes | Mehrdad' },
   description:
     'Answer five honest scoping questions and get a one-page MVP scope you can act on — free, no signup, nothing sent to a server. The same first step of the AI MVP Sprint.',
   alternates: {
     canonical: '/scope-builder',
-    languages: { en: '/scope-builder', fa: '/scope-builder?lang=fa', 'x-default': '/scope-builder' },
+    languages: { en: '/scope-builder', 'x-default': '/scope-builder' },
   },
   openGraph: {
     title: 'Free MVP Scope Builder — one-page scope in 3 minutes',

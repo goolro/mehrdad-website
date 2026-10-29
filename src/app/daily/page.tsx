@@ -11,12 +11,12 @@ import { importContentSeed } from '@/lib/seed-import';
 export const revalidate = 900;
 
 export const metadata: Metadata = {
-  title: 'Daily analysis — short bilingual editorials | Mehrdad',
+  title: { absolute: 'Daily analysis — short bilingual editorials | Mehrdad' },
   description:
     'Original short articles about successful products — what they do, why they win and my expert verdict. English and Persian, fresh most days.',
   alternates: {
     canonical: '/daily',
-    languages: { en: '/daily', fa: '/daily?lang=fa', 'x-default': '/daily' },
+    languages: { en: '/daily', 'x-default': '/daily' },
   },
 };
 

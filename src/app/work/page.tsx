@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { ProjectsView } from '@/components/site/ProjectsView';
+import { JsonLd } from '@/components/site/JsonLd';
 import { getProjects } from '@/lib/queries';
 import { importContentSeed } from '@/lib/seed-import';
 
@@ -12,11 +13,11 @@ import { importContentSeed } from '@/lib/seed-import';
 export const dynamic = 'force-static';
 
 export const metadata: Metadata = {
-  title: 'Key Projects & Startups | Mehrdad — Product Builder',
+  title: { absolute: 'Key Projects & Startups | Mehrdad — Product Builder' },
   description: 'Real projects and startups — built in the open, with honest status at every step.',
   alternates: {
     canonical: '/work',
-    languages: { en: '/work', fa: '/work?lang=fa', 'x-default': '/work' },
+    languages: { en: '/work', 'x-default': '/work' },
   },
 };
 
@@ -25,5 +26,33 @@ export default async function WorkPage() {
   // is insert-if-missing, idempotent and fail-safe (see seed-import.ts)
   await importContentSeed();
   const projects = await getProjects({ section: 'work' });
-  return <ProjectsView initialProjects={projects} />;
+
+  // CollectionPage + ItemList (phase-2 SEO gap): gives crawlers and LLMs a
+  // machine-readable inventory of every project page without parsing cards.
+  const base = (process.env.SITE_ORIGIN || 'https://mehrdad.ir').replace(/\/+$/, '');
+  const workSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    '@id': `${base}/work#collection`,
+    url: `${base}/work`,
+    name: 'Key Projects & Startups — Mehrdad',
+    description: 'Real projects and startups — built in the open, with honest status at every step.',
+    inLanguage: 'en',
+    mainEntity: {
+      '@type': 'ItemList',
+      itemListElement: projects.map((p, i) => ({
+        '@type': 'ListItem',
+        position: i + 1,
+        url: `${base}/work/${p.slug}`,
+        name: p.titleEn,
+      })),
+    },
+  };
+
+  return (
+    <>
+      <JsonLd data={workSchema} />
+      <ProjectsView initialProjects={projects} />
+    </>
+  );
 }

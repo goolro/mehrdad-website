@@ -8,12 +8,12 @@ import { getProjects } from '@/lib/queries';
 export const dynamic = 'force-static';
 
 export const metadata: Metadata = {
-  title: 'The Lab — Experiments & Side Quests | Mehrdad',
+  title: { absolute: 'The Lab — Experiments & Side Quests | Mehrdad' },
   description:
     'Experiments built for curiosity, in the open. Lab items carry no business model — some may grow into products, most just teach me something.',
   alternates: {
     canonical: '/lab',
-    languages: { en: '/lab', fa: '/lab?lang=fa', 'x-default': '/lab' },
+    languages: { en: '/lab', 'x-default': '/lab' },
   },
 };
 

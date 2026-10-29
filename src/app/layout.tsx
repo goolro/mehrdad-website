@@ -29,9 +29,21 @@ export const metadata: Metadata = {
   },
   // EN-purity rule (owner 2026-10-01): every user-visible EN surface —
   // <title>, meta description, twitter card — is English-only. The Persian
-  // experience is the same URL + ?lang=fa (client-side flip), so the static
-  // metadata that serves it stays English.
-  title: "Mehrdad — Product Builder",
+  // experience lives on the real static /fa route, so the static metadata
+  // that serves EN pages stays English.
+  // title.template (phase-2 SEO): child pages that set a plain `title`
+  // automatically get the " | Mehrdad" suffix; every existing page that
+  // carries a full title opts out via `{ absolute: ... }`.
+  title: {
+    default: "Mehrdad — Product Builder",
+    template: "%s | Mehrdad",
+  },
+  alternates: {
+    // RSS autodiscovery (phase-2 SEO): the feed has existed at /feed.xml for
+    // a while but no <link rel="alternate"> pointed at it — feed readers and
+    // crawlers had to guess. Rendered on every page.
+    types: { "application/rss+xml": "/feed.xml" },
+  },
   description:
     "I design businesses and products with care, and build them fast with AI. Real projects, honest status, lessons from real work.",
   keywords: ["Mehrdad", "product builder", "product design", "AI products", "startups", "smart city"],
@@ -55,6 +67,8 @@ export const metadata: Metadata = {
     description: "I design businesses and products with care, and build them fast with AI.",
     siteName: "mehrdad.ir",
     type: "website",
+    locale: "en_US",
+    alternateLocale: ["fa_IR"],
     // no images here (2026-09-08): the file-convention opengraph-image.tsx
     // generates a proper 1200×630 branded banner; the old 512×512 icon
     // override made WhatsApp/Telegram cards a tiny square.

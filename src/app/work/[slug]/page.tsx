@@ -32,15 +32,14 @@ type Props = { params: Promise<{ slug: string }> };
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const project = await getProjectBySlug(slug).catch(() => null);
-  if (!project) return { title: 'Project not found | Mehrdad' };
+   if (!project) return { title: { absolute: 'Project not found | Mehrdad' } };
   return {
-    title: `${project.titleEn} | Mehrdad — Product Builder`,
+    title: { absolute: `${project.titleEn} | Mehrdad — Product Builder` },
     description: project.summaryEn,
     alternates: {
       canonical: `/work/${project.slug}`,
       languages: {
         en: `/work/${project.slug}`,
-        fa: `/work/${project.slug}?lang=fa`,
         'x-default': `/work/${project.slug}`,
       },
     },

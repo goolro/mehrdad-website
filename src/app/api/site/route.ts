@@ -12,9 +12,14 @@ export async function GET(_req: NextRequest) {
       // of the public site JSON (admin uses /api/admin/projects — unfiltered)
       visibleProjects(await db.project.findMany({ orderBy: { order: 'asc' } })),
       db.category.findMany({
-        where: { posts: { some: {} } },
+        // phase-2 SEO fix: count only PUBLISHED posts. `posts: { some: {} }`
+        // passed categories holding nothing but drafts, so a duplicate
+        // "Business" chip (EN-slug + FA-slug rows) rendered on the blog —
+        // the FA-slug row's posts are all unpublished. Mirrors the tags
+        // query below, which already filtered by published status.
+        where: { posts: { some: { published: true } } },
         orderBy: { nameEn: 'asc' },
-        include: { _count: { select: { posts: true } } },
+        include: { _count: { select: { posts: { where: { published: true } } } } },
       }),
       db.tag.findMany({
         where: { posts: { some: { post: { published: true } } } },

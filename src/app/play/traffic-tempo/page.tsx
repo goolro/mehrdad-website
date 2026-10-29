@@ -9,7 +9,7 @@ import { isProjectHidden } from '@/lib/project-visibility';
 export const dynamic = 'force-static';
 
 export const metadata: Metadata = {
-  title: 'Traffic Tempo — Mobile Edition',
+  title: { absolute: 'Traffic Tempo — Mobile Edition' },
   description:
     'Run the intersection in this 2D mobile traffic game — flip the lights, keep the tempo, never let crossing cars meet.',
   alternates: {

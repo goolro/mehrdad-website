@@ -6,14 +6,13 @@ import { CaseStudyKokoView } from '@/components/site/CaseStudyKokoView';
 export const dynamic = 'force-static';
 
 export const metadata: Metadata = {
-  title: 'Case Study: Quiz of Koko — from idea to live product | Mehrdad',
+  title: { absolute: 'Case Study: Quiz of Koko — from idea to live product | Mehrdad' },
   description:
     'How Quiz of Koko went from a real learning problem to a live, AI-powered vocabulary game (free in browser and on Android) — the Forward Deployed Engineering loop behind it, now productized as the AI MVP Sprint.',
   alternates: {
     canonical: '/case-studies/quiz-of-koko',
     languages: {
       en: '/case-studies/quiz-of-koko',
-      fa: '/case-studies/quiz-of-koko?lang=fa',
       'x-default': '/case-studies/quiz-of-koko',
     },
   },
