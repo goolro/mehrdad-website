@@ -2024,3 +2024,10 @@ and has been installing this exact tree daily in dev. Fix: package-lock.json
 removed, CI installs switched to `bun install --frozen-lockfile` (setup-bun;
 node stays pinned via setup-node for the node-run steps). Vercel now detects
 bun.lock and installs with bun. npm's regenerated lockfile was discarded.
+
+**D-068 addendum (same day):** the owner's quoted «early concept (idea) —
+مستند برای ثبت» traced to the kilika-fintech Project row's summaryEn/summaryFa
+(DB data, not code). Both summaries rewritten to the MVP reality — EN: "…Now
+at MVP stage — the full pitch deck is published on this site." FA mirrors it;
+zero invented facts, zero financial claims (the D-0xx authenticity rule
+holds — numbers stay only on the deck-sourced story page).
