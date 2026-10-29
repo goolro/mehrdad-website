@@ -82,13 +82,17 @@ plaintext.
 
 ## 4. Incident log
 
-> **2026-09-05 (round-3 review):** this table used to print the *prefixes* of the
-> leaked tokens. They are removed here — a public document should not identify
-> which live credentials were exposed. Removal does **not** remediate anything:
-> the prefixes remain in Git history and the full values were shared over an IM
-> channel, so all three credentials must be treated as compromised and
-> **rotated** (GitHub PAT, Vercel token, Supabase token). Rotation is the only
-> fix; see `docs/SECURITY_REVIEW_2026-09-05-round3.md` §1 (H1).
+> **2026-10-29 (pre-public purge, D-066):** the token *prefixes* that used to be
+> printed in this document and in `SECURITY_REVIEW_2026-09-05-round3.md` have
+> been scrubbed from the ENTIRE Git history (git-filter-repo `--replace-text` +
+> force push of every ref: main, all 27 branches, all 7 tags). A fresh
+> post-rewrite mirror-clone sweep of every blob and commit message finds zero
+> token fragments, zero passwords and zero secret values. The full values were
+> shared only over an IM channel, so the two still-live tokens (GitHub PAT,
+> Supabase PAT) remain rotation-recommended; the Vercel token is already dead.
+> GitHub may keep pre-rewrite objects reachable by old SHAs via open-PR refs
+> and server-side caches until GC — those objects contain prefixes only, never
+> values (full evidence trail in D-066).
 
 | Date | Event | Remediation |
 |---|---|---|

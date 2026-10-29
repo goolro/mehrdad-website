@@ -1925,3 +1925,24 @@ by design.
 4. Standing reminder (SECURITY.md incident log): rotate the GitHub PAT and Supabase PAT when convenient — both remain valid and IM-exposed by definition.
 
 **Explicitly NOT changed:** LICENSE (none — all-rights-reserved by default; MIT on owner request), worklog history (kept; secret-free; a purge would need history rewrite + force push — not done without explicit owner order), `.env.example` absolute dev path (cosmetic), the dated "Current status" section (frozen snapshot).
+
+## D-066 — Owner order: NO password/token anywhere — token prefixes purged from the entire Git history (2026-10-29)
+
+**Owner order (verbatim):** «پسورد گیت هاب -- یا توکن   vercel یا رمز یا توکن دیگری نباشه» — issued right after the D-065 audit report disclosed three 8-char prefixes living in history.
+
+**Operation (non-destructive; backup first):**
+- Backup: full bundle of ALL refs → `/home/z/mehrdad-pre-purge-20261029.bundle` (156 MB, outside the repo, never committed).
+- Replacement table (byte-literal): `ghp_[REDACTED]→ghp_[REDACTED]`, `sbp_[REDACTED]→sbp_[REDACTED]`, `vcp_[REDACTED]→vcp_[REDACTED]`, `[REDACTED]→[REDACTED]`.
+- Tool: `git filter-repo --replace-text` over ALL refs (main + 7 tags idempotent — same SHAs; 383 commits remapped, incl. all 26 non-main remote branches fetched locally for the purge). Commit messages were already clean (no prefix ever appeared in one).
+- Force-pushed: main + all 27 branches + all 7 tags; a SHA-comparison loop verified remote == local for every ref.
+
+**Verification (authoritative):** fresh `git clone --mirror` from GitHub → `git fast-export refs/heads/* refs/tags/*` (every blob + every commit message) → grep for ghp_/sbp_/vcp_ fragments and the placeholder: **0 matches** (exit 1). The GitHub-served history is fragment-free.
+
+**Residuals (honest disclosure):**
+1. GitHub keeps pre-rewrite objects reachable by OLD SHAs via server-side caches (verified: old main SHA still answers HTTP 200) until GitHub-side GC — those objects contain prefixes only, never values. An absolute cache purge requires contacting GitHub Support; unwarranted for unreconstructable 8-char prefixes. Every ref now points at rewritten commits.
+2. Open PRs (12 Dependabot + owner's #30) reference pre-rewrite objects through `refs/pull/*` — Dependabot self-heals on its next run; PR #30's head branch (`feat/team-room`) was rewritten and force-pushed, so the PR now points at clean commits.
+3. Rotation reminder stands (SECURITY.md §4): GitHub PAT + Supabase PAT are IM-exposed by definition; the Vercel token is already dead (403 invalidToken).
+
+**Kept as non-secrets (documented public-by-design):** INDEXNOW key (proves host control by protocol design), PostHog `phc_` public ingest key, the `<db-password>` URL template, CI's `ci-dummy-password`, and the `[REDACTED]` placeholders themselves.
+
+**No content change:** zero code/page/deployment changes — Vercel redeploys an identical site (docs-only diffs).
