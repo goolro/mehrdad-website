@@ -86,7 +86,7 @@ type StatusStyle = {
   icon: typeof HardHat;
   badgeCls: string;
   barCls: string;
-  labelKey: 'idea' | 'concept' | 'building' | 'testing' | 'live' | 'paused' | 'archived';
+  labelKey: 'idea' | 'concept' | 'building' | 'testing' | 'mvp' | 'live' | 'paused' | 'archived';
 };
 
 /**
