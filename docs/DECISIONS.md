@@ -1898,3 +1898,30 @@ hidden slug → 301 /blog; /logo → / per the map (200, deliberate); visible
 so old backlinks land on the live blog index instead of a dead end. GSC's
 404 bucket drains as Google recrawls; the redirect bucket keeps behaving
 by design.
+
+## D-065 — Public-readiness audit: repo judged safe to go public; README corrected to English-first, fact-current (owner ask 2026-10-29)
+
+**Owner order:** «آیا وب سایت به نقطه امنی رسیده که اونو توی گیت هاب عمومی کنیم؟» + README first in English — important for search.
+
+**Verdict: SAFE TO GO PUBLIC.** Evidence (all reproducible from this repo):
+
+- **All-refs, all-history content scan** (main + 7 tags incl. `backup-*`, 367 commits) for token patterns (`ghp_`/`sbp_`/`vcp_` with long bodies, AWS `AKIA`, PEM private keys, Supabase/GitHub JWTs, Postgres conn-strings with embedded passwords, `ADMIN_PASSWORD=` real values, Slack/Google keys): **zero secret values**. Only matches: the `<db-password>` template in docs/DEPLOYMENT.md and the literal `[REDACTED]` placeholder in scripts/deploy-watch.sh.
+- **Short-prefix sweep** of the same history: `ghp_[REDACTED]`, `sbp_[REDACTED]`, `vcp_[REDACTED]` — three 8-character prefixes (unreconstructable), already self-disclosed in the SECURITY.md incident log, which mandates rotation of all three; the Vercel token is already dead (403 invalidToken, verified in the 2026-10 token-handoff audit).
+- **Filename scan of all history** (`git log --all --diff-filter=A`): no `.env`, no `*.db`, no `*.pem`/key/keystore files ever added on any ref. `.env.example` carries names/placeholders only; INDEXNOW + PostHog values are public-by-design and documented as such.
+- **Historical worklog.md** (committed 2026-09-04→09-19, gitignored since): every blob hand-checked for credential contexts — all matches are Persian policy prose (e.g. «هیچ secret/DB در artifact»), zero values.
+- **GitHub Releases**: 4 releases, **zero assets** — the 2026-09-04 artifact + `custom.db` assets no longer exist. **Backup tags** `backup-2026-10-18`, `backup/pre-dep-upgrade-20261013`: file sets are strict subsets of main (comm found 0 extra files), secret-scan clean.
+- **PII in tree**: `admin@mehrdad.ir` (already public on the site itself), `moshtarakinapp@gmail.com` (SMTP/notification *address* in contact/leads code — not a credential), test placeholders (`dev@corp.com`, `wsmith@acme.com`, `mehrdad.ir@evil.com` security fixtures). Zero phone numbers.
+- **CI** (`.github/workflows/ci.yml`) uses dummy env values; admin-password near-miss (2026-09-01) was caught before any push; pre-baseline junk history was squashed before the first push (incident log). SECURITY.md was written public-first.
+
+**README corrections (owner directive: English-first for search — it already was; made it search-friendly and fact-current):**
+- Keyword tagline added under the repo links (Next.js 16 · TypeScript · Tailwind CSS 4 · shadcn/ui · Prisma · Supabase Postgres · Vercel · PWA · SEO).
+- Deployment section rewritten: **Vercel auto-deploy + Supabase Postgres = production** (verified: `vercel.json` tracked; SECURITY.md env inventory; docs/DEPLOYMENT.md «Vercel mirror + Supabase — DEPLOYED ✅»; `server: Vercel` observed on mehrdad.ir). cPanel artifact runbook kept as legacy reference.
+- Architecture "Data" row: Turso-in-production → Supabase Postgres (libsql/Turso adapter noted as the remaining optional code path in `src/lib/db.ts`).
+
+**Post-public checklist (owner's click — deliberately not performed by AI):**
+1. GitHub → Settings → Danger Zone → Change visibility → Public.
+2. On flip, GitHub's free secret scanning + push protection activate and the whole history is auto-scanned — expected clean per this audit.
+3. Suggested topics: `nextjs, typescript, tailwindcss, shadcn-ui, prisma, supabase, vercel, blog, portfolio, rtl, seo, pwa`.
+4. Standing reminder (SECURITY.md incident log): rotate the GitHub PAT and Supabase PAT when convenient — both remain valid and IM-exposed by definition.
+
+**Explicitly NOT changed:** LICENSE (none — all-rights-reserved by default; MIT on owner request), worklog history (kept; secret-free; a purge would need history rewrite + force push — not done without explicit owner order), `.env.example` absolute dev path (cosmetic), the dated "Current status" section (frozen snapshot).

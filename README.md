@@ -6,6 +6,10 @@
 Live website: **https://mehrdad.ir**
 Repository: **https://github.com/goolro/mehrdad-website**
 
+Bilingual (EN/FA) personal website, portfolio and writing archive —
+Next.js 16 App Router · TypeScript · Tailwind CSS 4 · shadcn/ui ·
+Prisma · Supabase Postgres · Vercel · PWA · full technical-SEO stack.
+
 ---
 
 ## What this project is
@@ -22,14 +26,18 @@ The site is:
   migrated historical archive with *original* publication dates restored)
 - the **contact funnel** (one clear path to start a conversation)
 
-## Deployment (cPanel, no SSH)
+## Deployment
 
-- Verified production path: build off-host → upload artifact → cPanel
-  Node.js App (Node 20, Passenger) → `node server.js`. Bun not required.
-- Runbook: [docs/CPANEL_DEPLOYMENT.md](docs/CPANEL_DEPLOYMENT.md) ·
-  Overview: [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)
-- Artifact builder: `bash scripts/build-production.sh` (database excluded —
-  production SQLite lives in `data/production.db`, survives every deploy).
+- **Production: Vercel** — every push to `main` auto-deploys; Postgres via
+  Supabase (connection string lives in Vercel env vars only, never in the
+  repo). Build config: `vercel.json`; the Prisma client is generated from
+  `prisma/schema.postgres.prisma` at build time.
+- **Legacy mirror: cPanel artifact path** (Node 20 Passenger, no SSH) —
+  runbook kept for reference:
+  [docs/CPANEL_DEPLOYMENT.md](docs/CPANEL_DEPLOYMENT.md) ·
+  overview: [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)
+- DB migration/seed tooling for Supabase lives in
+  `scripts/*-supabase.ts` (env-gated: `SUPABASE_TOKEN` — never hardcoded).
 
 ## Current status (2026-09-05)
 
@@ -94,7 +102,7 @@ built fast with AI. Results, decisions and failures are documented openly.
 | Framework | Next.js 16 (App Router) + TypeScript |
 | UI | Tailwind CSS 4 + shadcn/ui (New York) + Lucide icons |
 | Font | Vazirmatn (Persian-first typography) |
-| Data | Prisma ORM — SQLite (dev) / Turso cloud (`@prisma/adapter-libsql`) in production |
+| Data | Prisma ORM — SQLite (dev) / Supabase Postgres (production); optional libsql/Turso adapter remains in `src/lib/db.ts` |
 | Rendering | Server components + dynamic SSR on every route (per-request CSP nonce), API routes for forms/comments/chat |
 | Language | English (default) + Persian `fa` (full RTL) — persisted preference |
 | PWA | `manifest.json` + service worker + install prompt + shortcuts |
