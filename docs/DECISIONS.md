@@ -2014,3 +2014,13 @@ dependencies step, both jobs). Vercel installs were almost certainly failing
 the same way, which is why post-D-063 content pushes did not reach the live
 site. Fix: `npm install --package-lock-only` + `npm ci --dry-run` proof;
 package-lock.json committed. Deploys resume with the kilika/MVP changes.
+
+**D-069 correction (same day):** regenerating package-lock.json was NOT
+sufficient — msedge-tts@2.1.1 ships `preinstall: npx only-allow pnpm`, which
+by design exits non-zero under npm, so every `npm ci` (CI AND the Vercel
+install, which selected npm via the lockfile) kept failing. bun — the
+project's actual package manager — does not run dependency lifecycle scripts
+and has been installing this exact tree daily in dev. Fix: package-lock.json
+removed, CI installs switched to `bun install --frozen-lockfile` (setup-bun;
+node stays pinned via setup-node for the node-run steps). Vercel now detects
+bun.lock and installs with bun. npm's regenerated lockfile was discarded.

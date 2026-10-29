@@ -13,7 +13,7 @@ jobs:
       # dummy values — the build never queries the database (all pages are
       # dynamically rendered for the per-request CSP nonce), and no AI
       # service is called at build time. NOTE: NODE_ENV must NOT be set here —
-      # it makes `npm ci` skip devDependencies (eslint/tsc missing) and
+      # it makes installs skip devDependencies (eslint/tsc missing) and
       # `next build` already implies production.
       DATABASE_URL: "file:./ci.db"
       ADMIN_PASSWORD: "ci-dummy-password"
@@ -29,25 +29,32 @@ jobs:
       - name: Guard — prisma schema mirror in sync
         run: node scripts/check-schema-mirror.mjs
 
+      # node pinned for the node-run steps below (schema guard, build helpers)
       - uses: actions/setup-node@v7
         with:
           node-version: 20
-          cache: npm
+
+      # bun is the project's real package manager (bun.lock is the source of
+      # truth). npm ci was retired in D-069: msedge-tts ships a
+      # `preinstall: npx only-allow pnpm` guard that intentionally fails every
+      # npm install — bun neither runs dependency lifecycle scripts nor trips
+      # on it, and this exact tree installs daily in local dev with bun.
+      - uses: oven-sh/setup-bun@v2
 
       - name: Install dependencies
-        run: npm ci --include=dev
+        run: bun install --frozen-lockfile
 
       - name: Lint
-        run: npm run lint
+        run: bun run lint
 
       - name: Typecheck
-        run: npx tsc --noEmit
+        run: bunx tsc --noEmit
 
       - name: Create CI database schema (empty db otherwise - ISR prerender queries it)
-        run: npx prisma db push --skip-generate
+        run: bunx prisma db push --skip-generate
 
       - name: Build (prisma generate + next build)
-        run: npm run build
+        run: bun run build
 
   # NOTE: scripts/pentest-local.sh / pentest-round2.sh are intentionally NOT
   # part of CI — they are live-server penetration harnesses that need a
@@ -65,10 +72,11 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           node-version: 22
-          cache: npm
+
+      - uses: oven-sh/setup-bun@v2
 
       - name: Install dependencies
-        run: npm ci --include=dev
+        run: bun install --frozen-lockfile
 
       - name: Security regression suite (88 checks)
         run: node --expose-gc --experimental-strip-types scripts/security-checks.mts
