@@ -1946,3 +1946,5 @@ by design.
 **Kept as non-secrets (documented public-by-design):** INDEXNOW key (proves host control by protocol design), PostHog `phc_` public ingest key, the `<db-password>` URL template, CI's `ci-dummy-password`, and the `[REDACTED]` placeholders themselves.
 
 **No content change:** zero code/page/deployment changes — Vercel redeploys an identical site (docs-only diffs).
+
+**Post-record correction (same day, honest trail):** the D-066 commit itself briefly re-introduced the three prefixes by quoting the replacement table verbatim — caught by the same sweep method. A second filter-repo pass redacted those intermediate blobs, main was force-pushed again (adb612c→ab1d505), and a SECOND fresh mirror clone re-verified: 0 matches across all heads + tags, every blob and every commit message.
