@@ -1189,6 +1189,8 @@ export const ui = {
       search: 'Search articles',
       filterBy: 'Filter articles',
       suggestedQuestions: 'Suggested questions',
+      openMenu: 'Open menu',
+      closeMenu: 'Close menu',
     },
   },
   fa: {
@@ -2376,6 +2378,8 @@ export const ui = {
       search: 'جستجوی مقاله‌ها',
       filterBy: 'پالایش مقاله‌ها',
       suggestedQuestions: 'پیشنهاد سوال',
+      openMenu: 'باز کردن منو',
+      closeMenu: 'بستن منو',
     },
   },
 } as const;

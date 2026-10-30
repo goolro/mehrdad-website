@@ -2,12 +2,13 @@
 
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
 import { useApp, pick, VIEW_PATH } from './store';
 import { isFaPath, useLang } from './lang-context';
 import { ui } from './i18n';
 import type { Lang } from './i18n';
 import { Button } from '@/components/ui/button';
-import { Moon, Sun } from 'lucide-react';
+import { Menu, Moon, Sun, X } from 'lucide-react';
 
 export function Header() {
   const router = useRouter();
@@ -16,6 +17,25 @@ export function Header() {
   // route-aware language (lang-context.tsx): 'fa' is forced on /fa*
   const lang = useLang();
   const t = ui[lang];
+
+  // mobile menu (v0 round-3 parity): the compact horizontal scroll bar
+  // became a collapsible panel behind an accessible toggle — disclosure
+  // pattern with aria-expanded/aria-controls, Escape-to-close returning
+  // focus to the toggle, 44px touch rows, closed state out of the a11y tree
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const mobileToggleRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setMobileOpen(false);
+        mobileToggleRef.current?.focus();
+      }
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [mobileOpen]);
 
   /**
    * Explicit language choice — remembered so the browser-locale
@@ -109,6 +129,18 @@ export function Header() {
           >
             {mode === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
           </button>
+          {/* mobile menu toggle (md:hidden mirrors the old bar's breakpoint) —
+              44px square target, state announced via aria-expanded */}
+          <button
+            ref={mobileToggleRef}
+            onClick={() => setMobileOpen((o) => !o)}
+            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg border border-border p-2 text-muted-foreground transition-colors hover:text-foreground md:hidden"
+            aria-expanded={mobileOpen}
+            aria-controls="mobile-nav"
+            aria-label={mobileOpen ? t.a11y.closeMenu : t.a11y.openMenu}
+          >
+            {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
           {/* admin entry point deliberately NOT linked in the public header —
               the owner reaches the panel via the direct /admin URL (bookmark).
               Advertising the login path just hands scanners a target and lets
@@ -125,23 +157,32 @@ export function Header() {
         </div>
       </div>
 
-      {/* mobile nav */}
-      <nav className="flex gap-1 overflow-x-auto border-t border-border/40 px-3 py-2 md:hidden" aria-label={t.a11y.navMobile}>
-        {navItems.map((item) => (
-          <Link
-            key={item.key}
-            href={VIEW_PATH[item.key]}
-            aria-current={view === item.key ? 'page' : undefined}
-            className={`whitespace-nowrap rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
-              view === item.key
-                ? 'bg-violet-600/10 text-violet-600 dark:text-violet-400'
-                : 'text-muted-foreground'
-            }`}
-          >
-            {item.label}
-          </Link>
-        ))}
-      </nav>
+      {/* mobile nav — collapsible panel (closed = not rendered, so screen
+          readers and tab order skip it entirely); rows instead of the old
+          cramped horizontal scroll strip */}
+      {mobileOpen && (
+        <nav
+          id="mobile-nav"
+          className="flex flex-col gap-1 border-t border-border/40 px-3 py-2 md:hidden"
+          aria-label={t.a11y.navMobile}
+        >
+          {navItems.map((item) => (
+            <Link
+              key={item.key}
+              href={VIEW_PATH[item.key]}
+              onClick={() => setMobileOpen(false)}
+              aria-current={view === item.key ? 'page' : undefined}
+              className={`flex min-h-11 items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                view === item.key
+                  ? 'bg-violet-600/10 text-violet-600 dark:text-violet-400'
+                  : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+              }`}
+            >
+              {item.label}
+            </Link>
+          ))}
+        </nav>
+      )}
     </header>
   );
 }

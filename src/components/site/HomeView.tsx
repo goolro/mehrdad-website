@@ -58,18 +58,21 @@ export function HomeView({ initial }: { initial: HomeInitialData }) {
           <div className="absolute -top-24 start-1/4 h-96 w-96 rounded-full bg-violet-600/20 blur-3xl" />
           <div className="absolute top-32 end-0 h-80 w-80 rounded-full bg-fuchsia-600/10 blur-3xl" />
         </div>
-        <div className="mx-auto flex max-w-7xl flex-col items-center px-4 py-20 text-center sm:px-6 md:py-28">
-          <Badge variant="outline" className="mb-5 border-violet-500/40 bg-violet-600/10 px-4 py-1.5 text-sm text-violet-600 dark:text-violet-400">
+        {/* mobile (v0 round-3 parity): smaller/more balanced hero — reduced
+            base padding + type so headline and CTAs claim less of the phone
+            viewport; sm:/md: keep the previous desktop scale untouched */}
+        <div className="mx-auto flex max-w-7xl flex-col items-center px-4 py-12 text-center sm:px-6 sm:py-20 md:py-28">
+          <Badge variant="outline" className="mb-3 border-violet-500/40 bg-violet-600/10 px-3 py-1 text-xs text-violet-600 sm:mb-5 sm:px-4 sm:py-1.5 sm:text-sm dark:text-violet-400">
             ☼ {t.hero.badge}
           </Badge>
-          <h1 className="max-w-4xl text-4xl font-extrabold leading-tight tracking-tight sm:text-5xl md:text-6xl">
+          <h1 className="max-w-4xl text-3xl font-extrabold leading-tight tracking-tight sm:text-5xl md:text-6xl">
             {t.hero.title1}{' '}
             <span className="bg-gradient-to-r from-violet-600 to-fuchsia-500 bg-clip-text text-transparent">
               {t.hero.title2}
             </span>
           </h1>
-          <p className="mt-6 max-w-2xl text-lg text-muted-foreground">{t.hero.sub}</p>
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+          <p className="mt-4 max-w-2xl text-base text-muted-foreground sm:mt-6 sm:text-lg">{t.hero.sub}</p>
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-2.5 sm:mt-8 sm:gap-3">
             <Button
               size="lg"
               asChild
