@@ -407,11 +407,14 @@ function PostsTab({ t }: { t: T }) {
               <DialogHeader>
                 <DialogTitle dir="ltr">{preview.titleEn || preview.titleFa}</DialogTitle>
               </DialogHeader>
-              <div
-                className="prose-blog"
-                dir="ltr"
-                dangerouslySetInnerHTML={{ __html: preview.contentEn || `<p>${preview.titleFa}</p><p dir="rtl">این مقاله هنوز ترجمه نشده است.</p>` }}
-              />
+              {preview.contentEn ? (
+                <div className="prose-blog" dir="ltr" dangerouslySetInnerHTML={{ __html: preview.contentEn }} />
+              ) : (
+                <div className="prose-blog" dir="ltr">
+                  <p>{preview.titleFa}</p>
+                  <p dir="rtl">این مقاله هنوز ترجمه نشده است.</p>
+                </div>
+              )}
             </>
           )}
         </DialogContent>
