@@ -96,7 +96,7 @@ const deckSecurityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
-  // `standalone` serves the cPanel artifact flow (scripts/build-production.sh).
+  // `standalone` serves the cPanel artifact flow (scripts/archive/build-production.sh).
   // Vercel builds its own output and its builder FAILS on standalone tracing
   // (ENOENT .next/next-server.js.nft.json), so disable it there — VERCEL=1 is
   // set by the platform during Vercel builds.

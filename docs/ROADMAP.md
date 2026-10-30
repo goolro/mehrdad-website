@@ -1,6 +1,6 @@
 # ROADMAP — mehrdad.ir
 
-Last updated: 2026-09-02
+Last updated: 2026-10-30
 
 ## Done
 
@@ -95,3 +95,42 @@ Last updated: 2026-09-02
 2. Web-stories → import as notes or drop?
 3. Game project data (RIVORA/Hokm/Shelem) for a Work entry?
 4. LinkedIn profile URL for About/Contact cross-linking?
+
+## 2026-10 hardening audit — phases 1–6 complete (2026-10-30)
+
+A six-phase full audit of the live site and repo, one owner-ordered phase
+at a time, every phase verified live after deploy:
+
+- [x] Phase 1 — security: cron fail-closed bearer-only, durable global
+      budgets (DB-backed rate buckets), team-room hardening, BlogView XSS
+      fix, admin error scrub (`56d58ea`)
+- [x] Phase 2 — SEO: truthful hreflang (fa → real static `/fa`), JSON-LD
+      on 6 money pages, RSS autodiscovery, title.template, team-room
+      de-index (`98224f9`; autodiscovery made truly real in D-071)
+- [x] Phase 3 — performance: media −53 MB in place, next/image everywhere,
+      admin studios code-split, dead WebGL/dep removal, CI lockfile
+      unblocked (`2707a12`→`d8fb33a`, `3337d76`)
+- [x] Phase 4 — accessibility: WCAG 2.1 AA pass on visitor surfaces —
+      keyboard, landmarks, forms, contrast, motion (`716f880`)
+- [x] Phase 5 — i18n: /fa chrome strings resolve at build time
+      (SiteChrome context-scoping fix), nav aria-labels localized,
+      manifest single-locale (`210da2d`)
+- [x] Phase 6 — repo hygiene: scripts/ active-vs-archive split with an
+      operations map, CHANGELOG caught up through phase 6, this roadmap
+      section, history-size observation documented (owner decision)
+- [x] Dependency security (parallel owner/v0 pass): 47 Dependabot alerts
+      → 0 production vulnerabilities, bun.lock the only lockfile
+      (D-069–D-072)
+
+## Pending owner-side ops (unchanged until the owner acts)
+
+- [ ] Set `CRON_SECRET` in Vercel env vars — daily cron jobs stay 503
+      fail-closed until then (D-070/D-071)
+- [ ] Run `scripts/merge-duplicate-categories.sql` in the Supabase SQL
+      editor (duplicate category merge)
+- [ ] Rotate the exposed GitHub PAT + Supabase keys from the pre-audit
+      incident log; revoke the phase-5-era fine-grained PAT once phases
+      5–6 are confirmed pushed
+- [ ] Git history size (~197 MB, ~57 MB superseded media revisions):
+      optional `git filter-repo` media purge — rewrites every SHA, so it
+      is an explicit owner decision (see CHANGELOG phase-6 entry)

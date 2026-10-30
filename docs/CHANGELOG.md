@@ -4,6 +4,73 @@ All notable changes to mehrdad.ir. Format: Keep-a-Changelog-ish, newest first.
 
 ## [Unreleased]
 
+### Phase-6 repo hygiene: scripts/ organized, CHANGELOG/ROADMAP refreshed (2026-10-30)
+- **scripts/ split into active vs `archive/`**: 16 completed one-offs
+  (SQLite→Turso→Supabase migrations, six `seed-*` runs + their data blobs,
+  worklab restructure, cPanel alt-pipeline tooling + the root `Caddyfile`)
+  git-mv'd to `scripts/archive/` — rename-only commit, full history
+  preserved, nothing deleted. The 14 active tools stay at the top level;
+  `scripts/README.md` maps every file to its invoker and flags the one
+  PENDING owner op (`merge-duplicate-categories.sql` in Supabase).
+- **CHANGELOG caught up**: phases 2–5 of the hardening audit and the
+  dependency-security pass (D-069–D-072) had no entries — added below.
+- **ROADMAP refreshed** with the 2026-10 hardening-audit completion and
+  the remaining owner-side ops checklist.
+- **Observation (no action, owner decision):** repo size is ~197 MB —
+  ~57 MB is superseded media history (pre-compression MP4 revisions up to
+  22 MB each). A `git filter-repo` media purge would roughly halve the
+  clone but rewrites every commit SHA (DECISIONS references, v0 baselines,
+  existing clones) — not done unilaterally.
+
+### Dependency security pass: 47 Dependabot alerts → 0 production (D-069–D-072, 2026-10-30)
+- next 16.3.8→16.4.3, react 19.3.1, nodemailer 10.3.1, sanitize-html 2.18.1,
+  posthog-js 1.443.0; the two "unfixable" transitive advisories fixed
+  in-range via `overrides` (dompurify 3.4.17 via posthog-js, defu 6.1.7 via
+  the prisma CLI chain). Fresh `npm audit --omit=dev` = 0 vulnerabilities.
+- `package-lock.json` deleted again (v0 side effect) — `bun.lock` remains
+  the only lockfile (D-069); v0's PR #42 closed obsolete (brace-expansion
+  was dev-toolchain-only).
+
+### Phase-5 i18n: /fa chrome resolves at build time, aria-labels localized (2026-10-30)
+- **SiteChrome context-scoping fix**: the chrome read `useLang()` outside
+  the `LangProvider` it renders, so the static /fa HTML shipped an English
+  skip link (crawlers / no-JS visitors) and the `<html>` lang/dir effect
+  could flip fa/rtl back to en/ltr on a cold store. Route language now
+  resolves directly via `isFaPath(pathname)` — SSG HTML, first client
+  render and the `<html>` effect all agree; EN routes unchanged.
+- **Last hardcoded EN strings on /fa localized**: logo home link, main /
+  mobile / footer nav landmarks and the lang-banner live region now use
+  the `a11y` dict (5 new keys ×2) — screen readers no longer hear English
+  on the Persian route.
+- **manifest.json single-locale** (EN-purity rule): EN+FA concatenated
+  description → EN only, `dir: auto` → `ltr`. The `?lang=fa` flip and EN
+  pages verified unchanged (17/17 live assertions).
+
+### Phase-4 accessibility: WCAG 2.1 AA pass on visitor surfaces (2026-10-30)
+- Keyboard reachability, landmark/semantic structure, translated skip
+  link (`a11y.skipToContent`) with logical `start` offsets, form error
+  announcements, contrast fixes and reduced-motion handling across
+  visitor-facing components (commit `716f880`).
+
+### Phase-3 performance: dead code out, code-split, next/image everywhere (2026-10-30)
+- **-53 MB media** (112→60 MB) via in-place recompression with filenames
+  unchanged (no broken links); next/image (`fill`+`sizes`, optimized
+  `/_next/image` endpoint) on all visitor-facing images; the four admin
+  studios code-split behind `next/dynamic`; 44 files / ~8.4k lines of dead
+  WebGL code and 33 unused shadcn wrappers + 41 dead deps removed
+  (commits `2707a12`, `09f3f40`, `94f7bd0`, `a8eb69f`, `d8fb33a`).
+- **CI unblocked**: phase-3a's dependency removal left `bun.lock` desynced,
+  so `bun install --frozen-lockfile` (ci.yml default) had failed every run
+  since `2707a12` — lockfile regenerated (`3337d76`).
+
+### Phase-2 SEO: truthful hreflang, JSON-LD on money pages, RSS autodiscovery (2026-10-30)
+- hreflang now points fa → the real static `/fa` route (server-rendered
+  Persian, D-050), JSON-LD added on the 6 money pages, RSS autodiscovery
+  link in the layout, `title.template`, team-room de-indexed, traffic-tempo
+  sitemap, duplicate Business chip fix (commit `98224f9`). Note: the
+  autodiscovery link later proved inert on 21 pages that override
+  `alternates` (Next metadata merge) — fixed for real in D-071.
+
 ### Phase-1 security hardening: cron fail-closed, durable budgets, XSS/error-scrub (2026-10-30)
 - **Cron auth fixed (critical)**: every `/api/cron/*` route accepted the
   PUBLIC IndexNow key (`?key=`) as an alternative credential and stayed open
