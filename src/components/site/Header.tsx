@@ -1,18 +1,20 @@
 'use client';
 
 import Link from 'next/link';
+import { useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useApp, pick, VIEW_PATH } from './store';
 import { isFaPath, useLang } from './lang-context';
 import { ui } from './i18n';
 import type { Lang } from './i18n';
 import { Button } from '@/components/ui/button';
-import { Moon, Sun } from 'lucide-react';
+import { Menu, Moon, Sun, X } from 'lucide-react';
 
 export function Header() {
   const router = useRouter();
   const pathname = usePathname();
   const { setLang, view, setChatOpen, mode, setMode } = useApp();
+  const [mobileOpen, setMobileOpen] = useState(false);
   // route-aware language (lang-context.tsx): 'fa' is forced on /fa*
   const lang = useLang();
   const t = ui[lang];
@@ -101,6 +103,15 @@ export function Header() {
             </button>
           </div>
           <button
+            className="rounded-lg border border-border p-2 text-muted-foreground transition-colors hover:text-foreground md:hidden"
+            onClick={() => setMobileOpen((open) => !open)}
+            aria-label={mobileOpen ? (lang === 'fa' ? 'بستن منو' : 'Close navigation') : (lang === 'fa' ? 'باز کردن منو' : 'Open navigation')}
+            aria-expanded={mobileOpen}
+            aria-controls="mobile-navigation"
+          >
+            {mobileOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+          </button>
+          <button
             onClick={() => setMode(mode === 'dark' ? 'light' : 'dark')}
             className="rounded-lg border border-border p-2 text-muted-foreground transition-colors hover:text-foreground"
             aria-label={mode === 'dark' ? (lang === 'fa' ? 'حالت روشن' : 'Switch to light mode') : (lang === 'fa' ? 'حالت تاریک' : 'Switch to dark mode')}
@@ -125,23 +136,27 @@ export function Header() {
         </div>
       </div>
 
-      {/* mobile nav */}
-      <nav className="flex gap-1 overflow-x-auto border-t border-border/40 px-3 py-2 md:hidden" aria-label="Mobile navigation">
-        {navItems.map((item) => (
-          <Link
-            key={item.key}
-            href={VIEW_PATH[item.key]}
-            aria-current={view === item.key ? 'page' : undefined}
-            className={`whitespace-nowrap rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
-              view === item.key
-                ? 'bg-violet-600/10 text-violet-600 dark:text-violet-400'
-                : 'text-muted-foreground'
-            }`}
-          >
-            {item.label}
-          </Link>
-        ))}
-      </nav>
+      {mobileOpen && (
+        <nav id="mobile-navigation" className="border-t border-border/40 px-4 py-3 md:hidden" aria-label="Mobile navigation">
+          <div className="grid gap-1 sm:grid-cols-2">
+            {navItems.map((item) => (
+              <Link
+                key={item.key}
+                href={VIEW_PATH[item.key]}
+                aria-current={view === item.key ? 'page' : undefined}
+                onClick={() => setMobileOpen(false)}
+                className={`rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+                  view === item.key
+                    ? 'bg-violet-600/10 text-violet-600 dark:text-violet-400'
+                    : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                }`}
+              >
+                {item.label}
+              </Link>
+            ))}
+          </div>
+        </nav>
+      )}
     </header>
   );
 }

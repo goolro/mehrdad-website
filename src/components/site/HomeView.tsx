@@ -58,11 +58,11 @@ export function HomeView({ initial }: { initial: HomeInitialData }) {
           <div className="absolute -top-24 start-1/4 h-96 w-96 rounded-full bg-violet-600/20 blur-3xl" />
           <div className="absolute top-32 end-0 h-80 w-80 rounded-full bg-fuchsia-600/10 blur-3xl" />
         </div>
-        <div className="mx-auto flex max-w-7xl flex-col items-center px-4 py-20 text-center sm:px-6 md:py-28">
+        <div className="mx-auto flex max-w-7xl flex-col items-center px-4 py-16 text-center sm:px-6 md:py-28">
           <Badge variant="outline" className="mb-5 border-violet-500/40 bg-violet-600/10 px-4 py-1.5 text-sm text-violet-600 dark:text-violet-400">
             ☼ {t.hero.badge}
           </Badge>
-          <h1 className="max-w-4xl text-4xl font-extrabold leading-tight tracking-tight sm:text-5xl md:text-6xl">
+          <h1 className="max-w-4xl text-3xl font-extrabold leading-tight tracking-tight sm:text-5xl md:text-6xl">
             {t.hero.title1}{' '}
             <span className="bg-gradient-to-r from-violet-600 to-fuchsia-500 bg-clip-text text-transparent">
               {t.hero.title2}
