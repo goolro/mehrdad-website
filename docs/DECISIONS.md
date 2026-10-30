@@ -2115,3 +2115,32 @@ phase-4 tip. Integration decisions, verified in dev before push:
 
 Operator note: `CRON_SECRET` must be set in the Vercel environment (D-070) —
 until then the daily jobs stay stopped by design (503 fail-closed).
+
+## D-072 — v0 round-2 integration: the 2 "unfixable" transitive advisories fixed in-range (2026-10-30)
+
+v0's second pass (branch `fix/security-hardening` rebuilt from the stale
+phase-4 base 716f880) bumped nodemailer/sanitize-html/posthog-js and reported
+2 production advisories (defu high, dompurify critical) as unfixable without
+an architecture change. Findings against the REAL deployment tree:
+
+1. Both packages are transitive with in-range fixes: dompurify arrives via
+   posthog-js (`^3.4.13` allows 3.4.17), defu via the prisma CLI chain
+   c12/giget/rc9 (`^6.1.4` allows 6.1.7). v0's conclusion came from auditing
+   a stale npm lock, not the bun.lock that production installs.
+2. Applied: nodemailer 10.3.1, sanitize-html 2.18.1, posthog-js 1.443.0
+   (v0's targets, via bun); `dompurify 3.4.17` and `defu 6.1.7` forced
+   through the existing package.json `overrides` block (same style as the
+   sharp/@tailwindcss pins). `bun update <transitive>` was NOT usable — it
+   adds the package as a direct dependency instead of re-resolving
+   (observed twice: brace-expansion, then dompurify/defu; both cleaned).
+3. Production audit after: fresh `npm audit --omit=dev` = 0 vulnerabilities;
+   bun.lock holds exactly one dompurify@3.4.17 and one defu@6.1.7.
+   Note recorded: audit must reflect the pinned lock, not a fresh
+   resolution — a fresh lock hides stale-pin advisories.
+4. Housekeeping: `fix/security-hardening` deleted again after full
+   incorporation (f2d447e picked, 123c2a9 superseded, d9a2ae9 targets
+   applied + both advisories fixed). Tip archived in worklog.
+5. Process note for the owner: v0's workspace keeps branching from 716f880
+   (it does not see new main commits). Before each v0 run it must sync to
+   latest main, otherwise every round produces duplicate branches that need
+   manual reconciliation.
