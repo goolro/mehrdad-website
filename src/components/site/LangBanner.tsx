@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { useApp } from './store';
-import { isFaPath } from './lang-context';
+import { isFaPath, useLang } from './lang-context';
+import { ui } from './i18n';
 import { Languages, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -25,6 +26,11 @@ const DISMISS_KEY = 'mehrdad-lang-banner';
 export function LangBanner() {
   const { setLang } = useApp();
   const pathname = usePathname();
+  // i18n phase-5: the live-region label is chrome (not the pill's bilingual
+  // copy, which stays hardcoded per D-019) — announce it in the visitor's
+  // language instead of hardcoded English on the Persian route.
+  const lang = useLang();
+  const t = ui[lang];
   const [show, setShow] = useState(false);
 
   // 1.2s delay preserved (original UX) — but now the role="status" region is
@@ -54,7 +60,7 @@ export function LangBanner() {
   // populated, so an always-mounted empty region renders here and the pill
   // is injected inside it once `show` flips.
   return (
-    <div role="status" aria-label="Language suggestion" aria-live="polite">
+    <div role="status" aria-label={t.a11y.langSuggestion} aria-live="polite">
       {show && !isFaPath(pathname) && <LangSuggestion onAccept={accept} onDismiss={dismiss} />}
     </div>
   );

@@ -48,7 +48,7 @@ export function Footer() {
             </div>
           </div>
 
-          <nav className="flex flex-wrap items-center justify-center gap-4 text-sm text-muted-foreground" aria-label="Footer navigation">
+          <nav className="flex flex-wrap items-center justify-center gap-4 text-sm text-muted-foreground" aria-label={t.a11y.navFooter}>
             {/* real anchors (structural audit 2026-09-08): footer nav was JS
                 buttons — every page lost its simplest crawlable internal
                 links; <a> restores crawling, middle-click and link semantics

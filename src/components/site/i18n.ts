@@ -1171,9 +1171,16 @@ export const ui = {
       shareProject: 'Share this project',
     },
     // a11y labels (phase-4 accessibility pass): icon-only controls and the
-    // skip link must be announced in the visitor's language, not hardcoded
+    // skip link must be announced in the visitor's language, not hardcoded.
+    // i18n phase-5: landmark/nav region labels added — they were the last
+    // hardcoded EN strings read by screen readers on the Persian /fa route.
     a11y: {
       skipToContent: 'Skip to main content',
+      homeLink: 'Mehrdad home',
+      navMain: 'Main navigation',
+      navMobile: 'Mobile navigation',
+      navFooter: 'Footer navigation',
+      langSuggestion: 'Language suggestion',
       send: 'Send message',
       close: 'Close',
       cancel: 'Cancel',
@@ -2352,8 +2359,15 @@ export const ui = {
     },
     // برچسب‌های دسترس‌پذیری (فاز ۴): کنترل‌های فقط‌آیکونی و لینک پرش باید به
     // زبان بازدیدکننده خوانده شوند، نه متن ثابت انگلیسی
+    // (فاز ۵: برچسب‌های ناحیه‌های ناوبری هم اضافه شد — آخرین رشته‌های ثابت
+    // انگلیسی که صفحه‌خوان‌ها در مسیر فارسی /fa می‌خواندند)
     a11y: {
       skipToContent: 'پرش به محتوای اصلی',
+      homeLink: 'خانهٔ مهرداد',
+      navMain: 'ناوبری اصلی',
+      navMobile: 'ناوبری موبایل',
+      navFooter: 'ناوبری پاورقی',
+      langSuggestion: 'پیشنهاد زبان',
       send: 'ارسال پیام',
       close: 'بستن',
       cancel: 'انصراف',

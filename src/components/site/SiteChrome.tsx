@@ -3,7 +3,7 @@
 import { useEffect, useLayoutEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useApp, registerNavigate, viewFromPathname } from './store';
-import { LangProvider, useLang } from './lang-context';
+import { isFaPath, LangProvider } from './lang-context';
 import { Header } from './Header';
 import { Footer } from './Footer';
 import { ChatWidget } from './ChatWidget';
@@ -31,14 +31,24 @@ const useIsoLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : use
 export function SiteChrome({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
-  const { theme, mode } = useApp();
-  // route-aware language (lang-context.tsx): 'fa' is forced on /fa* routes
-  // so the <html> lang/dir effect matches the SSR'd Persian content there;
-  // every other route keeps the persisted store language (unchanged)
-  const lang = useLang();
+  const { theme, mode, lang: storeLang } = useApp();
+  // i18n phase-5 (context-scoping fix): SiteChrome CANNOT use useLang() here —
+  // useContext only sees providers ABOVE this component, and the LangProvider
+  // that SiteChrome itself renders only covers its CHILDREN (header, footer,
+  // page content). Reading the context from the component that provides it
+  // always returned the store fallback, which had two visible effects on /fa:
+  //  1. the skip link was prerendered ENGLISH in the static HTML (crawlers and
+  //     no-JS visitors got "Skip to main content" on a Persian page) — it only
+  //     self-healed after the boot script wrote lang:'fa' to localStorage and
+  //     the store rehydrated, a path that never runs without JS;
+  //  2. the <html> lang/dir effect below could flip fa/rtl back to en/ltr on
+  //     /fa whenever the store language was still 'en' (cold localStorage,
+  //     storage blocked), silently undoing the boot script's pre-paint fix.
+  // Resolving the route language DIRECTLY (same rule as LangProvider uses
+  // internally) makes the SSG HTML, the first client render and the <html>
+  // effect agree on every route; EN routes are unchanged (store-driven).
+  const lang = isFaPath(pathname) ? 'fa' : storeLang;
   // a11y phase-4: skip link must be translated like the rest of the chrome.
-  // useLang here is already imported above; when the provider hasn't
-  // hydrated yet it falls back to 'en' (same as every other i18n consumer).
   const t = ui[lang];
 
   // Full-screen game routes (/play/*) and the content factory (/factory,

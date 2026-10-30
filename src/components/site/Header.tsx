@@ -54,7 +54,7 @@ export function Header() {
         <Link
           href="/"
           className="flex items-center gap-2 font-bold tracking-tight"
-          aria-label="Mehrdad home"
+          aria-label={t.a11y.homeLink}
         >
           <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-violet-600 to-fuchsia-600 text-lg text-white shadow-lg shadow-violet-600/20">
             ☼
@@ -64,7 +64,7 @@ export function Header() {
           </span>
         </Link>
 
-        <nav className="hidden items-center gap-1 md:flex" aria-label="Main navigation">
+        <nav className="hidden items-center gap-1 md:flex" aria-label={t.a11y.navMain}>
           {navItems.map((item) => (
             <Link
               key={item.key}
@@ -126,7 +126,7 @@ export function Header() {
       </div>
 
       {/* mobile nav */}
-      <nav className="flex gap-1 overflow-x-auto border-t border-border/40 px-3 py-2 md:hidden" aria-label="Mobile navigation">
+      <nav className="flex gap-1 overflow-x-auto border-t border-border/40 px-3 py-2 md:hidden" aria-label={t.a11y.navMobile}>
         {navItems.map((item) => (
           <Link
             key={item.key}
