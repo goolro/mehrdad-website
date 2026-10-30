@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { useApp, pick } from './store';
 import { useLang } from './lang-context';
@@ -206,9 +207,9 @@ export function HomeView({ initial }: { initial: HomeInitialData }) {
               href={`/blog/${p.slug}`}
               className="group block overflow-hidden rounded-2xl border border-border bg-card text-start transition-all hover:-translate-y-1 hover:shadow-lg"
             >
-              <div className="aspect-video w-full overflow-hidden bg-muted">
+              <div className="relative aspect-video w-full overflow-hidden bg-muted">
                 {p.cover ? (
-                  <img src={p.cover} alt="" className="h-full w-full object-cover transition-transform group-hover:scale-105" loading="lazy" />
+                  <Image src={p.cover} alt="" fill sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw" className="object-cover transition-transform group-hover:scale-105" />
                 ) : (
                   <div className="flex h-full items-center justify-center">
                     <FileText className="h-10 w-10 text-muted-foreground/40" />

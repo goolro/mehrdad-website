@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useApp, pick, formatDate } from './store';
 import { ui } from './i18n';
@@ -273,9 +274,9 @@ export function BlogCard({ post }: { post: PostItem }) {
       href={`/blog/${post.slug}`}
       className="group block overflow-hidden rounded-2xl border border-border bg-card text-start transition-all hover:-translate-y-1 hover:border-violet-500/50 hover:shadow-lg"
     >
-      <div className="aspect-video w-full overflow-hidden bg-muted">
+      <div className="relative aspect-video w-full overflow-hidden bg-muted">
         {post.cover ? (
-          <img src={post.cover} alt="" loading="lazy" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
+          <Image src={post.cover} alt="" fill sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw" className="object-cover transition-transform duration-300 group-hover:scale-105" />
         ) : (
           <div className="flex h-full items-center justify-center">
             <FileText className="h-10 w-10 text-muted-foreground/40" />
@@ -401,7 +402,9 @@ export function PostDetail({ post, related, shareUrl }: { post: FullPost; relate
       )}
 
       {post.cover && (
-        <img src={post.cover} alt={title} className="mt-7 w-full rounded-2xl object-cover shadow-lg" />
+        <div className="relative mt-7 aspect-[16/9] w-full overflow-hidden rounded-2xl shadow-lg">
+          <Image src={post.cover} alt={title} fill priority sizes="(min-width: 1024px) 768px, 100vw" className="object-cover" />
+        </div>
       )}
 
       {pick(lang, post.contentEn, post.contentFa) ? (

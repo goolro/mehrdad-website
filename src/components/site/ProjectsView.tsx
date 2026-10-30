@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useApp, pick } from './store';
 import { pct, ui } from './i18n';
@@ -533,11 +534,9 @@ export function ProjectDetail({ project, shareUrl }: { project: ProjectDetailRow
       <h1 className="mt-4 text-3xl font-extrabold leading-tight sm:text-4xl">{title}</h1>
 
       {project.cover && (
-        <img
-          src={project.cover}
-          alt={title}
-          className="mx-auto mt-7 w-full max-w-[240px] rounded-2xl object-cover shadow-md sm:max-w-[300px]"
-        />
+        <div className="relative mx-auto mt-7 aspect-[16/9] w-full max-w-[240px] overflow-hidden rounded-2xl shadow-md sm:max-w-[300px]">
+          <Image src={project.cover} alt={title} fill priority sizes="(min-width: 640px) 300px, calc(100vw - 2rem)" className="object-cover" />
+        </div>
       )}
 
       <div className="prose-blog mt-8" dir={rtl ? 'rtl' : 'ltr'}>
@@ -687,16 +686,19 @@ export function ProjectDetail({ project, shareUrl }: { project: ProjectDetailRow
                     <p className="text-xs font-semibold text-muted-foreground">
                       {pick(lang, s.titleEn, s.titleFa)}
                     </p>
-                    <img
-                      src={s.qr}
-                      alt={pick(
-                        lang,
-                        `QR code of Koko's ${s.titleEn}`,
-                        `کد QR ${s.titleFa} کوکو`,
-                      )}
-                      className="w-32 rounded-lg sm:w-44"
-                      loading="lazy"
-                    />
+                    <div className="relative aspect-square w-32 overflow-hidden rounded-lg sm:w-44">
+                      <Image
+                        src={s.qr}
+                        alt={pick(
+                          lang,
+                          `QR code of Koko's ${s.titleEn}`,
+                          `کد QR ${s.titleFa} کوکو`,
+                        )}
+                        fill
+                        sizes="(min-width: 640px) 176px, 128px"
+                        className="object-contain"
+                      />
+                    </div>
                     <a
                       href={s.href}
                       target="_blank"
@@ -814,12 +816,13 @@ export function ProjectDetail({ project, shareUrl }: { project: ProjectDetailRow
           </h2>
           <ul className="mt-4 grid grid-cols-2 gap-3 sm:gap-4">
             {profile.media.map((shot) => (
-              <li key={shot.src}>
-                <img
+              <li key={shot.src} className="relative aspect-[9/16] w-full overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+                <Image
                   src={shot.src}
                   alt={pick(lang, shot.altEn, shot.altFa)}
-                  loading="lazy"
-                  className="w-full rounded-2xl border border-border bg-card shadow-sm"
+                  fill
+                  sizes="(min-width: 768px) 370px, 50vw"
+                  className="object-cover"
                 />
               </li>
             ))}
