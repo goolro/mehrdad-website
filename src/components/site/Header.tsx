@@ -159,11 +159,11 @@ export function Header() {
 
       {/* mobile nav — collapsible panel (closed = not rendered, so screen
           readers and tab order skip it entirely); rows instead of the old
-          cramped horizontal scroll strip */}
+          cramped horizontal scroll strip; sm+ goes 2-col (v0 382384f layout) */}
       {mobileOpen && (
         <nav
           id="mobile-nav"
-          className="flex flex-col gap-1 border-t border-border/40 px-3 py-2 md:hidden"
+          className="grid grid-cols-1 gap-1 border-t border-border/40 px-3 py-2 sm:grid-cols-2 md:hidden"
           aria-label={t.a11y.navMobile}
         >
           {navItems.map((item) => (
