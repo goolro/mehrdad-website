@@ -161,7 +161,10 @@ export function FdeView() {
             <Reveal key={r.num} delay={i * 90}>
               <div className="group flex h-full flex-col rounded-2xl border border-border bg-card p-6 transition-all hover:-translate-y-1 hover:border-violet-500/50 hover:shadow-lg hover:shadow-violet-600/10">
                 <div className="flex items-center justify-between">
-                  <span className="text-3xl font-extrabold text-violet-600/30 dark:text-violet-400/30">{r.num}</span>
+                  {/* decorative oversized numeral — duplicated by the card's
+                      h3 position in reading order; low-contrast by design, so
+                      hide it from AT instead of fighting the visual intent */}
+                  <span aria-hidden="true" className="text-3xl font-extrabold text-violet-600/30 dark:text-violet-400/30">{r.num}</span>
                   <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-600/10 text-violet-600 dark:text-violet-400">
                     {i === 0 ? <PackageSearch className="h-5 w-5" /> : i === 1 ? <Compass className="h-5 w-5" /> : <BrainCircuit className="h-5 w-5" />}
                   </div>

@@ -27,6 +27,10 @@ export function ChatWidget() {
   // live token stream: null = idle, string = assistant bubble being typed out
   const [streamText, setStreamText] = useState<string | null>(null);
   const sessionIdRef = useRef<string>('');
+  // focus target: opening the dialog must move focus INTO it (a11y phase-4) —
+  // keyboard users land straight on the input instead of staying behind the
+  // overlay; also makes the container-level Escape handler always work
+  const inputRef = useRef<HTMLInputElement>(null);
   // owner token issued TOGETHER with the sessionId (privacy: round-3 L4).
   // The server only continues/deletes a session for the caller that holds
   // both — this ref is the only place the raw token ever lives client-side.
@@ -89,6 +93,16 @@ export function ChatWidget() {
   useEffect(() => {
     if (chatOpen) scrollToBottom(false);
   }, [chatOpen, scrollToBottom]);
+
+  // a11y phase-4: opening the chat moves focus into the dialog (the input),
+  // and Escape closes it — the panel is role="dialog" and was previously
+  // keyboard-inoperable (no focus move, no Escape, no aria-modal)
+  useEffect(() => {
+    if (chatOpen) {
+      const t = setTimeout(() => inputRef.current?.focus(), 50);
+      return () => clearTimeout(t);
+    }
+  }, [chatOpen]);
 
   function handleTranscriptScroll() {
     const el = scrollRef.current;
@@ -220,6 +234,13 @@ export function ChatWidget() {
     }
   }
 
+  function handleDialogKeyDown(e: React.KeyboardEvent) {
+    if (e.key === 'Escape') {
+      e.stopPropagation();
+      setChatOpen(false);
+    }
+  }
+
   async function submitLead(e: React.FormEvent) {
     e.preventDefault();
     if (!sessionIdRef.current || leadSending) return;
@@ -276,7 +297,9 @@ export function ChatWidget() {
       className="site-chat fixed bottom-5 end-5 z-50 flex h-[32rem] w-[calc(100vw-2.5rem)] max-w-sm flex-col overflow-hidden rounded-2xl border border-border bg-background shadow-2xl"
       dir={lang === 'fa' ? 'rtl' : 'ltr'}
       role="dialog"
+      aria-modal="true"
       aria-label={t.chat.title}
+      onKeyDown={handleDialogKeyDown}
     >
       <div className="flex items-center justify-between border-b border-border bg-gradient-to-r from-violet-600 to-fuchsia-600 px-4 py-3 text-white">
         <div className="flex items-center gap-2">
@@ -314,7 +337,7 @@ export function ChatWidget() {
           >
             <Trash2 className="h-4 w-4" />
           </button>
-          <button onClick={() => setChatOpen(false)} className="rounded-lg p-1.5 hover:bg-white/20" aria-label="Close">
+          <button onClick={() => setChatOpen(false)} className="rounded-lg p-1.5 hover:bg-white/20" aria-label={t.a11y.close}>
             <X className="h-4 w-4" />
           </button>
         </div>
@@ -326,7 +349,7 @@ export function ChatWidget() {
           onScroll={handleTranscriptScroll}
           className="chat-scroll absolute inset-0 overflow-y-auto p-3"
         >
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-3" role="log" aria-live="polite" aria-label={t.chat.title}>
           {messages.map((m, i) => (
             <div
               key={i}
@@ -402,17 +425,29 @@ export function ChatWidget() {
                 className="h-8 text-xs"
                 dir="auto"
               />
-              {leadError && <p className="text-[11px] text-red-500">{t.chat.requestError}</p>}
+              {leadError && (
+                <p role="alert" className="text-[11px] text-red-600 dark:text-red-400">
+                  {t.chat.requestError}
+                </p>
+              )}
               <div className="flex gap-1.5">
                 <Button
                   type="submit"
                   size="sm"
                   disabled={leadSending}
+                  aria-busy={leadSending}
                   className="h-8 flex-1 bg-gradient-to-r from-violet-600 to-fuchsia-600 text-xs text-white"
                 >
                   {leadSending ? t.chat.sending : t.chat.sendRequest}
                 </Button>
-                <Button type="button" size="sm" variant="outline" className="h-8 text-xs" onClick={() => setLead('idle')}>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  className="h-8 text-xs"
+                  onClick={() => setLead('idle')}
+                  aria-label={t.a11y.cancel}
+                >
                   ✕
                 </Button>
               </div>
@@ -449,7 +484,7 @@ export function ChatWidget() {
       )}
 
       {showSuggestions && (
-        <div className="border-t border-border px-3 pt-2 pb-1" aria-label={lang === 'fa' ? 'پیشنهاد سوال' : 'Suggested questions'}>
+        <div className="border-t border-border px-3 pt-2 pb-1" aria-label={t.a11y.suggestedQuestions}>
           <div className="flex max-h-24 flex-wrap gap-1.5 overflow-y-auto">
             {t.fde.suggestions.map((q) => (
               <button
@@ -497,16 +532,20 @@ export function ChatWidget() {
         className="flex items-center gap-2 border-t border-border p-3"
       >
         <Input
+          ref={inputRef}
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder={t.chat.placeholder}
           className="flex-1"
           dir="auto"
+          aria-label={t.chat.placeholder}
         />
         <Button
           type="submit"
           size="icon"
           disabled={loading || !input.trim()}
+          aria-busy={loading}
+          aria-label={t.a11y.send}
           className="bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white"
         >
           <Send className="h-4 w-4 rtl:rotate-180" />

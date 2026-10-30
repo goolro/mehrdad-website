@@ -119,6 +119,31 @@
   body {
     @apply bg-background text-foreground;
   }
+  /* a11y phase-4: global keyboard focus indicator. The UA default outline is
+     inconsistent across browsers and the outline-ring/50 helper only sets a
+     half-opacity COLOR — elements without their own focus-visible:ring-*
+     class (plain <button>, custom chips, cards) showed no reliable focus.
+     Components that define their own focus-visible styles keep overriding
+     this (they cascade later / more specific). */
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+}
+
+/* a11y phase-4: close the reduced-motion gap for the Tailwind utility
+   animations (spin/pulse/bounce/ping) that the per-component reduced-motion
+   blocks don't cover — chat typing dots, spinners, unseen-badge pings, the
+   investors eyebrow. Spinners STOP (not disappear): the surrounding text
+   already announces the busy state. */
+@media (prefers-reduced-motion: reduce) {
+  .animate-spin,
+  .animate-pulse,
+  .animate-bounce,
+  .animate-ping,
+  .animate-ping-slow {
+    animation: none !important;
+  }
 }
 
 /* ── Persian font support ── */

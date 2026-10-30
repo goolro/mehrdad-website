@@ -261,7 +261,7 @@ export function DeckView() {
               </span>
             </div>
           </div>
-          <p className="mt-12 text-center text-[12px] font-semibold text-white/40">{d.chrome.scroll}</p>
+          <p className="mt-12 text-center text-[12px] font-semibold text-white/60">{d.chrome.scroll}</p>
         </div>
       </section>
 
@@ -326,7 +326,7 @@ export function DeckView() {
               <div className="relative z-10 flex flex-col items-center gap-1.5">
                 {d.s3.cycle.map((c, i) => (
                   <span key={c} className="flex flex-col items-center gap-1.5">
-                    {i > 0 && <ArrowDown className="h-3.5 w-3.5 text-white/35" />}
+                    {i > 0 && <ArrowDown className="h-3.5 w-3.5 text-white/60" />}
                     <span className="font-mono text-[15px] font-bold tracking-[0.3em] text-[#d9f45a]">{c}</span>
                   </span>
                 ))}
@@ -389,7 +389,7 @@ export function DeckView() {
             {d.s4.items.map((it, i) => (
               <li key={it.t} className={`py-6 ${i > 0 ? 'border-t border-[#152a1f]/12' : ''}`}>
                 <div className="flex items-baseline gap-4">
-                  <span className="font-mono text-[12px] font-bold text-[#152a1f]/45" dir="ltr">{String(i + 1).padStart(2, '0')}</span>
+                  <span className="font-mono text-[12px] font-bold text-[#152a1f]/70" dir="ltr">{String(i + 1).padStart(2, '0')}</span>
                   <div>
                     <p className="text-[16.5px] font-extrabold">{it.t}</p>
                     <p className="mt-1.5 max-w-md text-[13.5px] leading-6 text-[#152a1f]/65">{it.d}</p>
@@ -410,7 +410,7 @@ export function DeckView() {
               const Icon = [Target, Lightbulb, TrendingUp][i];
               return (
                 <div key={st.t} className="relative rounded-2xl p-6" style={{ backgroundColor: YELLOW_CARD }}>
-                  <span className="absolute end-5 top-5 font-mono text-[11.5px] font-bold text-[#152a1f]/45" dir="ltr">{String(i + 1).padStart(2, '0')}</span>
+                  <span className="absolute end-5 top-5 font-mono text-[11.5px] font-bold text-[#152a1f]/70" dir="ltr">{String(i + 1).padStart(2, '0')}</span>
                   <span aria-hidden className="grid h-10 w-10 place-items-center rounded-xl bg-[#142b21] text-[#d9f45a]">
                     <Icon className="h-4.5 w-4.5" />
                   </span>
@@ -436,7 +436,7 @@ export function DeckView() {
           <div className="mt-4 grid grid-cols-2 gap-3">
             {d.s6.cells.map((c, i) => (
               <div key={c.t} className="rounded-2xl border border-[#152a1f]/10 bg-white p-4">
-                <span className="font-mono text-[11px] font-bold text-[#152a1f]/45" dir="ltr">{String(i + 1).padStart(2, '0')}</span>
+                <span className="font-mono text-[11px] font-bold text-[#152a1f]/70" dir="ltr">{String(i + 1).padStart(2, '0')}</span>
                 <p className="mt-1.5 text-[14.5px] font-extrabold">{c.t}</p>
                 <p className="mt-0.5 text-[12px] leading-5 text-[#152a1f]/60">{c.d}</p>
               </div>
@@ -462,7 +462,7 @@ export function DeckView() {
             { c: d.s6.cells[3], pos: 'start-2 bottom-8' },
           ].map(({ c, pos }, i) => (
             <div key={c.t} className={`absolute ${pos} w-44 rounded-2xl border border-[#152a1f]/10 bg-white p-4 shadow-md`}>
-              <span className="font-mono text-[11px] font-bold text-[#152a1f]/45" dir="ltr">{String(i + 1).padStart(2, '0')}</span>
+              <span className="font-mono text-[11px] font-bold text-[#152a1f]/70" dir="ltr">{String(i + 1).padStart(2, '0')}</span>
               <p className="mt-1 text-[14.5px] font-extrabold">{c.t}</p>
               <p className="mt-0.5 text-[12px] text-[#152a1f]/60">{c.d}</p>
             </div>
@@ -537,7 +537,7 @@ export function DeckView() {
           <div className="mt-10 grid gap-8 md:grid-cols-3 md:gap-0">
             {d.s9.cols.map((c, i) => (
               <div key={c.k} className={`md:px-8 ${i > 0 ? 'md:border-s md:border-white/12' : 'md:pe-8'} ${i === 0 ? '' : ''}`}>
-                <span className="font-mono text-[11.5px] text-white/40" dir="ltr">{String(i + 1).padStart(2, '0')}</span>
+                <span className="font-mono text-[11.5px] text-white/60" dir="ltr">{String(i + 1).padStart(2, '0')}</span>
                 <p className="mt-6 font-mono text-[22px] font-bold tracking-wide text-[#d9f45a]" dir="auto">{c.k}</p>
                 <p className="mt-3 text-[13.5px] leading-6 text-white/65">{c.d}</p>
               </div>
@@ -760,7 +760,7 @@ export function DeckView() {
             <ol>
               {d.s15.steps.map((st, i) => (
                 <li key={st.t} className={`flex gap-5 py-5 ${i > 0 ? 'border-t border-white/12' : ''}`}>
-                  <span className="font-mono text-[12px] font-bold text-white/40" dir="ltr">{String(i + 1).padStart(2, '0')}</span>
+                  <span className="font-mono text-[12px] font-bold text-white/60" dir="ltr">{String(i + 1).padStart(2, '0')}</span>
                   <div>
                     <p className="text-[16.5px] font-extrabold">{st.t}</p>
                     <p className="mt-1 text-[13.5px] leading-6 text-white/60">{st.d}</p>
@@ -969,7 +969,7 @@ export function DeckView() {
         </div>
 
         <div className="relative border-t border-white/10">
-          <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-2 px-4 py-6 text-[11px] font-semibold text-white/40 sm:flex-row sm:px-6">
+          <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-2 px-4 py-6 text-[11px] font-semibold text-white/60 sm:flex-row sm:px-6">
             <span>{d.chrome.deckFooter}</span>
             <span>{d.chrome.confidential}</span>
           </div>

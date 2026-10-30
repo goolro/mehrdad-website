@@ -11,6 +11,7 @@ import { LangBanner } from './LangBanner';
 import { ThemeBackground } from './ThemeBackground';
 import { RouteIndicator } from './RouteIndicator';
 import { routeNavStart, routeNavEnd } from '@/lib/nav-indicator';
+import { ui } from './i18n';
 
 /**
  * useLayoutEffect runs BEFORE the browser paints; useEffect runs after.
@@ -35,6 +36,10 @@ export function SiteChrome({ children }: { children: React.ReactNode }) {
   // so the <html> lang/dir effect matches the SSR'd Persian content there;
   // every other route keeps the persisted store language (unchanged)
   const lang = useLang();
+  // a11y phase-4: skip link must be translated like the rest of the chrome.
+  // useLang here is already imported above; when the provider hasn't
+  // hydrated yet it falls back to 'en' (same as every other i18n consumer).
+  const t = ui[lang];
 
   // Full-screen game routes (/play/*) and the content factory (/factory,
   // preview-workspace only) are BARE surfaces: no header, footer, chat
@@ -158,9 +163,22 @@ export function SiteChrome({ children }: { children: React.ReactNode }) {
   return (
     <LangProvider>
       <div className="relative isolate flex min-h-screen flex-col text-foreground">
+        {/* a11y phase-4: skip link — first tab stop on every page. Visually
+            hidden until focused (sr-only → fixed visible pill). RTL-safe via
+            logical start offset. */}
+        <a
+          href="#main"
+          className="sr-only focus:not-sr-only focus:fixed focus:start-4 focus:top-4 focus:z-[100] focus:rounded-lg focus:bg-violet-600 focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-white focus:shadow-lg"
+        >
+          {t.a11y.skipToContent}
+        </a>
         <ThemeBackground themeId={theme} />
         <Header />
-        <main className="relative z-10 flex-1">{children}</main>
+        {/* a11y phase-4: target of the skip link; tabIndex=-1 lets the link
+            actually move focus/scroll position into the content */}
+        <main id="main" tabIndex={-1} className="relative z-10 flex-1 focus:outline-none">
+          {children}
+        </main>
         <Footer />
         <ChatWidget />
         <LangBanner />

@@ -69,6 +69,7 @@ export function Header() {
             <Link
               key={item.key}
               href={VIEW_PATH[item.key]}
+              aria-current={view === item.key ? 'page' : undefined}
               className={`rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
                 view === item.key
                   ? 'bg-violet-600/10 text-violet-600 dark:text-violet-400'
@@ -116,6 +117,8 @@ export function Header() {
             size="sm"
             className="hidden bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white hover:from-violet-700 hover:to-fuchsia-700 sm:inline-flex"
             onClick={() => setChatOpen(true)}
+            aria-haspopup="dialog"
+            aria-label={t.chat.title}
           >
             ✦ AI
           </Button>
@@ -128,6 +131,7 @@ export function Header() {
           <Link
             key={item.key}
             href={VIEW_PATH[item.key]}
+            aria-current={view === item.key ? 'page' : undefined}
             className={`whitespace-nowrap rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
               view === item.key
                 ? 'bg-violet-600/10 text-violet-600 dark:text-violet-400'

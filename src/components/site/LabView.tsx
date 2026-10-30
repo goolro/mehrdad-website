@@ -57,7 +57,7 @@ export function LabView({ initialProjects }: { initialProjects: ProjectItem[] })
                       <Wrench className="h-3.5 w-3.5 text-amber-500" />
                       {t.projects.progress}
                     </span>
-                    <span className="font-bold text-amber-600 dark:text-amber-400">{p.progress}%</span>
+                    <span className="font-bold text-amber-700 dark:text-amber-400">{p.progress}%</span>
                   </div>
                   <ProgressBar value={p.progress} barCls="bg-gradient-to-r from-amber-500 to-orange-500" />
                 </div>

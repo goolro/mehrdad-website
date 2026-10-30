@@ -1170,6 +1170,19 @@ export const ui = {
       shareService: 'Share this service',
       shareProject: 'Share this project',
     },
+    // a11y labels (phase-4 accessibility pass): icon-only controls and the
+    // skip link must be announced in the visitor's language, not hardcoded
+    a11y: {
+      skipToContent: 'Skip to main content',
+      send: 'Send message',
+      close: 'Close',
+      cancel: 'Cancel',
+      prevPage: 'Previous page',
+      nextPage: 'Next page',
+      search: 'Search articles',
+      filterBy: 'Filter articles',
+      suggestedQuestions: 'Suggested questions',
+    },
   },
   fa: {
     nav: {
@@ -2336,6 +2349,19 @@ export const ui = {
       shareArticle: 'اشتراک‌گذاری این مقاله',
       shareService: 'اشتراک‌گذاری این خدمت',
       shareProject: 'اشتراک‌گذاری این طرح',
+    },
+    // برچسب‌های دسترس‌پذیری (فاز ۴): کنترل‌های فقط‌آیکونی و لینک پرش باید به
+    // زبان بازدیدکننده خوانده شوند، نه متن ثابت انگلیسی
+    a11y: {
+      skipToContent: 'پرش به محتوای اصلی',
+      send: 'ارسال پیام',
+      close: 'بستن',
+      cancel: 'انصراف',
+      prevPage: 'صفحهٔ قبلی',
+      nextPage: 'صفحهٔ بعدی',
+      search: 'جستجوی مقاله‌ها',
+      filterBy: 'پالایش مقاله‌ها',
+      suggestedQuestions: 'پیشنهاد سوال',
     },
   },
 } as const;

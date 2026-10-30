@@ -83,7 +83,7 @@ export function PwaClient() {
       <span className="text-xs font-medium sm:text-sm">{t.pwa.install}</span>
       <Button
         size="sm"
-        className="h-7 rounded-full bg-violet-600 px-3 text-xs hover:bg-violet-700"
+        className="h-9 rounded-full bg-violet-600 px-4 text-xs hover:bg-violet-700"
         onClick={async () => {
           await installEvent.prompt();
           const choice = await installEvent.userChoice;
@@ -94,7 +94,7 @@ export function PwaClient() {
       </Button>
       <button
         aria-label={t.pwa.close}
-        className="ms-1 rounded-full p-1 text-muted-foreground hover:text-foreground"
+        className="ms-1 rounded-full p-2.5 text-muted-foreground hover:text-foreground"
         onClick={() => {
           setVisible(false);
           try {

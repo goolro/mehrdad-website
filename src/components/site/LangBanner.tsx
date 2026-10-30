@@ -27,6 +27,9 @@ export function LangBanner() {
   const pathname = usePathname();
   const [show, setShow] = useState(false);
 
+  // 1.2s delay preserved (original UX) — but now the role="status" region is
+  // already mounted (empty), so the delayed content is a proper live-region
+  // announcement instead of a region that mounts pre-populated.
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout> | undefined;
     try {
@@ -46,29 +49,35 @@ export function LangBanner() {
     return () => clearTimeout(timer);
   }, [pathname]);
 
-  if (!show || isFaPath(pathname)) return null;
+  // a11y phase-4: the live region must EXIST before its content appears.
+  // Some screen readers ignore a role="status" element that mounts already
+  // populated, so an always-mounted empty region renders here and the pill
+  // is injected inside it once `show` flips.
+  return (
+    <div role="status" aria-label="Language suggestion" aria-live="polite">
+      {show && !isFaPath(pathname) && <LangSuggestion onAccept={accept} onDismiss={dismiss} />}
+    </div>
+  );
 
-  const accept = () => {
+  function accept() {
     try {
       localStorage.setItem(CHOSEN_KEY, '1');
     } catch {}
     setLang('fa');
     setShow(false);
-  };
+  }
 
-  const dismiss = () => {
+  function dismiss() {
     try {
       localStorage.setItem(DISMISS_KEY, '1');
     } catch {}
     setShow(false);
-  };
+  }
+}
 
+function LangSuggestion({ onAccept, onDismiss }: { onAccept: () => void; onDismiss: () => void }) {
   return (
-    <div
-      role="status"
-      aria-label="Language suggestion"
-      className="site-langbanner fixed inset-x-3 bottom-24 z-50 mx-auto flex max-w-xl items-center gap-3 rounded-2xl border border-violet-500/30 bg-background/95 p-3 shadow-xl shadow-violet-600/10 backdrop-blur md:bottom-5"
-    >
+    <div className="site-langbanner fixed inset-x-3 bottom-24 z-50 mx-auto flex max-w-xl items-center gap-3 rounded-2xl border border-violet-500/30 bg-background/95 p-3 shadow-xl shadow-violet-600/10 backdrop-blur md:bottom-5">
       <Languages className="h-5 w-5 shrink-0 text-violet-600 dark:text-violet-400" aria-hidden />
       <p className="flex-1 text-sm leading-snug">
         <span className="font-medium">این سایت نسخه فارسی هم دارد.</span>{' '}
@@ -76,13 +85,13 @@ export function LangBanner() {
       </p>
       <Button
         size="sm"
-        onClick={accept}
+        onClick={onAccept}
         className="shrink-0 bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white hover:from-violet-700 hover:to-fuchsia-700"
       >
         فارسی
       </Button>
       <button
-        onClick={dismiss}
+        onClick={onDismiss}
         aria-label="Dismiss / بستن"
         className="shrink-0 rounded-lg p-1.5 text-muted-foreground transition-colors hover:text-foreground"
       >

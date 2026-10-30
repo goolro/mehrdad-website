@@ -138,6 +138,7 @@ export function CommentsSection({ slug }: { slug: string }) {
                 className="text-xs text-muted-foreground underline"
                 onClick={() => setReplyTo(null)}
                 type="button"
+                aria-label={t.a11y.cancel}
               >
                 ✕
               </button>
@@ -148,12 +149,18 @@ export function CommentsSection({ slug }: { slug: string }) {
         </h3>
 
         {notice === 'pending' && (
-          <div className="mt-3 rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-3 text-sm text-emerald-700 dark:text-emerald-400">
+          <div
+            role="status"
+            className="mt-3 rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-3 text-sm text-emerald-700 dark:text-emerald-400"
+          >
             {t.comments.pendingNotice}
           </div>
         )}
         {notice === 'error' && (
-          <div className="mt-3 rounded-xl border border-red-500/40 bg-red-500/10 p-3 text-sm text-red-700 dark:text-red-400">
+          <div
+            role="alert"
+            className="mt-3 rounded-xl border border-red-500/40 bg-red-500/10 p-3 text-sm text-red-700 dark:text-red-400"
+          >
             {t.comments.error}
           </div>
         )}
@@ -175,6 +182,7 @@ export function CommentsSection({ slug }: { slug: string }) {
             onChange={(e) => setAuthor(e.target.value)}
             placeholder={t.comments.name}
             maxLength={80}
+            aria-label={t.comments.name}
           />
           <Textarea
             value={content}
@@ -182,10 +190,12 @@ export function CommentsSection({ slug }: { slug: string }) {
             placeholder={t.comments.comment}
             rows={4}
             maxLength={2000}
+            aria-label={t.comments.comment}
           />
           <Button
             onClick={submit}
             disabled={submitting || !author.trim() || !content.trim()}
+            aria-busy={submitting}
             className="bg-violet-600 hover:bg-violet-700"
           >
             {submitting ? (

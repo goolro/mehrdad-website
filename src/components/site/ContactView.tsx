@@ -113,12 +113,18 @@ export function ContactView() {
       </div>
 
       {done && (
-        <div className="mt-6 rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-4 text-sm font-medium text-emerald-700 dark:text-emerald-400">
+        <div
+          role="status"
+          className="mt-6 rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-4 text-sm font-medium text-emerald-700 dark:text-emerald-400"
+        >
           ✓ {t.contact.success}
         </div>
       )}
       {error && (
-        <div className="mt-6 rounded-xl border border-red-500/40 bg-red-500/10 p-4 text-sm font-medium text-red-600 dark:text-red-400">
+        <div
+          role="alert"
+          className="mt-6 rounded-xl border border-red-500/40 bg-red-500/10 p-4 text-sm font-medium text-red-700 dark:text-red-400"
+        >
           {error}
         </div>
       )}
@@ -126,13 +132,16 @@ export function ContactView() {
       <form onSubmit={submit} className="mt-6 space-y-4">
         <div className="space-y-2">
           <Label>{t.contact.intentLabel}</Label>
-          <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label={t.contact.intentLabel}>
+          {/* a11y phase-4: honest ARIA mapping — these are toggle chips (every
+              chip is a tab stop, no arrow-key roving tabindex is implemented).
+              role="radio" promised an unfulfilled keyboard pattern; aria-pressed
+              toggle buttons describe exactly what this UI does. */}
+          <div className="flex flex-wrap gap-1.5" role="group" aria-label={t.contact.intentLabel}>
             {INTENT_KEYS.map((key) => (
               <button
                 key={key}
                 type="button"
-                role="radio"
-                aria-checked={intent === key}
+                aria-pressed={intent === key}
                 onClick={() => setIntent(key)}
                 className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
                   intent === key
@@ -170,13 +179,12 @@ export function ContactView() {
           <div className="space-y-4 rounded-2xl border border-violet-500/40 bg-violet-600/5 p-4">
             <div className="space-y-2">
               <Label>{lang === 'fa' ? 'بودجه تقریبی (اختیاری، اما کمک بزرگی است)' : 'Rough budget (optional, but a big help)'}</Label>
-              <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label="Budget">
+              <div className="flex flex-wrap gap-1.5" role="group" aria-label={lang === 'fa' ? 'بودجه' : 'Budget'}>
                 {BUDGET_OPTIONS.map((b) => (
                   <button
                     key={b}
                     type="button"
-                    role="radio"
-                    aria-checked={budget === b}
+                    aria-pressed={budget === b}
                     onClick={() => setBudget(budget === b ? null : b)}
                     dir="ltr"
                     className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
@@ -192,13 +200,12 @@ export function ContactView() {
             </div>
             <div className="space-y-2">
               <Label>{lang === 'fa' ? 'زمان‌بندی (اختیاری)' : 'Timeline (optional)'}</Label>
-              <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label="Timeline">
+              <div className="flex flex-wrap gap-1.5" role="group" aria-label={lang === 'fa' ? 'زمان‌بندی' : 'Timeline'}>
                 {TIMELINE_OPTIONS.map((tl) => (
                   <button
                     key={tl}
                     type="button"
-                    role="radio"
-                    aria-checked={timeline === tl}
+                    aria-pressed={timeline === tl}
                     onClick={() => setTimeline(timeline === tl ? null : tl)}
                     dir="ltr"
                     className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
@@ -218,6 +225,7 @@ export function ContactView() {
         <Button
           type="submit"
           disabled={sending}
+          aria-busy={sending}
           size="lg"
           className="w-full bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white hover:from-violet-700 hover:to-fuchsia-700 sm:w-auto"
         >

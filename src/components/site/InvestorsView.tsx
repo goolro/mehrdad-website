@@ -392,7 +392,7 @@ export function InvestorsView() {
               <li key={r.t} className="rounded-2xl border border-white/10 p-5" style={{ backgroundColor: INK_CARD }}>
                 <div className="flex items-center justify-between gap-3">
                   <span className="inline-flex items-center gap-2 font-mono text-[12px] font-bold text-emerald-400" dir="auto">
-                    <span className="text-white/40" dir="ltr">{String(i + 1).padStart(2, '0')}</span>
+                    <span className="text-white/60" dir="ltr">{String(i + 1).padStart(2, '0')}</span>
                     {r.phase}
                   </span>
                   <span className="rounded-full border border-emerald-400/40 px-3 py-1 text-[11.5px] font-bold text-emerald-300">
@@ -415,7 +415,7 @@ export function InvestorsView() {
                 }`}
               >
                 <span className="font-mono text-[12px] font-bold text-emerald-400" dir="auto">
-                  <span className="me-2 text-white/40" dir="ltr">{String(i + 1).padStart(2, '0')}</span>
+                  <span className="me-2 text-white/60" dir="ltr">{String(i + 1).padStart(2, '0')}</span>
                   {r.phase}
                 </span>
                 <span className="text-[14.5px] font-extrabold leading-6">{r.t}</span>

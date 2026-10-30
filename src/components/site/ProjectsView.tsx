@@ -110,7 +110,7 @@ export const STATUS_STYLE: Record<ProjectStatus, StatusStyle> = {
   },
   building: {
     icon: HardHat,
-    badgeCls: 'bg-amber-500/15 text-amber-600 dark:text-amber-400',
+    badgeCls: 'bg-amber-500/15 text-amber-700 dark:text-amber-400',
     barCls: 'bg-gradient-to-r from-amber-500 to-orange-500',
     labelKey: 'building',
   },
@@ -290,7 +290,7 @@ export function ProjectsView({ initialProjects }: { initialProjects: ProjectItem
                             <HardHat className="h-3.5 w-3.5 text-amber-500" />
                             {t.projects.progress}
                           </span>
-                          <span className="font-bold text-amber-600 dark:text-amber-400">{pct(lang, p.progress)}</span>
+                          <span className="font-bold text-amber-700 dark:text-amber-400">{pct(lang, p.progress)}</span>
                         </div>
                         <ProgressBar value={animate ? p.progress : 0} barCls={cfg.barCls} />
                       </div>
@@ -384,7 +384,7 @@ const PHASE_TONE: Record<RoadmapTone, { ring: string; icon: string; badge: strin
   ready: {
     ring: 'stroke-amber-500',
     icon: 'text-amber-500',
-    badge: 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
+    badge: 'bg-amber-500/10 text-amber-700 dark:text-amber-400',
   },
   active: {
     ring: 'stroke-violet-500',
@@ -525,7 +525,7 @@ export function ProjectDetail({ project, shareUrl }: { project: ProjectDetailRow
           lang={lang}
         />
         {showsProgress(st) && (
-          <span className="text-sm font-semibold text-amber-600 dark:text-amber-400">
+          <span className="text-sm font-semibold text-amber-700 dark:text-amber-400">
             {pct(lang, project.progress)}
           </span>
         )}
@@ -863,7 +863,7 @@ export function ProjectDetail({ project, shareUrl }: { project: ProjectDetailRow
                 profile?.progressLabelFa ?? t.projects.progress,
               )}
             </span>
-            <span className="font-extrabold text-amber-600 dark:text-amber-400">{pct(lang, project.progress)}</span>
+            <span className="font-extrabold text-amber-700 dark:text-amber-400">{pct(lang, project.progress)}</span>
           </div>
           <ProgressBar value={project.progress} barCls={cfg.barCls} />
         </div>

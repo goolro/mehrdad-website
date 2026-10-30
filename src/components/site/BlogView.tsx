@@ -144,16 +144,20 @@ export function BlogView({ initial }: { initial?: BlogInitialData }) {
             }}
             placeholder={t.blog.search}
             className="ps-9"
+            type="search"
+            aria-label={t.a11y.search}
           />
         </div>
-        <div className="flex flex-wrap gap-2">
-          <button onClick={() => { setActiveCat(''); setPage(1); }}>
+        {/* a11y phase-4: filter chips are toggle buttons — aria-pressed tells
+            screen readers which filter is active (previously visual-only) */}
+        <div className="flex flex-wrap gap-2" role="group" aria-label={t.a11y.filterBy}>
+          <button onClick={() => { setActiveCat(''); setPage(1); }} aria-pressed={activeCat === ''}>
             <Badge variant={activeCat === '' ? 'default' : 'outline'} className="cursor-pointer px-3 py-1.5">
               {t.blog.all}
             </Badge>
           </button>
           {cats.map((c) => (
-            <button key={c.id} onClick={() => { setActiveCat(c.slug); setPage(1); }}>
+            <button key={c.id} onClick={() => { setActiveCat(c.slug); setPage(1); }} aria-pressed={activeCat === c.slug}>
               <Badge
                 variant={activeCat === c.slug ? 'default' : 'outline'}
                 className={`cursor-pointer px-3 py-1.5 ${activeCat === c.slug ? 'bg-violet-600 hover:bg-violet-700' : 'hover:border-violet-500/60'}`}
@@ -223,17 +227,29 @@ export function BlogView({ initial }: { initial?: BlogInitialData }) {
 
       {/* pagination */}
       {totalPages > 1 && (
-        <div className="mt-10 flex items-center justify-center gap-2">
-          <Button variant="outline" size="icon" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
+        <nav className="mt-10 flex items-center justify-center gap-2" aria-label={lang === 'fa' ? 'صفحه‌بندی' : 'Pagination'}>
+          <Button
+            variant="outline"
+            size="icon"
+            disabled={page <= 1}
+            onClick={() => setPage((p) => p - 1)}
+            aria-label={t.a11y.prevPage}
+          >
             <ChevronLeft className="h-4 w-4 rtl:rotate-180" />
           </Button>
-          <span className="text-sm text-muted-foreground">
+          <span className="text-sm text-muted-foreground" aria-live="polite">
             {page} / {totalPages}
           </span>
-          <Button variant="outline" size="icon" disabled={page >= totalPages} onClick={() => setPage((p) => p + 1)}>
+          <Button
+            variant="outline"
+            size="icon"
+            disabled={page >= totalPages}
+            onClick={() => setPage((p) => p + 1)}
+            aria-label={t.a11y.nextPage}
+          >
             <ChevronRight className="h-4 w-4 rtl:rotate-180" />
           </Button>
-        </div>
+        </nav>
       )}
 
       {/* crawlable full archive (SEO): every published post as a real link
