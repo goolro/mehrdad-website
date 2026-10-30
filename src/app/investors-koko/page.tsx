@@ -12,6 +12,7 @@ export const metadata: Metadata = {
   description:
     'Investor overview for Quiz of Koko: a live web word-quiz game with an AI-validated question pool in 10 languages, a 12-month validation plan with decision gates, and evidence-gated Stage-1 funding. Request a private briefing.',
   alternates: {
+    types: { "application/rss+xml": "/feed.xml" },
     canonical: '/investors-koko',
     languages: { en: '/investors-koko', 'x-default': '/investors-koko' },
   },

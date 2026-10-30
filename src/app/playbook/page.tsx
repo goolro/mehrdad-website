@@ -10,6 +10,7 @@ export const metadata: Metadata = {
   description:
     'A free practical checklist: from a real problem to a working product in 10 steps — the exact loop behind every project on this site. Get the full version with worksheets by email.',
   alternates: {
+    types: { "application/rss+xml": "/feed.xml" },
     canonical: '/playbook',
     languages: { en: '/playbook', 'x-default': '/playbook' },
   },

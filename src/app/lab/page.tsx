@@ -12,6 +12,7 @@ export const metadata: Metadata = {
   description:
     'Experiments built for curiosity, in the open. Lab items carry no business model — some may grow into products, most just teach me something.',
   alternates: {
+    types: { "application/rss+xml": "/feed.xml" },
     canonical: '/lab',
     languages: { en: '/lab', 'x-default': '/lab' },
   },

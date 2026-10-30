@@ -15,6 +15,7 @@ export const metadata: Metadata = {
   description:
     'One process, not eight services — design the real problem, build fast with AI, share what actually worked. Forward Deployed Engineering as the core engagement.',
   alternates: {
+    types: { "application/rss+xml": "/feed.xml" },
     canonical: '/services',
     languages: { en: '/services', 'x-default': '/services' },
   },

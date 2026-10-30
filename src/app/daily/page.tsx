@@ -15,6 +15,7 @@ export const metadata: Metadata = {
   description:
     'Original short articles about successful products — what they do, why they win and my expert verdict. English and Persian, fresh most days.',
   alternates: {
+    types: { "application/rss+xml": "/feed.xml" },
     canonical: '/daily',
     languages: { en: '/daily', 'x-default': '/daily' },
   },

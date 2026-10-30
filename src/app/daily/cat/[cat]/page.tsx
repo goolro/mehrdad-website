@@ -44,6 +44,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: { absolute: titles[cat] },
     description: descriptions[cat],
     alternates: {
+      types: { "application/rss+xml": "/feed.xml" },
       canonical: `/daily/cat/${cat}`,
       languages: {
         en: `/daily/cat/${cat}`,

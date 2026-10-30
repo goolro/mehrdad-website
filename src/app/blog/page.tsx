@@ -16,6 +16,7 @@ export const metadata: Metadata = {
   title: { absolute: 'Blog & Insights | Mehrdad — Product Builder' },
   description: 'Articles on startups, smart cities, AI, investment and inventions — from real work, with honest lessons.',
   alternates: {
+    types: { "application/rss+xml": "/feed.xml" },
     canonical: '/blog',
     languages: { en: '/blog', 'x-default': '/blog' },
   },

@@ -7,6 +7,7 @@ export const metadata: Metadata = {
   description:
     'Independent product builder running the Forward Deployed Engineering loop — the same loop that took Quiz of Koko from a blank page to a live AI vocabulary game. I don\'t sell hours; I ship outcomes.',
   alternates: {
+    types: { "application/rss+xml": "/feed.xml" },
     canonical: '/about',
     languages: { en: '/about', 'x-default': '/about' },
   },

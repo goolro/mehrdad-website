@@ -37,6 +37,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: { absolute: `${project.titleEn} | Mehrdad — Product Builder` },
     description: project.summaryEn,
     alternates: {
+      types: { "application/rss+xml": "/feed.xml" },
       canonical: `/work/${project.slug}`,
       languages: {
         en: `/work/${project.slug}`,

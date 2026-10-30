@@ -6,6 +6,7 @@ export const metadata: Metadata = {
   title: { absolute: 'Contact | Mehrdad — Product Builder' },
   description: 'One clear path to start a conversation: AI/product solutions, projects, collaboration or connecting.',
   alternates: {
+    types: { "application/rss+xml": "/feed.xml" },
     canonical: '/contact',
     languages: { en: '/contact', 'x-default': '/contact' },
   },

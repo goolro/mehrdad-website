@@ -7,7 +7,10 @@ export const metadata: Metadata = {
   title: { absolute: 'Forward Deployed Engineering | Mehrdad — Product Builder' },
   description:
     'Solving real business and product problems by combining product thinking, software engineering and AI — from problem discovery to building, deploying and improving the solution.',
-  alternates: { canonical: '/fde' },
+  alternates: {
+    canonical: '/fde',
+    types: { 'application/rss+xml': '/feed.xml' },
+  },
 };
 
 // Service schema (phase-2 SEO gap): the FDE page describes the core

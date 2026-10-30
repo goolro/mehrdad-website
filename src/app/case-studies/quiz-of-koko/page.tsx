@@ -10,6 +10,7 @@ export const metadata: Metadata = {
   description:
     'How Quiz of Koko went from a real learning problem to a live, AI-powered vocabulary game (free in browser and on Android) — the Forward Deployed Engineering loop behind it, now productized as the AI MVP Sprint.',
   alternates: {
+    types: { "application/rss+xml": "/feed.xml" },
     canonical: '/case-studies/quiz-of-koko',
     languages: {
       en: '/case-studies/quiz-of-koko',

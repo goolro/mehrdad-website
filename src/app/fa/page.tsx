@@ -32,6 +32,7 @@ export const metadata: Metadata = {
   description:
     'کسب‌وکار و محصولت را با دقت طراحی می‌کنم و با هوش مصنوعی سریع می‌سازم. پروژه‌های واقعی با وضعیت صادقانه و درس‌های مستندشده از کار واقعی — پژوهش، طراحی، اجرا.',
   alternates: {
+    types: { "application/rss+xml": "/feed.xml" },
     canonical: '/fa',
     languages: {
       en: '/',

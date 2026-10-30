@@ -16,6 +16,7 @@ export const metadata: Metadata = {
   title: { absolute: 'Key Projects & Startups | Mehrdad — Product Builder' },
   description: 'Real projects and startups — built in the open, with honest status at every step.',
   alternates: {
+    types: { "application/rss+xml": "/feed.xml" },
     canonical: '/work',
     languages: { en: '/work', 'x-default': '/work' },
   },

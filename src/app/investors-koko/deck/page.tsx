@@ -11,6 +11,7 @@ export const metadata: Metadata = {
   description:
     'The 19-section investor pitch deck for Quiz of Koko: product, engagement loop, market, business-model scenarios, roadmap and the ask — evidence-gated and bilingual. Request a private briefing.',
   alternates: {
+    types: { "application/rss+xml": "/feed.xml" },
     canonical: '/investors-koko/deck',
     languages: { en: '/investors-koko/deck', 'x-default': '/investors-koko/deck' },
   },

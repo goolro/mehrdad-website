@@ -16,6 +16,7 @@ export const metadata: Metadata = {
   description:
     'I design businesses and products with care, and build them fast with AI. Real projects, honest status, lessons from real work.',
   alternates: {
+    types: { "application/rss+xml": "/feed.xml" },
     canonical: '/',
     // hreflang: EN is the static, server-rendered default; since D-050
     // (2026-10-23) the Persian variant is the REAL static Persian homepage

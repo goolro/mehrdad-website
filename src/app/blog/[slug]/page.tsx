@@ -48,6 +48,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: { absolute: `${title} | Mehrdad` },
     description,
     alternates: {
+      types: { "application/rss+xml": "/feed.xml" },
       canonical: `/blog/${post.slug}`,
       // hreflang (phase-2): en + x-default only — no real fa variant exists
       languages: {

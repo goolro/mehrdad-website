@@ -26,6 +26,7 @@ export const metadata: Metadata = {
   description:
     'From a real problem to a working, testable product in one focused sprint. Free 30-minute scope call, three fixed-scope entry points, no hourly billing. Forward Deployed Engineering as a productized service.',
   alternates: {
+    types: { "application/rss+xml": "/feed.xml" },
     canonical: '/mvp-sprint',
     languages: { en: '/mvp-sprint', 'x-default': '/mvp-sprint' },
   },

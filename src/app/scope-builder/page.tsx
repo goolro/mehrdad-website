@@ -10,6 +10,7 @@ export const metadata: Metadata = {
   description:
     'Answer five honest scoping questions and get a one-page MVP scope you can act on — free, no signup, nothing sent to a server. The same first step of the AI MVP Sprint.',
   alternates: {
+    types: { "application/rss+xml": "/feed.xml" },
     canonical: '/scope-builder',
     languages: { en: '/scope-builder', 'x-default': '/scope-builder' },
   },

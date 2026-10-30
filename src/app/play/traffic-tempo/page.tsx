@@ -13,6 +13,7 @@ export const metadata: Metadata = {
   description:
     'Run the intersection in this 2D mobile traffic game — flip the lights, keep the tempo, never let crossing cars meet.',
   alternates: {
+    types: { "application/rss+xml": "/feed.xml" },
     canonical: '/play/traffic-tempo',
   },
 };
