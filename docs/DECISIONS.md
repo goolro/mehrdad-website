@@ -2069,3 +2069,49 @@ four remotely exploitable gaps. All closed in one commit:
 
 Auth contract change is the only operator-visible behavior change: crons
 require `CRON_SECRET` (D-070 is the deploy note for it).
+
+## D-071 — v0 branch integration, dependency security, RSS autodiscovery made real, backup-tag secret scan (2026-10-30)
+
+The Vercel v0 agent delivered `fix/security-hardening` (2 commits) against the
+phase-4 tip. Integration decisions, verified in dev before push:
+
+1. **Cherry-picked v0's f2d447e verbatim.** Admin post-preview dialog no longer
+   interpolates `titleFa` into the `dangerouslySetInnerHTML` fallback (React
+   text nodes instead), and the `dev` script is wrapped in
+   `bash -o pipefail -c` so real next.js failures are no longer hidden by
+   `| tee dev.log`.
+2. **v0's 123c2a9 (next 16.4.3) re-done the bun way.** Merging it as-is would
+   have re-added `package-lock.json` (retired in D-069) while leaving
+   `bun.lock` at 16.3.8 — CI's `bun install --frozen-lockfile` would break
+   (the exact D-063/D-069 failure class). Applied via `bun add next@16.4.3`
+   (package.json + bun.lock consistent). Also react/react-dom → 19.3.1 and
+   @types/react → 19.3.0 (dependabot PR #41's intent, re-done natively — its
+   bun.lock edit carried empty registry URLs). `package-lock.json` (re-added
+   as a v0 side effect during phases 1–5) deleted again; D-069 stands:
+   bun.lock is the only lockfile.
+3. **PR #42 (brace-expansion) closed obsolete.** The vulnerable
+   `brace-expansion@2.0.2` resolves only inside the dev-only
+   eslint/typescript-estree toolchain; production runtime has no vulnerable
+   copy (v1 1.1.21 is past the ReDoS fix line). An accidental direct
+   `brace-expansion@^5.0.12` (side effect of `bun update` on a transitive
+   name) was removed.
+4. **Phase-2 RSS autodiscovery was inert — now real.** Root-layout
+   `alternates.types` claimed "rendered on every page", but 21 pages define
+   their own `alternates`, which REPLACES the layout key under Next's
+   metadata merge (verified live: no RSS link in production HTML). `types`
+   added to all 21 page-level alternates blocks (scripted; fde hand-merged).
+   Dev-verified: link present on /, /about, /blog, /fa, /fde; /feed.xml 200.
+5. **Backup-tag secret scan (owner question "can keys leak via Tags backup
+   download").** All 5 `deploy-*` tags + main scanned by filename and by
+   token-pattern content grep: no `.env*` except the placeholder
+   `.env.example`; only pattern matches are the literal example placeholder
+   `sk-proj-REALKEYVALUE` and the CSS class `sk-gradient-background`. No real
+   secret is reachable from the public Tags/archive surface; D-066's
+   filter-repo purge rewrote all refs including tags.
+6. **Housekeeping.** PR #40/#41 auto-close once main carries the bumps;
+   `fix/security-hardening` deleted after incorporation (tips 123c2a9, f2d447e
+   archived in worklog — 90-day GC window). Local `/api/cron/*` re-verified
+   fail-closed (503 without CRON_SECRET).
+
+Operator note: `CRON_SECRET` must be set in the Vercel environment (D-070) —
+until then the daily jobs stay stopped by design (503 fail-closed).
