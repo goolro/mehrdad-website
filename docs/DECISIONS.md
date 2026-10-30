@@ -2144,3 +2144,40 @@ an architecture change. Findings against the REAL deployment tree:
    (it does not see new main commits). Before each v0 run it must sync to
    latest main, otherwise every round produces duplicate branches that need
    manual reconciliation.
+
+## D-073 — v0 round-3 (mobile nav + hero): commit unreachable, native parity implemented (2026-10-30)
+
+v0 reported commit `382384f` "Improve mobile navigation and hero layout" pushed to
+`fix/security-hardening`, with a passing smoke test and preview. Verification against
+GitHub (authoritative, unauthenticated git protocol):
+
+1. `refs/heads/*` lists ONLY `main` (d796f1a) — the branch was deleted in D-072
+   housekeeping and v0's new commit never landed on goolro/mehrdad-website.
+2. Direct SHA fetch of `382384f` fails (`couldn't find remote ref`) — the object is
+   reachable from no ref on the repo (PR heads included, latest is #42).
+3. The advertised preview (site-audit-for-mehrdad-ir.v0.build) returns
+   "Preview session expired" — no rendered reference available either.
+
+Conclusion: v0's workspace pushed to somewhere not backed by the owner's repo (its
+branch base is again stale per D-072's process note — it does not see new main).
+Rather than block the owner's requested improvement, the DESCRIBED behavior was
+implemented natively on main (same pattern as D-071/D-072 — v0 work is re-done,
+never merged as-is):
+
+- Header: mobile horizontal scroll strip → disclosure menu; accessible toggle
+  (44px target, `aria-expanded`, `aria-controls`, Escape closes + refocuses
+  toggle), 6 full-height rows, closed panel not rendered (out of a11y tree);
+  `openMenu`/`closeMenu` labels added to both i18n bundles. Desktop `md:flex`
+  nav untouched.
+- HomeView hero: mobile-only reduction (py-20→py-12, h1 text-4xl→3xl, sub
+  text-lg→base, mt/gap tightened); every `sm:`/`md:` value byte-identical so
+  desktop is frozen. /fa shares the component → both languages covered.
+- "care, and" slogan checked and left untouched (v0 reached the same conclusion).
+
+Evidence (agent-browser): 390×844 — toggle announces باز کردن منو/Open menu,
+expands to 6 links with aria-current, Escape closes, link click navigates to
+/services and closes; hero 425px = 50% of an 844px viewport (h1 30px, sub 16px);
+1280×800 — burger display:none, desktop nav visible, h1 60px + py 112px
+(pre-change values). ESLint clean; console error-free. If v0's `382384f` surfaces
+later (owner provides the fork URL or v0 re-pushes to a reachable ref), diff it
+against 949e91b and reconcile — do not blindly merge.
