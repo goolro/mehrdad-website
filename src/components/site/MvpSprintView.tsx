@@ -146,6 +146,9 @@ export function MvpSprintView() {
             </div>
           ))}
         </div>
+        <p className="mt-4 text-sm text-muted-foreground" dir={rtl}>
+          {m.tiersNote}
+        </p>
       </section>
 
       {/* ── free tool bridge (phase 3) ── */}
@@ -226,7 +229,31 @@ export function MvpSprintView() {
         <p className="mt-2 max-w-3xl text-sm text-muted-foreground" dir={rtl}>
           {m.proofSub}
         </p>
+        {/* ⏳ WEAKNESS-3 — PENDING ASSET: record a 30–60s muted screen capture
+            (real clickable increment, e.g. Scope Builder run or Koko duel),
+            export MP4/H.264 720p ≤ 4 MB, then:
+            1) put files at public/videos/mvp-sprint-demo.mp4 + -poster.webp
+            2) uncomment the block below and rebuild.
+        <video
+          className="mt-4 w-full max-w-3xl rounded-2xl border border-border"
+          autoPlay
+          muted
+          loop
+          playsInline
+          poster="/videos/mvp-sprint-demo-poster.webp"
+          aria-label={m.proofVideoCaption}
+        >
+          <source src="/videos/mvp-sprint-demo.mp4" type="video/mp4" />
+        </video>
+        <p className="mt-2 text-xs text-muted-foreground" dir={rtl}>{m.proofVideoCaption}</p>
+        */}
         <div className="mt-4 flex flex-wrap gap-2">
+          <Link
+            href="/case-studies/quiz-of-koko"
+            className="rounded-lg border border-violet-500/40 bg-violet-600/5 px-3 py-1.5 text-sm font-medium text-violet-600 transition-colors hover:bg-violet-600/10 dark:text-violet-400"
+          >
+            {m.proofCaseCta} →
+          </Link>
           <Link
             href="/work"
             className="rounded-lg border border-border px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground hover:bg-muted"

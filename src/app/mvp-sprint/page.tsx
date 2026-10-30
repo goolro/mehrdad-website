@@ -24,7 +24,7 @@ const faqSchema = {
 export const metadata: Metadata = {
   title: { absolute: 'AI MVP Sprint — fixed scope, fixed quote | Mehrdad — Product Builder' },
   description:
-    'From a real problem to a working, testable product in one focused sprint. Free 30-minute scope call, three fixed-scope entry points, no hourly billing. Forward Deployed Engineering as a productized service.',
+    'From a real problem to a working, testable product in one focused sprint. Free 15-minute scope call, three fixed-scope entry points, no hourly billing. Forward Deployed Engineering as a productized service.',
   alternates: {
     types: { "application/rss+xml": "/feed.xml" },
     canonical: '/mvp-sprint',
