@@ -2217,3 +2217,38 @@ hero — parity already shipped in 949e91b), 97f8cb3 (NEW: LinkedIn portrait on
    Persian); the portrait lives on `/about` (EN + client lang-flip), exactly
    the surface the owner named. If the owner later wants a Persian static
    about page, that is new scope (D-050 pattern).
+
+## D-075 — kilika build progress: 'mvp' status may show the progress bar; Phase 1 = 70% (2026-10-30)
+
+Owner order: «درصد پیشرفت نزدیک کلیکا — MVP تکمیل شده و منتظر پیشنهاد سرمایه‌گذار
+هستیم — چند درصد بزنی؟» The live row was `status=mvp, progress=0`, and
+`showsProgress()` gated bars to building/testing only, so kilika displayed
+NO percentage anywhere.
+
+1. **Number = 70% (owner delegated the pick)**, labeled «پیشرفت فاز اول» /
+   "Phase 1 progress" — the deck defines Phase 1 as the Iranian version:
+   MVP core is built (70% of Phase 1); partner integrations + launch ops
+   remain inside Phase 1. Rationale: credible "substance + room to grow"
+   band, consistent with the sibling investor story (health-app Phase 1 at
+   74%), avoids the >85% "why raise $4M then" and <50% "too early" reads,
+   and matches the deck narrative where the round funds integrations +
+   80%-marketing go-to-market. Same number must be reused everywhere
+   (site, deck, LinkedIn) — single source of truth.
+2. **showsProgress('mvp') = true** (project-status.ts): MVP is a milestone
+   on the roadmap, not end-of-build. Blast radius checked: kilika-fintech is
+   the only 'mvp' row (live /api/site audit), so no other card changes.
+3. **Profile label override** (project-profiles.ts): kilika gets
+   progressLabelFa «پیشرفت فاز اول» / EN "Phase 1 progress" — same pattern
+   as health-app (D, 2026-10-04). Card grid keeps the default
+   «میزان پیشرفت ساخت» label by design (existing behavior).
+4. Verified (agent-browser, dev DB mirror row with prod verbatim copy):
+   /work card «میزان پیشرفت ساخت ۷۰٪» (fa) / "Build progress 70%" (en);
+   /work/kilika-fintech box «پیشرفت فاز اول ۷۰٪» / "Phase 1 progress 70%"
+   with MVP badge; header "MVP 70%"; OG image 200. Lint clean. Console:
+   pre-existing benign `near "EXISTS"` raw-query noise only (log line 19,
+   predates change).
+5. **Deployment split**: (a) code (showsProgress + label) rides the next
+   main push — blocked on a fresh GitHub PAT (old one revoked, returns 401);
+   (b) the progress=70 value must be set on the PRODUCTION DB row — owner
+   1-minute path: Admin → Projects → کلیکا → progress 70 → save (or provide
+   DB access). Prod row untouched in this task; dev mirror is local-only.

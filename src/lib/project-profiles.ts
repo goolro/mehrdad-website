@@ -706,6 +706,12 @@ export const PROJECT_PROFILES: Record<string, ProjectProfile> = {
    * names, projections — all as printed on /s/kilika.html.
    */
   'kilika-fintech': {
+    // D-075 (owner order 2026-10-30): MVP complete → the build-progress box
+    // names the deck's Phase 1 (Iranian version); the 70% figure was set by
+    // owner delegation — MVP core is built, partner integrations + launch
+    // ops remain inside Phase 1. Same label pattern as health-app.
+    progressLabelEn: 'Phase 1 progress',
+    progressLabelFa: 'پیشرفت فاز اول',
     features: [],
     tech: [],
     phases: [],

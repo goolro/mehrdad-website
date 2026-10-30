@@ -55,9 +55,14 @@ export function isActiveStatus(s: ProjectStatus): boolean {
   return s !== 'idea' && s !== 'archived';
 }
 
-/** statuses that show a build-progress bar (honest build-in-progress states) */
+/**
+ * Statuses that show a build-progress bar (honest build-in-progress states).
+ * 'mvp' joined 2026-10-30 (owner order, D-075): MVP completion is a milestone
+ * on the phase roadmap, not the end of the build — an MVP-stage project may
+ * carry a real progress number (kilika-fintech: Phase 1 = 70%).
+ */
 export function showsProgress(s: ProjectStatus): boolean {
-  return s === 'building' || s === 'testing';
+  return s === 'building' || s === 'testing' || s === 'mvp';
 }
 
 /**
