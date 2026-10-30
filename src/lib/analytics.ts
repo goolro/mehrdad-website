@@ -182,3 +182,22 @@ export function trackPlaybookSubscribed(props: { placement: 'playbook_page' | 'f
 export function trackScopeBuilderCompleted(props: { lang: 'en' | 'fa'; hadSmallestVersion: boolean }) {
   send('scope_builder_completed', props);
 }
+
+// ── Strategy Session (column D offer, 2026-10-30) ──────────────────────
+// Paid 45-minute consulting product — a funnel SEPARATE from the MVP Sprint:
+//   consult_viewed → consult_cta → consult_submitted → (owner reply = booking)
+
+/** A visitor opened the Strategy Session offer page (/consult). */
+export function trackConsultViewed(props: { lang: 'en' | 'fa' }) {
+  send('consult_viewed', props);
+}
+
+/** A visitor clicked a Strategy Session call-to-action. */
+export function trackConsultCta(props: { placement: 'hero' | 'faq'; lang: 'en' | 'fa' }) {
+  send('consult_cta', props);
+}
+
+/** A strategy-session request form submission succeeded (via /api/contact). */
+export function trackConsultSubmitted(props: { lang: 'en' | 'fa' }) {
+  send('consult_submitted', props);
+}
