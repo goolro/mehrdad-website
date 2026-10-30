@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import dynamic from 'next/dynamic';
 import { useApp, pick, formatDate } from './store';
 import { ui } from './i18n';
 import { Button } from '@/components/ui/button';
@@ -23,10 +24,19 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { PROJECT_STATUSES, normalizeStatus } from '@/lib/project-status';
 import { PROJECT_KINDS, isProjectKind, type ProjectKind } from '@/lib/project-kind';
 import { THEMES } from '@/lib/themes';
-import { SocialStudio } from './SocialStudio';
-import { ContentPipeline } from './ContentPipeline';
-import { DailyStudio } from './DailyStudio';
-import { BriefBuilder } from './BriefBuilder';
+// perf(phase-3): the four studios are code-split — each ~550–1000-line module
+// (plus its unique deps) only downloads when its tab is first opened. Radix
+// Tabs unmounts inactive content, so the initial /admin payload carries none
+// of this code.
+const StudioFallback = (
+  <div className="flex h-40 items-center justify-center text-sm text-muted-foreground">
+    …
+  </div>
+);
+const SocialStudio = dynamic(() => import('./SocialStudio').then((m) => m.SocialStudio), { loading: () => StudioFallback });
+const ContentPipeline = dynamic(() => import('./ContentPipeline').then((m) => m.ContentPipeline), { loading: () => StudioFallback });
+const DailyStudio = dynamic(() => import('./DailyStudio').then((m) => m.DailyStudio), { loading: () => StudioFallback });
+const BriefBuilder = dynamic(() => import('./BriefBuilder').then((m) => m.BriefBuilder), { loading: () => StudioFallback });
 
 interface CategoryItem { id: string; slug: string; nameEn: string; nameFa: string; count: number }
 interface AdminPost {
