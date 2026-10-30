@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useApp } from './store';
 import { ui } from './i18n';
 import { Button } from '@/components/ui/button';
-import { Rocket, BrainCircuit, Code2, PenTool, Briefcase, Megaphone, Store, Lightbulb, ArrowRight, FileText, Sparkles } from 'lucide-react';
+import { Rocket, BrainCircuit, Code2, PenTool, Briefcase, Megaphone, Store, Lightbulb, ArrowRight, FileText, Sparkles, Linkedin } from 'lucide-react';
 import { Testimonials } from './Testimonials';
 
 export function AboutView() {
@@ -26,8 +26,26 @@ export function AboutView() {
   return (
     <div className="mx-auto w-full max-w-4xl px-4 py-12 sm:px-6">
       <div className="flex flex-col items-center text-center">
-        <div className="flex h-24 w-24 items-center justify-center rounded-3xl bg-gradient-to-br from-violet-600 to-fuchsia-600 text-5xl text-white shadow-xl shadow-violet-600/25">
-          ☼
+        <div className="flex flex-col items-center">
+          <a
+            href="https://www.linkedin.com/in/mehrdad-ir"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={lang === 'fa' ? 'مشاهده پروفایل لینکدین مهرداد حیدری' : "View Mehrdad Heidari's LinkedIn profile"}
+            className="group relative block rounded-[2rem] bg-gradient-to-br from-violet-600 to-fuchsia-600 p-1 shadow-xl shadow-violet-600/20 transition-transform hover:-translate-y-1"
+          >
+            <img
+              src="/media/mehrdad-portrait.jpg"
+              alt={lang === 'fa' ? 'تصویر مهرداد حیدری' : 'Portrait of Mehrdad Heidari'}
+              width={176}
+              height={176}
+              className="h-44 w-44 rounded-[1.75rem] object-cover"
+            />
+            <span className="absolute bottom-3 end-3 flex h-9 w-9 items-center justify-center rounded-xl bg-sky-600 text-white shadow-lg" aria-hidden="true">
+              <Linkedin className="h-4 w-4" />
+            </span>
+          </a>
+          <p className="mt-3 text-sm font-medium text-muted-foreground">Product Builder</p>
         </div>
         <h1 className="mt-6 text-3xl font-extrabold sm:text-4xl">{t.about.title}</h1>
         <p className="mt-1 text-muted-foreground">{t.hero.badge}</p>
