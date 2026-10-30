@@ -2181,3 +2181,39 @@ expands to 6 links with aria-current, Escape closes, link click navigates to
 (pre-change values). ESLint clean; console error-free. If v0's `382384f` surfaces
 later (owner provides the fork URL or v0 re-pushes to a reachable ref), diff it
 against 949e91b and reconcile — do not blindly merge.
+
+## D-074 — PR #43 processed: portrait vendored, 382384f reconciled, PR must NOT be merged as-is (2026-10-30)
+
+PR #43 surfaced (owner message) after D-073 declared 382384f unreachable. Its head
+(97f8cb3) was fetched via public protocol. Structure: base STILL 716f880 (stale,
+same process defect as D-072's note), five commits: f2d447e + 123c2a9 (already in
+main since D-071), d9a2ae9 (already in main since D-072), 382384f (mobile nav +
+hero — parity already shipped in 949e91b), 97f8cb3 (NEW: LinkedIn portrait on
+/about). Findings and actions:
+
+1. **Merging PR #43 as-is is prohibited** — stale base would conflict in
+   package.json/bun.lock/Header/HomeView/i18n and (if forced) regress next
+   16.4.3/react 19.3.1/the D-072 dompurify+defu fixes and re-add
+   package-lock.json, breaking `bun install --frozen-lockfile` CI. Owner must
+   not press Merge on it; it gets closed with an explanation after the next
+   native push.
+2. **97f8cb3 cherry-picked (998f1bc) with one resilience fix**: v0 hotlinked the
+   portrait from its workspace blob storage
+   (hebbkx1anhila5yf.public.blob.vercel-storage.com) — an asset that dies with
+   the v0 project. Vendored to `public/media/mehrdad-portrait.jpg`
+   (1024×1024 52KB → 512×512 25KB progressive, EXIF stripped for privacy,
+   3× the 176px render size). Identical-ternary caption collapsed to a
+   constant; LinkedIn link/rel/aria-label/bilingual alt kept as v0 had them.
+3. **382384f reconciled against 949e91b (5ff5aff)**: adopted v0's
+   `sm:grid-cols-2` panel for the 640–767px band. NOT adopted: hardcoded EN
+   `aria-label`s (reintroduces the phase-5 /fa screen-reader regression),
+   missing Escape/focus-return handling, toggle without a 44px target.
+   Hero: v0's `py-16` vs parity `py-12 sm:py-20` — parity kept (closer to the
+   owner-approved intent, browser-verified 425px = 50% of 844px viewport).
+4. Verified (agent-browser): /about portrait EN+FA (link, rel, labels, local
+   512×512 loads), menu 2-col at 700px, single-col 6 rows at 390px, Escape
+   closes, lint clean, console clean.
+5. Scope note: `/fa/about` does not exist (only `/fa` homepage is static
+   Persian); the portrait lives on `/about` (EN + client lang-flip), exactly
+   the surface the owner named. If the owner later wants a Persian static
+   about page, that is new scope (D-050 pattern).
