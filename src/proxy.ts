@@ -103,10 +103,17 @@ function lookup(rawPath: string, searchParams: URLSearchParams): string | null {
   // /s/kilika.html is a REAL restored static one-pager (kilika — owner
   // uploaded its MHTML on 2026-10-20; original source was the owner's
   // figma.site page). It lives in public/s/ and must be served as-is,
-  // together with its asset folder /s/assets/. Every other legacy WP-era
-  // /s/* one-pager still redirects home.
+  // together with its asset folder /s/assets/. /s/deck-health-en.pdf is the
+  // downloadable PDF capture of /deck/health (owner order 2026-10-31).
+  // Every other legacy WP-era /s/* one-pager still redirects home.
   if (n.startsWith('/s/')) {
-    if (n === '/s/kilika.html' || n.startsWith('/s/assets/')) return null;
+    if (
+      n === '/s/kilika.html' ||
+      n.startsWith('/s/assets/') ||
+      n === '/s/deck-health-en.pdf'
+    ) {
+      return null;
+    }
     return '/';
   }
   if (n.startsWith('/wp-json') || n.startsWith('/xmlrpc.php')) return '/';
