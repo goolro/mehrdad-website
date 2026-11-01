@@ -4,8 +4,10 @@ import { JsonLd } from '@/components/site/JsonLd';
 
 export const metadata: Metadata = {
   title: { absolute: 'About Mehrdad | Mehrdad — Product Builder' },
+  // description trimmed to the SERP budget (audit section 2, fix #4): the
+  // old text rendered 202 chars and the punchline was cut off in results.
   description:
-    'Independent product builder running the Forward Deployed Engineering loop — the same loop that took Quiz of Koko from a blank page to a live AI vocabulary game. I don\'t sell hours; I ship outcomes.',
+    'Independent product builder running the Forward Deployed Engineering loop — the loop behind Quiz of Koko, a live AI game. I ship outcomes, not hours.',
   alternates: {
     types: { "application/rss+xml": "/feed.xml" },
     canonical: '/about',
@@ -24,7 +26,7 @@ const aboutSchema = {
   url: `${base}/about`,
   name: 'About Mehrdad',
   description:
-    "Independent product builder running the Forward Deployed Engineering loop — the same loop that took Quiz of Koko from a blank page to a live AI vocabulary game. I don't sell hours; I ship outcomes.",
+    'Independent product builder running the Forward Deployed Engineering loop — the loop behind Quiz of Koko, a live AI game. I ship outcomes, not hours.',
   inLanguage: 'en',
   mainEntity: { '@id': `${base}/#person` },
 };

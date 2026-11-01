@@ -17,6 +17,11 @@ export function WhatIDo({ headingLevel = 'h2' }: { headingLevel?: 'h1' | 'h2' })
   const lang = useLang();
   const t = ui[lang];
   const Heading = headingLevel;
+  // Heading outline (audit section 2, fix #6): /services opens with this
+  // block as h1, so the three process cards are that h1's SECTIONS and must
+  // be h2 — the page had 1×h1 + 0×h2 (cards sat at h3, skipping a level).
+  // On the home page the block is itself an h2 section, so cards stay h3.
+  const CardHeading = headingLevel === 'h1' ? 'h2' : 'h3';
 
   const cardCls =
     'rounded-2xl border border-border bg-card p-6 transition-all hover:-translate-y-1 hover:border-violet-500/50 hover:shadow-lg hover:shadow-violet-600/10';
@@ -50,7 +55,7 @@ export function WhatIDo({ headingLevel = 'h2' }: { headingLevel?: 'h1' | 'h2' })
           <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-violet-600/10 text-violet-600 dark:text-violet-400">
             <PenTool className="h-5 w-5" />
           </div>
-          <h3 className="mt-4 text-lg font-bold">{t.whatIDo.design.title}</h3>
+          <CardHeading className="mt-4 text-lg font-bold">{t.whatIDo.design.title}</CardHeading>
           <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{t.whatIDo.design.desc}</p>
         </div>
 
@@ -59,7 +64,7 @@ export function WhatIDo({ headingLevel = 'h2' }: { headingLevel?: 'h1' | 'h2' })
           <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-fuchsia-600/10 text-fuchsia-600 dark:text-fuchsia-400">
             <Hammer className="h-5 w-5" />
           </div>
-          <h3 className="mt-4 text-lg font-bold">{t.whatIDo.build.title}</h3>
+          <CardHeading className="mt-4 text-lg font-bold">{t.whatIDo.build.title}</CardHeading>
           <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{t.whatIDo.build.desc}</p>
         </div>
 
@@ -68,7 +73,7 @@ export function WhatIDo({ headingLevel = 'h2' }: { headingLevel?: 'h1' | 'h2' })
           <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-violet-600/10 text-violet-600 dark:text-violet-400">
             <Share2 className="h-5 w-5" />
           </div>
-          <h3 className="mt-4 text-lg font-bold">{t.whatIDo.share.title}</h3>
+          <CardHeading className="mt-4 text-lg font-bold">{t.whatIDo.share.title}</CardHeading>
           <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
             {t.whatIDo.share.before}
             <Link

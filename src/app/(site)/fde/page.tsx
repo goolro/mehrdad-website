@@ -6,9 +6,13 @@ import { JsonLd } from '@/components/site/JsonLd';
 export const metadata: Metadata = {
   title: { absolute: 'Forward Deployed Engineering | Mehrdad — Product Builder' },
   description:
-    'Solving real business and product problems by combining product thinking, software engineering and AI — from problem discovery to building, deploying and improving the solution.',
+    'Solving real business and product problems with product thinking, software engineering and AI — from problem discovery to build, deploy and improve.',
   alternates: {
     canonical: '/fde',
+    // hreflang self-pair (audit section 2, fix #3): /fde is EN-only, but the
+    // en + x-default declaration must be explicit — same pattern as
+    // /services and /about. Without it crawlers guess the language cluster.
+    languages: { en: '/fde', 'x-default': '/fde' },
     types: { 'application/rss+xml': '/feed.xml' },
   },
 };
@@ -25,7 +29,7 @@ const fdeSchema = {
   serviceType: 'Forward Deployed Engineering',
   url: `${base}/fde`,
   description:
-    'Solving real business and product problems by combining product thinking, software engineering and AI — from problem discovery to building, deploying and improving the solution.',
+    'Solving real business and product problems with product thinking, software engineering and AI — from problem discovery to build, deploy and improve.',
   provider: { '@id': `${base}/#person` },
   areaServed: 'Worldwide',
 };

@@ -22,9 +22,12 @@ const faqSchema = {
 };
 
 export const metadata: Metadata = {
-  title: { absolute: 'AI MVP Sprint — fixed scope, fixed quote | Mehrdad — Product Builder' },
+  // title/description trimmed to the SERP budget (audit section 2, fix #4):
+  // the old pair rendered 68/206 chars — Google truncates ~60/~155, so the
+  // differentiators were cut off exactly where the click decision happens.
+  title: { absolute: 'AI MVP Sprint — fixed scope, fixed quote | Mehrdad' },
   description:
-    'From a real problem to a working, testable product in one focused sprint. Free 15-minute scope call, three fixed-scope entry points, no hourly billing. Forward Deployed Engineering as a productized service.',
+    'From a real problem to a working, testable product in one focused sprint. Fixed scope, fixed quote, free scope call — no hourly billing.',
   alternates: {
     types: { "application/rss+xml": "/feed.xml" },
     canonical: '/mvp-sprint',
@@ -35,6 +38,10 @@ export const metadata: Metadata = {
     description:
       'From a real problem to a working product in one focused sprint — free scope call, three fixed-scope tiers, no hourly billing.',
     url: '/mvp-sprint',
+    // og:locale (audit section 2, fix #5): every other page declares its
+    // OG locale; this money page was the silent exception.
+    locale: 'en_US',
+    siteName: 'mehrdad.ir',
   },
 };
 
