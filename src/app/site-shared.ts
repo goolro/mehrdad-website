@@ -21,13 +21,15 @@ export const siteMetadata: Metadata = {
   // <title>, meta description, twitter card — is English-only. The Persian
   // experience lives on the real static /fa route, so the static metadata
   // that serves EN pages stays English.
-  // title.template (phase-2 SEO): child pages that set a plain `title`
-  // automatically get the " | Mehrdad" suffix; every existing page that
-  // carries a full title opts out via `{ absolute: ... }`.
-  title: {
-    default: "Mehrdad — Product Builder",
-    template: "%s | Mehrdad",
-  },
+  // 2026-11-02 (audit §3-8 D4): title.template REMOVED. This metadata was
+  // never actually exported before (the group layouts imported it but did
+  // not re-export), so every page grew a hand-written full title and uses
+  // `{ absolute: ... }` anyway. Now that the layouts DO export this object,
+  // keeping the template would double-suffix any plain-string title
+  // ("X | Mehrdad — Product Builder | Mehrdad"). A plain-string default =
+  // the exact titles that are live today, byte-for-byte (and it is the
+  // only TS-valid shape without a template).
+  title: "Mehrdad — Product Builder",
   alternates: {
     // RSS autodiscovery (phase-2 SEO): the feed has existed at /feed.xml for
     // a while but no <link rel="alternate"> pointed at it — feed readers and

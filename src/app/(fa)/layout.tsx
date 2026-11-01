@@ -3,7 +3,16 @@ import { GeistSans } from "geist/font/sans";
 import { vazirmatn } from "@/lib/site-fonts";
 import "../globals.css";
 import { RootBody } from "@/components/site/RootBody";
-import { siteMetadata as metadata, siteViewport as viewport } from "../site-shared";
+import { siteMetadata, siteViewport } from "../site-shared";
+
+/**
+ * 2026-11-02 (audit §3-8 D1+D4): same re-export as the (site) group layout —
+ * metadataBase makes the /fa canonicals ABSOLUTE and the icon/manifest
+ * block finally renders (the files exist in public/icons/). Page-level
+ * Persian titles/descriptions are unaffected.
+ */
+export const metadata: Metadata = siteMetadata;
+export const viewport: Viewport = siteViewport;
 
 /**
  * Root layout of the (fa) group — the static Persian route tree (/fa).
