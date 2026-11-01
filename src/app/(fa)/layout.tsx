@@ -21,6 +21,12 @@ import { siteMetadata as metadata, siteViewport as viewport } from "../site-shar
  * The boot script's fa-route branch now re-affirms values that are already
  * correct server-side (kept for ?lang= overrides and dark/light mode).
  */
+// VISIBILITY-AUDIT FIX (2026-11-01): same regression as (site)/layout.tsx —
+// the D-076 split kept the siteMetadata import but lost the re-export, so
+// /fa* shipped without favicon links, manifest, robots directives or
+// metadataBase. Re-exported here for the whole (fa) group.
+export { metadata, viewport };
+
 export default function FaRootLayout({
   children,
 }: Readonly<{

@@ -4,6 +4,40 @@ All notable changes to mehrdad.ir. Format: Keep-a-Changelog-ish, newest first.
 
 ## [Unreleased]
 
+### Visibility audit (2026-11-01): root-metadata regression fix + dead sitemap URL + /fa OG image
+- **Owner order**: «ممیزی اولیهٔ دیده‌شدن» — first search-visibility audit of
+  the live site (free, no third-party paid tool).
+- **Audit findings (live production)**: redirect matrix clean (www/http/
+  trailing-slash all 1-hop to the apex canonical), HSTS+CSP+HTTP/2 on,
+  robots.txt declares the sitemap and allows AI crawlers, all 153 sitemap
+  URLs return 200 EXCEPT one, meta/JSON-LD solid on both homepages —
+  and **Bing has the new site at ZERO results** (the `site:` operator fell
+  back to unrelated results = classic empty-index behaviour).
+- **Regression fix — `export { metadata, viewport }` was lost in the D-076
+  split**: both group root layouts (`(site)/layout.tsx`, `(fa)/layout.tsx`)
+  imported `siteMetadata` but never re-exported it, so EVERY page shipped
+  without `<link rel="icon">` (favicon invisible in browsers AND in SERP —
+  the icon files at `/icons/*.png` were 200 but unlinked), without the
+  manifest link, robots directives, `title.template` suffix and
+  `metadataBase`. Page-level metadata masked it. Re-exported in both
+  layouts; verified against the live HTML before/after.
+- **Dead sitemap entry removed**: `/play/traffic-tempo` stayed hardcoded in
+  `sitemap.ts` after the project was hidden on 2026-09-30 — the ONLY
+  non-200 URL of all 153 (live 404, advertised to every crawler). Static
+  list now must never reference hidden routes (same rule the DB lists
+  already follow).
+- **/fa got its OG image**: new `(fa)/fa/opengraph-image.tsx` — the Persian
+  homepage shared on WhatsApp/Telegram with NO image (og:image and
+  twitter:image were absent from /fa HTML). Persian-first banner + alt;
+  auto-injected via file convention, page-level openGraph untouched.
+- **Tooling**: audit artifacts in `/home/z/.audit/` (not in the repo) —
+  meta extractor, sitemap crawler, SERP parsers.
+- **Follow-ups for the owner (no card needed)**: Bing Webmaster Tools
+  (import from GSC) + IndexNow key ping after next deploy; GSC: inspect the
+  final canonical URLs for the 485 redirect entries and re-submit the
+  sitemap after this deploy; PageSpeed via pagespeed.web.dev in a browser
+  (the anonymous API is quota-0 from datacenter IPs).
+
 ### Home: investor-deck PDF link inside the startups section (2026-11-01)
 - **Owner order**: «این لینکو توی استارتاپ پایین قرار بده و توضیح بده فایل
   pdf هست» — the deck link goes into the homepage «Key Projects &

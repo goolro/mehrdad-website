@@ -19,6 +19,16 @@ import { siteMetadata as metadata, siteViewport as viewport } from "../site-shar
  * shared pieces now in site-shared.ts / RootBody.tsx / site-fonts.ts.
  * Groups don't affect URLs — every route here keeps its exact path.
  */
+// VISIBILITY-AUDIT FIX (2026-11-01): the route-group split (D-076) kept the
+// siteMetadata import below but LOST the re-export — so the whole EN group
+// shipped with NO root metadata: no <link rel="icon"> (favicon invisible in
+// browsers AND in Google/Bing SERP), no manifest link, no robots directives,
+// no title.template suffix, no metadataBase. Page-level metadata (title,
+// description, alternates) still worked, which masked the regression.
+// Restoring the export puts icons / manifest / robots / template back on
+// every EN page — byte-identical to the pre-split root layout.
+export { metadata, viewport };
+
 export default function SiteRootLayout({
   children,
 }: Readonly<{
