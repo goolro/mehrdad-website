@@ -25,9 +25,59 @@ export const VIEW_PATH: Record<View, string> = {
   admin: '/admin',
 };
 
+/**
+ * Persian twins (audit section 2, fix #1 — the fa tree): static Persian
+ * pages exist for the nav routes, so the chrome keeps /fa visitors inside
+ * the Persian tree instead of dumping them back on the EN site.
+ * daily/fde/admin have NO Persian pages yet — they deliberately keep their
+ * EN paths here so nothing can link to a 404.
+ */
+export const FA_VIEW_PATH: Record<View, string> = {
+  home: '/fa',
+  services: '/fa/services',
+  projects: '/fa/work',
+  blog: '/fa/blog',
+  daily: '/daily', // no Persian twin yet — EN page on purpose
+  about: '/fa/about',
+  contact: '/fa/contact',
+  fde: '/fde', // no Persian twin yet — EN page on purpose
+  admin: '/admin',
+};
+
+/** True on the static Persian route tree — kept local to avoid a
+ *  store ⇄ lang-context import cycle (same one-liner as lang-context). */
+function isFaPathname(p: string): boolean {
+  return p === '/fa' || p.startsWith('/fa/');
+}
+
+/**
+ * Exact-match map used by the navigation bridge: on /fa* routes, programmatic
+ * store navigation (setView) lands on the Persian twin when one exists.
+ * EXACT matches only — deep paths (/blog/<slug>, /work/<slug>) have no
+ * Persian twins and intentionally stay on the EN tree instead of 404ing.
+ */
+const FA_TWIN: Record<string, string> = {
+  '/': '/fa',
+  '/services': '/fa/services',
+  '/work': '/fa/work',
+  '/blog': '/fa/blog',
+  '/about': '/fa/about',
+  '/contact': '/fa/contact',
+};
+
+function faAwarePath(path: string): string {
+  if (typeof window === 'undefined') return path;
+  if (!isFaPathname(window.location.pathname)) return path;
+  return FA_TWIN[path] ?? path;
+}
+
 /** pathname → view (drives nav highlighting after every navigation) */
 export function viewFromPathname(pathname: string | null | undefined): View {
-  const p = pathname || '/';
+  let p = pathname || '/';
+  // Persian tree (audit §2 #1): strip the /fa prefix so nav highlighting on
+  // /fa/services etc. matches the same view keys as the EN routes
+  if (p === '/fa') return 'home';
+  if (p.startsWith('/fa/')) p = p.slice(3);
   if (p === '/' || p === '') return 'home';
   const seg = p.split('/')[1] || '';
   switch (seg) {
@@ -72,8 +122,11 @@ export function registerNavigate(fn: NavFn) {
   navigateFn = fn;
 }
 function navigate(path: string) {
-  if (navigateFn) navigateFn(path);
-  else if (typeof window !== 'undefined') window.location.assign(path);
+  // audit §2 #1: keep /fa visitors on the Persian tree for pages that have
+  // a Persian twin (see FA_TWIN) — deep/unknown paths pass through unchanged
+  const target = faAwarePath(path);
+  if (navigateFn) navigateFn(target);
+  else if (typeof window !== 'undefined') window.location.assign(target);
 }
 
 export const useApp = create<AppState>()(

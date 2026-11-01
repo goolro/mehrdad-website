@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useLang } from './lang-context';
 import { ui } from './i18n';
 import { PenTool, Hammer, Share2, ChevronRight, Workflow, ArrowRight } from 'lucide-react';
@@ -16,6 +17,10 @@ export function WhatIDo({ headingLevel = 'h2' }: { headingLevel?: 'h1' | 'h2' })
   // route-aware language (lang-context.tsx): 'fa' is forced on /fa* routes
   const lang = useLang();
   const t = ui[lang];
+  // Persian tree (audit §2 #1): the inline Work/Blog links stay in the fa
+  // tree on /fa* routes (the FDE pointer has no Persian twin and stays EN)
+  const onFa = !!usePathname()?.match(/^\/fa(\/|$)/);
+  const faAware = (en: string, fa: string) => (onFa ? fa : en);
   const Heading = headingLevel;
   // Heading outline (audit section 2, fix #6): /services opens with this
   // block as h1, so the three process cards are that h1's SECTIONS and must
@@ -77,14 +82,14 @@ export function WhatIDo({ headingLevel = 'h2' }: { headingLevel?: 'h1' | 'h2' })
           <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
             {t.whatIDo.share.before}
             <Link
-              href="/work"
+              href={faAware('/work', '/fa/work')}
               className="inline font-semibold text-violet-600 underline-offset-4 hover:underline dark:text-violet-400"
             >
               {t.whatIDo.share.linkWork}
             </Link>
             {t.whatIDo.share.mid}
             <Link
-              href="/blog"
+              href={faAware('/blog', '/fa/blog')}
               className="inline font-semibold text-violet-600 underline-offset-4 hover:underline dark:text-violet-400"
             >
               {t.whatIDo.share.linkWriting}

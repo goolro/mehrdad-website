@@ -2,8 +2,9 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useApp, pick } from './store';
-import { useLang } from './lang-context';
+import { isFaPath, useLang } from './lang-context';
 import { pct, ui } from './i18n';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -41,6 +42,11 @@ export function HomeView({ initial }: { initial: HomeInitialData }) {
   // so the SAME view renders the static Persian page at /fa (SSR) and the
   // store-driven EN home at '/' — one source of truth for the markup
   const lang = useLang();
+  // Persian tree (audit section 2, fix #1): index-level CTAs keep /fa
+  // visitors inside the Persian tree; detail pages (/work/<slug>,
+  // /blog/<slug>) have no Persian twins and stay EN on purpose.
+  const onFa = isFaPath(usePathname());
+  const faAware = (en: string, fa: string) => (onFa ? fa : en);
   // navigation is real <Link>s now (structural audit 2026-09-08) — cards and
   // CTAs render as anchors: crawlable, middle-clickable, keyboard-link
   // semantics. Only genuine ACTIONS (AI chat) stay buttons.
@@ -78,7 +84,7 @@ export function HomeView({ initial }: { initial: HomeInitialData }) {
               asChild
               className="bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white hover:from-violet-700 hover:to-fuchsia-700"
             >
-              <Link href="/services">
+              <Link href={faAware('/services', '/fa/services')}>
                 {t.hero.cta1}
                 <ArrowRight className="ms-2 h-4 w-4 rtl:rotate-180" />
               </Link>
@@ -148,7 +154,7 @@ export function HomeView({ initial }: { initial: HomeInitialData }) {
             title={t.sections.projectsTitle}
             sub={t.sections.projectsSub}
             subClassName="text-foreground/70"
-            action={{ label: t.projects.seeAllWork, href: '/work' }}
+            action={{ label: t.projects.seeAllWork, href: faAware('/work', '/fa/work') }}
           />
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {(projects || []).map((p) => {
@@ -186,7 +192,7 @@ export function HomeView({ initial }: { initial: HomeInitialData }) {
               );
             })}
             <Link
-              href="/contact"
+              href={faAware('/contact', '/fa/contact')}
               className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-violet-500/40 bg-violet-600/5 p-5 text-center transition-colors hover:bg-violet-600/10"
             >
               <div className="text-2xl">👋</div>
@@ -226,7 +232,7 @@ export function HomeView({ initial }: { initial: HomeInitialData }) {
       <section id="blog" className="mx-auto w-full max-w-7xl scroll-mt-24 px-4 py-14 sm:px-6">
         <SectionHeader title={t.sections.featuredTitle} sub={t.sections.featuredSub} action={{
           label: t.sections.viewAll,
-          href: '/blog',
+          href: faAware('/blog', '/fa/blog'),
         }} />
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {posts.map((p) => (

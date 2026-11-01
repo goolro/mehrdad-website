@@ -1,8 +1,9 @@
 'use client';
 
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { Instagram, Linkedin } from 'lucide-react';
-import { useLang } from './lang-context';
+import { isFaPath, useLang } from './lang-context';
 import { ui } from './i18n';
 
 // Social profiles (owner request 2026-09-30): the official Instagram page.
@@ -33,6 +34,12 @@ export function Footer() {
   const lang = useLang();
   const t = ui[lang];
   const year = new Date().getFullYear();
+  // Persian tree (audit section 2, fix #1): footer links to the nav pages
+  // stay inside the Persian tree on /fa* routes; money/funnel pages without
+  // a Persian twin (mvp-sprint, playbook, case study, investors, daily)
+  // intentionally keep their EN paths.
+  const onFa = isFaPath(usePathname());
+  const faAware = (en: string, fa: string) => (onFa ? fa : en);
 
   return (
     <footer className="site-footer relative z-10 mt-auto border-t border-border/40 bg-muted/30">
@@ -55,16 +62,16 @@ export function Footer() {
                 — phase 1 (2026-10-18): MVP Sprint + Playbook + Investors
                 surfaced here so the money pages and the investor funnel are
                 crawlable from every page, not just one deep blog post */}
-            <Link href="/services" className="hover:text-foreground">{t.nav.services}</Link>
+            <Link href={faAware('/services', '/fa/services')} className="hover:text-foreground">{t.nav.services}</Link>
             <Link href="/mvp-sprint" className="font-medium text-violet-600 hover:text-violet-700 dark:text-violet-400 dark:hover:text-violet-300">
               {lang === 'fa' ? 'اسپرینت MVP' : 'MVP Sprint'}
             </Link>
-            <Link href="/work" className="hover:text-foreground">{t.nav.projects}</Link>
+            <Link href={faAware('/work', '/fa/work')} className="hover:text-foreground">{t.nav.projects}</Link>
             {/* phase 2 (2026-10-18): credibility crawlable from every page */}
             <Link href="/case-studies/quiz-of-koko" className="hover:text-foreground">
               {lang === 'fa' ? 'مطالعه موردی' : 'Case Study'}
             </Link>
-            <Link href="/blog" className="hover:text-foreground">{t.nav.blog}</Link>
+            <Link href={faAware('/blog', '/fa/blog')} className="hover:text-foreground">{t.nav.blog}</Link>
             <Link href="/daily" className="hover:text-foreground">{t.nav.daily}</Link>
             <Link href="/playbook" className="hover:text-foreground">
               {lang === 'fa' ? 'کتابچه FDE' : 'Playbook'}
@@ -72,7 +79,7 @@ export function Footer() {
             <Link href="/investors-koko" className="hover:text-foreground">
               {lang === 'fa' ? 'سرمایه‌گذاری' : 'Investors'}
             </Link>
-            <Link href="/contact" className="hover:text-foreground">{t.nav.contact}</Link>
+            <Link href={faAware('/contact', '/fa/contact')} className="hover:text-foreground">{t.nav.contact}</Link>
           </nav>
         </div>
 

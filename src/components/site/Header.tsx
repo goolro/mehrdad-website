@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
-import { useApp, pick, VIEW_PATH } from './store';
+import { useApp, pick, VIEW_PATH, FA_VIEW_PATH } from './store';
 import { isFaPath, useLang } from './lang-context';
 import { ui } from './i18n';
 import type { Lang } from './i18n';
@@ -64,6 +64,13 @@ export function Header() {
     { key: 'contact', label: t.nav.contact },
   ];
 
+  // Persian tree (audit section 2, fix #1): on /fa* routes the nav links to
+  // the static Persian pages — previously every nav item dumped Persian
+  // visitors back on the EN site (the fa tree was a one-page dead end).
+  const onFa = isFaPath(pathname);
+  const navHref = (key: (typeof navItems)[number]['key']) =>
+    onFa ? FA_VIEW_PATH[key] : VIEW_PATH[key];
+
   return (
     <header className="site-header sticky top-0 z-40 w-full border-b border-border/40 bg-background/80 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 px-4 sm:px-6">
@@ -88,7 +95,7 @@ export function Header() {
           {navItems.map((item) => (
             <Link
               key={item.key}
-              href={VIEW_PATH[item.key]}
+              href={navHref(item.key)}
               aria-current={view === item.key ? 'page' : undefined}
               className={`rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
                 view === item.key
@@ -169,7 +176,7 @@ export function Header() {
           {navItems.map((item) => (
             <Link
               key={item.key}
-              href={VIEW_PATH[item.key]}
+              href={navHref(item.key)}
               onClick={() => setMobileOpen(false)}
               aria-current={view === item.key ? 'page' : undefined}
               className={`flex min-h-11 items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
