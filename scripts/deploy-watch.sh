@@ -1,6 +1,6 @@
 #!/bin/bash
 # poll Vercel deployment state for commit 216f24b via the GitHub API
-T="Authorization: Bearer ghp_[REDACTED]BF4t3jfeDPzW75SioqS9Dw54UJ346KG8"
+T="Authorization: Bearer ${GITHUB_TOKEN:?export GITHUB_TOKEN first — no tokens in the repo (owner rule 2026-11-01)}"
 API="https://api.github.com/repos/goolro/mehrdad-website"
 for i in $(seq 1 12); do
   sleep 50
