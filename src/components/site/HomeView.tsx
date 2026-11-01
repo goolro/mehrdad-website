@@ -212,7 +212,7 @@ export function HomeView({ initial }: { initial: HomeInitialData }) {
             >
               <div className="relative aspect-video w-full overflow-hidden bg-muted">
                 {p.cover ? (
-                  <Image src={p.cover} alt="" fill sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw" className="object-cover transition-transform group-hover:scale-105" />
+                  <Image src={p.cover} alt={pick(lang, p.titleEn, p.titleFa)} fill sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw" className="object-cover transition-transform group-hover:scale-105" />
                 ) : (
                   <div className="flex h-full items-center justify-center">
                     <FileText className="h-10 w-10 text-muted-foreground/40" />
