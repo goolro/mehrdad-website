@@ -11,7 +11,8 @@ export const metadata: Metadata = {
   alternates: {
     types: { "application/rss+xml": "/feed.xml" },
     canonical: '/about',
-    languages: { en: '/about', 'x-default': '/about' },
+    // hreflang triple (audit §2 #1): the Persian twin /fa/about exists
+    languages: { en: '/about', fa: '/fa/about', 'x-default': '/about' },
   },
 };
 

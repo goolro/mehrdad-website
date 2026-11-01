@@ -8,7 +8,8 @@ export const metadata: Metadata = {
   alternates: {
     types: { "application/rss+xml": "/feed.xml" },
     canonical: '/contact',
-    languages: { en: '/contact', 'x-default': '/contact' },
+    // hreflang triple (audit §2 #1): the Persian twin /fa/contact exists
+    languages: { en: '/contact', fa: '/fa/contact', 'x-default': '/contact' },
   },
 };
 

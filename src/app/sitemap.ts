@@ -44,19 +44,27 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 1,
       alternates: { languages: { en: `${BASE}/`, fa: `${BASE}/fa` } },
     },
-    { url: `${BASE}/services`, changeFrequency: 'monthly', priority: 0.8 },
+    // fa pairs (audit section 2, fix #1): services/work/blog/about/contact
+    // now have static Persian twins — both sides of each pair carry the same
+    // hreflang triple so the xhtml:link cluster is symmetric
+    { url: `${BASE}/services`, changeFrequency: 'monthly', priority: 0.8, alternates: { languages: { en: `${BASE}/services`, fa: `${BASE}/fa/services`, 'x-default': `${BASE}/services` } } },
+    { url: `${BASE}/fa/services`, changeFrequency: 'monthly', priority: 0.8, alternates: { languages: { en: `${BASE}/services`, fa: `${BASE}/fa/services`, 'x-default': `${BASE}/services` } } },
     { url: `${BASE}/fde`, changeFrequency: 'monthly', priority: 0.8 },
-    { url: `${BASE}/work`, changeFrequency: 'weekly', priority: 0.8 },
+    { url: `${BASE}/work`, changeFrequency: 'weekly', priority: 0.8, alternates: { languages: { en: `${BASE}/work`, fa: `${BASE}/fa/work`, 'x-default': `${BASE}/work` } } },
+    { url: `${BASE}/fa/work`, changeFrequency: 'weekly', priority: 0.8, alternates: { languages: { en: `${BASE}/work`, fa: `${BASE}/fa/work`, 'x-default': `${BASE}/work` } } },
     { url: `${BASE}/lab`, changeFrequency: 'monthly', priority: 0.5 },
-    { url: `${BASE}/blog`, changeFrequency: 'daily', priority: 0.9 },
+    { url: `${BASE}/blog`, changeFrequency: 'daily', priority: 0.9, alternates: { languages: { en: `${BASE}/blog`, fa: `${BASE}/fa/blog`, 'x-default': `${BASE}/blog` } } },
+    { url: `${BASE}/fa/blog`, changeFrequency: 'daily', priority: 0.9, alternates: { languages: { en: `${BASE}/blog`, fa: `${BASE}/fa/blog`, 'x-default': `${BASE}/blog` } } },
     { url: `${BASE}/daily`, changeFrequency: 'daily', priority: 0.8 },
     // the three daily lanes — real crawlable category hubs linked from the
     // blog daily-box and the /daily index tabs
     { url: `${BASE}/daily/cat/product`, changeFrequency: 'daily', priority: 0.7 },
     { url: `${BASE}/daily/cat/ai`, changeFrequency: 'daily', priority: 0.7 },
     { url: `${BASE}/daily/cat/startup`, changeFrequency: 'daily', priority: 0.7 },
-    { url: `${BASE}/about`, changeFrequency: 'yearly', priority: 0.5 },
-    { url: `${BASE}/contact`, changeFrequency: 'yearly', priority: 0.6 },
+    { url: `${BASE}/about`, changeFrequency: 'yearly', priority: 0.5, alternates: { languages: { en: `${BASE}/about`, fa: `${BASE}/fa/about`, 'x-default': `${BASE}/about` } } },
+    { url: `${BASE}/fa/about`, changeFrequency: 'yearly', priority: 0.5, alternates: { languages: { en: `${BASE}/about`, fa: `${BASE}/fa/about`, 'x-default': `${BASE}/about` } } },
+    { url: `${BASE}/contact`, changeFrequency: 'yearly', priority: 0.6, alternates: { languages: { en: `${BASE}/contact`, fa: `${BASE}/fa/contact`, 'x-default': `${BASE}/contact` } } },
+    { url: `${BASE}/fa/contact`, changeFrequency: 'yearly', priority: 0.6, alternates: { languages: { en: `${BASE}/contact`, fa: `${BASE}/fa/contact`, 'x-default': `${BASE}/contact` } } },
     // phase 1 money pages — MISSING from the map until 2026-10-18 (gap fix:
     // these were shipped in PR #19 but never added here, so Google only
     // found them via footer crawl)
