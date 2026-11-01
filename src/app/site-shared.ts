@@ -1,26 +1,16 @@
 import type { Metadata, Viewport } from "next";
-import localFont from "next/font/local";
-import { GeistSans } from "geist/font/sans";
-import "./globals.css";
-import { Toaster } from "@/components/ui/toaster";
-import { Analytics } from "@vercel/analytics/react";
-import { PwaClient } from "@/components/site/PwaClient";
-import { SiteChrome } from "@/components/site/SiteChrome";
-import PostHogProvider from "@/components/site/PostHogProvider";
 
-// Fonts are SELF-HOSTED (2026-09-07): next/font/google fetched CSS from
-// fonts.googleapis.com at build time — an external dependency that broke
-// hermetic builds (sandbox blocks it) and adds a Google round-trip to every
-// deploy. Geist ships via the official `geist` package (next/font/local
-// under the hood, same --font-geist-* variables); Vazirmatn's OFL variable
-// font is committed in src/fonts.
-const vazirmatn = localFont({
-  src: "../fonts/Vazirmatn-Variable.woff2",
-  variable: "--font-vazirmatn",
-  display: "swap",
-});
+/**
+ * Shared root-layout payload for the (site) and (fa) groups.
+ *
+ * The route-group split (2026-11-01, audit report section 1) gives /fa its
+ * own root layout so the RAW HTML carries lang="fa" dir="rtl" — crawlers
+ * without JS (Bing, GPTBot, ClaudeBot) no longer see an English <html> tag
+ * on the Persian page. Metadata/viewport/boot-script are byte-identical for
+ * both groups, so they live here once; each group layout re-exports them.
+ */
 
-export const metadata: Metadata = {
+export const siteMetadata: Metadata = {
   metadataBase: new URL(process.env.SITE_ORIGIN || "https://mehrdad.ir"),
   other: {
     // deploy fingerprint: tells the owner/support which commit the served
@@ -86,7 +76,7 @@ export const metadata: Metadata = {
   },
 };
 
-export const viewport: Viewport = {
+export const siteViewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   themeColor: "#7c3aed",
@@ -133,49 +123,10 @@ export const viewport: Viewport = {
  * <html> lang/dir attributes pre-paint and persist lang=fa (route
  * continuity for inner EN routes). It must NOT add `lang-boot-fa` here:
  * hiding the body would only delay already-correct Persian content.
+ *
+ * 2026-11-01 (route-group split): the (fa) group root layout now renders
+ * lang/dir=fa/rtl server-side, so on /fa* this script re-affirms values
+ * that are already correct — kept for ?lang= overrides, persisted-language
+ * continuity when navigating /fa → EN routes, and the dark/light class.
  */
-const bootScript = `(function(){try{var q=new URLSearchParams(location.search).get('lang');if(q==='fa'||q==='en'){try{var raw2=JSON.parse(localStorage.getItem('mehrdad-app')||'{}');raw2.state=Object.assign({},raw2.state,{lang:q});localStorage.setItem('mehrdad-app',JSON.stringify(raw2));}catch(e){}if(q==='fa')document.documentElement.lang='fa',document.documentElement.dir='rtl';else document.documentElement.lang='en',document.documentElement.dir='ltr';}var p=location.pathname;var faRoute=(p==='/fa'||p.indexOf('/fa/')===0);if(faRoute){document.documentElement.lang='fa';document.documentElement.dir='rtl';try{var raw4=JSON.parse(localStorage.getItem('mehrdad-app')||'{}');raw4.state=Object.assign({},raw4.state,{lang:'fa'});localStorage.setItem('mehrdad-app',JSON.stringify(raw4));}catch(e){}}var s={};try{s=(JSON.parse(localStorage.getItem('mehrdad-app')||'{}').state)||{};}catch(e){}if(!s.mode||s.mode==='dark')document.documentElement.classList.add('dark');if(s.lang==='fa'&&!faRoute){document.documentElement.lang='fa';document.documentElement.dir='rtl';document.documentElement.classList.add('lang-boot-fa');if(s.mode==='light')document.documentElement.classList.add('lang-boot-light');}var t=localStorage.getItem('mehrdad-theme-cache');if(t)document.documentElement.dataset.theme=t;}catch(e){}})();`;
-
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
-  // No per-request nonce anymore (2026-09-07): all HTML pages are static /
-  // ISR and carry a BUILD-TIME hash-based CSP <meta> injected by
-  // scripts/inject-csp.mjs — reading headers() here would force every page
-  // to render dynamically on every request (~2.6s TTFB measured on prod).
-  // The boot script text is identical for every visitor, so its hash
-  // allow-lists it.
-  return (
-    <html
-      lang="en"
-      dir="ltr"
-      // font variable classes live on <html> (not <body>): Tailwind's
-      // --default-font-family resolves var(--font-geist-sans) at :root —
-      // on body it never reached the html element, silently falling back
-      // to the system font stack (pre-existing bug, fixed 2026-09-07)
-      // PERF 2026-10-27: GeistMono dropped from the global tree — it was
-      // preloaded (~70KB) on EVERY page but almost no page renders mono
-      // (admin/agency/decks only). font-mono now resolves to a system mono
-      // stack (globals.css); decks/agency still look right and ship 70KB less
-      // on the critical path for every visitor.
-      className={`${GeistSans.variable} ${vazirmatn.variable}`}
-      suppressHydrationWarning
-    >
-      <body className="antialiased bg-background text-foreground">
-        <script
-          id="theme-boot"
-          suppressHydrationWarning
-          dangerouslySetInnerHTML={{ __html: bootScript }}
-        />
-        <PostHogProvider>
-          <SiteChrome>{children}</SiteChrome>
-        </PostHogProvider>
-        <Toaster />
-        <PwaClient />
-        <Analytics />
-      </body>
-    </html>
-  );
-}
+export const bootScript = `(function(){try{var q=new URLSearchParams(location.search).get('lang');if(q==='fa'||q==='en'){try{var raw2=JSON.parse(localStorage.getItem('mehrdad-app')||'{}');raw2.state=Object.assign({},raw2.state,{lang:q});localStorage.setItem('mehrdad-app',JSON.stringify(raw2));}catch(e){}if(q==='fa')document.documentElement.lang='fa',document.documentElement.dir='rtl';else document.documentElement.lang='en',document.documentElement.dir='ltr';}var p=location.pathname;var faRoute=(p==='/fa'||p.indexOf('/fa/')===0);if(faRoute){document.documentElement.lang='fa';document.documentElement.dir='rtl';try{var raw4=JSON.parse(localStorage.getItem('mehrdad-app')||'{}');raw4.state=Object.assign({},raw4.state,{lang:'fa'});localStorage.setItem('mehrdad-app',JSON.stringify(raw4));}catch(e){}}var s={};try{s=(JSON.parse(localStorage.getItem('mehrdad-app')||'{}').state)||{};}catch(e){}if(!s.mode||s.mode==='dark')document.documentElement.classList.add('dark');if(s.lang==='fa'&&!faRoute){document.documentElement.lang='fa';document.documentElement.dir='rtl';document.documentElement.classList.add('lang-boot-fa');if(s.mode==='light')document.documentElement.classList.add('lang-boot-light');}var t=localStorage.getItem('mehrdad-theme-cache');if(t)document.documentElement.dataset.theme=t;}catch(e){}})();`;

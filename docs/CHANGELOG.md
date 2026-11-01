@@ -4,6 +4,19 @@ All notable changes to mehrdad.ir. Format: Keep-a-Changelog-ish, newest first.
 
 ## [Unreleased]
 
+### Route-group split: /fa raw HTML is now lang="fa" dir="rtl"; alt text on post covers (D-076, 2026-11-01)
+- **Audit report section 1 fix**: `src/app/layout.tsx` replaced by per-group
+  root layouts — `(site)/` (en/ltr, every EN route) and `(fa)/fa` (fa/rtl,
+  the static Persian homepage). No-JS crawlers (Bing, GPTBot, ClaudeBot…) no
+  longer read an English `<html>` tag on the Persian page. Shared payload
+  extracted to `site-shared.ts` / `site-fonts.ts` / `RootBody.tsx`; boot
+  script byte-identical (CSP hash unchanged).
+- **404 re-plumbed for multiple root layouts**: `global-not-found.tsx`
+  (`experimental.globalNotFound`) serves unmatched URLs with full chrome +
+  real 404 status; in-group `notFound()` keeps `(site)/not-found.tsx` via
+  the shared `NotFoundContent`.
+- **alt text**: the 6 homepage featured-post covers and blog-listing covers
+  rendered `alt=""` — now the localized post title via `pick(lang, …)`.
 ### Phase-6 repo hygiene: scripts/ organized, CHANGELOG/ROADMAP refreshed (2026-10-30)
 - **scripts/ split into active vs `archive/`**: 16 completed one-offs
   (SQLite→Turso→Supabase migrations, six `seed-*` runs + their data blobs,

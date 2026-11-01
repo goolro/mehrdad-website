@@ -2252,3 +2252,67 @@ NO percentage anywhere.
    (b) the progress=70 value must be set on the PRODUCTION DB row — owner
    1-minute path: Admin → Projects → کلیکا → progress 70 → save (or provide
    DB access). Prod row untouched in this task; dev mirror is local-only.
+
+## D-076 — route-group split: /fa ships lang="fa" dir="rtl" in the RAW HTML (2026-11-01)
+
+**Trigger:** live audit of 2026-11-01 (report section 1): `https://mehrdad.ir/fa`
+served `<html lang="en" dir="ltr">` — the Persian page's RAW static HTML
+carried English document attributes. The D-050 boot script fixed lang/dir
+PRE-PAINT for human visitors and Google's renderer, but every crawler that
+does NOT execute JS (Bing, GPTBot, ClaudeBot, PerplexityBot — all explicitly
+allowed in robots.txt) read an English `<html>` wrapping Persian content.
+
+**Why the boot script alone was not "good enough":** the html attributes are
+the strongest per-document language signal available to no-JS consumers;
+content-only language detection is probabilistic. The site's own AI-crawler
+allowlist made this gap self-inflicted.
+
+**Why not the "obvious" fix:** root layouts in App Router render `<html>`
+once for ALL routes and have no route context (reading `headers()` would
+force dynamic rendering — rejected since 2026-09-07 for the ~2.6s TTFB
+reason). Making the root layout a client component to use `usePathname()`
+was rejected too: client components cannot export `metadata`.
+
+**Decision — per-group root layouts (documented multiple-root-layouts
+pattern):**
+1. `src/app/layout.tsx` deleted; every EN route moved under
+   `src/app/(site)/` whose root layout renders `lang="en" dir="ltr"`;
+   `src/app/fa/` moved under `src/app/(fa)/` whose root layout renders
+   `lang="fa" dir="rtl"`. Groups don't change URLs — zero route churn.
+2. Shared payload extracted once: `src/app/site-shared.ts` (metadata,
+   viewport, boot script — script byte-identical, verified by string diff,
+   so the build-time CSP hash is unchanged), `src/lib/site-fonts.ts`
+   (Vazirmatn localFont), `src/components/site/RootBody.tsx` (body chrome:
+   boot script + PostHog + SiteChrome + Toaster + PwaClient + Analytics).
+3. 404 hosts re-plumbed: with no shared root layout, the old top-level
+   `app/not-found.tsx` lost its `<html>` host. `notFound()` calls from
+   pages keep the in-group boundary `(site)/not-found.tsx` (content
+   extracted to `NotFoundContent`); URLs matching NO route are served by
+   `app/global-not-found.tsx` (`experimental.globalNotFound: true`) — a
+   full chrome document with a real 404 status, replacing the rejected
+   alternatives: a catch-all `notFound()` page (verified locally: streamed
+   error shell, no static chrome — a UX regression vs the prerendered
+   `/_not-found`) and Next's built-in minimal 404 (7KB unstyled, also a
+   regression). The flag is scoped to unmatched-route rendering only.
+4. Left at the app root on purpose: `api/`, `robots.ts`, `sitemap.ts`,
+   `feed.xml/`, `llms.txt/`, `globals.css` — metadata routes and handlers
+   need no layout; `inject-csp.mjs` walks ALL `.html` under
+   `.next/server/app` recursively, so group-prefixed output dirs are
+   picked up unchanged.
+
+**Verification (local prod build against a local Postgres with the real
+Prisma schema, empty data):** full `next build` prerenders 55/55 pages;
+`/fa` → 200 `<html lang="fa" dir="rtl">`; `/` and all EN pages → 200
+`lang="en" dir="ltr"`; `/xyz` → 404 with full chrome + `lang="en"`;
+`/blog/<unknown-slug>` → 404 via the in-group boundary, byte-equivalent to
+the pre-refactor streamed mechanism (verified against live prod); robots/
+sitemap/feed/llms → 200; `tsc --noEmit` clean; bootScript byte-diff clean.
+Same build failed-identically behavior preserved: DB unreachable → build
+fails → Vercel keeps the previous deployment.
+
+**Deliberately NOT changed:** `/deck/health/fa` stays inside (site) (it is
+an EN-chrome deck landing with a fa variant, path does not match the
+`/fa` boot-script branch today — unchanged); 404s under `/fa/*` keep
+serving the EN global 404 (same as the pre-refactor root not-found);
+`experimental.globalNotFound` is accepted as the one flag addition — pinned
+next@16.4.3 keeps it reproducible.

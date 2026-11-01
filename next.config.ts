@@ -185,6 +185,13 @@ const nextConfig: NextConfig = {
       dynamic: 120, // default 30s
       static: 1800, // default 300s — 30min matches the deploy cadence
     },
+    // 2026-11-01 route-group split (audit report section 1): per-group root
+    // layouts removed the shared root layout, so the old top-level
+    // app/not-found.tsx lost its <html> host. global-not-found.tsx renders
+    // the full 404 document (own <html>/<body>, same RootBody chrome) for
+    // URLs that match no route, with a real 404 status. Scope of the flag:
+    // ONLY unmatched-route rendering — every matched route is untouched.
+    globalNotFound: true,
   },
 };
 
