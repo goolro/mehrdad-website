@@ -124,6 +124,23 @@ function lookup(rawPath: string, searchParams: URLSearchParams): string | null {
 export function proxy(req: NextRequest) {
   const path = req.nextUrl.pathname;
 
+  // PRIVATE TOOL GATE (audit §6 D2, owner-approved 2026-11-02):
+  // /team-room is the owner's multi-agent AI panel — the page used to be
+  // reachable by ANYONE while only the API was rate-limited (the API also
+  // burns PAID LLM credits — see the auth added to /api/team-room in the
+  // same change). Presence-only check here (edge runtime: no node:crypto,
+  // so the HMAC cannot be re-verified in this file — the real verification
+  // happens server-side in the API itself). Literal 'mehrdad_admin' must
+  // stay in sync with ADMIN_COOKIE in src/lib/admin-session.ts (importing
+  // that module would pull node:crypto into the edge bundle).
+  // /admin itself stays reachable: it RENDERS the login form.
+  const norm = normalize(path);
+  if ((norm === '/team-room' || norm.startsWith('/team-room/')) && !req.cookies.get('mehrdad_admin')?.value) {
+    // SITE_ORIGIN anchor = same Host-header-poisoning guard as the WP redirects below
+    const base = process.env.SITE_ORIGIN || req.nextUrl.origin;
+    return NextResponse.redirect(`${base}/admin`, 302);
+  }
+
   // Preview-workspace ONLY (the sandbox dev server runs with PREVIEW_EMBED=1):
   // the owner opens the preview panel at "/" and must land on the public
   // investor overview (/investors-koko). The content factory that used to sit
@@ -165,6 +182,8 @@ export function proxy(req: NextRequest) {
 export const config = {
   matcher: [
     // everything except Next internals, APIs and static assets
+    // (/api/team-room enforces the same admin-session rule server-side in
+    // its own route.ts — node:crypto HMAC — see the audit §6 D2 change)
     '/((?!_next/static|_next/image|api/|icons/|media/|manifest\\.json|sw\\.js|favicon\\.ico|\\.well-known|robots\\.txt|logo\\.svg|sitemap|uploads/|feed\\.xml).*)',
   ],
 };

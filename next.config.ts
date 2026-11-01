@@ -165,6 +165,27 @@ const nextConfig: NextConfig = {
         source: "/api/agency/:path*",
         headers: [{ key: "Cache-Control", value: "no-store" }],
       },
+      // PRIVATE PANELS (audit §6 D2, owner-approved 2026-11-02): /admin,
+      // /agency and /team-room are owner-only tools. Each page already sets
+      // meta robots noindex, but a meta tag can be lost on any rewrite of
+      // the page tree — this header is the belt-and-suspenders layer that
+      // travels with the RESPONSE for the page and every subpath.
+      {
+        source: "/admin/:path*",
+        headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }],
+      },
+      {
+        source: "/agency/:path*",
+        headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }],
+      },
+      {
+        source: "/team-room/:path*",
+        headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }],
+      },
+      {
+        source: "/team-room",
+        headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }],
+      },
     ];
   },
   typescript: {

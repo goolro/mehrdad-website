@@ -7,6 +7,7 @@ import {
 } from '@/lib/ai-provider';
 import { clientIp, rateLimit, tooManyRequests, readJsonBody, jsonBodyError } from '@/lib/rate-limit';
 import { durableLimit } from '@/lib/durable-limit';
+import { ADMIN_COOKIE, verifyAdminSessionToken } from '@/lib/admin-session';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 300;
@@ -139,6 +140,21 @@ function parsePlan(raw: string): Plan | null {
 }
 
 export async function POST(req: NextRequest) {
+  // AUTH GATE (audit §6 D2, owner-approved 2026-11-02): this route proxies
+  // to PAID LLM providers (Gemini/OpenRouter/…, 7 calls per mission) and
+  // was callable by anyone with a 5/hour in-memory + 20/day durable cap —
+  // but the in-memory bucket resets per lambda instance and IP rotation
+  // defeats it. The panel is owner-only, so require the real HMAC admin
+  // session (same verification as every /api/admin route). The /team-room
+  // page redirects to /admin pre-auth in src/proxy.ts; direct API calls
+  // (curl) now get a 401 BEFORE any rate-limit slot or credit is burned.
+  if (!verifyAdminSessionToken(req.cookies.get(ADMIN_COOKIE)?.value)) {
+    return Response.json(
+      { error: 'دسترسی خصوصی است — اول در /admin وارد شوید.' },
+      { status: 401 },
+    );
+  }
+
   // abuse guard layer 1 — per IP: حداکثر ۵ مأموریت در ساعت (هر اجرا ۷ فراخوانی LLM است)
   const rl = rateLimit(`teamroom:${clientIp(req)}`, 5, 60 * 60 * 1000);
   if (!rl.ok) return tooManyRequests(rl.retryAfter);
