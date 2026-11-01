@@ -281,7 +281,11 @@ export function ProjectsView({ initialProjects }: { initialProjects: ProjectItem
                       <KindBadge kind={p.kind} slug={p.slug} lang={lang} />
                       <StatusBadge status={p.status} statusEn={p.statusEn} statusFa={p.statusFa} lang={lang} />
                     </div>
-                    <h3 className="font-bold leading-snug">{pick(lang, p.titleEn, p.titleFa)}</h3>
+                    {/* 2026-11-02 (audit §5 D3): was <h3> — the card list sat
+                        directly under the page <h1>, so crawlers and screen
+                        readers saw an h1→h3 heading-order skip. h2 restores a
+                        clean outline (h1 page title → h2 per project card). */}
+                    <h2 className="font-bold leading-snug">{pick(lang, p.titleEn, p.titleFa)}</h2>
                     <p className="mt-2 line-clamp-3 text-sm text-muted-foreground">{pick(lang, p.summaryEn, p.summaryFa)}</p>
 
                     {showsProgress(st) && (
