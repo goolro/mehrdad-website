@@ -1,6 +1,6 @@
 'use client';
 
-import { useApp } from './store';
+import { useLang } from './lang-context';
 import { ui } from './i18n';
 import { ShareBar } from './ShareBar';
 import { WhatIDo } from './WhatIDo';
@@ -11,7 +11,7 @@ import { WhatIDo } from './WhatIDo';
  * FDE stays reachable via the slim pointer to its dedicated page below.
  */
 export function ServicesView() {
-  const { lang } = useApp();
+  const lang = useLang();
   const t = ui[lang];
 
   return (

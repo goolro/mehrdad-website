@@ -1,6 +1,6 @@
 'use client';
 
-import { useApp } from './store';
+import { useLang } from './lang-context';
 import { ui } from './i18n';
 import { Quote } from 'lucide-react';
 import { testimonials } from '@/lib/testimonials';
@@ -11,7 +11,7 @@ import { testimonials } from '@/lib/testimonials';
  * No fake quotes, no empty shells (phase 2 honesty rule).
  */
 export function Testimonials() {
-  const { lang } = useApp();
+  const lang = useLang();
   const t = ui[lang];
   const fa = lang === 'fa';
   const rtl = fa ? 'rtl' : 'ltr';

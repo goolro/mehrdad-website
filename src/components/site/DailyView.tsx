@@ -11,7 +11,8 @@
  */
 
 import Link from 'next/link';
-import { useApp, formatDate } from './store';
+import { useLang } from './lang-context';
+import { formatDate } from './store';
 import { ui } from './i18n';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, ArrowRight, Newspaper } from 'lucide-react';
@@ -37,7 +38,7 @@ export function DailyView({
   /** preselected lane when rendered on /daily/cat/<category> */
   category?: string;
 }) {
-  const { lang } = useApp();
+  const lang = useLang();
   const t = (ui[lang] as typeof ui.en).daily;
   const isFa = lang === 'fa';
   const pick = (en: string, fa: string) => (isFa ? fa : en);

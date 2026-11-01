@@ -2,13 +2,15 @@
 
 import Link from 'next/link';
 import { useApp } from './store';
+import { useLang } from './lang-context';
 import { ui } from './i18n';
 import { Button } from '@/components/ui/button';
 import { Rocket, BrainCircuit, Code2, PenTool, Briefcase, Megaphone, Store, Lightbulb, ArrowRight, FileText, Sparkles, Linkedin } from 'lucide-react';
 import { Testimonials } from './Testimonials';
 
 export function AboutView() {
-  const { lang, setChatOpen } = useApp();
+  const lang = useLang();
+  const { setChatOpen } = useApp();
   const t = ui[lang];
   const rtl = lang === 'fa' ? 'rtl' : 'ltr';
 

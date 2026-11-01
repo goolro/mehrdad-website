@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Sparkles, ChevronRight } from 'lucide-react';
-import { useApp } from './store';
+import { useLang } from './lang-context';
 import { ui } from './i18n';
 
 /**
@@ -18,7 +18,7 @@ import { ui } from './i18n';
  * carry this CTA on their detail pages, which route through ProjectDetail.
  */
 export function BuildLikeCta({ className }: { className?: string }) {
-  const { lang } = useApp();
+  const lang = useLang();
   const t = ui[lang];
   const router = useRouter();
   return (

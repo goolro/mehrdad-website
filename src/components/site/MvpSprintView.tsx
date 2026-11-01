@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import Link from 'next/link';
-import { useApp } from './store';
+import { useLang } from './lang-context';
 import { ui } from './i18n';
 import { Button } from '@/components/ui/button';
 import { CalendarCheck, Check, ChevronDown, Sparkles, Wrench } from 'lucide-react';
@@ -17,7 +17,7 @@ import { trackMvpSprintViewed, trackMvpSprintCta } from '@/lib/analytics';
  * fields (budget/timeline) are pre-wired by the intent param.
  */
 export function MvpSprintView() {
-  const { lang } = useApp();
+  const lang = useLang();
   const t = ui[lang];
   const m = t.mvpSprint;
   const rtl = lang === 'fa' ? 'rtl' : 'ltr';

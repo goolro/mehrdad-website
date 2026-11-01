@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useApp } from './store';
+import { useLang } from './lang-context';
 import { ui } from './i18n';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,7 +21,8 @@ const BUDGET_OPTIONS = ['< $2k', '$2k–$5k', '$5k–$10k', '$10k+', 'not sure y
 const TIMELINE_OPTIONS = ['as soon as possible', 'within a month', 'this quarter', 'flexible'] as const;
 
 export function ContactView() {
-  const { lang, setChatOpen } = useApp();
+  const lang = useLang();
+  const { setChatOpen } = useApp();
   const t = ui[lang];
   const [form, setForm] = useState({ name: '', email: '', subject: '', message: '' });
   // intent selector — investment exists ONLY here as one option among several,

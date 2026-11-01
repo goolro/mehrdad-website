@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useApp } from './store';
+import { useLang } from './lang-context';
 import { ui } from './i18n';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -47,7 +48,8 @@ const PROCESS_ICONS = [Search, Crosshair, PenTool, Hammer, FlaskConical, Rocket,
 const WHO_ICONS = [Lightbulb, Wrench, Zap, Rocket, ServerCog, Users];
 
 export function FdeView() {
-  const { lang, setChatOpen } = useApp();
+  const lang = useLang();
+  const { setChatOpen } = useApp();
   const t = ui[lang];
   const f = t.fde;
   const [activeStep, setActiveStep] = useState(0);

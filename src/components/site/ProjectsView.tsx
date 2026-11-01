@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useApp, pick } from './store';
+import { pick } from './store';
+import { useLang } from './lang-context';
 import { pct, ui } from './i18n';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -208,7 +209,7 @@ export function ProgressBar({ value, barCls }: { value: number; barCls: string }
 }
 
 export function ProjectsView({ initialProjects }: { initialProjects: ProjectItem[] }) {
-  const { lang } = useApp();
+  const lang = useLang();
   const t = ui[lang];
   const projects = initialProjects;
   const [animate, setAnimate] = useState(false);
@@ -427,7 +428,7 @@ function PhaseRing({ fill, tone }: { fill: number; tone: RoadmapTone }) {
 }
 
 export function ProjectDetail({ project, shareUrl }: { project: ProjectDetailRow; shareUrl: string }) {
-  const { lang } = useApp();
+  const lang = useLang();
   const t = ui[lang];
   const st = normalizeStatus(project.status);
   const cfg = STATUS_STYLE[st];

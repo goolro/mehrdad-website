@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useApp, pick, formatDate } from './store';
+import { useLang } from './lang-context';
 import { ui } from './i18n';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -38,7 +39,7 @@ export interface BlogInitialData {
 }
 
 export function BlogView({ initial }: { initial?: BlogInitialData }) {
-  const { lang } = useApp();
+  const lang = useLang();
   const t = ui[lang];
   const [cats, setCats] = useState<CategoryItem[]>(initial?.cats || []);
   const [tags, setTags] = useState<TagItem[]>(initial?.tags || []);
@@ -284,7 +285,7 @@ export function BlogView({ initial }: { initial?: BlogInitialData }) {
 }
 
 export function BlogCard({ post }: { post: PostItem }) {
-  const { lang } = useApp();
+  const lang = useLang();
   return (
     <Link
       href={`/blog/${post.slug}`}
@@ -360,7 +361,8 @@ interface FullPost {
  * `curl /blog/<slug>` returns real content without any JS execution.
  */
 export function PostDetail({ post, related, shareUrl }: { post: FullPost; related: PostItem[]; shareUrl?: string }) {
-  const { lang, closePost } = useApp();
+  const lang = useLang();
+  const { closePost } = useApp();
   const t = ui[lang];
 
   const title = pick(lang, post.titleEn, post.titleFa);
