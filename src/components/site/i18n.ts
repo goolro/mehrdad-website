@@ -220,6 +220,12 @@ export const ui = {
       // homepage Work section
       seeAllWork: 'See all work',
       fundingAsk: 'Funding ask',
+      // Health & Wellness investor deck — direct PDF link inside the homepage
+      // startups section (owner request 2026-11-01): the label must say it is
+      // a PDF file so visitors know what clicking opens before they do
+      deckTitle: 'Health & Wellness App — investor deck',
+      deckNote: 'The full 27-page presentation as a single PDF file (~9 MB) — opens in a new tab',
+      deckBadge: 'PDF file',
       // project kind taxonomy (owner request 2026-09-29) — badge on cards
       kindSuperApp: 'Super App',
       kindGameOnline: 'Online Game',
@@ -1478,6 +1484,11 @@ export const ui = {
       // بخش کارها در صفحهٔ اصلی
       seeAllWork: 'مشاهدهٔ همهٔ کارها',
       fundingAsk: 'درخواست سرمایه',
+      // دک سرمایه‌گذار سلامت — لینک مستقیم PDF در بخش استارتاپ‌های صفحهٔ اصلی
+      // (درخواست مالک، ۲۰۲۶-۱۱-۰۱): روی لینک باید نوشته باشد که فایل PDF است
+      deckTitle: 'اپلیکیشن سلامتی و تندرستی — دک سرمایه‌گذار',
+      deckNote: 'کل ارائهٔ ۲۷ صفحه‌ای در یک فایل PDF (~۹ مگابایت) — در تب جدید باز می‌شود',
+      deckBadge: 'فایل PDF',
       // رده‌بندی نوع پروژه (خواستهٔ مالک ۲۰۲۶-۰۹-۲۹) — بج روی کارت‌ها
       kindSuperApp: 'سوپر اپ',
       kindGameOnline: 'بازی آنلاین',

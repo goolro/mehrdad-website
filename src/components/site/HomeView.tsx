@@ -194,6 +194,31 @@ export function HomeView({ initial }: { initial: HomeInitialData }) {
               <p className="mt-1 text-sm text-foreground/80">{t.projects.buildLikeSub}</p>
             </Link>
           </div>
+
+          {/* Health & Wellness investor deck — direct PDF (owner request
+              2026-11-01): standalone row inside the startups section so the
+              deck stays reachable no matter which projects are currently
+              featured in the grid above. Plain <a> on purpose — it is a
+              static PDF, NOT an internal page (no prefetch, opens new tab). */}
+          <a
+            href="/s/deck-health-en.pdf"
+            target="_blank"
+            rel="noopener"
+            className="mt-4 flex items-center justify-between gap-3 rounded-2xl border border-border bg-card p-4 transition-colors hover:border-violet-500/50 hover:bg-violet-600/5 sm:p-5"
+          >
+            <span className="flex min-w-0 items-center gap-3">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-violet-600/10 text-violet-600 dark:text-violet-400">
+                <FileText className="h-5 w-5" />
+              </span>
+              <span className="min-w-0">
+                <span className="block text-sm font-bold leading-snug sm:text-base">{t.projects.deckTitle}</span>
+                <span className="mt-0.5 block text-xs text-muted-foreground sm:text-sm">{t.projects.deckNote}</span>
+              </span>
+            </span>
+            <Badge variant="outline" className="shrink-0 border-violet-500/40 bg-violet-600/10 text-xs font-semibold text-violet-600 dark:text-violet-400">
+              {t.projects.deckBadge}
+            </Badge>
+          </a>
         </div>
       </section>
 

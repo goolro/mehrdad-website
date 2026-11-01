@@ -4,11 +4,36 @@ All notable changes to mehrdad.ir. Format: Keep-a-Changelog-ish, newest first.
 
 ## [Unreleased]
 
+### Home: investor-deck PDF link inside the startups section (2026-11-01)
+- **Owner order**: «این لینکو توی استارتاپ پایین قرار بده و توضیح بده فایل
+  pdf هست» — the deck link goes into the homepage «Key Projects &
+  Startups» section, explicitly marked as a PDF.
+- **Placement**: a standalone labelled row directly under the featured
+  cards grid — the health startup is not currently among the two featured
+  cards (admin-controlled), so the row keeps the deck reachable no matter
+  which projects are featured.
+- **Labelling (both languages)**: EN «Health & Wellness App — investor
+  deck» + note "The full 27-page presentation as a single PDF file
+  (~9 MB) — opens in a new tab" + a `PDF file` badge; FA «اپلیکیشن
+  سلامتی و تندرستی — دک سرمایه‌گذار» + معادل فارسی + بج «فایل PDF».
+- **Mechanics**: plain `<a>` on purpose (static PDF, not an internal page
+  — no Next prefetch), `target=_blank rel=noopener`; strings in
+  `i18n.ts` `projects.deckTitle/deckNote/deckBadge` (en + fa kept in sync).
+- **Verified**: EN + FA desktop screenshots, 390 px mobile (no overflow),
+  asset 200 `application/pdf` locally and in production.
+
+### Deck PDF asset + /s/ proxy allowlist (2026-10-31, already live)
+- `e181d75`: `public/s/deck-health-en.pdf` — exact print capture of
+  https://mehrdad.ir/deck/health (EN, 27 pages, Letter, chat widget
+  excluded, glass print fix), owner order «اینو دقیق تبدیل به pdf کن».
+- `244c324`: `src/proxy.ts` legacy `/s/*` catch-all (redirects home) now
+  allowlists `/s/deck-health-en.pdf` so the file is actually reachable.
+
 ### Route-group split: /fa raw HTML is now lang="fa" dir="rtl"; alt text on post covers (D-076, 2026-11-01)
 - **Audit report section 1 fix**: `src/app/layout.tsx` replaced by per-group
   root layouts — `(site)/` (en/ltr, every EN route) and `(fa)/fa` (fa/rtl,
-  the static Persian homepage). No-JS crawlers (Bing, GPTBot, ClaudeBot…) no
-  longer read an English `<html>` tag on the Persian page. Shared payload
+  the static Persian homepage). No-JS crawlers (Bing, GPTBot, ClaudeBot…)
+  no longer read an English `<html>` tag on the Persian page. Shared payload
   extracted to `site-shared.ts` / `site-fonts.ts` / `RootBody.tsx`; boot
   script byte-identical (CSP hash unchanged).
 - **404 re-plumbed for multiple root layouts**: `global-not-found.tsx`
@@ -17,6 +42,7 @@ All notable changes to mehrdad.ir. Format: Keep-a-Changelog-ish, newest first.
   the shared `NotFoundContent`.
 - **alt text**: the 6 homepage featured-post covers and blog-listing covers
   rendered `alt=""` — now the localized post title via `pick(lang, …)`.
+
 ### Phase-6 repo hygiene: scripts/ organized, CHANGELOG/ROADMAP refreshed (2026-10-30)
 - **scripts/ split into active vs `archive/`**: 16 completed one-offs
   (SQLite→Turso→Supabase migrations, six `seed-*` runs + their data blobs,
