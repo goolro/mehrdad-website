@@ -28,7 +28,11 @@ export default async function BlogPage() {
   // initial HTML (crawlers and no-JS visitors see the article cards)
   // fail-loud at build time (see page.tsx) — never bake empty pages
   const [firstPage, categories, tags, archive] = await Promise.all([
-    listPosts({ page: 1, perPage: 12 }),
+    // audit §5 (D5): 6 cards per first page (2 rows of 3) instead of 12 —
+    // the RSC flight + card markup halved (~-60KB on the document); every
+    // post stays crawlable via the full archive below and pagination
+    // fetches the rest client-side through /api/posts (same perPage).
+    listPosts({ page: 1, perPage: 6 }),
     db.category.findMany({
       // phase-2 SEO fix: PUBLISHED posts only (see /api/site route) — a
       // category holding only drafts must not render as a filter chip.

@@ -121,20 +121,25 @@ export async function listPosts(params: ListPostsParams) {
     page,
     perPage,
     totalPages: Math.ceil(total / perPage),
-    posts: posts.map((p) => ({
+    posts: posts.map(({ contentEn, ...p }) => ({
       ...p,
-      // XSS guard on read: legacy WP content may contain unsafe HTML
-      contentEn: sanitizePostHtml(p.contentEn),
-      // WP-migration scrub: kill orphaned attr fragments (src="…") that
-      // survived tag-stripping and were leaking into visible teasers
+      // audit §5 (D5, owner-approved 2026-11-02): the full article HTML used
+      // to ride along in every LISTING payload (blog RSC flight, /api/posts,
+      // /feed.xml, /llms.txt) although no listing consumer renders it —
+      // cards show excerpts; the article page re-fetches via getPostDetail,
+      // which runs sanitizePostHtml there. contentEn is still SELECTED so
+      // the two derived fields below stay accurate, then dropped from the
+      // serialized output (undefined keys never reach JSON.stringify).
+      // excerptEn/Fa are display strings rendered as React text nodes
+      // (BlogView XSS fix) — strip orphaned attr fragments from WP imports.
       excerptEn: sanitizeExcerpt(p.excerptEn),
       excerptFa: sanitizeExcerpt(p.excerptFa),
-      hasEn: Boolean(p.contentEn),
+      hasEn: Boolean(contentEn),
       commentCount: p._count.comments,
       tags: p.tags.map((pt) => pt.tag),
       readMinutes: Math.max(
         1,
-        Math.ceil(((p.contentEn || p.excerptFa || p.excerptEn || '').length / 4) / 220)
+        Math.ceil(((contentEn || p.excerptFa || p.excerptEn || '').length / 4) / 220)
       ),
     })),
   };

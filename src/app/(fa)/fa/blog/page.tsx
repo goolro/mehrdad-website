@@ -42,7 +42,9 @@ export default async function FaBlogPage() {
   // identical queries to the EN blog index — one source of truth for what
   // appears on the listing in both languages
   const [firstPage, categories, tags, archive] = await Promise.all([
-    listPosts({ page: 1, perPage: 12 }),
+    // audit §5 (D5): 6 cards per first page — twin of (site)/blog, same
+    // data contract; the rest arrives via /api/posts pagination.
+    listPosts({ page: 1, perPage: 6 }),
     db.category.findMany({
       where: { posts: { some: { published: true } } },
       orderBy: { nameEn: 'asc' },

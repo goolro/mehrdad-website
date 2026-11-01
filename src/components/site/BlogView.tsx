@@ -66,7 +66,9 @@ export function BlogView({ initial }: { initial?: BlogInitialData }) {
 
   const load = useCallback(() => {
     setLoading(true);
-    const params = new URLSearchParams({ page: String(page), perPage: '12' });
+    // audit §5 (D5): must match the server-rendered first page (6) so
+    // page 2+ continues seamlessly from the seed data
+    const params = new URLSearchParams({ page: String(page), perPage: '6' });
     if (activeCat) params.set('category', activeCat);
     if (activeTag) params.set('tag', activeTag);
     if (search.trim()) params.set('search', search.trim());
