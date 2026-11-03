@@ -1343,6 +1343,11 @@ export const ui = {
       openMenu: 'Open menu',
       closeMenu: 'Close menu',
     },
+    whatsapp: {
+      aria: 'Chat with us on WhatsApp',
+      contactLine: 'Prefer to talk directly? Message us on WhatsApp',
+      prefilled: "Hello! I'm coming from mehrdad.ir and would like to talk about your services.",
+    },
   },
   fa: {
     nav: {
@@ -2678,6 +2683,11 @@ export const ui = {
       suggestedQuestions: 'پیشنهاد سوال',
       openMenu: 'باز کردن منو',
       closeMenu: 'بستن منو',
+    },
+    whatsapp: {
+      aria: 'در واتساپ پیام بدهید',
+      contactLine: 'ترجیح می‌دهید مستقیم حرف بزنید؟ در واتساپ پیام دهید',
+      prefilled: 'سلام! از سایت mehrdad.ir آمدم و می‌خواهم درباره‌ی خدمات‌تان صحبت کنم.',
     },
   },
 } as const;

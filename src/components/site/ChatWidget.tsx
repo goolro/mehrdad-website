@@ -7,6 +7,7 @@ import { ui } from './i18n';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ArrowDown, X, Send, Sparkles, Trash2, UserCheck, Hammer, Handshake } from 'lucide-react';
+import { WhatsAppIcon, whatsappHref } from './WhatsAppFloat';
 
 interface Msg {
   role: 'user' | 'assistant';
@@ -312,6 +313,19 @@ export function ChatWidget() {
           </div>
         </div>
         <div className="flex items-center gap-1">
+          {/* WhatsApp direct line (survey fix #3-b): one tap from inside the
+              chat panel to a real-human WhatsApp conversation — same number
+              as the floating green bubble and the /contact card */}
+          <a
+            href={whatsappHref(t.whatsapp.prefilled)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="rounded-lg p-1.5 transition-colors hover:bg-white/20"
+            aria-label={t.whatsapp.aria}
+            title={t.whatsapp.aria}
+          >
+            <WhatsAppIcon className="h-4 w-4" />
+          </a>
           <button
             onClick={() => {
               // server-side deletion too — the conversation should not linger in the DB

@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Send, Sparkles } from 'lucide-react';
 import { trackLeadSubmitted } from '@/lib/analytics';
+import { WhatsAppIcon, whatsappHref, WHATSAPP_DISPLAY } from './WhatsAppFloat';
 
 const INTENT_KEYS = ['general', 'services', 'collaboration', 'feedback', 'investment'] as const;
 type Intent = (typeof INTENT_KEYS)[number];
@@ -113,6 +114,26 @@ export function ContactView() {
           </div>
         </div>
       </div>
+
+      {/* survey fix #3-b: this page previously had NO direct channel (form
+          only — flagged by testers). One tap opens a WhatsApp chat with a
+          prefilled greeting; same number as the floating bubble. */}
+      <a
+        href={whatsappHref(t.whatsapp.prefilled)}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="mt-3 flex items-center gap-3 rounded-2xl border border-border bg-card p-4 transition-colors hover:border-emerald-500/40 hover:bg-emerald-500/5"
+      >
+        <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#25D366]/10 text-[#1da851]">
+          <WhatsAppIcon className="h-5 w-5" />
+        </div>
+        <div>
+          <div className="text-sm text-muted-foreground">{t.whatsapp.contactLine}</div>
+          <div className="font-semibold" dir="ltr">
+            {WHATSAPP_DISPLAY}
+          </div>
+        </div>
+      </a>
 
       {done && (
         <div
