@@ -6,6 +6,7 @@ export const ui = {
       home: 'Home',
       services: 'Services',
       pricing: 'Pricing',
+      start: 'Simple start',
       projects: 'Projects',
       blog: 'Blog',
       daily: 'Daily',
@@ -20,6 +21,8 @@ export const ui = {
       sub: 'Real projects with honest status, lessons documented from real work — research, design, execution.',
       cta1: 'Explore Services',
       cta2: 'Ask AI Assistant',
+      // survey fix #2 (2026-11): one-line plain-language wayfinding chips
+      chips: { smallBiz: 'Small business?', pricing: 'Prices', koko: 'Play Koko', contact: 'Contact' },
     },
     brand: {
       trioTitle: 'Three connected activities',
@@ -439,6 +442,31 @@ export const ui = {
       toolTitle: 'Not ready to talk yet? Prep for free',
       toolSub: 'The MVP Scope Builder walks you through the same five scoping questions and hands you a one-page scope — in about 3 minutes, nothing sent to a server.',
       toolCta: 'Build my one-page scope — free',
+    },
+    // survey fix #2 (2026-11): plain-language entry page — the “cluttered /
+    // too much information” personas (5 of 14) get one simple landing
+    // spot. Prices reuse the owner-confirmed anchors; no new numbers.
+    start: {
+      badge: 'No jargon',
+      title: 'Simple start',
+      sub: 'This page is for you if you run a small business and would rather not read technical vocabulary. Three plain steps between you and a real product.',
+      stepsTitle: 'How it works — three steps',
+      steps: [
+        { t: 'You tell us what you need', d: 'A free 15-minute call. You describe the problem in your own words — no technical vocabulary needed. You leave with the problem written on one page.' },
+        { t: 'You get one fixed number', d: 'At the end of that call, a fixed quote and a delivery date are written down. No hourly billing, no surprise invoices — the written number is the whole story.' },
+        { t: 'You get something you can use', d: 'The product is built and launched, and a short session walks you through it. We stay around for 30 days after launch.' },
+      ],
+      faqTitle: 'Questions everyone asks',
+      faq: [
+        { q: 'I am not technical — can I still do this?', a: 'Yes — this page exists exactly for that. Everything is explained in plain language and the technical decisions are ours; you only need to know your business.' },
+        { q: 'What does it cost at minimum?', a: 'Starting is free (the 15-minute call). Most small projects start from $490 and fuller ones from $1,490. The exact number is written before any commitment.' },
+        { q: 'How long does it take?', a: 'One well-defined feature: 1–2 weeks. A fuller product: about 30 days. The exact time is written next to the price.' },
+        { q: 'What if I want changes later?', a: 'Fixes and support are included for 30 days after launch. After that, continuing is your choice — no lock-in.' },
+      ],
+      priceCta: 'See all prices',
+      ctaTitle: 'One free call is all it takes to start',
+      ctaSub: '15 minutes · free · no obligation.',
+      ctaBtn: 'Book the free call',
     },
     pricing: {
       // Survey fix #1 (2026-11): 8 of 14 tested personas named "no clear
@@ -1321,6 +1349,7 @@ export const ui = {
       home: 'خانه',
       services: 'خدمات',
       pricing: 'قیمت‌ها',
+      start: 'شروع ساده',
       projects: 'طرح‌ها',
       blog: 'بلاگ',
       daily: 'روزانه',
@@ -1335,6 +1364,8 @@ export const ui = {
       sub: 'پروژه‌های واقعی با وضعیت صادقانه و درس‌های مستندشده از کار واقعی — پژوهش، طراحی، اجرا.',
       cta1: 'مشاهده خدمات',
       cta2: 'سوال از دستیار هوشمند',
+      // فیکس شماره ۲ نظرسنجی (۱۴۰۵-۰۸): یک خط ناوبری ساده
+      chips: { smallBiz: 'کسب‌وکار کوچک دارید؟', pricing: 'قیمت‌ها', koko: 'بازی کیکو', contact: 'تماس' },
     },
     brand: {
       trioTitle: 'سه فعالیت به‌هم‌پیوسته',
@@ -1751,6 +1782,31 @@ export const ui = {
       toolTitle: 'هنوز برای صحبت آماده نیستید؟ رایگان آماده شوید',
       toolSub: 'سازنده دامنه MVP همان پنج سؤال دامنه‌یابی را از شما می‌پرسد و یک صفحه دامنه تحویل می‌دهد — حدود ۳ دقیقه، بدون ارسال چیزی به سرور.',
       toolCta: 'ساخت صفحه دامنه‌ام — رایگان',
+    },
+    // فیکس شماره ۲ نظرسنجی (۱۴۰۵-۰۸): صفحهٔ ورود به زبان ساده — پرسوناهای
+    // «شلوغ است / اطلاعات زیاد است» (۵ نفر از ۱۴) یک نقطهٔ سادهٔ فرود دارند.
+    // قیمت‌ها همان لنگرهای تأییدشدهٔ مالک‌اند؛ عدد جدیدی ساخته نشده.
+    start: {
+      badge: 'بدون اصطلاحات فنی',
+      title: 'شروع ساده',
+      sub: 'این صفحه برای شماست اگر کسب‌وکار کوچک دارید و حوصله اصطلاحات فنی را ندارید. سه قدم ساده بین شما و یک محصول واقعی.',
+      stepsTitle: 'همکاری در سه قدم',
+      steps: [
+        { t: 'می‌گویید چه می‌خواهید', d: 'یک تماس ۱۵ دقیقه‌ای رایگان. مسئله را به زبان خودتان می‌گویید؛ اصطلاح فنی لازم نیست. در پایان، مسئله را یک‌صفحه‌ای مکتوب تحویل می‌گیرید.' },
+        { t: 'یک عدد مشخص می‌گیرید', d: 'در پایان همان تماس، قیمت ثابت و زمان تحویل نوشته می‌شود. نه ساعتی‌حسابی، نه فاکتور غافلگیرکننده — عددی که نوشته شده، کل ماجراست.' },
+        { t: 'چیزی قابل‌استفاده تحویل می‌گیرید', d: 'محصول ساخته و منتشر می‌شود و در یک جلسهٔ کوتاه کار با آن را یاد می‌گیرید. تا ۳۰ روز بعد از انتشار هم کنار شما هستیم.' },
+      ],
+      faqTitle: 'سؤال‌هایی که همه می‌پرسند',
+      faq: [
+        { q: 'فنی نیستم، می‌توانم؟', a: 'بله — دقیقاً برای همین این صفحه ساخته شده. همه‌چیز به زبان ساده توضیح داده می‌شود و تصمیم‌های فنی با ماست؛ شما فقط کسب‌وکارتان را می‌شناسید، همین کافی است.' },
+        { q: 'حداقل هزینه چقدر است؟', a: 'شروع رایگان است (تماس ۱۵ دقیقه‌ای). بیشتر پروژه‌های کوچک از ۴۹۰ دلار و پروژه‌های کامل‌تر از ۱٬۴۹۰ دلار شروع می‌شوند. عدد دقیق قبل از هر تعهدی مشخص می‌شود.' },
+        { q: 'چقدر طول می‌کشد؟', a: 'یک قابلیت مشخص: ۱ تا ۲ هفته. یک محصول کامل‌تر: حدود ۳۰ روز. زمان دقیق هم همان‌جای قیمت نوشته می‌شود.' },
+        { q: 'بعداً اگر تغییر خواستم چه؟', a: 'تا ۳۰ روز بعد از انتشار، اصلاح و پشتیبانی در همان قیمت است. بعدش هم ادامهٔ همکاری انتخاب شماست — بدون قفل‌شدن.' },
+      ],
+      priceCta: 'دیدن همهٔ قیمت‌ها',
+      ctaTitle: 'برای شروع، فقط یک تماس کافی است',
+      ctaSub: '۱۵ دقیقه · رایگان · بدون تعهد.',
+      ctaBtn: 'رزرو تماس رایگان',
     },
     pricing: {
       // فیکس شماره ۱ نظرسنجی (۱۴۰۵-۰۸): ۸ نفر از ۱۴ پرسونای آزموده‌شده،

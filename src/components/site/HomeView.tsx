@@ -8,12 +8,11 @@ import { isFaPath, useLang } from './lang-context';
 import { pct, ui } from './i18n';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowRight, Sparkles, ChevronLeft, ChevronRight, FolderKanban, FileText, Hammer, HeartHandshake, Share2, Search, GraduationCap, Repeat, PenTool } from 'lucide-react';
+import { ArrowRight, ArrowUpRight, Sparkles, ChevronRight, FolderKanban, FileText } from 'lucide-react';
 import { StatusBadge, ProgressBar, STATUS_STYLE, KindBadge } from './ProjectsView';
 import { normalizeStatus, showsProgress } from '@/lib/project-status';
 import { WhatIDo } from './WhatIDo';
 
-const CHAIN_ICONS = [Search, PenTool, Hammer, GraduationCap, Share2, Repeat];
 interface ProjectItem {
   id: string; slug: string; titleEn: string; titleFa: string; summaryEn: string; summaryFa: string; cover: string | null;
   section: string; status: string; progress: number; featured: boolean;
@@ -94,51 +93,44 @@ export function HomeView({ initial }: { initial: HomeInitialData }) {
               {t.hero.cta2}
             </Button>
           </div>
-        </div>
-      </section>
-
-      {/* ── Brand trio: Build / Help / Share ── */}
-      <section className="mx-auto w-full max-w-7xl px-4 pb-4 sm:px-6">
-        <SectionHeader title={t.brand.trioTitle} sub={t.brand.trioSub} />
-        <div className="grid gap-4 md:grid-cols-3">
-          {[
-            { icon: Hammer, item: t.brand.build, ring: 'bg-violet-600/10 text-violet-600 dark:text-violet-400' },
-            { icon: HeartHandshake, item: t.brand.help, ring: 'bg-fuchsia-600/10 text-fuchsia-600 dark:text-fuchsia-400' },
-            { icon: Share2, item: t.brand.share, ring: 'bg-violet-600/10 text-violet-600 dark:text-violet-400' },
-          ].map(({ icon: Icon, item, ring }) => (
-            <div key={item.title} className="rounded-2xl border border-border bg-card p-6">
-              <div className={`flex h-11 w-11 items-center justify-center rounded-xl ${ring}`}>
-                <Icon className="h-5 w-5" />
-              </div>
-              <h3 className="mt-4 text-lg font-bold">{item.title}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{item.desc}</p>
-            </div>
-          ))}
-        </div>
-
-        {/* Ecosystem chain: Research → Design → Build → Learn → Share → Build again */}
-        <div className="mt-8 rounded-2xl border border-border bg-muted/30 p-5 sm:p-6">
-          <div className="text-center text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            {t.brand.chainLabel}
-          </div>
-          <div className="mt-4 flex flex-wrap items-center justify-center gap-x-1 gap-y-3" dir={lang === 'fa' ? 'rtl' : 'ltr'}>
-            {t.brand.chain.map((step, i) => {
-              const Icon = CHAIN_ICONS[i % CHAIN_ICONS.length];
-              return (
-                <div key={step} className="flex items-center gap-1">
-                  <span className="inline-flex items-center gap-1.5 rounded-full border border-violet-500/25 bg-violet-600/5 px-3 py-1.5 text-sm font-medium text-violet-700 dark:text-violet-300">
-                    <Icon className="h-3.5 w-3.5" />
-                    {step}
-                  </span>
-                  {i < t.brand.chain.length - 1 && (
-                    <ChevronRight className="h-4 w-4 text-violet-500/60 rtl:rotate-180" aria-hidden />
-                  )}
-                </div>
-              );
-            })}
+          {/* survey fix #2 (2026-11): one-line wayfinding for the personas who
+              found the home page cluttered — incl. the Koko game shortcut
+              (the “came for the game” persona) and the plain-language /start */}
+          <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
+            <Link
+              href={faAware('/start', '/fa/start')}
+              className="rounded-full border border-violet-500/40 bg-violet-600/5 px-3.5 py-1.5 text-xs font-semibold text-violet-700 transition-colors hover:bg-violet-600/10 dark:text-violet-300"
+            >
+              {t.hero.chips.smallBiz}
+            </Link>
+            <Link
+              href={faAware('/pricing', '/fa/pricing')}
+              className="rounded-full border border-border bg-card px-3.5 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:border-violet-500/40 hover:text-violet-700 dark:hover:text-violet-300"
+            >
+              {t.hero.chips.pricing}
+            </Link>
+            <a
+              href="https://quizofkoko.com"
+              target="_blank"
+              rel="noopener"
+              className="inline-flex items-center gap-1 rounded-full border border-border bg-card px-3.5 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:border-violet-500/40 hover:text-violet-700 dark:hover:text-violet-300"
+            >
+              {t.hero.chips.koko}
+              <ArrowUpRight className="h-3.5 w-3.5" aria-hidden />
+            </a>
+            <Link
+              href={faAware('/contact', '/fa/contact')}
+              className="rounded-full border border-border bg-card px-3.5 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:border-violet-500/40 hover:text-violet-700 dark:hover:text-violet-300"
+            >
+              {t.hero.chips.contact}
+            </Link>
           </div>
         </div>
       </section>
+
+      {/* Brand trio (Build/Help/Share) moved to /services — survey fix #2
+          (2026-11): it duplicated the What I Do block right below it and
+          5 of 14 tested personas flagged the home page as cluttered. */}
 
       {/* ── What I Do — one process, not eight services (replaces the
           old DB-driven 8-card service grid; owner FINAL COPY 2026-01) ── */}
@@ -333,5 +325,3 @@ function SectionHeader({ title, sub, subClassName, action }: { title: string; su
     </div>
   );
 }
-
-export { ChevronLeft };
