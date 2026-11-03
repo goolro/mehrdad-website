@@ -119,6 +119,15 @@ model Project {
   // game-offline | app — NULL means unlabeled (see src/lib/project-kind.ts
   // for the slug bootstrap map + admin select)
   kind       String?
+  // category track (owner request 2026-11-01: «دسته‌بندی جدید بزاریم مثلا
+  // پروژه‌های کسب‌وکار» — INSIDE the same projects page, NOT a new menu).
+  // Closed vocabulary in src/lib/project-category.ts, starts with 'business'.
+  // NULL = uncategorized → renders exactly as before; the on-page filter row
+  // only appears once at least one project carries a category. Unlike `kind`
+  // there is NO slug bootstrap — every assignment is the owner's explicit
+  // admin-panel call. Runtime DDL ensure mirrors project-kind.ts because
+  // neither Vercel nor cPanel runs `prisma db push` at deploy time.
+  category   String?
   // legacy display labels — kept for data safety, no longer rendered by default
   statusEn   String  @default("")
   statusFa   String  @default("")

@@ -12,6 +12,7 @@ import {
   Bell,
   BookOpen,
   Brain,
+  Briefcase,
   CalendarCheck,
   CarFront,
   CheckCircle2,
@@ -62,6 +63,12 @@ import {
   type ProjectStatus,
 } from '@/lib/project-status';
 import { resolveProjectKind, type ProjectKind } from '@/lib/project-kind';
+import {
+  CATEGORY_META,
+  normalizeProjectCategory,
+  PROJECT_CATEGORIES,
+  type ProjectCategory,
+} from '@/lib/project-category';
 
 interface ProjectItem {
   id: string; slug: string; titleEn: string; titleFa: string;
@@ -69,6 +76,7 @@ interface ProjectItem {
   section: string; status: string; progress: number; featured: boolean;
   fundingAsk: string | null; statusEn: string; statusFa: string;
   kind?: string | null;
+  category?: string | null;
 }
 
 /** structural subset of the Prisma Project row passed from the server page */
@@ -216,6 +224,10 @@ export function ProjectsView({ initialProjects }: { initialProjects: ProjectItem
   // entries (now honestly labeled Ideas) live behind the second tab,
   // collapsed — they must never lead the Work view (DECISIONS.md, 2026-09-07).
   const [tab, setTab] = useState<'work' | 'ideas'>('work');
+  // category track (owner request 2026-11-01): 'all' | ProjectCategory — a
+  // filter INSIDE the same tabs (no new menu). The chip row renders only
+  // when the current tab's list actually contains a categorized project.
+  const [cat, setCat] = useState<string>('all');
 
   // progress bars fill shortly after paint (keeps the SSR HTML static)
   useEffect(() => {
@@ -226,6 +238,17 @@ export function ProjectsView({ initialProjects }: { initialProjects: ProjectItem
   const active = projects.filter((p) => isActiveStatus(normalizeStatus(p.status)));
   const ideas = projects.filter((p) => !isActiveStatus(normalizeStatus(p.status)));
 
+  // ── category track filter (owner request 2026-11-01) ──
+  const catOf = (p: ProjectItem): ProjectCategory | null => normalizeProjectCategory(p.category);
+  const inCategory = (list: ProjectItem[]) => (cat === 'all' ? list : list.filter((p) => catOf(p) === cat));
+  const shownActive = inCategory(active);
+  const shownIdeas = inCategory(ideas);
+  const currentList = tab === 'work' ? active : ideas;
+  const categoryChips = PROJECT_CATEGORIES.map((c) => ({
+    id: c,
+    count: currentList.filter((p) => catOf(p) === c).length,
+  })).filter((chip) => chip.count > 0);
+
   return (
     <div className="mx-auto w-full max-w-7xl px-4 py-12 sm:px-6">
       <h1 className="text-3xl font-extrabold sm:text-4xl">{t.sections.projectsTitle}</h1>
@@ -235,7 +258,7 @@ export function ProjectsView({ initialProjects }: { initialProjects: ProjectItem
         <button
           role="tab"
           aria-selected={tab === 'work'}
-          onClick={() => setTab('work')}
+          onClick={() => { setTab('work'); setCat('all'); }}
           className={`rounded-full border px-4 py-1.5 text-sm font-medium transition-colors ${
             tab === 'work'
               ? 'border-violet-500/50 bg-violet-600/10 text-violet-700 dark:text-violet-300'
@@ -248,7 +271,7 @@ export function ProjectsView({ initialProjects }: { initialProjects: ProjectItem
         <button
           role="tab"
           aria-selected={tab === 'ideas'}
-          onClick={() => setTab('ideas')}
+          onClick={() => { setTab('ideas'); setCat('all'); }}
           className={`rounded-full border px-4 py-1.5 text-sm font-medium transition-colors ${
             tab === 'ideas'
               ? 'border-violet-500/50 bg-violet-600/10 text-violet-700 dark:text-violet-300'
@@ -260,9 +283,49 @@ export function ProjectsView({ initialProjects }: { initialProjects: ProjectItem
         </button>
       </div>
 
+      {/* category track filter — INSIDE the same projects page (owner rule:
+          no new menu). Hidden entirely while nothing carries a category, so
+          production stays untouched until the owner assigns one. */}
+      {categoryChips.length > 0 && (
+        <div className="mt-4 flex flex-wrap items-center gap-2" role="group" aria-label={t.projects.filterLabel}>
+          <button
+            type="button"
+            aria-pressed={cat === 'all'}
+            onClick={() => setCat('all')}
+            className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+              cat === 'all'
+                ? 'border-violet-500/50 bg-violet-600/10 text-violet-700 dark:text-violet-300'
+                : 'border-border text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            {t.projects.filterAll}
+          </button>
+          {categoryChips.map(({ id, count }) => {
+            const on = cat === id;
+            return (
+              <button
+                key={id}
+                type="button"
+                aria-pressed={on}
+                onClick={() => setCat(on ? 'all' : id)}
+                className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+                  on
+                    ? 'border-violet-500/50 bg-violet-600/10 text-violet-700 dark:text-violet-300'
+                    : 'border-border text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <Briefcase className="h-3 w-3" />
+                {pick(lang, CATEGORY_META[id].nameEn, CATEGORY_META[id].nameFa)}
+                <span className="opacity-70">{count}</span>
+              </button>
+            );
+          })}
+        </div>
+      )}
+
       {tab === 'work' && (
         <div className="mt-8 grid gap-5 md:grid-cols-2">
-          {active.map((p, i) => {
+          {shownActive.map((p, i) => {
             const st = normalizeStatus(p.status);
             const cfg = STATUS_STYLE[st];
             return (
@@ -311,7 +374,7 @@ export function ProjectsView({ initialProjects }: { initialProjects: ProjectItem
       {tab === 'ideas' && (
         <div className="mt-8 space-y-3">
           <p className="text-sm text-muted-foreground">{t.projects.ideasNote}</p>
-          {ideas.map((p) => (
+          {shownIdeas.map((p) => (
             <details key={p.id} className="group rounded-2xl border border-border bg-card">
               {/* summary line is ALWAYS visible (owner feedback: collapsed
                   archive items looked «empty» / like missing data) — expanding

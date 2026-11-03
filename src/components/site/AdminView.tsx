@@ -23,6 +23,13 @@ import {
 import { Checkbox } from '@/components/ui/checkbox';
 import { PROJECT_STATUSES, normalizeStatus } from '@/lib/project-status';
 import { PROJECT_KINDS, isProjectKind, type ProjectKind } from '@/lib/project-kind';
+import {
+  CATEGORY_META,
+  isProjectCategory,
+  normalizeProjectCategory,
+  PROJECT_CATEGORIES,
+  type ProjectCategory,
+} from '@/lib/project-category';
 import { THEMES } from '@/lib/themes';
 // perf(phase-3): the four studios are code-split — each ~550–1000-line module
 // (plus its unique deps) only downloads when its tab is first opened. Radix
@@ -431,6 +438,7 @@ interface AdminProject {
   section: string; status: string; progress: number; featured: boolean;
   fundingAsk: string | null; statusEn: string; statusFa: string; order: number;
   kind: string | null;
+  category: string | null;
 }
 
 const BLANK_PROJECT: AdminProject = {
@@ -438,6 +446,7 @@ const BLANK_PROJECT: AdminProject = {
   cover: null, section: 'work', status: 'idea', progress: 0, featured: false,
   fundingAsk: null, statusEn: '', statusFa: '', order: 0,
   kind: null,
+  category: null,
 };
 
 function ProjectsTab({ lang }: { lang: 'en' | 'fa' }) {
@@ -455,6 +464,7 @@ function ProjectsTab({ lang }: { lang: 'en' | 'fa' }) {
         section: 'بخش', status: 'وضعیت', progress: 'پیشرفت ساخت (٪)',
         featured: 'نمایش در صفحهٔ اصلی', fundingAsk: 'درخواست سرمایه (اختیاری — برای ایده‌ها خالی بگذارید)',
         kind: 'نوع (برچسب روی کارت)',
+        category: 'دسته (فیلتر داخل صفحهٔ طرح‌ها — بدون منوی جدید)',
         slug: 'نامک (slug)', titleEn: 'عنوان (انگلیسی)', titleFa: 'عنوان (فارسی)',
         summaryEn: 'خلاصه (انگلیسی)', summaryFa: 'خلاصه (فارسی)', cover: 'نشانی تصویر کاور',
         order: 'ترتیب نمایش', save: 'ذخیره', saving: 'در حال ذخیره…', confirmDelete: 'این پروژه حذف شود؟',
@@ -465,6 +475,7 @@ function ProjectsTab({ lang }: { lang: 'en' | 'fa' }) {
         section: 'Section', status: 'Status', progress: 'Build progress (%)',
         featured: 'Featured on homepage', fundingAsk: 'Funding ask (optional — leave empty for ideas)',
         kind: 'Kind (card badge)',
+        category: 'Category (filter inside the projects page — no new menu)',
         slug: 'Slug', titleEn: 'Title (EN)', titleFa: 'Title (FA)',
         summaryEn: 'Summary (EN)', summaryFa: 'Summary (FA)', cover: 'Cover image URL',
         order: 'Display order', save: 'Save', saving: 'Saving…', confirmDelete: 'Delete this project?',
@@ -499,6 +510,7 @@ function ProjectsTab({ lang }: { lang: 'en' | 'fa' }) {
         section: editing.section, status: editing.status, progress: editing.progress,
         featured: editing.featured, fundingAsk: editing.fundingAsk || '', order: editing.order,
         kind: editing.kind || '',
+        category: editing.category || '',
       };
       const res = await fetch(editing.id ? `/api/admin/projects/${editing.id}` : '/api/admin/projects', {
         method: editing.id ? 'PATCH' : 'POST',
@@ -535,6 +547,9 @@ function ProjectsTab({ lang }: { lang: 'en' | 'fa' }) {
     : k === 'game-offline' ? t.projects.kindGameOffline
     : k === 'game-mobile' ? t.projects.kindGameMobile
     : t.projects.kindApp;
+
+  const categoryLabel = (c: ProjectCategory) =>
+    lang === 'fa' ? CATEGORY_META[c].nameFa : CATEGORY_META[c].nameEn;
 
   return (
     <div>
@@ -573,6 +588,11 @@ function ProjectsTab({ lang }: { lang: 'en' | 'fa' }) {
                     <Badge variant="outline" className="h-4 px-1.5 text-[10px]">{statusLabel(p.status)}</Badge>
                     {p.kind && isProjectKind(p.kind) && (
                       <Badge variant="outline" className="h-4 px-1.5 text-[10px]">{kindLabel(p.kind)}</Badge>
+                    )}
+                    {normalizeProjectCategory(p.category) && (
+                      <Badge variant="outline" className="h-4 px-1.5 text-[10px]">
+                        {categoryLabel(normalizeProjectCategory(p.category) as ProjectCategory)}
+                      </Badge>
                     )}
                     {p.fundingAsk && <Badge variant="outline" className="h-4 px-1.5 text-[10px]">$</Badge>}
                   </div>
@@ -653,6 +673,20 @@ function ProjectsTab({ lang }: { lang: 'en' | 'fa' }) {
                       <SelectItem value="none">{lang === 'fa' ? '— بدون برچسب —' : '— none —'}</SelectItem>
                       {PROJECT_KINDS.map((k) => (
                         <SelectItem key={k} value={k}>{kindLabel(k)}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="p-category">{F.category}</Label>
+                  {/* category track (owner 2026-11-01) — same sentinel pattern as kind;
+                      assignments are always the owner's explicit choice */}
+                  <Select value={editing.category || 'none'} onValueChange={(v) => setEditing({ ...editing, category: v === 'none' ? null : v })}>
+                    <SelectTrigger id="p-category"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">{lang === 'fa' ? '— بدون دسته —' : '— none —'}</SelectItem>
+                      {PROJECT_CATEGORIES.map((c) => (
+                        <SelectItem key={c} value={c}>{categoryLabel(c)}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
