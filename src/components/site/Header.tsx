@@ -55,21 +55,27 @@ export function Header() {
     if (isFaPath(pathname) && l === 'en') router.push('/');
   };
 
-  const navItems: { key: 'home' | 'services' | 'projects' | 'blog' | 'about' | 'contact'; label: string }[] = [
+  // Persian tree (audit section 2, fix #1): on /fa* routes the nav links to
+  // the static Persian pages — previously every nav item dumped Persian
+  // visitors back on the EN site (the fa tree was a one-page dead end).
+  const onFa = isFaPath(pathname);
+  // survey fix #1 (2026-11): Pricing joins the main nav — the page lives
+  // outside the View union on purpose (no store routing changes), so it
+  // carries its own href and a pathname-based active check.
+  const navItems: { key: 'home' | 'services' | 'pricing' | 'projects' | 'blog' | 'about' | 'contact'; label: string; href?: string }[] = [
     { key: 'home', label: t.nav.home },
     { key: 'services', label: t.nav.services },
+    { key: 'pricing', label: t.nav.pricing, href: onFa ? '/fa/pricing' : '/pricing' },
     { key: 'projects', label: t.nav.projects },
     { key: 'blog', label: t.nav.blog },
     { key: 'about', label: t.nav.about },
     { key: 'contact', label: t.nav.contact },
   ];
 
-  // Persian tree (audit section 2, fix #1): on /fa* routes the nav links to
-  // the static Persian pages — previously every nav item dumped Persian
-  // visitors back on the EN site (the fa tree was a one-page dead end).
-  const onFa = isFaPath(pathname);
-  const navHref = (key: (typeof navItems)[number]['key']) =>
-    onFa ? FA_VIEW_PATH[key] : VIEW_PATH[key];
+  const navHref = (key: (typeof navItems)[number]['key'], explicitHref?: string) =>
+    explicitHref ?? (onFa ? FA_VIEW_PATH[key] : VIEW_PATH[key]);
+  const isItemActive = (item: (typeof navItems)[number]) =>
+    item.href ? pathname === item.href : view === item.key;
 
   return (
     <header className="site-header sticky top-0 z-40 w-full border-b border-border/40 bg-background/80 backdrop-blur-md">
@@ -95,10 +101,10 @@ export function Header() {
           {navItems.map((item) => (
             <Link
               key={item.key}
-              href={navHref(item.key)}
-              aria-current={view === item.key ? 'page' : undefined}
+              href={navHref(item.key, item.href)}
+              aria-current={isItemActive(item) ? 'page' : undefined}
               className={`rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
-                view === item.key
+                isItemActive(item)
                   ? 'bg-violet-600/10 text-violet-600 dark:text-violet-400'
                   : 'text-muted-foreground hover:text-foreground hover:bg-muted'
               }`}
@@ -176,11 +182,11 @@ export function Header() {
           {navItems.map((item) => (
             <Link
               key={item.key}
-              href={navHref(item.key)}
+              href={navHref(item.key, item.href)}
               onClick={() => setMobileOpen(false)}
-              aria-current={view === item.key ? 'page' : undefined}
+              aria-current={isItemActive(item) ? 'page' : undefined}
               className={`flex min-h-11 items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
-                view === item.key
+                isItemActive(item)
                   ? 'bg-violet-600/10 text-violet-600 dark:text-violet-400'
                   : 'text-muted-foreground hover:bg-muted hover:text-foreground'
               }`}

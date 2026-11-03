@@ -5,6 +5,7 @@ export const ui = {
     nav: {
       home: 'Home',
       services: 'Services',
+      pricing: 'Pricing',
       projects: 'Projects',
       blog: 'Blog',
       daily: 'Daily',
@@ -438,6 +439,55 @@ export const ui = {
       toolTitle: 'Not ready to talk yet? Prep for free',
       toolSub: 'The MVP Scope Builder walks you through the same five scoping questions and hands you a one-page scope — in about 3 minutes, nothing sent to a server.',
       toolCta: 'Build my one-page scope — free',
+    },
+    pricing: {
+      // Survey fix #1 (2026-11): 8 of 14 tested personas named "no clear
+      // pricing" as their top complaint. The owner-confirmed anchors that
+      // already lived inside /mvp-sprint (tiersNote) and /consult ($99
+      // comment "owner-confirmed") now get their own transparent page —
+      // nothing here invents a new number, every figure is republished
+      // from the existing owner-approved copy.
+      badge: 'Pricing — no surprises',
+      title: 'Prices, up front',
+      sub: 'Every engagement is a fixed quote: the number is written at the end of the free scope call and does not change. No hourly billing, no surprise invoices.',
+      tiersTitle: 'Four ways to start',
+      tiersSub: 'From a free 15-minute call to a complete product sprint — pick the entry point that matches where you are today.',
+      tiers: [
+        { name: 'Scope Call', price: 'Free', time: '15 minutes', points: ['The real problem, written down', 'One-page scope you keep', 'Honest “build / don\'t build” verdict', 'No obligation to continue'], cta: 'Book the call', href: '/mvp-sprint' },
+        { name: 'Strategy Session', price: '$99', time: '45 min · memo in 24 h', points: ['One real business problem, taken apart', 'Top 3 priorities, ranked, each with a success check', 'One-page strategy memo within 24 hours', 'Flat fee — booking confirmed after payment'], cta: 'Request the session', href: '/consult' },
+        { name: 'One-Feature MVP', price: 'from $490', time: '1–2 weeks', featured: true, points: ['One feature, live in production', 'Design + build + deploy', 'Analytics wired from day one', 'Handover walkthrough recorded'], cta: 'Start here', href: '/mvp-sprint' },
+        { name: 'Full Sprint', price: 'from $1,490', time: '~30 days', points: ['Complete MVP: problem → real users', 'Weekly clickable increments', 'Data model + admin basics', '30-day post-launch support'], cta: 'Book a scope call', href: '/mvp-sprint' },
+      ],
+      howTitle: 'How the pricing works',
+      howPoints: [
+        { t: 'Fixed quote, not hourly', d: 'Hourly rewards slowness. You know the number before we start — written in the one-page quote, and it does not change.' },
+        { t: 'Milestone payments', d: 'One fixed quote, split into 2–3 milestone payments on request. What is written in the quote is the whole story.' },
+        { t: 'You own everything', d: 'Full repository transfer, documented decisions, nothing held hostage — I build it the way I build my own products.' },
+      ],
+      quoteTitle: 'What moves the quote',
+      quoteSub: 'Three honest variables the free scope call pins down — bring a rough budget range and it saves us both weeks.',
+      quotePoints: ['How much scope the first version really needs', 'Third-party integrations: payments, data, existing tools', 'Depth of design: clickable increment vs. polished release'],
+      faqTitle: 'Pricing questions I actually get',
+      faq: [
+        { q: 'Why fixed scope instead of hourly?', a: 'Hourly rewards slowness. A fixed scope forces the design conversation that matters — what to leave OUT — and you know the number before we start.' },
+        { q: 'Can I pay in installments?', a: 'Pricing is a single fixed quote — but it can be split into 2–3 milestone payments on request. What is written in the one-page quote is the whole story.' },
+        { q: 'What if I don\'t know exactly what to build?', a: 'That is the normal case, not the exception. The scope call exists precisely for this: you bring the problem, we shape the smallest thing that tests it.' },
+        { q: 'Who owns the code?', a: 'You do — full repository transfer, documented decisions, nothing held hostage. I build it the way I build my own products: in the open.' },
+      ],
+      note: '“From” figures are typical starting points for each engagement shape — the exact fixed quote for your scope is written at the end of the scope call and does not change after.',
+      ctaTitle: 'Not sure which one fits? Start free',
+      ctaSub: 'Book the free 15-minute scope call — you leave with a written one-page scope even if we never work together.',
+      ctaBtn: 'Book the free scope call',
+      // homepage compact strip (anti-clutter: one row, three anchors)
+      homeStripTitle: 'Pricing, up front',
+      homeStripSub: 'Fixed quotes with published starting points — the number is agreed before any work starts.',
+      homeStripCta: 'Full pricing',
+      homeStripFree: 'Start free: 15-minute scope call',
+      homeStripTiers: [
+        { name: 'Strategy Session', price: '$99', time: '45 min + 24 h memo' },
+        { name: 'One-Feature MVP', price: 'from $490', time: '1–2 weeks' },
+        { name: 'Full Sprint', price: 'from $1,490', time: '~30 days' },
+      ],
     },
     scopeBuilder: {
       badge: 'Free tool — no signup',
@@ -1270,6 +1320,7 @@ export const ui = {
     nav: {
       home: 'خانه',
       services: 'خدمات',
+      pricing: 'قیمت‌ها',
       projects: 'طرح‌ها',
       blog: 'بلاگ',
       daily: 'روزانه',
@@ -1700,6 +1751,53 @@ export const ui = {
       toolTitle: 'هنوز برای صحبت آماده نیستید؟ رایگان آماده شوید',
       toolSub: 'سازنده دامنه MVP همان پنج سؤال دامنه‌یابی را از شما می‌پرسد و یک صفحه دامنه تحویل می‌دهد — حدود ۳ دقیقه، بدون ارسال چیزی به سرور.',
       toolCta: 'ساخت صفحه دامنه‌ام — رایگان',
+    },
+    pricing: {
+      // فیکس شماره ۱ نظرسنجی (۱۴۰۵-۰۸): ۸ نفر از ۱۴ پرسونای آزموده‌شده،
+      // «نبود قیمت شفاف» را گلایهٔ اول گفتند. لنگرهای قیمتی تأییدشدهٔ مالک
+      // که داخل /mvp-sprint و /consult بودند حالا صفحهٔ شفاف خودشان را
+      // دارند — هیچ عدد جدیدی اینجا ساخته نشده؛ همه از متن تأییدشدهٔ موجود
+      // بازنشر می‌شوند.
+      badge: 'قیمت‌ها — بدون غافلگیری',
+      title: 'قیمت‌ها، رو و باز',
+      sub: 'هر همکاری یک پیش‌فاکتور ثابت است: عدد در پایان جلسهٔ دامنه‌یابیِ رایگان نوشته می‌شود و دیگر تغییر نمی‌کند. نه محاسبهٔ ساعتی، نه فاکتور غافلگیرکننده.',
+      tiersTitle: 'چهار نقطهٔ شروع',
+      tiersSub: 'از یک تماس ۱۵ دقیقه‌ای رایگان تا اسپرینت کامل محصول — نقطهٔ ورودی را انتخاب کنید که به جای امروزِ شما می‌خورد.',
+      tiers: [
+        { name: 'جلسه دامنه‌یابی', price: 'رایگان', time: '۱۵ دقیقه', points: ['مسئله واقعی، مکتوب و دقیق', 'یک‌صفحه دامنه که مال شماست', 'نظر صادقانه «بساز / نساز»', 'بدون هیچ تعهدی به ادامه'], cta: 'رزرو جلسه', href: '/mvp-sprint' },
+        { name: 'جلسه استراتژی', price: '۹۹ دلار', time: '۴۵ دقیقه · مستند تا ۲۴ ساعت', points: ['یک مسئله واقعی کسب‌وکار، باز و بررسی می‌شود', '۳ اولویت اصلی، رتبه‌بندی‌شده با معیار موفقیت', 'مستند استراتژی یک‌صفحه‌ای تا ۲۴ ساعت بعد', 'قیمت ثابت — قطعی رزرو بعد از پرداخت'], cta: 'درخواست جلسه', href: '/consult' },
+        { name: 'MVP تک‌قابلیت', price: 'از ۴۹۰ دلار', time: '۱ تا ۲ هفته', featured: true, points: ['یک قابلیت، زنده در پروداکشن', 'طراحی + ساخت + انتشار', 'آنالیتیکس از روز اول', 'جلسه تحویل، ضبط‌شده'], cta: 'از همین شروع کن', href: '/mvp-sprint' },
+        { name: 'اسپرینت کامل', price: 'از ۱٬۴۹۰ دلار', time: 'حدود ۳۰ روز', points: ['MVP کامل: مسئله تا کاربر واقعی', 'افزایش هفتگی قابل‌کلیک', 'مدل داده + پنل مدیریت پایه', '۳۰ روز پشتیبانی بعد از انتشار'], cta: 'رزرو جلسه دامنه‌یابی', href: '/mvp-sprint' },
+      ],
+      howTitle: 'قیمت‌گذاری چطور کار می‌کند',
+      howPoints: [
+        { t: 'پیش‌فاکتور ثابت، نه ساعتی', d: 'ساعتی، کندی را تشویق می‌کند. عدد را قبل از شروع می‌دانید — در پیش‌فاکتور یک‌صفحه‌ای مکتوب و بدون تغییر.' },
+        { t: 'پرداخت مرحله‌ای', d: 'یک پیش‌فاکتور ثابت که در صورت درخواست به ۲–۳ پرداخت مایل‌استونی تقسیم می‌شود. هرچه در پیش‌فاکتور نوشته شده، کل ماجراست.' },
+        { t: 'مالک همه‌چیز با شماست', d: 'انتقال کامل ریپازیتوری، تصمیمات مستند، هیچ چیز گروگان نگه داشته نمی‌شود — همان‌طور که محصولات خودم را می‌سازم می‌سازم.' },
+      ],
+      quoteTitle: 'چه چیزی عدد را جابه‌جا می‌کند',
+      quoteSub: 'سه متغیر صادقانه که جلسهٔ دامنه‌یابی رایگان روشن می‌کند — بازهٔ تقریبی بودجه‌تان را بیاورید؛ هفته‌ها وقت هر دو طرف را می‌خرد.',
+      quotePoints: ['دامنهٔ واقعی نسخهٔ اول چقدر بزرگ است', 'اتصال‌های بیرونی: پرداخت، داده، ابزارهای موجود', 'عمق طراحی: افزایش قابل‌کلیک یا نسخهٔ صیقل‌خورده'],
+      faqTitle: 'سؤال‌های قیمتی که واقعاً می‌پرسند',
+      faq: [
+        { q: 'چرا محدوده ثابت، نه ساعتی؟', a: 'ساعتی، کندی را تشویق می‌کند. محدوده ثابت، همان گفتگوی طراحی را تحمیل می‌کند که مهم است — چه چیزی را کنار بگذاریم — و عدد را قبل از شروع می‌دانید.' },
+        { q: 'پرداخت اقساطی ممکن است؟', a: 'قیمت یک پیش‌فاکتور ثابت است — اما در صورت درخواست می‌تواند به ۲–۳ پرداخت مایل‌استونی تقسیم شود. هرچه در پیش‌فاکتور یک‌صفحه‌ای نوشته شده، کل ماجراست.' },
+        { q: 'اگر ندانم دقیقاً چه بسازم چه؟', a: 'این حالت عادی است، نه استثنا. جلسه دامنه‌یابی دقیقاً برای همین است: شما مسئله را می‌آورید، کوچک‌ترین چیزی که آن را محک بزند را شکل می‌دهیم.' },
+        { q: 'مالکیت کد با کیست؟', a: 'با شما — انتقال کامل ریپازیتوری، تصمیمات مستند، هیچ چیز گروگان نگه داشته نمی‌شود. همان‌طور که محصولات خودم را می‌سازم می‌سازم: شفاف.' },
+      ],
+      note: 'اعداد «از» نقاط شروع معمول هر شکل همکاری‌اند — پیش‌فاکتور ثابتِ دقیقِ دامنهٔ شما در پایان جلسهٔ دامنه‌یابی نوشته می‌شود و بعد از آن تغییر نمی‌کند.',
+      ctaTitle: 'مطمئن نیستید کدام مناسب است؟ رایگان شروع کنید',
+      ctaSub: 'جلسهٔ دامنه‌یابی ۱۵ دقیقه‌ای رایگان را رزرو کنید — حتی اگر هرگز با هم کار نکنیم، با یک صفحهٔ دامنهٔ مکتوب از جلسه بیرون می‌روید.',
+      ctaBtn: 'رزرو جلسهٔ رایگان دامنه‌یابی',
+      homeStripTitle: 'قیمت‌ها، رو و باز',
+      homeStripSub: 'پیش‌فاکتور ثابت با نقطهٔ شروع منتشرشده — عدد قبل از هر کاری توافق می‌شود.',
+      homeStripCta: 'قیمت کامل',
+      homeStripFree: 'شروع رایگان: جلسهٔ ۱۵ دقیقه‌ای دامنه‌یابی',
+      homeStripTiers: [
+        { name: 'جلسه استراتژی', price: '۹۹ دلار', time: '۴۵ دقیقه + مستند ۲۴ ساعته' },
+        { name: 'MVP تک‌قابلیت', price: 'از ۴۹۰ دلار', time: '۱ تا ۲ هفته' },
+        { name: 'اسپرینت کامل', price: 'از ۱٬۴۹۰ دلار', time: 'حدود ۳۰ روز' },
+      ],
     },
     scopeBuilder: {
       badge: 'ابزار رایگان — بدون ثبت‌نام',

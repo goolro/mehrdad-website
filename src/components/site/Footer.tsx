@@ -63,6 +63,8 @@ export function Footer() {
                 surfaced here so the money pages and the investor funnel are
                 crawlable from every page, not just one deep blog post */}
             <Link href={faAware('/services', '/fa/services')} className="hover:text-foreground">{t.nav.services}</Link>
+            {/* survey fix #1 (2026-11): pricing crawlable from every page */}
+            <Link href={faAware('/pricing', '/fa/pricing')} className="hover:text-foreground">{t.nav.pricing}</Link>
             <Link href="/mvp-sprint" className="font-medium text-violet-600 hover:text-violet-700 dark:text-violet-400 dark:hover:text-violet-300">
               {lang === 'fa' ? 'اسپرینت MVP' : 'MVP Sprint'}
             </Link>

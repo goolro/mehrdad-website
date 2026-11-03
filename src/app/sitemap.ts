@@ -49,6 +49,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // hreflang triple so the xhtml:link cluster is symmetric
     { url: `${BASE}/services`, changeFrequency: 'monthly', priority: 0.8, alternates: { languages: { en: `${BASE}/services`, fa: `${BASE}/fa/services`, 'x-default': `${BASE}/services` } } },
     { url: `${BASE}/fa/services`, changeFrequency: 'monthly', priority: 0.8, alternates: { languages: { en: `${BASE}/services`, fa: `${BASE}/fa/services`, 'x-default': `${BASE}/services` } } },
+    // survey fix #1 (2026-11): the pricing page is a money page — EN + fa pair
+    { url: `${BASE}/pricing`, changeFrequency: 'monthly', priority: 0.9, alternates: { languages: { en: `${BASE}/pricing`, fa: `${BASE}/fa/pricing`, 'x-default': `${BASE}/pricing` } } },
+    { url: `${BASE}/fa/pricing`, changeFrequency: 'monthly', priority: 0.9, alternates: { languages: { en: `${BASE}/pricing`, fa: `${BASE}/fa/pricing`, 'x-default': `${BASE}/pricing` } } },
     { url: `${BASE}/fde`, changeFrequency: 'monthly', priority: 0.8 },
     { url: `${BASE}/work`, changeFrequency: 'weekly', priority: 0.8, alternates: { languages: { en: `${BASE}/work`, fa: `${BASE}/fa/work`, 'x-default': `${BASE}/work` } } },
     { url: `${BASE}/fa/work`, changeFrequency: 'weekly', priority: 0.8, alternates: { languages: { en: `${BASE}/work`, fa: `${BASE}/fa/work`, 'x-default': `${BASE}/work` } } },

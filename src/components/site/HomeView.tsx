@@ -146,6 +146,37 @@ export function HomeView({ initial }: { initial: HomeInitialData }) {
         <WhatIDo />
       </section>
 
+      {/* ── Pricing strip (survey fix #1, 2026-11): 8 of 14 tested personas
+          named "no clear pricing" — one compact row of published anchors,
+          full page at /pricing. Deliberately tight: the same personas also
+          flagged cluttered pages, so no feature lists here. ── */}
+      <section id="pricing" className="scroll-mt-24 border-y border-border/40 bg-muted/30">
+        <div className="mx-auto w-full max-w-7xl px-4 py-12 sm:px-6">
+          <SectionHeader
+            title={t.pricing.homeStripTitle}
+            sub={t.pricing.homeStripSub}
+            subClassName="text-foreground/70"
+            action={{ label: t.pricing.homeStripCta, href: faAware('/pricing', '/fa/pricing') }}
+          />
+          <div className="grid gap-4 sm:grid-cols-3">
+            {t.pricing.homeStripTiers.map((tier, i) => (
+              <div key={i} className="rounded-2xl border border-border bg-card p-5">
+                <h3 className="text-sm font-bold text-muted-foreground" dir={lang === 'fa' ? 'rtl' : 'ltr'}>{tier.name}</h3>
+                <p className="mt-1 text-xl font-extrabold text-violet-600 dark:text-violet-400" dir={lang === 'fa' ? 'rtl' : 'ltr'}>{tier.price}</p>
+                <p className="mt-0.5 text-xs text-muted-foreground" dir={lang === 'fa' ? 'rtl' : 'ltr'}>{tier.time}</p>
+              </div>
+            ))}
+          </div>
+          <Link
+            href={faAware('/mvp-sprint', '/fa/services')}
+            className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-violet-600 hover:underline dark:text-violet-400"
+          >
+            {t.pricing.homeStripFree}
+            <ChevronRight className="h-4 w-4 rtl:rotate-180" aria-hidden />
+          </Link>
+        </div>
+      </section>
+
       {/* ── Projects (featured Work items only — max 2, set in admin; the
           full list lives at /work, Lab items at /lab) ── */}
       <section id="projects" className="scroll-mt-24 border-y border-border/40 bg-muted/30">
