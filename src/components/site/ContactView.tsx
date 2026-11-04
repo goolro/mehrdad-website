@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Send, Sparkles } from 'lucide-react';
 import { trackLeadSubmitted } from '@/lib/analytics';
-import { WhatsAppIcon, whatsappHref, WHATSAPP_DISPLAY } from './WhatsAppFloat';
+import { WhatsAppIcon, whatsappHref, WHATSAPP_DISPLAY } from './WhatsApp';
 
 const INTENT_KEYS = ['general', 'services', 'collaboration', 'feedback', 'investment'] as const;
 type Intent = (typeof INTENT_KEYS)[number];

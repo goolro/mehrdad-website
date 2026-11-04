@@ -7,7 +7,7 @@ import { ui } from './i18n';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ArrowDown, X, Send, Sparkles, Trash2, UserCheck, Hammer, Handshake } from 'lucide-react';
-import { WhatsAppIcon, whatsappHref } from './WhatsAppFloat';
+import { WhatsAppIcon, whatsappHref } from './WhatsApp';
 
 interface Msg {
   role: 'user' | 'assistant';

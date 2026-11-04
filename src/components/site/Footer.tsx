@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { Instagram, Linkedin } from 'lucide-react';
 import { isFaPath, useLang } from './lang-context';
 import { ui } from './i18n';
+import { WHATSAPP_ME, WhatsAppIcon } from './WhatsApp';
 
 // Social profiles (owner request 2026-09-30): the official Instagram page.
 // LinkedIn added 2026-10-12 (owner request — growth push): the owner's
@@ -104,6 +105,20 @@ export function Footer() {
               <link.icon className="h-4 w-4" aria-hidden="true" />
             </a>
           ))}
+          {/* WhatsApp direct line (owner request 2026-11): icon button in the
+              same size/style as the social row above, rendered right beside
+              it. Deliberately NOT a SOCIAL_LINKS entry — wa.me is a contact
+              channel, not a profile page, so it stays out of the JSON-LD
+              sameAs mirror that list feeds. */}
+          <a
+            href={WHATSAPP_ME}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={t.whatsapp.aria}
+            className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-border/60 bg-card text-muted-foreground transition-colors hover:border-violet-500/50 hover:text-foreground"
+          >
+            <WhatsAppIcon className="h-4 w-4" />
+          </a>
         </div>
 
         <div className="mt-4 text-center text-xs text-muted-foreground">

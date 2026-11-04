@@ -7,7 +7,6 @@ import { isFaPath, LangProvider } from './lang-context';
 import { Header } from './Header';
 import { Footer } from './Footer';
 import { ChatWidget } from './ChatWidget';
-import { WhatsAppFloat } from './WhatsAppFloat';
 import { LangBanner } from './LangBanner';
 import { ThemeBackground } from './ThemeBackground';
 import { RouteIndicator } from './RouteIndicator';
@@ -191,7 +190,6 @@ export function SiteChrome({ children }: { children: React.ReactNode }) {
           {children}
         </main>
         <Footer />
-        <WhatsAppFloat />
         <ChatWidget />
         <LangBanner />
         <RouteIndicator />
