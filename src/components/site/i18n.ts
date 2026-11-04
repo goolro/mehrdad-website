@@ -79,6 +79,11 @@ export const ui = {
       cardTagline: 'Engineering on the front line of problem-solving',
       // invitation word inside the FDE pointer card — shimmering (owner request)
       cardCta: 'Explore',
+      // survey fix #3-d (owner-approved 2026-11): one plain-language sentence
+      // under the term in the pointer card — FDE must not read as unexplained
+      // jargon on /services and the home page. Derived from this page's own
+      // copy (hero.sub + what.p1) — no new claims.
+      cardPlain: 'In plain words: you bring a real problem — I turn it into a working product, from first design to launch.',
       hero: {
         kicker: 'Core Service',
         title: 'Forward Deployed Engineering',
@@ -462,6 +467,7 @@ export const ui = {
         { q: 'What does it cost at minimum?', a: 'Starting is free (the 15-minute call). Most small projects start from $490 and fuller ones from $1,490. The exact number is written before any commitment.' },
         { q: 'How long does it take?', a: 'One well-defined feature: 1–2 weeks. A fuller product: about 30 days. The exact time is written next to the price.' },
         { q: 'What if I want changes later?', a: 'Fixes and support are included for 30 days after launch. After that, continuing is your choice — no lock-in.' },
+        { q: 'What is the “Forward Deployed Engineering (FDE)” I see elsewhere on the site?', a: 'In plain words: you bring a real problem, and it becomes a working product — design, build, launch — without you ever writing a technical specification.' },
       ],
       priceCta: 'See all prices',
       ctaTitle: 'One free call is all it takes to start',
@@ -1426,6 +1432,10 @@ export const ui = {
       seoDescription: 'حل مسائل واقعی کسب‌وکار و محصول با ترکیب تفکر محصول، مهندسی نرم‌افزار و هوش مصنوعی؛ از کشف مسئله تا ساخت، استقرار و بهبود راه‌حل.',
       cardTagline: 'Forward Deployed Engineering',
       cardCta: 'کاوش کنید',
+      // فیکس ۳-د نظرسنجی (تأیید مالک ۱۴۰۵-۰۸): یک جملهٔ ساده زیر اصطلاح در
+      // کارت اشاره‌گر — FDE نباید اصطلاحِ بدون توضیح بخواند. از متن همین
+      // صفحه (hero.sub و what.p1) مشتق شده — هیچ ادعای جدیدی ندارد.
+      cardPlain: 'به زبان ساده: شما مسئلهٔ واقعی را می‌آورید — من آن را به یک محصول کارکردی تبدیل می‌کنم؛ از اولین طراحی تا انتشار.',
       hero: {
         kicker: 'خدمت اصلی',
         title: 'مهندسی در خط مقدم حل مسئله',
@@ -1807,6 +1817,7 @@ export const ui = {
         { q: 'حداقل هزینه چقدر است؟', a: 'شروع رایگان است (تماس ۱۵ دقیقه‌ای). بیشتر پروژه‌های کوچک از ۴۹۰ دلار و پروژه‌های کامل‌تر از ۱٬۴۹۰ دلار شروع می‌شوند. عدد دقیق قبل از هر تعهدی مشخص می‌شود.' },
         { q: 'چقدر طول می‌کشد؟', a: 'یک قابلیت مشخص: ۱ تا ۲ هفته. یک محصول کامل‌تر: حدود ۳۰ روز. زمان دقیق هم همان‌جای قیمت نوشته می‌شود.' },
         { q: 'بعداً اگر تغییر خواستم چه؟', a: 'تا ۳۰ روز بعد از انتشار، اصلاح و پشتیبانی در همان قیمت است. بعدش هم ادامهٔ همکاری انتخاب شماست — بدون قفل‌شدن.' },
+        { q: '«مهندسی در خط مقدم حل مسئله» یا FDE که جای دیگری از سایت می‌بینم چیست؟', a: 'به زبان ساده: شما مسئلهٔ واقعی‌تان را می‌آورید؛ همان مسئله به یک محصول کارکردی تبدیل می‌شود — طراحی، ساخت، انتشار — بدون اینکه لازم باشد متن فنی بنویسید.' },
       ],
       priceCta: 'دیدن همهٔ قیمت‌ها',
       ctaTitle: 'برای شروع، فقط یک تماس کافی است',

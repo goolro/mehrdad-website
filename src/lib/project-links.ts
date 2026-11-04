@@ -12,6 +12,13 @@ export const PROJECT_LINKS: Record<string, string> = {
   'quiz-of-koko': 'https://quizofkoko.com',
   'traffic-tempo': 'https://cafebazaar.ir/app/com.traffictempo.game',
   'driving-exam': 'https://cafebazaar.ir/app/mix.azmon.app',
+  // kilika live MVP (owner link 2026-11-04, verified HTTP 200 same day):
+  // the super-app MVP itself, hosted on Vercel. Gives /work/kilika-fintech
+  // the amber live-links box with a real CTA — until now the page only had
+  // the pitch-deck box (PROJECT_PITCH_DECKS below) and no way to touch the
+  // product. Non-game product → needs a PROJECT_LINK_CTA override so the
+  // button doesn't read «Play now».
+  'kilika-fintech': 'https://kilika-app.vercel.app/',
 };
 
 /**
@@ -23,6 +30,9 @@ export const PROJECT_LINKS: Record<string, string> = {
  */
 export const PROJECT_LINK_CTA: Record<string, { labelEn: string; labelFa: string }> = {
   'driving-exam': { labelEn: 'Get it on Cafe Bazaar', labelFa: 'دریافت از بازار' },
+  // kilika is a fintech super-app MVP, not a game — «Open the app» with the
+  // Smartphone icon (overrides below switch the icon automatically)
+  'kilika-fintech': { labelEn: 'Open the app', labelFa: 'باز کردن اپ' },
 };
 
 /**

@@ -112,16 +112,24 @@ export function WhatIDo({ headingLevel = 'h2' }: { headingLevel?: 'h1' | 'h2' })
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-violet-600 to-fuchsia-600 text-white shadow-md shadow-fuchsia-600/25 transition-transform group-hover:scale-105">
             <Workflow className="h-5 w-5" aria-hidden />
           </span>
-          <span className="text-sm sm:text-base">
-            <span className="font-bold text-violet-700 dark:text-violet-300">{t.fde.hero.title}</span>
-            <span className="text-muted-foreground"> — {t.fde.cardTagline}</span>
-            <span className="text-muted-foreground"> · </span>
-            {/* invitation word with a continuous light sweep (.fde-shimmer) */}
-            <span className="fde-shimmer whitespace-nowrap font-bold">{t.fde.cardCta}</span>
-            <ArrowRight
-              className="ms-0.5 inline h-3.5 w-3.5 text-fuchsia-500 transition-transform group-hover:translate-x-0.5 rtl:rotate-180"
-              aria-hidden
-            />
+          <span className="min-w-0 text-sm sm:text-base">
+            <span className="block">
+              <span className="font-bold text-violet-700 dark:text-violet-300">{t.fde.hero.title}</span>
+              <span className="text-muted-foreground"> — {t.fde.cardTagline}</span>
+              <span className="text-muted-foreground"> · </span>
+              {/* invitation word with a continuous light sweep (.fde-shimmer) */}
+              <span className="fde-shimmer whitespace-nowrap font-bold">{t.fde.cardCta}</span>
+              <ArrowRight
+                className="ms-0.5 inline h-3.5 w-3.5 text-fuchsia-500 transition-transform group-hover:translate-x-0.5 rtl:rotate-180"
+                aria-hidden
+              />
+            </span>
+            {/* survey fix #3-d (owner-approved 2026-11): one plain-language
+                line under the term — FDE must not read as unexplained jargon
+                on /services and the home page */}
+            <span className="mt-1 block text-xs leading-relaxed text-muted-foreground sm:text-sm">
+              {t.fde.cardPlain}
+            </span>
           </span>
         </span>
         <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-violet-500/40 bg-background/60 text-violet-600 transition-colors group-hover:border-violet-500/70 group-hover:bg-violet-600/10 dark:text-violet-400">
