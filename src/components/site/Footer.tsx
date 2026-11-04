@@ -21,12 +21,16 @@ const SOCIAL_LINKS = [
     href: 'https://www.instagram.com/startup_mt/',
     labelKey: 'followInstagram',
     icon: Instagram,
+    // brand-color highlight (owner request 2026-11: «هیلایت رنگی یا افکتی ... مشخص باشه»):
+    // colored icon on a soft tint of the same hue + glow on hover
+    tone: 'border-[#E1306C]/30 bg-[#E1306C]/10 text-[#E1306C] hover:bg-[#E1306C]/25 hover:shadow-[0_0_18px_rgba(225,48,108,0.45)]',
   },
   {
     id: 'linkedin',
     href: 'https://www.linkedin.com/in/mehrdad-ir/',
     labelKey: 'followLinkedin',
     icon: Linkedin,
+    tone: 'border-[#0A66C2]/40 bg-[#0A66C2]/10 text-[#0A66C2] dark:text-[#4FA3F0] hover:bg-[#0A66C2]/25 hover:shadow-[0_0_18px_rgba(10,102,194,0.5)]',
   },
 ] as const;
 
@@ -100,7 +104,7 @@ export function Footer() {
               target="_blank"
               rel="noopener noreferrer"
               aria-label={t.footer[link.labelKey]}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-border/60 bg-card text-muted-foreground transition-colors hover:border-violet-500/50 hover:text-foreground"
+              className={`inline-flex h-10 w-10 items-center justify-center rounded-lg border transition-all duration-200 hover:scale-110 ${link.tone}`}
             >
               <link.icon className="h-4 w-4" aria-hidden="true" />
             </a>
@@ -109,13 +113,14 @@ export function Footer() {
               same size/style as the social row above, rendered right beside
               it. Deliberately NOT a SOCIAL_LINKS entry — wa.me is a contact
               channel, not a profile page, so it stays out of the JSON-LD
-              sameAs mirror that list feeds. */}
+              sameAs mirror that list feeds. Brand-green highlight, same
+              treatment as its siblings. */}
           <a
             href={WHATSAPP_ME}
             target="_blank"
             rel="noopener noreferrer"
             aria-label={t.whatsapp.aria}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-border/60 bg-card text-muted-foreground transition-colors hover:border-violet-500/50 hover:text-foreground"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-[#25D366]/30 bg-[#25D366]/10 text-[#1DA851] transition-all duration-200 hover:scale-110 hover:bg-[#25D366]/25 hover:shadow-[0_0_18px_rgba(37,211,102,0.45)] dark:text-[#25D366]"
           >
             <WhatsAppIcon className="h-4 w-4" />
           </a>
