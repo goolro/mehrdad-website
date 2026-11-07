@@ -368,48 +368,12 @@ export const NETWORK_PRICE = { price: '', currency: 'USD' } as const;
 
 /**
  * ui-ux-pro-max additions (pricing-page-cta pattern: hero → cards →
- * comparison table → FAQ → final CTA). Every string below is composed from
- * the owner-approved facts already on this page (features, trust strip,
- * network tag, terms, note) — no new claims.
+ * FAQ → final CTA). Every string below is composed from the owner-approved
+ * facts already on this page (features, trust strip, network tag, terms,
+ * note) — no new claims.
+ * Owner 2026-11-08: the quick-comparison strings (COMPARE_UI/COMPARE_ROWS)
+ * were DELETED from both languages — the comparison table is gone for good.
  */
-
-/** true = checkmark, false = dash, string = short label */
-export type CompareCell = true | false | string;
-
-export const COMPARE_UI: Record<Lang, { title: string; featuresCol: string }> = {
-  fa: { title: 'مقایسهٔ سریع پلن‌ها', featuresCol: 'امکانات' },
-  en: { title: 'Quick plan comparison', featuresCol: 'Features' },
-};
-
-export const COMPARE_ROWS: Record<
-  Lang,
-  readonly { label: string; cells: readonly [CompareCell, CompareCell, CompareCell] }[]
-> = {
-  fa: [
-    { label: '۱۲ پست اختصاصی در ماه', cells: [true, true, true] },
-    { label: '۸ استوری در ماه', cells: [true, true, true] },
-    { label: 'پاسخ دایرکت با هوش مصنوعی', cells: [true, true, true] },
-    { label: 'بازبینی انسانی هر محتوا قبل از انتشار', cells: [false, true, true] },
-    { label: 'تأیید انسانی پیام‌های مهم دایرکت', cells: [false, true, true] },
-    { label: 'اولویت پشتیبانی', cells: [false, true, true] },
-    { label: '۴ ریلز اختصاصی در ماه', cells: [false, false, true] },
-    { label: 'پیشنهاد کمپین ماهانه', cells: [false, false, true] },
-    { label: 'گزارش عملکرد', cells: ['ماهانه', 'ماهانه', 'هفتگی + تحلیل رقبا'] },
-    { label: 'مشاورهٔ ماهانه', cells: [false, '۱۵ دقیقه', 'جلسهٔ استراتژی اختصاصی'] },
-  ],
-  en: [
-    { label: '12 custom posts per month', cells: [true, true, true] },
-    { label: '8 stories per month', cells: [true, true, true] },
-    { label: 'AI-powered DM replies', cells: [true, true, true] },
-    { label: 'Human review before publishing', cells: [false, true, true] },
-    { label: 'Human approval for important DMs', cells: [false, true, true] },
-    { label: 'Priority support', cells: [false, true, true] },
-    { label: '4 custom reels per month', cells: [false, false, true] },
-    { label: 'Monthly campaign proposal', cells: [false, false, true] },
-    { label: 'Performance reports', cells: ['Monthly', 'Monthly', 'Weekly + competitor analysis'] },
-    { label: 'Monthly consultation', cells: [false, '15 minutes', 'Dedicated strategy session'] },
-  ],
-};
 
 export const FAQ: Record<Lang, readonly { q: string; a: string }[]> = {
   fa: [

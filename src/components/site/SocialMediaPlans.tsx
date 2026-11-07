@@ -14,19 +14,15 @@ import {
   UserCheck,
   TrendingUp,
   ChevronDown,
-  Minus,
 } from 'lucide-react';
 import {
   PLANS,
   SECTION_UI,
   PLAN_SLUGS,
   SOCIAL_PLANS,
-  COMPARE_UI,
-  COMPARE_ROWS,
   FAQ,
   FINAL_CTA,
   type Lang,
-  type CompareCell,
 } from './social-media-plans-data';
 
 /**
@@ -37,9 +33,11 @@ import {
  * copy, one approved design.
  *
  * Redesign driven by the ui-ux-pro-max skill (owner request 2026-11-07):
- * - pricing-page-cta pattern → section order: hero → plan cards → comparison
- *   table → network/setup extras → FAQ → final CTA (all FAQ/table strings
- *   composed from owner-approved facts only).
+ * - pricing-page-cta pattern → section order: hero → plan cards → network/
+ *   setup extras → FAQ → final CTA. Owner 2026-11-08: the quick-comparison
+ *   table is REMOVED from BOTH languages («مقایسه حذف بشه») — the three
+ *   plan cards, the Network box and the per-plan detail pages carry the
+ *   information; no comparison UI exists anywhere in this panel anymore.
  * - glassmorphism style row (rtl_level: full) → frosted cards: bg-card/75 +
  *   backdrop-blur + subtle 1px border, violet glow behind.
  * - CTA contrast rule (≥4.5:1 on button fill) → buy gradient darkened to
@@ -76,28 +74,11 @@ const TRUST_ICONS = [ShieldCheck, BarChart3, Zap, CreditCard] as const;
 /** indices into ui.trust surfaced as hero guarantee chips (same approved copy) */
 const HERO_TRUST = [2, 0, 3] as const;
 
-function CompareCellView({ cell }: { cell: CompareCell }) {
-  if (cell === true)
-    return (
-      <span className="inline-flex h-[19px] w-[19px] items-center justify-center rounded-full bg-violet-500/15" aria-hidden="true">
-        <Check className="h-3 w-3 text-violet-500" strokeWidth={3.5} />
-      </span>
-    );
-  if (cell === false)
-    return (
-      <span className="inline-flex text-muted-foreground/50" aria-hidden="true">
-        <Minus className="h-3.5 w-3.5" strokeWidth={2.5} />
-      </span>
-    );
-  return <span className="text-[11.5px] font-medium leading-5 text-foreground/80">{cell}</span>;
-}
-
 export function SocialMediaPlans({ lang }: { lang: Lang }) {
   const ui = SECTION_UI[lang];
   const plans = PLANS[lang];
   const ForwardArrow = lang === 'fa' ? ArrowLeft : ArrowRight;
   const isFa = lang === 'fa';
-  const cmpUi = COMPARE_UI[lang];
 
   return (
     <section className="relative mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-12" aria-labelledby="sm-plans-title">
@@ -232,45 +213,6 @@ export function SocialMediaPlans({ lang }: { lang: Lang }) {
             </div>
           );
         })}
-      </div>
-
-      {/* جدول مقایسه — الگوی pricing-page-cta اسکیل */}
-      <div className="relative mt-10">
-        <h2 className="text-lg font-extrabold">{cmpUi.title}</h2>
-        <div className={`mt-4 overflow-hidden rounded-3xl border ${GLASS}`}>
-          <table className="w-full border-collapse text-sm">
-            <thead>
-              <tr className="border-b border-black/[0.07] dark:border-white/10">
-                <th scope="col" className="p-3 text-start text-[12.5px] font-bold text-muted-foreground">
-                  {cmpUi.featuresCol}
-                </th>
-                {SOCIAL_PLANS.map((id) => {
-                  const p = plans[id];
-                  return (
-                    <th scope="col" key={id} className={`p-3 text-center ${p.hot ? 'bg-violet-500/10' : ''}`}>
-                      <span className="block text-[13px] font-extrabold">{p.name}</span>
-                      <b className="block text-[15px] font-extrabold text-violet-600 dark:text-violet-400" dir="ltr">{p.price}</b>
-                    </th>
-                  );
-                })}
-              </tr>
-            </thead>
-            <tbody>
-              {COMPARE_ROWS[lang].map((row, i) => (
-                <tr key={row.label} className={i % 2 === 1 ? 'bg-muted/25' : ''}>
-                  <th scope="row" className="p-3 text-start text-[12.5px] font-medium leading-6 text-foreground/85 sm:text-[13.5px]">
-                    {row.label}
-                  </th>
-                  {row.cells.map((cell, ci) => (
-                    <td key={ci} className={`p-3 text-center ${SOCIAL_PLANS[ci] === 'companion' ? 'bg-violet-500/[0.06]' : ''}`}>
-                      <CompareCellView cell={cell} />
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
       </div>
 
       {/* شبکه */}
