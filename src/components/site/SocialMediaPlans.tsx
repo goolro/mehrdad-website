@@ -40,6 +40,21 @@ export function SocialMediaPlans({ lang }: { lang: Lang }) {
 
   return (
     <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16" aria-labelledby="sm-plans-title">
+      {/* breadcrumb (owner request 2026-11-07: «home social-media — کاربر
+          بدونه کجاست و بتونه برگرده») — same visible trail as the detail
+          pages, on the main panel too */}
+      <nav aria-label={lang === 'fa' ? 'مسیر صفحه' : 'Breadcrumb'} className="mb-6 text-[13px] text-muted-foreground">
+        <ol className="flex flex-wrap items-center gap-1.5">
+          <li>
+            <Link href={lang === 'fa' ? '/fa' : '/'} className="transition-colors hover:text-foreground">
+              {ui.breadcrumbHome}
+            </Link>
+          </li>
+          <li aria-hidden="true">/</li>
+          <li aria-current="page" className="font-medium text-foreground">{ui.breadcrumbPlans}</li>
+        </ol>
+      </nav>
+
       {/* هدر */}
       <h1 id="sm-plans-title" className="max-w-3xl text-3xl font-extrabold leading-snug sm:text-4xl sm:leading-snug lg:text-[40px]">
         {ui.titleLead}

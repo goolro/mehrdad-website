@@ -33,12 +33,30 @@ export function isFaPath(p: string | null | undefined): boolean {
   return !!p && (p === '/fa' || p.startsWith('/fa/'));
 }
 
+/**
+ * EN-pinned routes (owner request 2026-11-07: «برای هر زبان باید صفحه
+ * جداگانه‌ای تعریف کنی نه اینکه ترجمه کنی») — the social-media section is
+ * TWO separate pages, one per language: /social-media is ALWAYS English
+ * and /fa/social-media is ALWAYS Persian. The persisted store language
+ * must NOT flip the chrome there (a fa-preferring visitor opening the EN
+ * page used to get Persian chrome + rtl html around static English panel
+ * content — the "mixed" page the owner reported). Same contract as the
+ * /fa pin, mirrored for the EN tree.
+ */
+export function isEnPinnedPath(p: string | null | undefined): boolean {
+  return !!p && (p === '/social-media' || p.startsWith('/social-media/'));
+}
+
 export function LangProvider({ children }: { children: React.ReactNode }) {
   // usePathname() is available during the server render too (App Router
   // feeds it from the request), so the SSG HTML and the first client
   // render agree — no hydration mismatch, no flash.
   const pathname = usePathname();
-  const value: Lang | null = isFaPath(pathname) ? 'fa' : null;
+  const value: Lang | null = isFaPath(pathname)
+    ? 'fa'
+    : isEnPinnedPath(pathname)
+      ? 'en'
+      : null;
   return <LangCtx.Provider value={value}>{children}</LangCtx.Provider>;
 }
 

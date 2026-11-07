@@ -62,10 +62,14 @@ export function Header() {
   // survey fix #1 (2026-11): Pricing joins the main nav — the page lives
   // outside the View union on purpose (no store routing changes), so it
   // carries its own href and a pathname-based active check.
-  const navItems: { key: 'home' | 'services' | 'pricing' | 'projects' | 'blog' | 'about' | 'contact'; label: string; href?: string }[] = [
+  // owner request (2026-11-07): Social Media joins the main nav too —
+  // «ادرس صفحه را بصورت منو یا لینک بالای صفحه نشون بدی». Same pattern:
+  // explicit href per language tree, pathname-based active check.
+  const navItems: { key: 'home' | 'services' | 'pricing' | 'social' | 'projects' | 'blog' | 'about' | 'contact'; label: string; href?: string }[] = [
     { key: 'home', label: t.nav.home },
     { key: 'services', label: t.nav.services },
     { key: 'pricing', label: t.nav.pricing, href: onFa ? '/fa/pricing' : '/pricing' },
+    { key: 'social', label: t.nav.socialMedia, href: onFa ? '/fa/social-media' : '/social-media' },
     { key: 'projects', label: t.nav.projects },
     { key: 'blog', label: t.nav.blog },
     { key: 'about', label: t.nav.about },
@@ -75,7 +79,15 @@ export function Header() {
   const navHref = (key: (typeof navItems)[number]['key'], explicitHref?: string) =>
     explicitHref ?? (onFa ? FA_VIEW_PATH[key] : VIEW_PATH[key]);
   const isItemActive = (item: (typeof navItems)[number]) =>
-    item.href ? pathname === item.href : view === item.key;
+    item.href
+      ? // section pages: highlight across the whole subtree (/social-media
+        // and /social-media/[plan]) so the user always sees where they are
+        item.href === '/social-media'
+          ? pathname === '/social-media' || pathname.startsWith('/social-media/')
+          : item.href === '/fa/social-media'
+            ? pathname === '/fa/social-media' || pathname.startsWith('/fa/social-media/')
+            : pathname === item.href
+      : view === item.key;
 
   return (
     <header className="site-header sticky top-0 z-40 w-full border-b border-border/40 bg-background/80 backdrop-blur-md">

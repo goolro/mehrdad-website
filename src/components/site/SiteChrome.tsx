@@ -3,7 +3,7 @@
 import { useEffect, useLayoutEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useApp, registerNavigate, viewFromPathname } from './store';
-import { isFaPath, LangProvider } from './lang-context';
+import { isFaPath, isEnPinnedPath, LangProvider } from './lang-context';
 import { Header } from './Header';
 import { Footer } from './Footer';
 import { ChatWidget } from './ChatWidget';
@@ -47,7 +47,11 @@ export function SiteChrome({ children }: { children: React.ReactNode }) {
   // Resolving the route language DIRECTLY (same rule as LangProvider uses
   // internally) makes the SSG HTML, the first client render and the <html>
   // effect agree on every route; EN routes are unchanged (store-driven).
-  const lang = isFaPath(pathname) ? 'fa' : storeLang;
+  // 2026-11-07 (owner request «برای هر زبان صفحهٔ جداگانه، نه ترجمه»):
+  // /social-media* is EN-pinned (isEnPinnedPath) — the persisted fa store
+  // language must not flip the chrome or <html> dir to rtl there; that was
+  // the "mixed" Persian-chrome/English-content page the owner reported.
+  const lang = isFaPath(pathname) ? 'fa' : isEnPinnedPath(pathname) ? 'en' : storeLang;
   // a11y phase-4: skip link must be translated like the rest of the chrome.
   const t = ui[lang];
 
