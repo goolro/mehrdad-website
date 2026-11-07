@@ -38,6 +38,9 @@ export type PlanCopy = {
   detailsCta: string;
   waMsg: string;
   features: readonly string[];
+  /** one-line definition per feature (owner request 2026-11-08:
+   *  «۶ باکس بالا باید تعریف می‌کردی») — composed from approved facts only */
+  featureNotes: readonly string[];
   /** «توضیحات بیشتر» — promoted to standalone detail pages (owner request) */
   detail: {
     h1: string;
@@ -67,12 +70,19 @@ export const PLANS: Record<Lang, Record<SocialPlanId, PlanCopy>> = {
         'پاسخ خودکار دایرکت با هوش مصنوعی',
         'گزارش عملکرد ماهانه',
       ],
+      featureNotes: [
+        'هر ماه ۱۲ پست فقط برای برند تو ساخته می‌شود؛ گرافیک، کپشن و هشتگ داخل پلن است و کپی رد نمی‌شود.',
+        'کنار پست‌ها ۸ استوری هم منتشر می‌شود تا پیجت هر روز فعال و مرتب بماند.',
+        'انتشار طبق تقویم شفاف انجام می‌شود؛ تو هیچ یادآوری و پیگیری نمی‌کنی.',
+        'دایرکت‌ها شبانه‌روزی با هوش مصنوعی جواب می‌گیرند؛ هیچ پیام مشتری بی‌جواب نمی‌ماند.',
+        'هر ماه یک گزارش رشد شفاف تحویل می‌گیری و همیشه در دسترس توست.',
+      ],
       detail: {
         h1: 'پلن اتومات — مدیریت کاملاً خودکار پیج',
-        intro: 'پیجت کاملاً خودکار اداره می‌شود؛ بدون نیاز به وقت و پیگیری تو.',
+        intro: 'سفارش را ثبت می‌کنی، فرم کوتاه برندت را پر می‌کنی و تا ۷۲ ساعت اولین محتوا آماده است؛ از آن به بعد ۱۲ پست و ۸ استوری در ماه خودش منتشر می‌شود و دایرکت‌ها شبانه‌روزی جواب می‌گیرند — بدون اینکه تو پیگیری کنی.',
         sections: [
-          { h: 'چطور شروع می‌شود؟', p: 'بعد از ثبت سفارش، یک فرم کوتاه دربارهٔ برندت پر می‌کنی. تا ۷۲ ساعت اولین بچ محتوا را برای تأیید می‌بینی؛ از آن به بعد همه‌چیز خودکار پیش می‌رود.' },
-          { h: 'چه چیزی تحویل می‌گیری؟', p: 'محتوای یکتا برای برند خودت (کپی رد نمی‌شود)، تقویم انتشار شفاف، پاسخ‌گویی دایرکت شبانه‌روزی و گزارش ماهانهٔ رشد.' },
+          { h: 'چطور شروع می‌شود؟', p: 'فرم کوتاه برند را پر می‌کنی؛ تا ۷۲ ساعت اولین بچ محتوا را برای تأیید می‌بینی و از آن به بعد همه‌چیز خودکار پیش می‌رود.' },
+          { h: 'چه چیزی تحویل می‌گیری؟', p: 'محتوای یکتا برای برند خودت، تقویم انتشار شفاف، پاسخ دایرکت شبانه‌روزی و گزارش ماهانهٔ رشد.' },
           { h: 'مناسب چه کسی؟', p: 'کسب‌وکارهایی که وقت ادارهٔ پیج را ندارند و می‌خواهند پیج‌شان همیشه فعال و مرتب باشد.' },
         ],
         terms: TERMS_FA,
@@ -94,12 +104,19 @@ export const PLANS: Record<Lang, Record<SocialPlanId, PlanCopy>> = {
         'اولویت پشتیبانی و پاسخ‌گویی سریع',
         '۱۵ دقیقه مشاورهٔ ماهانه',
       ],
+      featureNotes: [
+        '۱۲ پست، ۸ استوری، انتشار منظم، پاسخ دایرکت با AI و گزارش ماهانه — همه در این پلن هم هست.',
+        'قبل از انتشار، کیفیت هر محتوا چک می‌شود؛ هیچ محتوای ضعیفی منتشر نمی‌شود.',
+        'دایرکت‌ها با AI پاسخ می‌گیرند؛ سفارش، شکایت و همکاری دست انسان تأیید می‌شود.',
+        'پیام‌های تو در اولویت پاسخ داده می‌شود و سریع‌تر جواب می‌گیری.',
+        'هر ماه ۱۵ دقیقه جلسه داریم تا محتوا با اهداف فروش تو هم‌راستا بماند.',
+      ],
       detail: {
         h1: 'پلن همراه — اتوماسیون با چشم انسانی',
-        intro: 'همهٔ مزایای اتومات + چشم انسانی روی هر محتوا و هر پیام.',
+        intro: 'همان موتور اتومات، با یک تفاوت مهم: قبل از انتشار هر پست و استوری یک انسان کیفیتش را تأیید می‌کند و پیام‌های مهم دایرکت (سفارش، شکایت، همکاری) هم دست انسان است.',
         sections: [
-          { h: 'فرقش با اتومات چیست؟', p: 'در پلن اتومات سیستم همه‌چیز را خودش انجام می‌دهد؛ در پلن همراه، یک انسان قبل از انتشار هر محتوا کیفیتش را چک می‌کند و پیام‌های مهم دایرکت (سفارش، شکایت، همکاری) دست انسان تأیید می‌شود.' },
-          { h: 'چه چیزی تحویل می‌گیری؟', p: 'خیال راحت: هیچ محتوای ضعیفی منتشر نمی‌شود و هیچ پیام مشتری بی‌جواب نمی‌ماند. جلسهٔ ماهانه هم برای هم‌راستایی محتوا با اهداف فروش توست.' },
+          { h: 'فرقش با اتومات چیست؟', p: 'در اتومات سیستم همه‌چیز را خودش انجام می‌دهد؛ اینجا یک انسان قبل از انتشار هر محتوا کیفیتش را چک می‌کند و پیام‌های مهم دایرکت دست انسان تأیید می‌شود.' },
+          { h: 'چه چیزی تحویل می‌گیری؟', p: 'هیچ محتوای ضعیفی منتشر نمی‌شود و هیچ پیام مشتری بی‌جواب نمی‌ماند؛ جلسهٔ ماهانه هم محتوا را با اهداف فروش تو هم‌راستا می‌کند.' },
           { h: 'مناسب چه کسی؟', p: 'برندهایی که اعتبار برند برایشان حیاتی است و می‌خواهند کیفیت خروجی همیشه یکدست بماند.' },
         ],
         terms: TERMS_FA,
@@ -121,12 +138,19 @@ export const PLANS: Record<Lang, Record<SocialPlanId, PlanCopy>> = {
         'گزارش هفتگی + تحلیل رقبا',
         'پیشنهاد کمپین ماهانه',
       ],
+      featureNotes: [
+        'بازبینی انسانی، تأیید پیام‌های مهم، اولویت پشتیبانی و مشاورهٔ ماهانه — همه سر جایش است.',
+        'ریلز موتور رشد اینستاگرام است؛ هر ماه ۴ ریلز با سناریوی نوشته‌شده و تولید AI می‌گیری.',
+        'جلسهٔ ماهانه مسیر ماه بعد را بر اساس داده‌های واقعی پیجت تعیین می‌کند.',
+        'هر هفته گزارش کوتاه و قابل‌فهم می‌گیری، همراه با تحلیل رقبای مستقیم.',
+        'برنامهٔ محتوایی و پیشنهاد کمپین ماه بعد، آماده و هم‌راستا با فروش تحویل می‌شود.',
+      ],
       detail: {
         h1: 'پلن بیزینس — رشد جدی با ویدیو و استراتژی',
-        intro: 'برای برندهایی که جدی رشد می‌کنند — ویدیو، استراتژی و گزارش هفتگی.',
+        intro: 'وقتی اینستاگرام کانال فروش اصلی توست: همهٔ امکانات همراه + هر ماه ۴ ریلز با سناریو، جلسهٔ استراتژی اختصاصی و گزارش هفتگی با تحلیل رقبا — مسیر ماه بعد بر اساس دادهٔ واقعی پیجت تعیین می‌شود.',
         sections: [
-          { h: 'چه چیزی اضافه می‌گیری؟', p: 'ریلز موتور رشد اینستاگرام است — هر ماه ۴ ریلز با سناریوی نوشته‌شده و تولید هوش مصنوعی می‌گیری. جلسهٔ ماهانه هم مسیر ماه بعد را بر اساس داده‌های واقعی پیجت تعیین می‌کند.' },
-          { h: 'چه چیزی تحویل می‌گیری؟', p: 'گزارش هفتگی کوتاه و قابل‌فهم + تحلیل رقبای مستقیم + برنامهٔ محتوایی ماه بعد، آماده و هم‌راستا با فروش.' },
+          { h: 'چه چیزی اضافه می‌گیری؟', p: 'هر ماه ۴ ریلز با سناریوی نوشته‌شده و تولید هوش مصنوعی؛ جلسهٔ ماهانه هم مسیر ماه بعد را بر اساس داده‌های واقعی پیجت تعیین می‌کند.' },
+          { h: 'چه چیزی تحویل می‌گیری؟', p: 'گزارش هفتگی کوتاه + تحلیل رقبای مستقیم + برنامهٔ محتوایی ماه بعد، آماده و هم‌راستا با فروش.' },
           { h: 'مناسب چه کسی؟', p: 'برندهای در حال رشد که اینستاگرام برایشان کانال فروش اصلی است.' },
         ],
         terms: TERMS_FA,
@@ -150,12 +174,19 @@ export const PLANS: Record<Lang, Record<SocialPlanId, PlanCopy>> = {
         'AI-powered DM auto-replies',
         'Monthly performance report',
       ],
+      featureNotes: [
+        'Twelve posts built only for your brand every month — graphics, caption, and hashtags included, never copied.',
+        'Alongside posts, 8 stories go out each month so your page stays active and tidy every day.',
+        'Publishing follows a transparent calendar — no reminders or follow-ups on your side.',
+        'DMs are answered around the clock by AI; no customer message is left unanswered.',
+        'Every month you get a transparent growth report, always available to you.',
+      ],
       detail: {
         h1: 'Auto Plan — fully automated page management',
-        intro: 'Your page runs fully on autopilot — none of your time required.',
+        intro: 'You place the order, fill out a short brand form, and within 72 hours the first content is ready; from then on, 12 posts and 8 stories per month publish themselves and DMs get answered around the clock — no follow-ups on your side.',
         sections: [
-          { h: 'How does it start?', p: 'After you order, you fill out a short form about your brand. Within 72 hours you see the first batch of content for approval; from then on, everything runs automatically.' },
-          { h: 'What do you get?', p: 'Content unique to your brand (never copied), a transparent publishing calendar, 24/7 DM handling, and a monthly growth report.' },
+          { h: 'How does it start?', p: 'Fill out the short brand form; within 72 hours you see the first batch for approval — from then on everything runs automatically.' },
+          { h: 'What do you get?', p: 'Content unique to your brand, a transparent publishing calendar, 24/7 DM handling, and a monthly growth report.' },
           { h: 'Who is it for?', p: 'Businesses that have no time to run a page and want it active and tidy at all times.' },
         ],
         terms: 'No contract lock-in — upgrade or cancel anytime.',
@@ -177,12 +208,19 @@ export const PLANS: Record<Lang, Record<SocialPlanId, PlanCopy>> = {
         'Priority support and faster response times',
         '15-minute monthly consultation',
       ],
+      featureNotes: [
+        'The 12 posts, 8 stories, consistent publishing, AI DM replies, and the monthly report — all included here too.',
+        'Before anything goes live, its quality is checked — no weak content gets published.',
+        'DMs are answered by AI; orders, complaints, and partnerships get human approval.',
+        'Your messages get priority answers, so you hear back faster.',
+        'A 15-minute session every month to keep content aligned with your sales goals.',
+      ],
       detail: {
         h1: 'Companion Plan — automation with a human eye',
-        intro: 'Everything in Auto + a human eye on every post and every message.',
+        intro: 'The same engine as Auto with one important difference: a human approves the quality of every post and story before it goes live, and important DMs (orders, complaints, partnerships) get human sign-off.',
         sections: [
-          { h: 'How is it different from Auto?', p: 'In Auto, the system does everything itself; in Companion, a human checks the quality of every piece of content before it is published, and important DMs (orders, complaints, partnerships) are approved by a human.' },
-          { h: 'What do you get?', p: 'Peace of mind: no weak content goes live and no customer message is left unanswered. The monthly session also aligns the content with your sales goals.' },
+          { h: 'How is it different from Auto?', p: 'In Auto, the system does everything itself; here, a human checks every piece of content before publishing, and important DMs are approved by a human.' },
+          { h: 'What do you get?', p: 'No weak content goes live and no customer message stays unanswered; the monthly session aligns content with your sales goals.' },
           { h: 'Who is it for?', p: 'Brands whose reputation is critical and that want their output quality to stay consistently uniform.' },
         ],
         terms: 'No contract lock-in — upgrade or cancel anytime.',
@@ -204,12 +242,19 @@ export const PLANS: Record<Lang, Record<SocialPlanId, PlanCopy>> = {
         'Weekly report + competitor analysis',
         'Monthly campaign proposal',
       ],
+      featureNotes: [
+        'Human review, approval of important DMs, priority support, and the monthly session — all stay in place.',
+        'Reels are Instagram’s growth engine — 4 reels a month with written scripts and AI production.',
+        'The monthly session sets the next month’s direction from your page’s real data.',
+        'A short, understandable report every week, plus direct competitor analysis.',
+        'Next month’s content plan and campaign proposal, ready and aligned with sales.',
+      ],
       detail: {
         h1: 'Business Plan — serious growth with video and strategy',
-        intro: 'For brands growing seriously — video, strategy, and weekly reporting.',
+        intro: 'When Instagram is your main sales channel: everything in Companion + 4 reels per month with scripts, a dedicated strategy session, and a weekly report with competitor analysis — the next month’s direction is set from your page’s real data.',
         sections: [
-          { h: 'What do you get on top?', p: 'Reels are Instagram’s growth engine — every month you get 4 reels with written scripts and AI production. The monthly session sets the next month’s direction based on your page’s real data.' },
-          { h: 'What do you get?', p: 'A short, understandable weekly report + direct competitor analysis + next month’s content plan, ready and aligned with sales.' },
+          { h: 'What do you get on top?', p: 'Four reels a month with written scripts and AI production; the monthly session sets the next month’s direction from your page’s real data.' },
+          { h: 'What do you get?', p: 'A short weekly report + direct competitor analysis + next month’s content plan, ready and aligned with sales.' },
           { h: 'Who is it for?', p: 'Growing brands for which Instagram is the main sales channel.' },
         ],
         terms: 'No contract lock-in — cancel anytime.',
