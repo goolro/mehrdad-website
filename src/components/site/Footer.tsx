@@ -70,6 +70,13 @@ export function Footer() {
             <Link href={faAware('/services', '/fa/services')} className="hover:text-foreground">{t.nav.services}</Link>
             {/* survey fix #1 (2026-11): pricing crawlable from every page */}
             <Link href={faAware('/pricing', '/fa/pricing')} className="hover:text-foreground">{t.nav.pricing}</Link>
+            {/* owner request (2026-11-07): «لینکش هم تو فوتر بزار» — the
+                social-media plans panel is a money page, highlighted violet
+                like MVP Sprint. Bilingual pair: /social-media (EN) ↔
+                /fa/social-media (FA), language-aware via faAware. */}
+            <Link href={faAware('/social-media', '/fa/social-media')} className="font-medium text-violet-600 hover:text-violet-700 dark:text-violet-400 dark:hover:text-violet-300">
+              {lang === 'fa' ? 'سوشال‌مدیا' : 'Social Media'}
+            </Link>
             {/* survey fix #2 (2026-11): plain-language start page, crawlable from every page */}
             <Link href={faAware('/start', '/fa/start')} className="hover:text-foreground">{t.nav.start}</Link>
             <Link href="/mvp-sprint" className="font-medium text-violet-600 hover:text-violet-700 dark:text-violet-400 dark:hover:text-violet-300">

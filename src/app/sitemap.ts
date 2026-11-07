@@ -52,6 +52,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // survey fix #1 (2026-11): the pricing page is a money page — EN + fa pair
     { url: `${BASE}/pricing`, changeFrequency: 'monthly', priority: 0.9, alternates: { languages: { en: `${BASE}/pricing`, fa: `${BASE}/fa/pricing`, 'x-default': `${BASE}/pricing` } } },
     { url: `${BASE}/fa/pricing`, changeFrequency: 'monthly', priority: 0.9, alternates: { languages: { en: `${BASE}/pricing`, fa: `${BASE}/fa/pricing`, 'x-default': `${BASE}/pricing` } } },
+    // owner request (2026-11-07): social-media plans — bilingual money
+    // pages (EN ↔ fa pairs), linked from the footer site-wide; each plan's
+    // «توضیحات بیشتر» copy has its own detail page in both trees
+    { url: `${BASE}/social-media`, changeFrequency: 'monthly', priority: 0.9, alternates: { languages: { en: `${BASE}/social-media`, fa: `${BASE}/fa/social-media`, 'x-default': `${BASE}/social-media` } } },
+    { url: `${BASE}/fa/social-media`, changeFrequency: 'monthly', priority: 0.9, alternates: { languages: { en: `${BASE}/social-media`, fa: `${BASE}/fa/social-media`, 'x-default': `${BASE}/social-media` } } },
+    { url: `${BASE}/social-media/auto`, changeFrequency: 'monthly', priority: 0.8, alternates: { languages: { en: `${BASE}/social-media/auto`, fa: `${BASE}/fa/social-media/auto`, 'x-default': `${BASE}/social-media/auto` } } },
+    { url: `${BASE}/fa/social-media/auto`, changeFrequency: 'monthly', priority: 0.8, alternates: { languages: { en: `${BASE}/social-media/auto`, fa: `${BASE}/fa/social-media/auto`, 'x-default': `${BASE}/social-media/auto` } } },
+    { url: `${BASE}/social-media/companion`, changeFrequency: 'monthly', priority: 0.8, alternates: { languages: { en: `${BASE}/social-media/companion`, fa: `${BASE}/fa/social-media/companion`, 'x-default': `${BASE}/social-media/companion` } } },
+    { url: `${BASE}/fa/social-media/companion`, changeFrequency: 'monthly', priority: 0.8, alternates: { languages: { en: `${BASE}/social-media/companion`, fa: `${BASE}/fa/social-media/companion`, 'x-default': `${BASE}/social-media/companion` } } },
+    { url: `${BASE}/social-media/business`, changeFrequency: 'monthly', priority: 0.8, alternates: { languages: { en: `${BASE}/social-media/business`, fa: `${BASE}/fa/social-media/business`, 'x-default': `${BASE}/social-media/business` } } },
+    { url: `${BASE}/fa/social-media/business`, changeFrequency: 'monthly', priority: 0.8, alternates: { languages: { en: `${BASE}/social-media/business`, fa: `${BASE}/fa/social-media/business`, 'x-default': `${BASE}/social-media/business` } } },
     // survey fix #2 (2026-11): plain-language start page — EN + fa pair
     { url: `${BASE}/start`, changeFrequency: 'monthly', priority: 0.8, alternates: { languages: { en: `${BASE}/start`, fa: `${BASE}/fa/start`, 'x-default': `${BASE}/start` } } },
     { url: `${BASE}/fa/start`, changeFrequency: 'monthly', priority: 0.8, alternates: { languages: { en: `${BASE}/start`, fa: `${BASE}/fa/start`, 'x-default': `${BASE}/start` } } },
