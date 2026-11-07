@@ -320,3 +320,80 @@ export const SECTION_UI: Record<
 } as const;
 
 export const NETWORK_PRICE = { price: '', currency: 'USD' } as const;
+
+/**
+ * ui-ux-pro-max additions (pricing-page-cta pattern: hero → cards →
+ * comparison table → FAQ → final CTA). Every string below is composed from
+ * the owner-approved facts already on this page (features, trust strip,
+ * network tag, terms, note) — no new claims.
+ */
+
+/** true = checkmark, false = dash, string = short label */
+export type CompareCell = true | false | string;
+
+export const COMPARE_UI: Record<Lang, { title: string; featuresCol: string }> = {
+  fa: { title: 'مقایسهٔ سریع پلن‌ها', featuresCol: 'امکانات' },
+  en: { title: 'Quick plan comparison', featuresCol: 'Features' },
+};
+
+export const COMPARE_ROWS: Record<
+  Lang,
+  readonly { label: string; cells: readonly [CompareCell, CompareCell, CompareCell] }[]
+> = {
+  fa: [
+    { label: '۱۲ پست اختصاصی در ماه', cells: [true, true, true] },
+    { label: '۸ استوری در ماه', cells: [true, true, true] },
+    { label: 'پاسخ دایرکت با هوش مصنوعی', cells: [true, true, true] },
+    { label: 'بازبینی انسانی هر محتوا قبل از انتشار', cells: [false, true, true] },
+    { label: 'تأیید انسانی پیام‌های مهم دایرکت', cells: [false, true, true] },
+    { label: 'اولویت پشتیبانی', cells: [false, true, true] },
+    { label: '۴ ریلز اختصاصی در ماه', cells: [false, false, true] },
+    { label: 'پیشنهاد کمپین ماهانه', cells: [false, false, true] },
+    { label: 'گزارش عملکرد', cells: ['ماهانه', 'ماهانه', 'هفتگی + تحلیل رقبا'] },
+    { label: 'مشاورهٔ ماهانه', cells: [false, '۱۵ دقیقه', 'جلسهٔ استراتژی اختصاصی'] },
+  ],
+  en: [
+    { label: '12 custom posts per month', cells: [true, true, true] },
+    { label: '8 stories per month', cells: [true, true, true] },
+    { label: 'AI-powered DM replies', cells: [true, true, true] },
+    { label: 'Human review before publishing', cells: [false, true, true] },
+    { label: 'Human approval for important DMs', cells: [false, true, true] },
+    { label: 'Priority support', cells: [false, true, true] },
+    { label: '4 custom reels per month', cells: [false, false, true] },
+    { label: 'Monthly campaign proposal', cells: [false, false, true] },
+    { label: 'Performance reports', cells: ['Monthly', 'Monthly', 'Weekly + competitor analysis'] },
+    { label: 'Monthly consultation', cells: [false, '15 minutes', 'Dedicated strategy session'] },
+  ],
+};
+
+export const FAQ: Record<Lang, readonly { q: string; a: string }[]> = {
+  fa: [
+    { q: 'اولین محتوا کی آماده می‌شود؟', a: 'راه‌اندازی اولین محتوا حداکثر ۷۲ ساعت بعد از ثبت سفارش انجام می‌شود.' },
+    { q: 'قرارداد یا قفل زمانی وجود دارد؟', a: 'بدون قفل قرارداد — هر زمان می‌توانی لغو یا ارتقا بدهی.' },
+    { q: 'تسویه چگونه است؟', a: 'قیمت‌ها ماهانه و به دلار است؛ معادل تومانی در زمان عقد قرارداد با نرخ روز محاسبه می‌شود.' },
+    { q: 'از روند کار گزارش می‌گیری؟', a: 'گزارش عملکرد ماهانه شفاف ارائه می‌شود و در دسترس توست؛ در پلن بیزینس گزارش هفتگی + تحلیل رقبا هم اضافه می‌شود.' },
+    { q: 'پلن شبکه مخصوص چه کسی است؟', a: 'برای آژانس‌ها، شبکه‌های فروش و برندهای چندشعبه‌ای. هر اکانت روی دستگاه و آی‌پی جداگانه اجرا می‌شود و محتوای هر اکانت یکتاست.' },
+  ],
+  en: [
+    { q: 'When is the first content ready?', a: 'The first content goes live within 72 hours of ordering.' },
+    { q: 'Is there a contract or lock-in?', a: 'No contract lock-in — upgrade or cancel anytime.' },
+    { q: 'How does payment work?', a: 'Prices are monthly in USD; the toman equivalent is calculated at the daily rate when the contract is signed.' },
+    { q: 'Do I get reports?', a: 'A transparent monthly performance report is always available to you; the Business plan adds a weekly report + competitor analysis.' },
+    { q: 'Who is the Network plan for?', a: 'For agencies, sales networks, and multi-branch brands. Every account runs on its own device and IP, and each account’s content is unique.' },
+  ],
+};
+
+export const FINAL_CTA: Record<Lang, { h: string; p: string; btn: string; waMsg: string }> = {
+  fa: {
+    h: 'هنوز سؤالی داری؟',
+    p: 'سؤالت را مستقیم در واتساپ بپرس.',
+    btn: 'پرسیدن سؤال در واتساپ',
+    waMsg: 'سلام! دربارهٔ پلن‌های مدیریت سوشال‌مدیا سؤال دارم.',
+  },
+  en: {
+    h: 'Still have a question?',
+    p: 'Ask directly on WhatsApp.',
+    btn: 'Ask on WhatsApp',
+    waMsg: 'Hi! I have a question about the social media management plans.',
+  },
+};
