@@ -55,6 +55,11 @@ import {
  * باید توی صفحه جدیدی باز بشه»): whole panel compacted (tighter paddings,
  * smaller type) and every «توضیحات بیشتر» link now opens the plan's own
  * page in a NEW TAB so the tariff panel stays open.
+ *
+ * Owner review 2026-11-08 («لیست پیشنهادها را انجام بده»): result-led h1,
+ * proof line + real-output samples strip (#sm-samples — real post copy from
+ * our own published posts, no invented samples), and a security/ownership
+ * FAQ item — all composed from approved facts only.
  */
 
 const WA = 'https://wa.me/989103500310';
@@ -127,6 +132,17 @@ export function SocialMediaPlans({ lang }: { lang: Lang }) {
             );
           })}
         </div>
+      </div>
+
+      {/* خط اعتماد — لینک به نمونه‌های واقعی (owner review 2026-11-08) */}
+      <div className="mt-8">
+        <a
+          href="#sm-samples"
+          className={`inline-flex items-center gap-1.5 text-[13.5px] font-bold text-violet-600 transition-colors hover:text-violet-700 dark:text-violet-400 dark:hover:text-violet-300 ${CTA_FOCUS}`}
+        >
+          {ui.proofLine}
+          <ChevronDown className="h-4 w-4" aria-hidden="true" />
+        </a>
       </div>
 
       {/* پلن‌ها — کارت‌های شیشه‌ای */}
@@ -213,6 +229,23 @@ export function SocialMediaPlans({ lang }: { lang: Lang }) {
             </div>
           );
         })}
+      </div>
+
+      {/* نمونهٔ خروجی واقعی — متن‌های واقعی پیج خود ما (owner review 2026-11-08) */}
+      <div id="sm-samples" className="relative mt-8 overflow-hidden rounded-3xl border border-violet-500/25 bg-card p-5 sm:p-6">
+        <div aria-hidden="true" className="pointer-events-none absolute -top-20 end-1/4 h-48 w-48 rounded-full bg-fuchsia-500/10 blur-[100px]" />
+        <div className="relative">
+          <h2 className="text-lg font-extrabold">{ui.samplesTitle}</h2>
+          <p className="mt-1.5 text-[13px] leading-6 text-muted-foreground">{ui.samplesTag}</p>
+          <div className="mt-4 grid grid-cols-1 gap-3 lg:grid-cols-3">
+            {ui.samples.map((s) => (
+              <figure key={s.text} className={`rounded-2xl border ${GLASS} p-4`}>
+                <figcaption className="text-[11.5px] font-bold text-violet-600 dark:text-violet-400">{s.label}</figcaption>
+                <blockquote className="mt-2 text-[13px] leading-7 text-foreground/90">{s.text}</blockquote>
+              </figure>
+            ))}
+          </div>
+        </div>
       </div>
 
       {/* شبکه */}

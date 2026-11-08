@@ -270,6 +270,13 @@ export const SECTION_UI: Record<
     titleLead: string;
     titleAccent: string;
     sub: string;
+    /** owner review 2026-11-08: proof line linking to the real-sample strip */
+    proofLine: string;
+    samplesTitle: string;
+    samplesTag: string;
+    /** real post copy from our own page — composed from published LinkedIn
+     *  posts only (content/linkedin/posts), no invented samples */
+    samples: readonly { label: string; text: string }[];
     perMonth: string;
     perAccount: string;
     networkTitle: string;
@@ -295,9 +302,26 @@ export const SECTION_UI: Record<
   }
 > = {
   fa: {
-    titleLead: 'مدیریت سوشال‌مدیا با ',
-    titleAccent: 'هوش مصنوعی',
-    sub: 'پیج تو را سیستم راه می‌اندازد: محتوای اختصاصی، انتشار منظم و پاسخ دایرکت — هر روز، بدون وقفه. تو فقط سفارش می‌گیری.',
+    titleLead: 'پیج تو را سیستم راه می‌اندازد — ',
+    titleAccent: 'تو فقط سفارش می‌گیری',
+    sub: 'مدیریت سوشال‌مدیا با هوش مصنوعی، زیر نظر انسان — محتوای اختصاصی، انتشار منظم و پاسخ دایرکت، هر روز بدون وقفه.',
+    proofLine: 'نمونه‌های واقعی خروجی همین سیستم — پایین‌تر در همین صفحه',
+    samplesTitle: 'نمونهٔ خروجی واقعی',
+    samplesTag: 'متن‌های واقعیِ تولیدشده با همین سیستم برای پیج خودِ ما — نه طرح و نه نمونهٔ ساختگی.',
+    samples: [
+      {
+        label: 'پست لینکدین · قیمت‌گذاری',
+        text: '«پروژه را ساعتی قیمت بگذاری؛ بی‌انصافی به خودت است. وقتی ساعتی حساب می‌کنی؛ هرچه سریع‌تر و باتجربه‌تر شوی؛ درآمدت کمتر می‌شود.»',
+      },
+      {
+        label: 'پست لینکدین · اتوماسیون محتوا',
+        text: '«سه ایجنت هوش مصنوعی، هر روز برای برند من محتوا می‌سازند. راز کار هوش مصنوعی نیست؛ نظم است.»',
+      },
+      {
+        label: 'پست لینکدین · تجربهٔ عملی',
+        text: '«قبل از اتوماسیون، یک ماه دستی بنویس. ایجنت بدون نمونه‌های خوبِ خودت، فقط سریع‌تر بد تولید می‌کند. اول تکرار؛ بعد اتوماسیون.»',
+      },
+    ],
     perMonth: '/ ماه',
     perAccount: '/ هر اکانت',
     networkTitle: 'شبکه — مدیریت انبوه اکانت‌ها',
@@ -329,9 +353,26 @@ export const SECTION_UI: Record<
       'پیج تو را سیستم راه می‌اندازد: محتوای اختصاصی، انتشار منظم و پاسخ دایرکت — هر روز، بدون وقفه. پلن اتومات ۵۹ دلار · همراه ۷۵ دلار · بیزینس ۲۴۵ دلار در ماه · پلن شبکه برای مدیریت انبوه اکانت‌ها. بدون قفل قرارداد، تسویهٔ تومانی.',
   },
   en: {
-    titleLead: 'AI-Powered ',
-    titleAccent: 'Social Media Management',
-    sub: 'A system runs your page: custom content, consistent posting, and DM replies — every day, without a break. You just take the orders.',
+    titleLead: 'A system runs your page — ',
+    titleAccent: 'you just take the orders',
+    sub: 'Social media management powered by AI, supervised by humans — custom content, consistent posting, and DM replies, every day without a break.',
+    proofLine: 'Real output samples from this exact system — further down this page',
+    samplesTitle: 'Real output samples',
+    samplesTag: 'Real post copy produced by this exact system for our own page — not mockups.',
+    samples: [
+      {
+        label: 'LinkedIn post · product',
+        text: '“Most founders pitch investors with a deck. I built them a quiz.”',
+      },
+      {
+        label: 'LinkedIn post · cadence',
+        text: '“Ship every week” is not a productivity hack. It is how you de-risk a startup before an investor even asks.',
+      },
+      {
+        label: 'LinkedIn post · consistency',
+        text: '“Consistency is not a personality trait — it is the cheapest risk reduction a founder can offer capital.”',
+      },
+    ],
     perMonth: '/ mo',
     perAccount: '/ per account',
     networkTitle: 'Network — bulk account management',
@@ -381,6 +422,7 @@ export const FAQ: Record<Lang, readonly { q: string; a: string }[]> = {
     { q: 'قرارداد یا قفل زمانی وجود دارد؟', a: 'بدون قفل قرارداد — هر زمان می‌توانی لغو یا ارتقا بدهی.' },
     { q: 'تسویه چگونه است؟', a: 'قیمت‌ها ماهانه و به دلار است؛ معادل تومانی در زمان عقد قرارداد با نرخ روز محاسبه می‌شود.' },
     { q: 'از روند کار گزارش می‌گیری؟', a: 'گزارش عملکرد ماهانه شفاف ارائه می‌شود و در دسترس توست؛ در پلن بیزینس گزارش هفتگی + تحلیل رقبا هم اضافه می‌شود.' },
+    { q: 'امنیت و مالکیت اکانت چطور است؟', a: 'پیج یا با ایمیل و شمارهٔ خودت ساخته می‌شود و از روز اول مال خودت است، یا با شماره و جیمیل اختصاصی که فقط برای تو ساخته می‌شود؛ دسترسی همیشه با خودت می‌ماند و هر اکانت روی دستگاه و آی‌پی جداگانه اجرا می‌شود.' },
     { q: 'پلن شبکه مخصوص چه کسی است؟', a: 'برای آژانس‌ها، شبکه‌های فروش و برندهای چندشعبه‌ای. هر اکانت روی دستگاه و آی‌پی جداگانه اجرا می‌شود و محتوای هر اکانت یکتاست.' },
   ],
   en: [
@@ -388,6 +430,7 @@ export const FAQ: Record<Lang, readonly { q: string; a: string }[]> = {
     { q: 'Is there a contract or lock-in?', a: 'No contract lock-in — upgrade or cancel anytime.' },
     { q: 'How does payment work?', a: 'Prices are monthly in USD; the toman equivalent is calculated at the daily rate when the contract is signed.' },
     { q: 'Do I get reports?', a: 'A transparent monthly performance report is always available to you; the Business plan adds a weekly report + competitor analysis.' },
+    { q: 'How are account security and ownership handled?', a: 'The page is created with your own email and number — yours from day one — or with a dedicated number and Gmail made just for you. You always keep full access, and every account runs on its own device and IP.' },
     { q: 'Who is the Network plan for?', a: 'For agencies, sales networks, and multi-branch brands. Every account runs on its own device and IP, and each account’s content is unique.' },
   ],
 };
