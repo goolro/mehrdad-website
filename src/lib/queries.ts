@@ -1,6 +1,7 @@
 import { db } from '@/lib/db';
 import { HIDDEN_POST_SLUGS, isHiddenPostSlug } from '@/lib/hidden-post-slugs';
 import { ensureProjectKindColumn } from '@/lib/project-kind';
+import { ensureProjectCategoryColumn } from '@/lib/project-category';
 import { isProjectHidden, visibleProjects } from '@/lib/project-visibility';
 import { slugCandidates } from '@/lib/slug-lookup';
 import { sanitizePostHtml, sanitizeExcerpt } from '@/lib/sanitize';
@@ -217,6 +218,7 @@ export type RelatedPost = NonNullable<Awaited<ReturnType<typeof getPostDetail>>>
 
 export async function getProjects(opts?: { section?: 'work' | 'lab'; featured?: boolean }) {
   await ensureProjectKindColumn();
+  await ensureProjectCategoryColumn(); // category track (2026-11-01) — lazy DDL, same reason as kind
   const where: Record<string, unknown> = {};
   // Work/Lab split (2026-09-07): /work and the homepage never render Lab
   // items and /lab never renders Work items — each section is queried
@@ -236,6 +238,7 @@ export async function getProjectBySlug(rawSlug: string) {
   // are unaffected
   if (isProjectHidden(rawSlug)) return null;
   await ensureProjectKindColumn();
+  await ensureProjectCategoryColumn();
   const candidates = [rawSlug, rawSlug.toLowerCase()];
   for (const candidate of candidates) {
     const project = await db.project.findUnique({ where: { slug: candidate } });

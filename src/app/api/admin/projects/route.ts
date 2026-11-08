@@ -4,6 +4,7 @@ import { checkAdmin, scrubError } from '@/lib/admin';
 import { notifyIndexNow } from '@/lib/indexnow';
 import { PROJECT_SECTIONS, isProjectStatus } from '@/lib/project-status';
 import { ensureProjectKindColumn, isProjectKind } from '@/lib/project-kind';
+import { ensureProjectCategoryColumn, isProjectCategory } from '@/lib/project-category';
 
 export const dynamic = 'force-dynamic';
 
@@ -40,6 +41,7 @@ type ProjectPayload = {
   fundingAsk?: string | null;
   order?: number;
   kind?: string | null;
+  category?: string | null;
 };
 
 type ProjectCreateData = {
@@ -56,6 +58,7 @@ type ProjectCreateData = {
   fundingAsk: string | null;
   order: number;
   kind: string | null;
+  category: string | null;
 };
 
 type CreateResult = { ok: true; data: ProjectCreateData } | { ok: false; error: string };
@@ -89,6 +92,8 @@ function validateCreate(body: ProjectPayload): CreateResult {
       order: Math.trunc(Number(body.order) || 0),
       // closed vocabulary — anything outside it stays unlabeled
       kind: isProjectKind(body.kind) ? body.kind : null,
+      // closed vocabulary (category track) — NULL = uncategorized; never implied
+      category: isProjectCategory(body.category) ? body.category : null,
     },
   };
 }
@@ -97,6 +102,7 @@ export async function GET(req: NextRequest) {
   const denied = checkAdmin(req);
   if (denied) return denied;
   await ensureProjectKindColumn();
+  await ensureProjectCategoryColumn();
   const projects = await db.project.findMany({ orderBy: { order: 'asc' } });
   return NextResponse.json({ projects });
 }
@@ -106,6 +112,7 @@ export async function POST(req: NextRequest) {
   if (denied) return denied;
   try {
     await ensureProjectKindColumn();
+    await ensureProjectCategoryColumn();
     const body = (await req.json()) as ProjectPayload;
     const result = validateCreate(body);
     if (!result.ok) return NextResponse.json({ error: result.error }, { status: 400 });

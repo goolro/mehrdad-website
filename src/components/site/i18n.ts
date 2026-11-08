@@ -227,6 +227,10 @@ export const ui = {
       tabWork: 'Work',
       tabIdeas: 'Ideas & archive',
       ideasNote: 'Early ideas and archived projects — kept for the record. None of these are in active development.',
+      // category track filter row (owner request 2026-11-01) — sits INSIDE the
+      // same tabs, only rendered when ≥1 project carries a category
+      filterLabel: 'Project category',
+      filterAll: 'All',
       // homepage Work section
       seeAllWork: 'See all work',
       fundingAsk: 'Funding ask',
@@ -1580,6 +1584,10 @@ export const ui = {
       tabWork: 'کارها',
       tabIdeas: 'ایده‌ها و بایگانی',
       ideasNote: 'ایده‌های اولیه و پروژه‌های بایگانی‌شده — صرفاً برای ثبت. هیچ‌کدام در حال توسعهٔ فعال نیستند.',
+      // ردیف فیلتر دسته‌بندی (خواستهٔ مالک ۲۰۲۶-۱۱-۰۱) — داخل همان زبانه‌ها،
+      // فقط وقتی دست‌کم یک پروژه دسته داشته باشد رندر می‌شود
+      filterLabel: 'دستهٔ پروژه',
+      filterAll: 'همه',
       // بخش کارها در صفحهٔ اصلی
       seeAllWork: 'مشاهدهٔ همهٔ کارها',
       fundingAsk: 'درخواست سرمایه',

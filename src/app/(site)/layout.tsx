@@ -35,6 +35,13 @@ export const viewport: Viewport = siteViewport;
  * metadata/viewport are re-exported from site-shared — see the D1+D4
  * comment above the export.
  */
+// VISIBILITY-AUDIT NOTE (2026-11-01, local audit): the same regression was
+// fixed here on 2026-11-02 via the explicit `export const metadata/viewport`
+// above — the D-076 split had kept the import but lost the export, so the
+// whole EN group shipped with no favicon/manifest/robots/metadataBase.
+// Page-level metadata (title, description, alternates) still worked, which
+// masked the regression. Nothing further to re-export.
+
 export default function SiteRootLayout({
   children,
 }: Readonly<{

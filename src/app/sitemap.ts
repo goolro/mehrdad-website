@@ -94,9 +94,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // strategy session offer (column D CTA, 2026-10-30): paid 45-min product,
     // separate funnel from the MVP Sprint
     { url: `${BASE}/consult`, changeFrequency: 'monthly', priority: 0.8 },
-    // interactive game (phase-2 SEO gap fix): real content page that was
-    // missing from the map — crawlers only found it via the /lab listing
-    { url: `${BASE}/play/traffic-tempo`, changeFrequency: 'monthly', priority: 0.5 },
+    // VISIBILITY-AUDIT FIX (2026-11-01): /play/traffic-tempo was REMOVED
+    // from the map. The project was hidden via project-visibility.ts on
+    // 2026-09-30 (page 404s by design), but this hardcoded static entry
+    // survived — the live sitemap advertised a 404 to every crawler
+    // (verified live: only non-200 URL out of all 153 map entries). The DB
+    // project list below already filters hidden projects; the static list
+    // must never reference hidden routes either.
     { url: `${BASE}/investors-koko`, changeFrequency: 'monthly', priority: 0.6 },
     { url: `${BASE}/investors-koko/deck`, changeFrequency: 'monthly', priority: 0.6 },
   ];

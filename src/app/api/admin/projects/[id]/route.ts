@@ -4,6 +4,7 @@ import { checkAdmin, scrubError } from '@/lib/admin';
 import { notifyIndexNow } from '@/lib/indexnow';
 import { PROJECT_STATUSES, PROJECT_SECTIONS, isProjectStatus } from '@/lib/project-status';
 import { ensureProjectKindColumn, isProjectKind } from '@/lib/project-kind';
+import { ensureProjectCategoryColumn, isProjectCategory } from '@/lib/project-category';
 
 export const dynamic = 'force-dynamic';
 
@@ -36,6 +37,7 @@ type ProjectPayload = {
   fundingAsk?: string | null;
   order?: number;
   kind?: string | null;
+  category?: string | null;
 };
 
 function buildData(body: ProjectPayload): Record<string, unknown> {
@@ -68,6 +70,12 @@ function buildData(body: ProjectPayload): Record<string, unknown> {
     else if (isProjectKind(body.kind)) data.kind = body.kind;
     else throw new Error('invalid kind');
   }
+  // category track — '' clears the assignment; unknown values are rejected
+  if (body.category !== undefined) {
+    if (body.category === '' || body.category == null) data.category = null;
+    else if (isProjectCategory(body.category)) data.category = body.category;
+    else throw new Error('invalid category');
+  }
   if (body.order !== undefined) data.order = Math.trunc(Number(body.order) || 0);
   return data;
 }
@@ -78,6 +86,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   try {
     const { id } = await params;
     await ensureProjectKindColumn();
+    await ensureProjectCategoryColumn();
     const body = (await req.json()) as ProjectPayload;
     const data = buildData(body);
     const before = await db.project.findUnique({ where: { id } });

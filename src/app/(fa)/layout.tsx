@@ -30,6 +30,12 @@ export const viewport: Viewport = siteViewport;
  * The boot script's fa-route branch now re-affirms values that are already
  * correct server-side (kept for ?lang= overrides and dark/light mode).
  */
+// VISIBILITY-AUDIT NOTE (2026-11-01, local audit): the same regression was
+// fixed here on 2026-11-02 via the explicit `export const metadata/viewport`
+// above — the D-076 split had kept the import but lost the export, so /fa*
+// shipped without favicon/manifest/robots/metadataBase. Nothing further to
+// re-export.
+
 export default function FaRootLayout({
   children,
 }: Readonly<{
