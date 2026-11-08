@@ -96,6 +96,10 @@ const deckSecurityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  // SANDBOX PREVIEW (2026-11-08): the space-z.ai preview panel loads the dev
+  // server through its own origin — without this allowlist Next 16 blocks the
+  // cross-origin dev asset/HMR requests and the panel can 403 the page.
+  allowedDevOrigins: ["preview-chat-6c56da56-246f-4283-ae38-ba726ae67ef2.space-z.ai"],
   // `standalone` serves the cPanel artifact flow (scripts/archive/build-production.sh).
   // Vercel builds its own output and its builder FAILS on standalone tracing
   // (ENOENT .next/next-server.js.nft.json), so disable it there — VERCEL=1 is
