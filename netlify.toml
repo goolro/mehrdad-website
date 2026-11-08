@@ -1,6 +1,16 @@
+# Netlify production build — mirrors vercel.json buildCommand exactly
+# (Postgres schema → Supabase), with VERCEL=1 so next.config keeps
+# output=undefined (no standalone) and postbuild.mjs skips the
+# self-hosted-only asset copy — same artifact shape the Vercel build
+# produced, which is what @netlify/plugin-nextjs expects.
 [build]
-  command = "VERCEL=1 bun run build"
+  command = "prisma generate --schema prisma/schema.postgres.prisma && next build && node scripts/postbuild.mjs"
   publish = ".next"
+
+[build.environment]
+  VERCEL = "1"
+  NODE_VERSION = "22"
+  NEXT_TELEMETRY_DISABLED = "1"
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
