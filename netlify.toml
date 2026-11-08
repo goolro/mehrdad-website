@@ -15,3 +15,8 @@
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
+
+# Runs AFTER the Next runtime plugin's onBuild (plugins execute in order) and
+# BEFORE the post-build upload — trims the SSR handler under the 250 MB cap.
+[[plugins]]
+  package = "./netlify-trim.cjs"
