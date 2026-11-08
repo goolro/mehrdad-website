@@ -11,6 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Send, Sparkles } from 'lucide-react';
 import { trackLeadSubmitted } from '@/lib/analytics';
 import { WhatsAppIcon, whatsappHref, WHATSAPP_DISPLAY } from './WhatsApp';
+import { AI_ASSISTANT_ENABLED } from '@/lib/features';
 
 const INTENT_KEYS = ['general', 'services', 'collaboration', 'feedback', 'investment'] as const;
 type Intent = (typeof INTENT_KEYS)[number];
@@ -257,13 +258,15 @@ export function ContactView() {
         </Button>
       </form>
 
-      <button
-        onClick={() => setChatOpen(true)}
-        className="mt-6 flex w-full items-center gap-3 rounded-2xl border border-dashed border-violet-500/40 bg-violet-600/5 p-4 text-start transition-colors hover:bg-violet-600/10"
-      >
-        <Sparkles className="h-5 w-5 shrink-0 text-violet-600 dark:text-violet-400" />
-        <span className="text-sm text-muted-foreground">{t.contact.aiHint}</span>
-      </button>
+      {AI_ASSISTANT_ENABLED && (
+        <button
+          onClick={() => setChatOpen(true)}
+          className="mt-6 flex w-full items-center gap-3 rounded-2xl border border-dashed border-violet-500/40 bg-violet-600/5 p-4 text-start transition-colors hover:bg-violet-600/10"
+        >
+          <Sparkles className="h-5 w-5 shrink-0 text-violet-600 dark:text-violet-400" />
+          <span className="text-sm text-muted-foreground">{t.contact.aiHint}</span>
+        </button>
+      )}
     </div>
   );
 }

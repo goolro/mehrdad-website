@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { useApp } from './store';
+import { AI_ASSISTANT_ENABLED } from '@/lib/features';
 import { ui } from './i18n';
 import { Button } from '@/components/ui/button';
 import { Download, X } from 'lucide-react';
@@ -45,7 +46,7 @@ export function PwaClient() {
 
     // support ?chat=open shortcut from app shortcuts
     const sp = new URLSearchParams(window.location.search);
-    if (sp.get('chat') === 'open') {
+    if (AI_ASSISTANT_ENABLED && sp.get('chat') === 'open') {
       useApp.setState({ chatOpen: true });
     }
 

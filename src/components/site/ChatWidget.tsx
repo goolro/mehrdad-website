@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ArrowDown, X, Send, Sparkles, Trash2, UserCheck, Hammer, Handshake } from 'lucide-react';
 import { WhatsAppIcon, whatsappHref } from './WhatsApp';
+import { AI_ASSISTANT_ENABLED } from '@/lib/features';
 
 interface Msg {
   role: 'user' | 'assistant';
@@ -16,7 +17,17 @@ interface Msg {
 
 type LeadState = 'idle' | 'form' | 'sent' | 'error';
 
+/**
+ * Public entry — the ONLY place the assistant flag is checked for the UI.
+ * When AI_ASSISTANT_ENABLED is false nothing renders at all (no floating
+ * button, no dialog) and every hook stays unmounted, so zero chat code runs.
+ */
 export function ChatWidget() {
+  if (!AI_ASSISTANT_ENABLED) return null;
+  return <ChatWidgetPanel />;
+}
+
+function ChatWidgetPanel() {
   const { chatOpen, setChatOpen, view } = useApp();
   // route-aware language (lang-context.tsx): 'fa' is forced on /fa* routes —
   // the chat UI AND the lang sent to /api/chat follow the route language

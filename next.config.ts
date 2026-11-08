@@ -103,8 +103,10 @@ const nextConfig: NextConfig = {
   // `standalone` serves the cPanel artifact flow (scripts/archive/build-production.sh).
   // Vercel builds its own output and its builder FAILS on standalone tracing
   // (ENOENT .next/next-server.js.nft.json), so disable it there — VERCEL=1 is
-  // set by the platform during Vercel builds.
-  output: process.env.VERCEL ? undefined : "standalone",
+  // set by the platform during Vercel builds. Netlify (NETLIFY=true during
+  // its builds) gets the same treatment: its Next.js Runtime packages the
+  // serverless output itself and standalone tracing is wasted/conflicting.
+  output: process.env.VERCEL || process.env.NETLIFY ? undefined : "standalone",
   // Turso/libsql driver stack must stay a real node_modules dependency in the
   // standalone bundle: it loads native bindings (@libsql/linux-x64-gnu) at
   // runtime, which cannot be bundled into server chunks. Without this the

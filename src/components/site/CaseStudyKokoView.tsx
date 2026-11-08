@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Brain, Swords, Trophy, Repeat, ScanSearch, ArrowRight, ExternalLink, FileText, LineChart, Quote } from 'lucide-react';
 import { caseStudies } from '@/lib/case-studies';
 import { Testimonials } from './Testimonials';
+import { AI_ASSISTANT_ENABLED } from '@/lib/features';
 
 const ICONS = { brain: Brain, swords: Swords, trophy: Trophy, repeat: Repeat, scan: ScanSearch } as const;
 
@@ -170,9 +171,11 @@ export function CaseStudyKokoView() {
           <Button variant="secondary" className="bg-white/15 text-white hover:bg-white/25" asChild>
             <Link href="/contact?intent=services">{t.caseStudy.ctaSecondary}</Link>
           </Button>
-          <Button variant="secondary" className="bg-white/15 text-white hover:bg-white/25" onClick={() => setChatOpen(true)}>
-            ✦ {t.hero.cta2}
-          </Button>
+          {AI_ASSISTANT_ENABLED && (
+            <Button variant="secondary" className="bg-white/15 text-white hover:bg-white/25" onClick={() => setChatOpen(true)}>
+              ✦ {t.hero.cta2}
+            </Button>
+          )}
         </div>
       </section>
     </div>

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useApp } from './store';
 import { useLang } from './lang-context';
 import { ui } from './i18n';
+import { AI_ASSISTANT_ENABLED } from '@/lib/features';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -96,14 +97,16 @@ export function FdeView() {
           </h1>
           <p className="mt-5 max-w-2xl text-lg text-muted-foreground">{f.hero.sub}</p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-            <Button
-              size="lg"
-              onClick={() => setChatOpen(true)}
-              className="bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white hover:from-violet-700 hover:to-fuchsia-700"
-            >
-              {f.hero.ctaPrimary}
-              <ArrowRight className="ms-2 h-4 w-4 rtl:rotate-180" aria-hidden />
-            </Button>
+            {AI_ASSISTANT_ENABLED && (
+              <Button
+                size="lg"
+                onClick={() => setChatOpen(true)}
+                className="bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white hover:from-violet-700 hover:to-fuchsia-700"
+              >
+                {f.hero.ctaPrimary}
+                <ArrowRight className="ms-2 h-4 w-4 rtl:rotate-180" aria-hidden />
+              </Button>
+            )}
             <Button
               size="lg"
               variant="outline"
@@ -427,15 +430,17 @@ export function FdeView() {
             <h2 className="mx-auto max-w-2xl text-3xl font-extrabold leading-tight sm:text-4xl">{f.cta.title}</h2>
             <p className="mt-4 text-white/85">{f.cta.sub1}</p>
             <p className="mt-1 text-white/85">{f.cta.sub2}</p>
-            <Button
-              size="lg"
-              variant="secondary"
-              className="mt-8 bg-white text-violet-700 hover:bg-white/90"
-              onClick={() => setChatOpen(true)}
-            >
-              {f.cta.button}
-              <ArrowRight className="ms-2 h-4 w-4 rtl:rotate-180" aria-hidden />
-            </Button>
+            {AI_ASSISTANT_ENABLED && (
+              <Button
+                size="lg"
+                variant="secondary"
+                className="mt-8 bg-white text-violet-700 hover:bg-white/90"
+                onClick={() => setChatOpen(true)}
+              >
+                {f.cta.button}
+                <ArrowRight className="ms-2 h-4 w-4 rtl:rotate-180" aria-hidden />
+              </Button>
+            )}
           </div>
         </Reveal>
       </section>

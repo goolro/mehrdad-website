@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { AI_ASSISTANT_ENABLED } from '@/lib/features';
 import { db } from '@/lib/db';
 import { clientIp, readJsonBody, jsonBodyError, rateLimit, tooManyRequests } from '@/lib/rate-limit';
 import { isSessionOwner } from '@/lib/chat-owner';
@@ -15,6 +16,11 @@ export const dynamic = 'force-dynamic';
  * visitor has chatted at least once).
  */
 export async function POST(req: NextRequest) {
+  // assistant-off (owner request 2026-11): no new leads can be captured —
+  // the UI entry points are gone and this is the hard server-side stop
+  if (!AI_ASSISTANT_ENABLED) {
+    return NextResponse.json({ error: 'assistant_disabled' }, { status: 410 });
+  }
   const rl = rateLimit(`chatlead:${clientIp(req)}`, 5, 15 * 60 * 1000);
   if (!rl.ok) return tooManyRequests(rl.retryAfter);
 

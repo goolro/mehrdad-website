@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse, after } from 'next/server';
+import { AI_ASSISTANT_ENABLED } from '@/lib/features';
 import { db } from '@/lib/db';
 import { retrieveContext, buildContextBlock } from '@/lib/rag';
 import { chatCompletion, chatCompletionStream, getProviderChain, zaiComplete, type ChatTurn } from '@/lib/ai-provider';
@@ -118,7 +119,25 @@ const PHONE_CONFIRM_EN = 'Your phone number is saved! We will contact you shortl
 // keeps explaining gets the SHORT reminder instead of a robotic repeat
 const PHONE_ASK_MARK_RE = /شماره تماس|phone number with country code/i;
 
+// assistant-off reply (owner request 2026-11): Persian-first site, English
+// visitors get the English variant — the standalone deck chat twin surfaces
+// this exact text via its legacy-JSON error path
+const ASSISTANT_OFF_REPLY = {
+  fa: 'دستیار هوش مصنوعی فعلاً غیرفعال است. برای پیام دادن، واتساپ یا فرم «تماس» را استفاده کنید.',
+  en: 'The AI assistant is currently unavailable. Please reach out via WhatsApp or the contact form.',
+} as const;
+
 export async function POST(req: NextRequest) {
+  if (!AI_ASSISTANT_ENABLED) {
+    // fail fast BEFORE any rate-limit DB write, KB crawl, purge or LLM spend.
+    // lang is peeked from a CLONE — the body must stay unread for the
+    // (unreachable) handler logic below if the flag is ever flipped back on.
+    const peek = (await req.clone().json().catch(() => null)) as { lang?: string } | null;
+    return NextResponse.json(
+      { reply: peek?.lang === 'en' ? ASSISTANT_OFF_REPLY.en : ASSISTANT_OFF_REPLY.fa, disabled: true },
+      { status: 410 },
+    );
+  }
   purgeOldChats();
   // owner order 2026-10-20 («چت گفتگو همه صفحات را مطالعه کنه»): the page
   // corpus self-bootstraps via `after()` — official post-response work (a
@@ -587,6 +606,9 @@ ${context || '(دانش خاصی یافت نشد — فقط از حقایق پا
 
 // user-requested deletion of one conversation (privacy: "delete my data")
 export async function DELETE(req: NextRequest) {
+  if (!AI_ASSISTANT_ENABLED) {
+    return NextResponse.json({ disabled: true }, { status: 410 });
+  }
   // abuse guard: the delete handler is public, so cap how often an IP may
   // hammer it (random-ID deletes are harmless but should not cost DB work)
   const rl = rateLimit(`chatdel:${clientIp(req)}`, 10, 60 * 1000);

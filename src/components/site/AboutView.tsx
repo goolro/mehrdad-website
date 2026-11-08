@@ -7,6 +7,7 @@ import { ui } from './i18n';
 import { Button } from '@/components/ui/button';
 import { Rocket, BrainCircuit, Code2, PenTool, Briefcase, Megaphone, Store, Lightbulb, ArrowRight, FileText, Sparkles, Linkedin } from 'lucide-react';
 import { Testimonials } from './Testimonials';
+import { AI_ASSISTANT_ENABLED } from '@/lib/features';
 
 export function AboutView() {
   const lang = useLang();
@@ -123,9 +124,11 @@ export function AboutView() {
           <Button variant="secondary" className="bg-white/15 text-white hover:bg-white/25" asChild>
             <Link href="/contact">{t.nav.contact}</Link>
           </Button>
-          <Button variant="secondary" className="bg-white/15 text-white hover:bg-white/25" onClick={() => setChatOpen(true)}>
-            ✦ {t.hero.cta2}
-          </Button>
+          {AI_ASSISTANT_ENABLED && (
+            <Button variant="secondary" className="bg-white/15 text-white hover:bg-white/25" onClick={() => setChatOpen(true)}>
+              ✦ {t.hero.cta2}
+            </Button>
+          )}
         </div>
       </div>
     </div>

@@ -39,6 +39,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { ArrowLeft, ArrowRight, Bot, ExternalLink, Gamepad2 } from 'lucide-react';
+import { AI_ASSISTANT_ENABLED } from '@/lib/features';
 
 const PLAY_URL = 'https://quizofkoko.com';
 
@@ -583,7 +584,9 @@ export function InvestorsView() {
           </div>
         </div>
 
-        {/* assistant strip — reuses the site-wide chat widget */}
+        {/* assistant strip — reuses the site-wide chat widget
+            (hidden entirely while the AI assistant is disabled) */}
+        {AI_ASSISTANT_ENABLED && (
         <div className="mt-8 flex flex-col items-start gap-4 rounded-2xl border border-emerald-700/20 bg-emerald-600/[0.06] p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
           <div className="flex items-start gap-4">
             <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#191713] text-[#f6f1e7]">
@@ -601,6 +604,7 @@ export function InvestorsView() {
             {inv.s8.assistOpen}
           </Button>
         </div>
+        )}
       </section>
 
       {/* ── full pitch deck banner → /investors-koko/deck (D-029) ─────────── */}

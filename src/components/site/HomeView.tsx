@@ -12,6 +12,7 @@ import { ArrowRight, ArrowUpRight, Sparkles, ChevronRight, FolderKanban, FileTex
 import { StatusBadge, ProgressBar, STATUS_STYLE, KindBadge } from './ProjectsView';
 import { normalizeStatus, showsProgress } from '@/lib/project-status';
 import { WhatIDo } from './WhatIDo';
+import { AI_ASSISTANT_ENABLED } from '@/lib/features';
 
 interface ProjectItem {
   id: string; slug: string; titleEn: string; titleFa: string; summaryEn: string; summaryFa: string; cover: string | null;
@@ -88,10 +89,12 @@ export function HomeView({ initial }: { initial: HomeInitialData }) {
                 <ArrowRight className="ms-2 h-4 w-4 rtl:rotate-180" />
               </Link>
             </Button>
-            <Button size="lg" variant="outline" onClick={() => setChatOpen(true)}>
-              <Sparkles className="me-2 h-4 w-4" />
-              {t.hero.cta2}
-            </Button>
+            {AI_ASSISTANT_ENABLED && (
+              <Button size="lg" variant="outline" onClick={() => setChatOpen(true)}>
+                <Sparkles className="me-2 h-4 w-4" />
+                {t.hero.cta2}
+              </Button>
+            )}
           </div>
           {/* survey fix #2 (2026-11): one-line wayfinding for the personas who
               found the home page cluttered — incl. the Koko game shortcut
@@ -287,6 +290,7 @@ export function HomeView({ initial }: { initial: HomeInitialData }) {
       </section>
 
       {/* ── AI CTA ── */}
+      {AI_ASSISTANT_ENABLED && (
       <section className="mx-auto w-full max-w-7xl px-4 pb-20 sm:px-6">
         <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-violet-700 via-violet-600 to-fuchsia-600 px-6 py-14 text-center text-white sm:px-12">
           <div className="pointer-events-none absolute -end-16 -top-16 h-64 w-64 rounded-full bg-white/10 blur-2xl" />
@@ -303,6 +307,7 @@ export function HomeView({ initial }: { initial: HomeInitialData }) {
           </Button>
         </div>
       </section>
+      )}
     </div>
   );
 }

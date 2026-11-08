@@ -9,6 +9,7 @@ import { ui } from './i18n';
 import type { Lang } from './i18n';
 import { Button } from '@/components/ui/button';
 import { Menu, Moon, Sun, X } from 'lucide-react';
+import { AI_ASSISTANT_ENABLED } from '@/lib/features';
 
 export function Header() {
   const router = useRouter();
@@ -170,15 +171,17 @@ export function Header() {
               the owner reaches the panel via the direct /admin URL (bookmark).
               Advertising the login path just hands scanners a target and lets
               bots burn the global login rate-limit budget (owner lockout risk). */}
-          <Button
-            size="sm"
-            className="hidden bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white hover:from-violet-700 hover:to-fuchsia-700 sm:inline-flex"
-            onClick={() => setChatOpen(true)}
-            aria-haspopup="dialog"
-            aria-label={t.chat.title}
-          >
-            ✦ AI
-          </Button>
+          {AI_ASSISTANT_ENABLED && (
+            <Button
+              size="sm"
+              className="hidden bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white hover:from-violet-700 hover:to-fuchsia-700 sm:inline-flex"
+              onClick={() => setChatOpen(true)}
+              aria-haspopup="dialog"
+              aria-label={t.chat.title}
+            >
+              ✦ AI
+            </Button>
+          )}
         </div>
       </div>
 
