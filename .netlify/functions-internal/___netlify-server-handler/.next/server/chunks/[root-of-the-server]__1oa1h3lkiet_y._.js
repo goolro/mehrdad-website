@@ -1,0 +1,17 @@
+module.exports=[[84842,e=>e.a(async(r,t)=>{try{var a=await e.y("@prisma/adapter-libsql-54387eee42c9c9c0");e.n(a),t()}catch(e){t(e)}},!0),43793,e=>e.a(async(r,t)=>{try{var a=e.i(63021),s=e.i(84842),n=r([s]);[s]=n.then?(await n)():n;let i=globalThis,o="1"===process.env.PRISMA_DEBUG?["query","error","warn"]:["error","warn"],c=i.prisma??function(){let e=process.env.TURSO_DATABASE_URL;if(e){let r=process.env.TURSO_AUTH_TOKEN;if(!r)throw Error("TURSO_DATABASE_URL is set but TURSO_AUTH_TOKEN is missing — add both in the hosting environment.");let t=new s.PrismaLibSQL({url:e,authToken:r});return new a.PrismaClient({adapter:t,log:o})}return new a.PrismaClient({log:o})}();e.s(["f",0,c]),t()}catch(e){t(e)}},!1),30378,e=>e.a(async(r,t)=>{try{var a=e.i(43793),s=r([a]);[a]=s.then?(await s)():s;let n=null;e.s(["f",0,function(){return n||(n=(async()=>{await a.f.$executeRawUnsafe(`
+        CREATE TABLE IF NOT EXISTS "SocialDraft" (
+          "id" TEXT NOT NULL,
+          "platform" TEXT NOT NULL,
+          "lang" TEXT NOT NULL,
+          "topic" TEXT,
+          "sourceSlug" TEXT,
+          "content" TEXT NOT NULL,
+          "imageUrl" TEXT,
+          "videoUrl" TEXT,
+          "posted" BOOLEAN NOT NULL DEFAULT false,
+          "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          CONSTRAINT "SocialDraft_pkey" PRIMARY KEY ("id")
+        )
+      `),await a.f.$executeRawUnsafe('ALTER TABLE "SocialDraft" ADD COLUMN IF NOT EXISTS "imageUrl" TEXT').catch(async()=>{await a.f.$executeRawUnsafe('ALTER TABLE "SocialDraft" ADD COLUMN "imageUrl" TEXT').catch(()=>{})}),await a.f.$executeRawUnsafe('ALTER TABLE "SocialDraft" ADD COLUMN IF NOT EXISTS "videoUrl" TEXT').catch(async()=>{await a.f.$executeRawUnsafe('ALTER TABLE "SocialDraft" ADD COLUMN "videoUrl" TEXT').catch(()=>{})})})().catch(e=>{throw n=null,e})),n}]),t()}catch(e){t(e)}},!1)],63021,(e,r,t)=>{r.exports=e.x("@prisma/client-2c3a283f134fdcb6",()=>require("@prisma/client-2c3a283f134fdcb6"))},54799,(e,r,t)=>{r.exports=e.x("crypto",()=>require("crypto"))},70406,(e,r,t)=>{r.exports=e.x("next/dist/compiled/@opentelemetry/api",()=>require("next/dist/compiled/@opentelemetry/api"))},18622,(e,r,t)=>{r.exports=e.x("next/dist/compiled/next-server/app-page-turbo.runtime.prod.js",()=>require("next/dist/compiled/next-server/app-page-turbo.runtime.prod.js"))},20635,(e,r,t)=>{r.exports=e.x("next/dist/server/app-render/action-async-storage.external.js",()=>require("next/dist/server/app-render/action-async-storage.external.js"))},24725,(e,r,t)=>{r.exports=e.x("next/dist/server/app-render/after-task-async-storage.external.js",()=>require("next/dist/server/app-render/after-task-async-storage.external.js"))},56704,(e,r,t)=>{r.exports=e.x("next/dist/server/app-render/work-async-storage.external.js",()=>require("next/dist/server/app-render/work-async-storage.external.js"))},32319,(e,r,t)=>{r.exports=e.x("next/dist/server/app-render/work-unit-async-storage.external.js",()=>require("next/dist/server/app-render/work-unit-async-storage.external.js"))},59043,(e,r,t)=>{r.exports=e.x("next/dist/server/runtime-reacts.external.js",()=>require("next/dist/server/runtime-reacts.external.js"))},93695,(e,r,t)=>{r.exports=e.x("next/dist/shared/lib/no-fallback-error.external.js",()=>require("next/dist/shared/lib/no-fallback-error.external.js"))},81111,(e,r,t)=>{r.exports=e.x("node:stream",()=>require("node:stream"))},14747,(e,r,t)=>{r.exports=e.x("path",()=>require("path"))}];
+
+//# sourceMappingURL=%5Broot-of-the-server%5D__1oa1h3lkiet_y._.js.map

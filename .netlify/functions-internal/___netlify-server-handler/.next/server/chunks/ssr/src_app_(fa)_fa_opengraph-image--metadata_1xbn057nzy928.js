@@ -1,0 +1,3 @@
+module.exports=[86006,a=>{"use strict";a.i(7997),a.i(99475),a.i(11901);var b=a.i(52425);let c={alt:"مهرداد — سازنده محصول | Mehrdad — Product Builder",contentType:"image/png",size:{width:1200,height:630}};async function d(a){let{__metadata_id__:d,...e}=await a.params,f=(0,b.fillMetadataSegment)("/(fa)/fa",e,"opengraph-image",!1);return[function(a){let b={alt:a.alt,type:a.contentType||"image/png",url:f+"?62daf3e0a1c77205"},{size:c}=a;return c&&(b.width=c.width,b.height=c.height),b}(c)]}a.s(["default",0,d],86006)},99230,function(a){a.n(a.i(86006))}];
+
+//# sourceMappingURL=src_app_%28fa%29_fa_opengraph-image--metadata_1xbn057nzy928.js.map

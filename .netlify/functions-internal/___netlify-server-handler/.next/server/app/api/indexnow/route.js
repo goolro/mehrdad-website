@@ -1,0 +1,11 @@
+var R=require("../../../chunks/[turbopack]_runtime.js")("server/app/api/indexnow/route.js")
+R.c("server/chunks/src_lib_16rjjgqofrq18._.js")
+R.c("server/chunks/_1n0orvfb1dvs4._.js")
+R.c("server/chunks/[root-of-the-server]__09813ro0mvjm1._.js")
+R.c("server/chunks/[root-of-the-server]__15bjnu5yieigz._.js")
+R.c("server/chunks/_0rbkhwz57ziem._.js")
+R.c("server/chunks/node_modules_next_0g8xe7c6fvfgl._.js")
+R.c("server/chunks/src_lib_0j5svnz5cgowx._.js")
+R.c("server/chunks/_next-internal_server_app_api_indexnow_route_actions_0_guvqz30b9bm.js")
+R.m(11200)
+module.exports=R.m(11200).exports

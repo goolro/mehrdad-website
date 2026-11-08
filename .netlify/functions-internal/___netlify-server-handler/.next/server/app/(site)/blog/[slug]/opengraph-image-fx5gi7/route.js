@@ -1,0 +1,12 @@
+var R=require("../../../../../chunks/[turbopack]_runtime.js")("server/app/(site)/blog/[slug]/opengraph-image-fx5gi7/route.js")
+R.c("server/chunks/[externals]_next_dist_compiled_@vercel_og_index_node_1wjmt4t016ogx.js")
+R.c("server/chunks/src_lib_16rjjgqofrq18._.js")
+R.c("server/chunks/[root-of-the-server]__00qjhk8h85gqh._.js")
+R.c("server/chunks/node_modules_next_0g8xe7c6fvfgl._.js")
+R.c("server/chunks/[root-of-the-server]__15bjnu5yieigz._.js")
+R.c("server/chunks/_0jw3pf2ihghjg._.js")
+R.c("server/chunks/src_lib_0j5svnz5cgowx._.js")
+R.c("server/chunks/_0rbkhwz57ziem._.js")
+R.c("server/chunks/1jng_app_(site)_blog_[slug]_opengraph-image-fx5gi7_route_actions_1chibr41dd7qa.js")
+R.m(16813)
+module.exports=R.m(16813).exports

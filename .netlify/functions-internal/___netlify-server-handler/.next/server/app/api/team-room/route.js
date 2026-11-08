@@ -1,0 +1,10 @@
+var R=require("../../../chunks/[turbopack]_runtime.js")("server/app/api/team-room/route.js")
+R.c("server/chunks/node_modules_z-ai-web-dev-sdk_dist_index_0r0z6cjn6u5j-.js")
+R.c("server/chunks/[root-of-the-server]__0k4dy936r0foi._.js")
+R.c("server/chunks/src_lib_18lbpgili-353._.js")
+R.c("server/chunks/_0145x-13vl42o._.js")
+R.c("server/chunks/src_lib_ai-provider_ts_0up39d05ustmp._.js")
+R.c("server/chunks/[root-of-the-server]__15bjnu5yieigz._.js")
+R.c("server/chunks/_next-internal_server_app_api_team-room_route_actions_1wdjwaoqx2r1d.js")
+R.m(12764)
+module.exports=R.m(12764).exports

@@ -1,0 +1,13 @@
+var R=require("../../../../../chunks/[turbopack]_runtime.js")("server/app/api/admin/ai/translate/route.js")
+R.c("server/chunks/_1ipqo6nkyn8mm._.js")
+R.c("server/chunks/[root-of-the-server]__1cdor_0mufm3r._.js")
+R.c("server/chunks/src_lib_kb_ts_05ashr_5dfzvy._.js")
+R.c("server/chunks/src_lib_1kkeje7birs6d._.js")
+R.c("server/chunks/[root-of-the-server]__15bjnu5yieigz._.js")
+R.c("server/chunks/_0rbkhwz57ziem._.js")
+R.c("server/chunks/_0h0_keehyuao9._.js")
+R.c("server/chunks/node_modules_next_0g8xe7c6fvfgl._.js")
+R.c("server/chunks/src_lib_ai-provider_ts_0up39d05ustmp._.js")
+R.c("server/chunks/_next-internal_server_app_api_admin_ai_translate_route_actions_1_98p6sq0_yhn.js")
+R.m(76227)
+module.exports=R.m(76227).exports

@@ -1,0 +1,12 @@
+var R=require("../../../../../chunks/[turbopack]_runtime.js")("server/app/api/admin/social/generate/route.js")
+R.c("server/chunks/node_modules_z-ai-web-dev-sdk_dist_index_1q9qatcq9mp72.js")
+R.c("server/chunks/src_lib_1kkeje7birs6d._.js")
+R.c("server/chunks/[root-of-the-server]__0e23eklhk3gtg._.js")
+R.c("server/chunks/src_lib_social-studio_ts_1l42m1fieywtc._.js")
+R.c("server/chunks/node_modules_next_0g8xe7c6fvfgl._.js")
+R.c("server/chunks/_08psnc49nl7u1._.js")
+R.c("server/chunks/src_lib_ai-provider_ts_0up39d05ustmp._.js")
+R.c("server/chunks/[root-of-the-server]__15bjnu5yieigz._.js")
+R.c("server/chunks/_next-internal_server_app_api_admin_social_generate_route_actions_06yu37y4xapp5.js")
+R.m(38459)
+module.exports=R.m(38459).exports

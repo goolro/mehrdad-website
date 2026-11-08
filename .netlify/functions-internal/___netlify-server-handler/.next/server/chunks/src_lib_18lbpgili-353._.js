@@ -1,0 +1,15 @@
+(()=>{"use strict";module.exports=[22524,e=>e.a(async(t,r)=>{try{var n=e.i(43793),a=t([n]);[n]=a.then?(await a)():a;let s=null;async function o(e,t,r){try{await (!s&&(s=(async()=>{await n.f.$executeRawUnsafe(`CREATE TABLE IF NOT EXISTS "RateBucket" (
+           "key" TEXT PRIMARY KEY,
+           "count" INTEGER NOT NULL,
+           "resetAt" BIGINT NOT NULL
+         )`)})().catch(e=>{throw s=null,e})),s);let a=Date.now(),o=(await n.f.$queryRaw`
+      INSERT INTO "RateBucket" ("key", "count", "resetAt")
+      VALUES (${e}, 1, ${a+r})
+      ON CONFLICT("key") DO UPDATE SET
+        "count" = CASE WHEN ${a} >= "RateBucket"."resetAt" THEN 1
+                       ELSE "RateBucket"."count" + 1 END,
+        "resetAt" = CASE WHEN ${a} >= "RateBucket"."resetAt" THEN ${a+r}
+                         ELSE "RateBucket"."resetAt" END
+      RETURNING "count" AS "count", "resetAt" AS "resetAt"`)[0];if(!o)return{ok:!0,retryAfter:0};let i=Number(o.resetAt);if(o.count>t)return{ok:!1,retryAfter:Math.max(1,Math.ceil((i-a)/1e3))};return{ok:!0,retryAfter:0}}catch(t){return console.error(`durableLimit(${e}) unavailable, failing OPEN:`,t instanceof Error?t.message:t),{ok:!0,retryAfter:0}}}e.s(["f",0,o]),r()}catch(e){r(e)}},!1),89104,e=>{let t=new Map;function r(){return new Response(JSON.stringify({error:"Payload too large"}),{status:413,headers:{"Content-Type":"application/json"}})}function n(e="Invalid JSON body"){return new Response(JSON.stringify({error:e}),{status:400,headers:{"Content-Type":"application/json"}})}async function a(e,t=32){if(function(e,t=32){let r=Number(e.headers.get("content-length")||"0");return Number.isFinite(r)&&r>1024*t}(e,t))return{ok:!1,error:"payload-too-large"};let r=1024*t,n="";try{if(e.body){let t=e.body.getReader(),a=new TextDecoder,o=!1;try{for(;;){let{done:e,value:s}=await t.read();if(e)break;if((n+=a.decode(s,{stream:!0})).length>r){o=!0;break}}o||(n+=a.decode())}finally{if(o)await t.cancel().catch(()=>{});else try{t.releaseLock()}catch{}}if(o)return{ok:!1,error:"payload-too-large"}}if(!n)return{ok:!0,data:null};return{ok:!0,data:JSON.parse(n)}}catch{return{ok:!1,error:n.length>r?"payload-too-large":"invalid-json"}}}e.s(["O",0,n,"U",0,function(e){let t=e.headers.get("x-forwarded-for");if(t){let e=t.split(",").map(e=>e.trim()).filter(Boolean);if(e.length>0)return e[e.length-1]}return"unknown"},"A",0,function(e){return"payload-too-large"===e?r():n()},"M",0,r,"c",0,function(e,r,n){let a=Date.now();if(!(t.size<4e3))for(let[e,r]of t)a>=r.resetAt&&t.delete(e);let o=t.get(e);return!o||a>=o.resetAt?(t.set(e,{count:1,resetAt:a+n}),{ok:!0,retryAfter:0}):(o.count+=1,o.count>r)?{ok:!1,retryAfter:Math.max(1,Math.ceil((o.resetAt-a)/1e3))}:{ok:!0,retryAfter:0}},"r",0,a,"V",0,function(e){return new Response(JSON.stringify({error:"Too many requests. Please slow down."}),{status:429,headers:{"Content-Type":"application/json","Retry-After":String(e)}})}])}]})();
+
+//# sourceMappingURL=src_lib_18lbpgili-353._.js.map
