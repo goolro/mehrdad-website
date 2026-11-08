@@ -1,5 +1,1 @@
 name: netlify-trim
-description: >-
-  Trims the ___netlify-server-handler function dir below the 250 MB AWS Lambda
-  cap before upload: removes public/ (served by the CDN) and dead native
-  binaries (legacy cPanel Prisma engine, musl sharp/libsql builds).
