@@ -110,6 +110,21 @@ const nextConfig: NextConfig = {
   // runtime, which cannot be bundled into server chunks. Without this the
   // artifact ships without the packages and remote DB mode crashes on boot.
   serverExternalPackages: ["@prisma/adapter-libsql", "@libsql/client", "@libsql/engine"],
+  // Netlify's SSR function cap is 250 MB unzipped and the traced
+  // ___netlify-server-handler hit 275 MB (migration 2026-11-08): the tracer
+  // ships EVERY platform's native binaries plus Prisma engines no runtime
+  // can load. Builds and functions run linux-x64 glibc on BOTH Netlify and
+  // Vercel, so exclude at trace time: musl sharp/libsql builds and the
+  // debian-openssl-1.0.x engine (that one only ever served the legacy cPanel
+  // host — OpenSSL 1.0 does not exist on Vercel/Netlify runtimes).
+  outputFileTracingExcludes: {
+    "*": [
+      "node_modules/@img/sharp-libvips-linuxmusl-x64/**",
+      "node_modules/@img/sharp-linuxmusl-x64/**",
+      "node_modules/@libsql/linux-x64-musl/**",
+      "node_modules/.prisma/client/libquery_engine-debian-openssl-1.0.x.so.node",
+    ],
+  },
   // don't advertise the framework version in production responses
   poweredByHeader: false,
   // Agency panel (Task 54): the agent library (src/data/agency-library.json,
