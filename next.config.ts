@@ -123,6 +123,11 @@ const nextConfig: NextConfig = {
       "node_modules/@img/sharp-linuxmusl-x64/**",
       "node_modules/@libsql/linux-x64-musl/**",
       "node_modules/.prisma/client/libquery_engine-debian-openssl-1.0.x.so.node",
+      // public/ assets are served from the Netlify CDN, never from inside the
+      // SSR function — but ONLY strip them on Netlify: the cPanel standalone
+      // artifact (non-VERCEL build) still needs them on disk, and Netlify's
+      // build runner sets NETLIFY=true exactly like the platform does in CI.
+      ...(process.env.NETLIFY ? ["public/**"] : []),
     ],
   },
   // don't advertise the framework version in production responses

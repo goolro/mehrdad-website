@@ -9,6 +9,7 @@
 
 [build.environment]
   VERCEL = "1"
+  NETLIFY = "1"
   NODE_VERSION = "22"
   NEXT_TELEMETRY_DISABLED = "1"
 
