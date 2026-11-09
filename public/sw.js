@@ -1,5 +1,5 @@
 /* Mehrdad.ir Service Worker — PWA offline shell + smart caching */
-const CACHE_VERSION = 'mehrdad-v6'; // v5: Content Studio launch — wipe stale panel caches (owner saw an old tab list)
+const CACHE_VERSION = 'mehrdad-v7'; // v7: AI assistant fully removed (owner 2026-11) — wipe any cached shell/JS that still contains the chat widget (stale-tab reports)
 const OFFLINE_CACHE = 'mehrdad-offline-v1';
 
 // Pre-cache the app shell

@@ -49,17 +49,6 @@
       ]
     },
     {
-      "name": "AI Assistant",
-      "short_name": "AI Chat",
-      "url": "/?chat=open",
-      "icons": [
-        {
-          "src": "/icons/icon-192.png",
-          "sizes": "192x192"
-        }
-      ]
-    },
-    {
       "name": "Contact",
       "short_name": "Contact",
       "url": "/#contact",

@@ -6,7 +6,10 @@ import { useApp, registerNavigate, viewFromPathname } from './store';
 import { isFaPath, isEnPinnedPath, LangProvider } from './lang-context';
 import { Header } from './Header';
 import { Footer } from './Footer';
-import { ChatWidget } from './ChatWidget';
+// ChatWidget removed from the tree entirely (owner: assistant must not be
+// displayed at all, 2026-11) — unmounting the component also drops its code
+// and bundle from the site. To restore: import here + render <ChatWidget />
+// next to <Footer /> (flag lives in src/lib/features.ts).
 import { LangBanner } from './LangBanner';
 import { ThemeBackground } from './ThemeBackground';
 import { RouteIndicator } from './RouteIndicator';
@@ -194,7 +197,6 @@ export function SiteChrome({ children }: { children: React.ReactNode }) {
           {children}
         </main>
         <Footer />
-        <ChatWidget />
         <LangBanner />
         <RouteIndicator />
       </div>

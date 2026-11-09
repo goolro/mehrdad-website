@@ -21,6 +21,13 @@ type LeadState = 'idle' | 'form' | 'sent' | 'error';
  * Public entry — the ONLY place the assistant flag is checked for the UI.
  * When AI_ASSISTANT_ENABLED is false nothing renders at all (no floating
  * button, no dialog) and every hook stays unmounted, so zero chat code runs.
+ *
+ * NOTE (owner, 2026-11): the assistant is disabled so hard that this component
+ * is NOT mounted anywhere — SiteChrome no longer imports/renders it, so its
+ * code never ships in the bundle. To restore: flip the flag in
+ * src/lib/features.ts AND re-add `import { ChatWidget }` + `<ChatWidget />`
+ * next to <Footer /> in SiteChrome.tsx (the manifest "AI Assistant" shortcut
+ * was also removed — re-add it to public/manifest.json if wanted).
  */
 export function ChatWidget() {
   if (!AI_ASSISTANT_ENABLED) return null;
